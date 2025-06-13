@@ -1,4 +1,4 @@
-<div class="sidebar collapsed " id="sidebar" style="border-right: 1px solid #aaa; transition: width 0.3s ease, padding 0.3s ease;">
+<div class="sidebar collapsed " id="sidebar" style="border-right: 1px solid #aaa; transition: width 0.3s ease, padding 0.3s ease; background-color: <?= $bgsec ?>;">
     <ul class="navbar-nav">
         <li class="gap-2 d-block d-lg-none">
             <button class="btn btn-link nav-link text px-0" data-bs-toggle="collapse" data-bs-target="#systemSubNav" aria-expanded="false">
@@ -74,14 +74,14 @@
         <div class="text-center mt-5"><?= $lang['chooselang'] ?></div>
         <!-- วางใน Navbar หรือเมนู -->
         <div class="d-flex justify-content-center p-2">
-            <a href="<?= buildLangSwitchLink('th') ?>" class="btn btn-outline-secondary btn-sm <?= $langCode == 'th' ? 'active' : '' ?>">ไทย</a>
-            <a href="<?= buildLangSwitchLink('en') ?>" class="btn btn-outline-secondary btn-sm <?= $langCode == 'en' ? 'active' : '' ?>">English</a>
+            <a href="<?= buildLangSwitchLink('th') ?>" class="btn btn-sm <?= $langCode == 'th' ? 'active' : '' ?>" style="background-color: <?= $btnColor ?>; color: <?= $text ?>;">ไทย</a>
+            <a href="<?= buildLangSwitchLink('en') ?>" class="btn btn-sm <?= $langCode == 'en' ? 'active' : '' ?>" style="background-color: <?= $btnColor ?> color: <?= $text ?>;">English</a>
         </div>
         <div class="text-center mt-5"><?= $lang['choosetheme'] ?></div>
         <!-- วางใน Navbar หรือเมนู -->
         <div class="d-flex justify-content-center p-2">
-            <a href="<?= buildthemeSwitchLink('light') ?>" class="btn btn-outline-secondary btn-sm <?= $theme == 'light' ? 'active' : '' ?>"><?=$lang['light']?></a>
-            <a href="<?= buildthemeSwitchLink('dark') ?>" class="btn btn-outline-secondary btn-sm <?= $theme == 'dark' ? 'active' : '' ?>"><?=$lang['dark']?></a>
+            <a href="<?= buildthemeSwitchLink('light') ?>" class="btn btn-sm <?= $theme == 'light' ? 'active' : '' ?>" style="background-color: <?= $btnColor ?> color: <?= $text ?>;"><?= $lang['light'] ?></a>
+            <a href="<?= buildthemeSwitchLink('dark') ?>" class="btn btn-sm <?= $theme == 'dark' ? 'active' : '' ?>" style="background-color: <?= $btnColor ?> color: <?= $text ?>;"><?= $lang['dark'] ?></a>
         </div>
     </ul>
 </div>

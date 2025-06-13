@@ -14,10 +14,9 @@ include '../components/session.php';
     <title><?= $lang['home'] ?> - AMS</title>
 </head>
 
-<body>
+<body style="background-color: <?= $bg ?>; color: <?=$text ?>;">
     <?php include "../components/header.php"; ?>
-    <div class="w-100 h-100" style="background-color: <?= $bg ?>;">
-
+    <div class="w-100 h-100">
     </div>
 
     <?php include "../components/sidemenu.php"; ?>

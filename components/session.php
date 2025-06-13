@@ -60,9 +60,10 @@ function buildLangSwitchLink($targetLang) {
     return '?' . http_build_query($query);
 }
 
-// สลับธีมเมื่อคลิกปุ่ม
+
+// ตรวจสอบการเปลี่ยนภาษาจาก URL
 if (isset($_GET['theme'])) {
-    $_SESSION['theme'] = $_SESSION['theme'] === 'dark' ? 'light' : 'dark';
+    $_SESSION['theme'] = $_GET['theme'];
 }
 
 // ตั้งค่าเริ่มต้นถ้ายังไม่มี session
@@ -72,10 +73,11 @@ if (!isset($_SESSION['theme'])) {
 
 // สไตล์แบบ inline (ง่ายสุด)
 $theme = $_SESSION['theme'];
-$bg = $theme === 'dark' ? '#222' : '#fff';
-$text = $theme === 'dark' ? '#fff' : '#000';
-$btnColor = $theme === 'dark' ? '#444' : '#eee';
-
+$bg = $theme === 'dark' ? '#666' : '#fff';
+$bgsec = $theme === 'dark' ? '#222' : "#aaa";
+$secon = $theme === 'dark' ? '#999' : '#555';
+$text = $theme === 'dark' ? '#eee' : '#000';
+$btnColor = $theme === 'dark' ? '#222' : '#fff';
 
 function buildthemeSwitchLink($targetheme) {
     $query = $_GET;

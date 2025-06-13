@@ -1,5 +1,5 @@
 <header class="fw-medium">
-    <nav class="navbar d-flex justify-content-center justify-content-lg-between navbar-expand-lg navbar-light bg-secondary text-white">
+    <nav class="navbar d-flex justify-content-center justify-content-lg-between navbar-expand-lg navbar-light" style="background-color: <?= $secon ?>;">
         <div class="container-lg">
             <div>
                 <button id="sidebar_btn" class="btn ms-2" style="padding: 0;"><i class="bi bi-list fs-3 w-100 h-100"></i> </button>
@@ -12,10 +12,10 @@
                 <?php if (!isset($_SESSION['user_id'])): ?>
                     <ul class="navbar-nav gap-3">
                         <li class="nav-item">
-                            <a class="nav-link active text" href="../pages/login.php"><?= $lang['login'] ?></a>
+                            <a class="nav-link active text " style="color: <?= $text ?>;" href="../pages/login.php"><?= $lang['login'] ?></a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link active text" href="../pages/register.php"><?= $lang['register'] ?></a>
+                            <a class="nav-link active text" style="color: <?= $text ?>;" href="../pages/register.php"><?= $lang['register'] ?></a>
                         </li>
                     </ul>
                 <?php else: ?>
