@@ -229,4 +229,11 @@ $lang = [
     "quiz" => " quiz",
     "confirmdelete" => "Confirm deleted",
     "textconfirmdelete" => "Are you want this",
+
+    //menu
+    "dashboard" => "Dashboard",
+    "bills" => "Bills",
+    "payment" => "Payments",
+    "meter" => "Meter",
+    "member" => "Members",
 ];

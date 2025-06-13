@@ -73,11 +73,11 @@ if (!isset($_SESSION['theme'])) {
 
 // สไตล์แบบ inline (ง่ายสุด)
 $theme = $_SESSION['theme'];
-$bg = $theme === 'dark' ? '#666' : '#fff';
-$bgsec = $theme === 'dark' ? '#222' : "#aaa";
-$secon = $theme === 'dark' ? '#999' : '#555';
+$bg = $theme === 'dark' ? '#666' : '#fdfeff';
+$bgsec = $theme === 'dark' ? '#aaa' : "#fff";
+$secon = $theme === 'dark' ? '#bbb' : '#555';
 $text = $theme === 'dark' ? '#eee' : '#000';
-$btnColor = $theme === 'dark' ? '#222' : '#fff';
+$btnColor = $theme === 'dark' ? '#777' : '#999';
 
 function buildthemeSwitchLink($targetheme) {
     $query = $_GET;

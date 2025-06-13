@@ -1,11 +1,14 @@
 <style>
     .sidebar {
-        width: 350px;
+        width: 300px;
         transition: all 0.3s ease-in-out, padding 0.3s ease-in-out;
         padding: 10px;
         z-index: 999;
-        display: block;
+        display: flex;
+        top: 0;
         left: 0;
+        box-shadow: 2px;
+        min-height: 100svh;
     }
 
     .sidebar.collapsed {
@@ -25,4 +28,15 @@
             top: 20;
         }
     }
+
+    #card {
+        width: 250px;
+        border: 1px solid #ccc;
+        border-radius: 2rem;
+        text-align: center;
+        box-shadow: 2px 2px 7px #222;
+        padding: 10px;
+    }
+
+    
 </style>

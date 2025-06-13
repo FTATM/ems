@@ -229,4 +229,11 @@ $lang = [
     "quiz" => "แบบทดสอบ",
     "confirmdelete" => "คุณต้องการลบ",
     "textconfirmdelete" => "คุณแน่ใจใช่หรือไม่? ที่จะลบ",
+
+    //menu
+    "dashboard" => "แดชบอร์ด",
+    "bills" => "บิล",
+    "payment" => "การจ่ายเงิน",
+    "meter" => "มิเตอร์",
+    "member" => "สมาชิก",
 ];
