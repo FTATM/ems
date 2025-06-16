@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 13, 2025 at 03:53 AM
+-- Generation Time: Jun 16, 2025 at 11:28 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -33,6 +33,8 @@ CREATE TABLE `bill` (
   `room_id` int(11) DEFAULT NULL,
   `startbill_date` date DEFAULT NULL,
   `endbill_date` date DEFAULT NULL,
+  `unit_start` decimal(10,2) NOT NULL,
+  `unit_end` decimal(10,2) NOT NULL,
   `type` enum('Water','Electricity','Rent') DEFAULT NULL,
   `usageamount` decimal(10,2) DEFAULT NULL,
   `unitprice` decimal(10,4) DEFAULT NULL,
@@ -53,6 +55,18 @@ CREATE TABLE `buildings` (
   `name` varchar(50) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `buildings`
+--
+
+INSERT INTO `buildings` (`id`, `location_id`, `name`) VALUES
+(1, 1, 'A1'),
+(2, 1, 'A2'),
+(3, 1, 'B1'),
+(4, 2, 'A1'),
+(5, 2, 'A2'),
+(6, 2, 'A3');
+
 -- --------------------------------------------------------
 
 --
@@ -72,6 +86,29 @@ CREATE TABLE `contract` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `device_realtime`
+--
+
+CREATE TABLE `device_realtime` (
+  `id` int(11) NOT NULL,
+  `name` varchar(100) NOT NULL,
+  `data` decimal(10,0) NOT NULL,
+  `is_deleted` int(11) NOT NULL DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `device_realtime`
+--
+
+INSERT INTO `device_realtime` (`id`, `name`, `data`, `is_deleted`) VALUES
+(1, 'meter electricity', 4, 0),
+(2, 'meter water', 55, 0),
+(3, 'meter water 2', 34, 0),
+(4, 'meter electricity 2', 16, 0);
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `locations`
 --
 
@@ -79,6 +116,14 @@ CREATE TABLE `locations` (
   `id` int(11) NOT NULL,
   `name` varchar(50) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `locations`
+--
+
+INSERT INTO `locations` (`id`, `name`) VALUES
+(1, 'Bangkok'),
+(2, 'Chiangmai');
 
 -- --------------------------------------------------------
 
@@ -164,6 +209,12 @@ ALTER TABLE `contract`
   ADD KEY `room_id` (`room_id`);
 
 --
+-- Indexes for table `device_realtime`
+--
+ALTER TABLE `device_realtime`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `locations`
 --
 ALTER TABLE `locations`
@@ -188,6 +239,28 @@ ALTER TABLE `rooms`
 --
 ALTER TABLE `user`
   ADD PRIMARY KEY (`id`);
+
+--
+-- AUTO_INCREMENT for dumped tables
+--
+
+--
+-- AUTO_INCREMENT for table `buildings`
+--
+ALTER TABLE `buildings`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+--
+-- AUTO_INCREMENT for table `device_realtime`
+--
+ALTER TABLE `device_realtime`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- AUTO_INCREMENT for table `locations`
+--
+ALTER TABLE `locations`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- Constraints for dumped tables
