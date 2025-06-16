@@ -1,0 +1,41 @@
+<?php return array(
+    'root' => array(
+        'name' => '__root__',
+        'pretty_version' => 'dev-master',
+        'version' => 'dev-master',
+        'reference' => 'bdf85ad3695f113c1884d7229ecf3e96cdd27d95',
+        'type' => 'library',
+        'install_path' => __DIR__ . '/../../',
+        'aliases' => array(),
+        'dev' => true,
+    ),
+    'versions' => array(
+        '__root__' => array(
+            'pretty_version' => 'dev-master',
+            'version' => 'dev-master',
+            'reference' => 'bdf85ad3695f113c1884d7229ecf3e96cdd27d95',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../../',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+        'setasign/fpdf' => array(
+            'pretty_version' => '1.8.2',
+            'version' => '1.8.2.0',
+            'reference' => 'd77904018090c17dc9f3ab6e944679a7a47e710a',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../setasign/fpdf',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+        'setasign/tfpdf' => array(
+            'pretty_version' => 'v1.33',
+            'version' => '1.33.0.0',
+            'reference' => '050de12ab5359ce475dab49bae5cedbcf455f708',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../setasign/tfpdf',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+    ),
+);

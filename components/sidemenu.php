@@ -5,21 +5,29 @@
         </div>
         <li class="d-flex align-items-center gap-2">
             <i class="bi bi-house"></i>
-            <span><a class="nav-link active text" href="../pages/chat.php"><?= $lang['dashboard'] ?></a></span>
+            <span><a class="nav-link active text" href="../pages/dashboard.php"><?= $lang['dashboard'] ?></a></span>
         </li>
         <li class="d-flex align-items-center gap-2">
             <i class="bi bi-journal-check"></i>
-            <span><a class="nav-link active text" href="../pages/mycourse.php"><?= $lang['bills'] ?></a></span>
+            <span><a class="nav-link active text" href="../pages/bill.php"><?= $lang['bill'] ?></a></span>
         </li>
         <li class="d-flex align-items-center gap-2">
             <i class="bi bi-file-person"></i>
-            <span><a class="nav-link active text" href="../pages/results.php"><?= $lang['payment'] ?></a></span>
+            <span><a class="nav-link active text" href="../pages/payment.php"><?= $lang['payment'] ?></a></span>
         </li>
-        <!-- <li class="gap-2">
+        <li class="d-flex align-items-center gap-2">
+            <i class="bi bi-file-person"></i>
+            <span><a class="nav-link active text" href="../pages/meter.php"><?= $lang['meter'] ?></a></span>
+        </li>
+        <li class="d-flex align-items-center gap-2">
+            <i class="bi bi-file-person"></i>
+            <span><a class="nav-link active text" href="../pages/member.php"><?= $lang['member'] ?></a></span>
+        </li>
+        <li class="gap-2">
             <button class="btn btn-link nav-link text px-0" data-bs-toggle="collapse" data-bs-target="#systemSubNav" aria-expanded="false">
                 <i class="bi bi-gear"></i> <?= $lang['system'] ?>
             </button>
-            <ul class="collapse nav flex-column " id="systemSubNav">
+            <ul class="collapse nav flex-column gap-2" id="systemSubNav">
                 <li class="d-flex align-items-start gap-2">
                     <i class="bi bi-info-square"></i>
                     <a class="nav-secondary text" href="../pages/infomation.php"><?= $lang['information'] ?><?= $lang['system'] ?></a>
@@ -33,7 +41,7 @@
                     <a class="nav-secondary text" href="../pages/backup.php"><?= $lang['backup'] ?></a>
                 </li>
             </ul>
-        </li> -->
+        </li>
 
 
         <div class="text-center mt-5"><?= $lang['chooselang'] ?></div>

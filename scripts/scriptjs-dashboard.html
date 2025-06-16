@@ -1,0 +1,324 @@
+<script>
+    const dataPointsBar = [
+        { label: "Meter 1", y: 20 },
+        { label: "Meter 2", y: 15 },
+        { label: "Meter 3", y: 11 },
+        { label: "Meter 4", y: 5 },
+        { label: "Meter 5", y: 48 },
+        { label: "Meter 6", y: 8 },
+        { label: "Meter 7", y: 2 },
+        { label: "Meter 8", y: 18 },
+        { label: "Meter 9", y: 20 },
+        { label: "Meter 10", y: 15 },
+        { label: "Meter 11", y: 11 },
+        { label: "Meter 12", y: 5 },
+        { label: "Meter 13", y: 48 },
+        { label: "Meter 14", y: 8 },
+        { label: "Meter 15", y: 2 },
+        { label: "Meter 16", y: 18 }
+    ];
+
+    const dataPointsPie = [
+        { y: 51.08, label: "Chrome" },
+        { y: 27.34, label: "Internet Explorer" },
+        { y: 10.62, label: "Firefox" },
+        { y: 5.02, label: "Microsoft Edge" },
+        { y: 4.07, label: "Safari" },
+        { y: 1.22, label: "Opera" },
+        { y: 0.44, label: "Others" }
+    ]
+
+    const dataPointsLinear = [
+        [
+            { x: new Date(2014, 0, 1), y: 850 },
+            { x: new Date(2014, 1, 1), y: 889 },
+            { x: new Date(2014, 2, 1), y: 890 },
+            { x: new Date(2014, 3, 1), y: 899 },
+            { x: new Date(2014, 4, 1), y: 903 },
+            { x: new Date(2014, 5, 1), y: 925 },
+            { x: new Date(2014, 6, 1), y: 899 },
+            { x: new Date(2014, 7, 1), y: 875 },
+            { x: new Date(2014, 8, 1), y: 927 },
+            { x: new Date(2014, 9, 1), y: 949 },
+            { x: new Date(2014, 10, 1), y: 946 },
+            { x: new Date(2014, 11, 1), y: 927 },
+            { x: new Date(2015, 0, 1), y: 950 },
+            { x: new Date(2015, 1, 1), y: 998 },
+            { x: new Date(2015, 2, 1), y: 998 },
+            { x: new Date(2015, 3, 1), y: 1050 },
+            { x: new Date(2015, 4, 1), y: 1050 },
+            { x: new Date(2015, 5, 1), y: 999 },
+            { x: new Date(2015, 6, 1), y: 998 },
+            { x: new Date(2015, 7, 1), y: 998 },
+            { x: new Date(2015, 8, 1), y: 1050 },
+            { x: new Date(2015, 9, 1), y: 1070 },
+            { x: new Date(2015, 10, 1), y: 1050 },
+            { x: new Date(2015, 11, 1), y: 1050 },
+            { x: new Date(2016, 0, 1), y: 995 },
+            { x: new Date(2016, 1, 1), y: 1090 },
+            { x: new Date(2016, 2, 1), y: 1100 },
+            { x: new Date(2016, 3, 1), y: 1150 },
+            { x: new Date(2016, 4, 1), y: 1150 },
+            { x: new Date(2016, 5, 1), y: 1150 },
+            { x: new Date(2016, 6, 1), y: 1100 },
+            { x: new Date(2016, 7, 1), y: 1100 },
+            { x: new Date(2016, 8, 1), y: 1150 },
+            { x: new Date(2016, 9, 1), y: 1170 },
+            { x: new Date(2016, 10, 1), y: 1150 },
+            { x: new Date(2016, 11, 1), y: 1150 },
+            { x: new Date(2017, 0, 1), y: 1150 },
+            { x: new Date(2017, 1, 1), y: 1200 },
+            { x: new Date(2017, 2, 1), y: 1200 },
+            { x: new Date(2017, 3, 1), y: 1200 },
+            { x: new Date(2017, 4, 1), y: 1190 },
+            { x: new Date(2017, 5, 1), y: 1170 }
+        ],
+        [
+            { x: new Date(2014, 0, 1), y: 1200 },
+            { x: new Date(2014, 1, 1), y: 1200 },
+            { x: new Date(2014, 2, 1), y: 1190 },
+            { x: new Date(2014, 3, 1), y: 1180 },
+            { x: new Date(2014, 4, 1), y: 1250 },
+            { x: new Date(2014, 5, 1), y: 1270 },
+            { x: new Date(2014, 6, 1), y: 1300 },
+            { x: new Date(2014, 7, 1), y: 1300 },
+            { x: new Date(2014, 8, 1), y: 1358 },
+            { x: new Date(2014, 9, 1), y: 1410 },
+            { x: new Date(2014, 10, 1), y: 1480 },
+            { x: new Date(2014, 11, 1), y: 1500 },
+            { x: new Date(2015, 0, 1), y: 1500 },
+            { x: new Date(2015, 1, 1), y: 1550 },
+            { x: new Date(2015, 2, 1), y: 1550 },
+            { x: new Date(2015, 3, 1), y: 1590 },
+            { x: new Date(2015, 4, 1), y: 1600 },
+            { x: new Date(2015, 5, 1), y: 1590 },
+            { x: new Date(2015, 6, 1), y: 1590 },
+            { x: new Date(2015, 7, 1), y: 1620 },
+            { x: new Date(2015, 8, 1), y: 1670 },
+            { x: new Date(2015, 9, 1), y: 1720 },
+            { x: new Date(2015, 10, 1), y: 1750 },
+            { x: new Date(2015, 11, 1), y: 1820 },
+            { x: new Date(2016, 0, 1), y: 2000 },
+            { x: new Date(2016, 1, 1), y: 1920 },
+            { x: new Date(2016, 2, 1), y: 1750 },
+            { x: new Date(2016, 3, 1), y: 1850 },
+            { x: new Date(2016, 4, 1), y: 1750 },
+            { x: new Date(2016, 5, 1), y: 1730 },
+            { x: new Date(2016, 6, 1), y: 1700 },
+            { x: new Date(2016, 7, 1), y: 1730 },
+            { x: new Date(2016, 8, 1), y: 1720 },
+            { x: new Date(2016, 9, 1), y: 1740 },
+            { x: new Date(2016, 10, 1), y: 1750 },
+            { x: new Date(2016, 11, 1), y: 1750 },
+            { x: new Date(2017, 0, 1), y: 1750 },
+            { x: new Date(2017, 1, 1), y: 1770 },
+            { x: new Date(2017, 2, 1), y: 1750 },
+            { x: new Date(2017, 3, 1), y: 1750 },
+            { x: new Date(2017, 4, 1), y: 1730 },
+            { x: new Date(2017, 5, 1), y: 1730 }
+        ],
+        [
+            { x: new Date(2014, 0, 1), y: 409 },
+            { x: new Date(2014, 1, 1), y: 415 },
+            { x: new Date(2014, 2, 1), y: 419 },
+            { x: new Date(2014, 3, 1), y: 429 },
+            { x: new Date(2014, 4, 1), y: 429 },
+            { x: new Date(2014, 5, 1), y: 450 },
+            { x: new Date(2014, 6, 1), y: 450 },
+            { x: new Date(2014, 7, 1), y: 445 },
+            { x: new Date(2014, 8, 1), y: 450 },
+            { x: new Date(2014, 9, 1), y: 450 },
+            { x: new Date(2014, 10, 1), y: 440 },
+            { x: new Date(2014, 11, 1), y: 429 },
+            { x: new Date(2015, 0, 1), y: 435 },
+            { x: new Date(2015, 1, 1), y: 450 },
+            { x: new Date(2015, 2, 1), y: 475 },
+            { x: new Date(2015, 3, 1), y: 475 },
+            { x: new Date(2015, 4, 1), y: 475 },
+            { x: new Date(2015, 5, 1), y: 489 },
+            { x: new Date(2015, 6, 1), y: 495 },
+            { x: new Date(2015, 7, 1), y: 495 },
+            { x: new Date(2015, 8, 1), y: 500 },
+            { x: new Date(2015, 9, 1), y: 508 },
+            { x: new Date(2015, 10, 1), y: 520 },
+            { x: new Date(2015, 11, 1), y: 525 },
+            { x: new Date(2016, 0, 1), y: 525 },
+            { x: new Date(2016, 1, 1), y: 529 },
+            { x: new Date(2016, 2, 1), y: 549 },
+            { x: new Date(2016, 3, 1), y: 550 },
+            { x: new Date(2016, 4, 1), y: 568 },
+            { x: new Date(2016, 5, 1), y: 575 },
+            { x: new Date(2016, 6, 1), y: 579 },
+            { x: new Date(2016, 7, 1), y: 575 },
+            { x: new Date(2016, 8, 1), y: 585 },
+            { x: new Date(2016, 9, 1), y: 589 },
+            { x: new Date(2016, 10, 1), y: 595 },
+            { x: new Date(2016, 11, 1), y: 595 },
+            { x: new Date(2017, 0, 1), y: 595 },
+            { x: new Date(2017, 1, 1), y: 600 },
+            { x: new Date(2017, 2, 1), y: 624 },
+            { x: new Date(2017, 3, 1), y: 635 },
+            { x: new Date(2017, 4, 1), y: 650 },
+            { x: new Date(2017, 5, 1), y: 675 }
+        ],
+        [
+            { x: new Date(2014, 0, 1), y: 529 },
+            { x: new Date(2014, 1, 1), y: 540 },
+            { x: new Date(2014, 2, 1), y: 539 },
+            { x: new Date(2014, 3, 1), y: 565 },
+            { x: new Date(2014, 4, 1), y: 575 },
+            { x: new Date(2014, 5, 1), y: 579 },
+            { x: new Date(2014, 6, 1), y: 589 },
+            { x: new Date(2014, 7, 1), y: 579 },
+            { x: new Date(2014, 8, 1), y: 579 },
+            { x: new Date(2014, 9, 1), y: 579 },
+            { x: new Date(2014, 10, 1), y: 569 },
+            { x: new Date(2014, 11, 1), y: 525 },
+            { x: new Date(2015, 0, 1), y: 535 },
+            { x: new Date(2015, 1, 1), y: 575 },
+            { x: new Date(2015, 2, 1), y: 599 },
+            { x: new Date(2015, 3, 1), y: 619 },
+            { x: new Date(2015, 4, 1), y: 639 },
+            { x: new Date(2015, 5, 1), y: 648 },
+            { x: new Date(2015, 6, 1), y: 640 },
+            { x: new Date(2015, 7, 1), y: 645 },
+            { x: new Date(2015, 8, 1), y: 648 },
+            { x: new Date(2015, 9, 1), y: 649 },
+            { x: new Date(2015, 10, 1), y: 649 },
+            { x: new Date(2015, 11, 1), y: 649 },
+            { x: new Date(2016, 0, 1), y: 650 },
+            { x: new Date(2016, 1, 1), y: 665 },
+            { x: new Date(2016, 2, 1), y: 675 },
+            { x: new Date(2016, 3, 1), y: 695 },
+            { x: new Date(2016, 4, 1), y: 690 },
+            { x: new Date(2016, 5, 1), y: 699 },
+            { x: new Date(2016, 6, 1), y: 699 },
+            { x: new Date(2016, 7, 1), y: 699 },
+            { x: new Date(2016, 8, 1), y: 699 },
+            { x: new Date(2016, 9, 1), y: 699 },
+            { x: new Date(2016, 10, 1), y: 709 },
+            { x: new Date(2016, 11, 1), y: 699 },
+            { x: new Date(2017, 0, 1), y: 700 },
+            { x: new Date(2017, 1, 1), y: 700 },
+            { x: new Date(2017, 2, 1), y: 724 },
+            { x: new Date(2017, 3, 1), y: 739 },
+            { x: new Date(2017, 4, 1), y: 749 },
+            { x: new Date(2017, 5, 1), y: 740 }
+        ]
+    ]
+
+    document.addEventListener("DOMContentLoaded", async () => {
+        const chartbar = createBarChart("chart-bar", "Meters load processor", dataPointsBar)
+        const chartpie = createPieChart("chart-pie", "Desktop Browser Market Share in 2016", dataPointsPie)
+        const chartLinear = createLinearChart("chart-linear", "Linear usage enegy.", dataPointsLinear)
+
+
+        setInterval(function () {
+            updateChart(chartbar)
+        }, 1000);
+    });
+    function updateChart(chart) {
+        var color, deltaY, yVal;
+        var dps = chart.options.data[0].dataPoints;
+        for (var i = 0; i < dps.length; i++) {
+            deltaY = (2 + Math.random() * (-2 - 2));
+            yVal = Math.min(Math.max(deltaY + dps[i].y, 0), 90);
+            color = yVal > 75 ? "#FF2500" : yVal >= 50 ? "#FF6000" : yVal < 50 ? "#41CF35" : null;
+            dps[i] = { label: dps[i]['label'], y: yVal, color: color };
+        }
+        chart.options.data[0].dataPoints = dps;
+        chart.render();
+    };
+    function createBarChart(idContainer, title, dataPoints) {
+        var chart = new CanvasJS.Chart(idContainer, {
+            title: {
+                text: title
+            },
+            axisY: {
+                minimum: 0,
+                maximum: 100,
+                suffix: "%"
+            },
+            data: [{
+                type: "column",
+                yValueFormatString: "#,##0.00\"%\"",
+                indexLabel: "{y}",
+                dataPoints: dataPoints
+            }]
+        });
+        return chart;
+    }
+    function createPieChart(idContainer, title, dataPoints) {
+        var chart = new CanvasJS.Chart(idContainer, {
+            theme: "light2", // "light1", "light2", "dark1", "dark2"
+            exportEnabled: true,
+            animationEnabled: true,
+            title: {
+                text: title
+            },
+            data: [{
+                type: "pie",
+                startAngle: 25,
+                toolTipContent: "<b>{label}</b>: {y}%",
+                showInLegend: "true",
+                legendText: "{label}",
+                indexLabelFontSize: 16,
+                indexLabel: "{label} - {y}%",
+                dataPoints: dataPoints
+
+            }]
+        });
+        chart.render();
+    }
+    function createLinearChart(idContainer, title, dataPointsLinear) {
+        const lineNames = ["A1", "A2", "B1", "B2"];
+
+        const chartData = [];
+
+        for (let i = 0; i < dataPointsLinear.length; i++) {
+            chartData.push({
+                type: "line",
+                axisYType: "secondary",
+                name: lineNames[i],
+                showInLegend: true,
+                markerSize: 0,
+                yValueFormatString: "$#,###k",
+                dataPoints: dataPointsLinear[i]
+            });
+        }
+        var chart = new CanvasJS.Chart(idContainer, {
+            title: {
+                text: title
+            },
+            axisX: {
+                valueFormatString: "MMM YYYY"
+            },
+            axisY2: {
+                title: "Median List Price",
+                prefix: "",
+                suffix: "kw"
+            },
+            toolTip: {
+                shared: true
+            },
+            legend: {
+                cursor: "pointer",
+                verticalAlign: "top",
+                horizontalAlign: "center",
+                dockInsidePlotArea: true,
+                itemclick: toogleDataSeries
+            },
+            data: chartData
+        });
+        chart.render();
+    }
+    function toogleDataSeries(e) {
+        if (typeof (e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
+            e.dataSeries.visible = false;
+        } else {
+            e.dataSeries.visible = true;
+        }
+        chart.render();
+    }
+
+</script>

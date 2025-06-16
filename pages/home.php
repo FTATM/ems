@@ -26,7 +26,7 @@ include '../components/session.php';
                 </div>
                 <div id="card" onclick="" style="background-color: <?= $bgsec ?>;">
                     <img src="../assets/images/bills.png" class="w-75">
-                    <div class="text"><?= $lang['bills'] ?></div>
+                    <div class="text"><?= $lang['bill'] ?></div>
                 </div>
                 <div id="card" onclick="" style="background-color: <?= $bgsec ?>;">
                     <img src="../assets/images/payment.png" class="w-75">

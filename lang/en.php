@@ -232,7 +232,7 @@ $lang = [
 
     //menu
     "dashboard" => "Dashboard",
-    "bills" => "Bills",
+    "bill" => "Bills",
     "payment" => "Payments",
     "meter" => "Meter",
     "member" => "Members",

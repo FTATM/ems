@@ -73,7 +73,7 @@ if (!isset($_SESSION['theme'])) {
 
 // สไตล์แบบ inline (ง่ายสุด)
 $theme = $_SESSION['theme'];
-$bg = $theme === 'dark' ? '#666' : '#fdfeff';
+$bg = $theme === 'dark' ? '#666' : '#e5e5e5';
 $bgsec = $theme === 'dark' ? '#aaa' : "#fff";
 $secon = $theme === 'dark' ? '#bbb' : '#555';
 $text = $theme === 'dark' ? '#eee' : '#000';
