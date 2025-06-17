@@ -56,10 +56,10 @@ include '../components/session.php';
                             </div>
                         </div>
                         <div class="d-flex flex-wrap justify-content-between" style="width: 90%;">
-                            <div class="" id="chart-bar" style="width: 100%; min-height: 400px;"></div>
+                            <!-- <div class="" id="chart-bar" style="width: 100%; min-height: 400px;"></div> -->
                             <!-- <div class="" id="chart-pie" style="width: 49%; min-height: 400px;"></div> -->
                         </div>
-                        <!-- <div class="" id="chart-linear" style="width: 90%; min-height: 400px;"></div> -->
+                        <div class="" id="chart-linear" style="width: 90%; min-height: 400px;"></div>
                     </div>
                 </div>
                 <div id="list-data" class="w-25 d-flex flex-column align-items-center">

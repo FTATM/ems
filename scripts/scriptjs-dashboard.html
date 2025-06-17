@@ -208,14 +208,15 @@
     ]
 
     document.addEventListener("DOMContentLoaded", async () => {
-        const chartbar = createBarChart("chart-bar", "Meters load processor", dataPointsBar)
+        // const chartbar = createBarChart("chart-bar", "Meters load processor", dataPointsBar)
         // const chartpie = createPieChart("chart-pie", "Desktop Browser Market Share in 2016", dataPointsPie)
-        // const chartLinear = createLinearChart("chart-linear", "Linear usage enegy.", dataPointsLinear)
+        const chartLinear = createLinearChart("chart-linear", "Linear usage enegy.", dataPointsLinear)
 
+        generateDataList();
 
-        setInterval(function () {
-            updateChart(chartbar)
-        }, 1000);
+        // setInterval(function () {
+        //     updateChart(chartbar)
+        // }, 1000);
     });
     function updateChart(chart) {
         var color, deltaY, yVal;
@@ -321,7 +322,33 @@
         chart.render();
     }
 
-    function generateDataList() {
-        
+    async function generateDataList() {
+        let rt = await fetch('../config/fetch-realtime.php');
+        let json_rt = await rt.json();
+
+        let listdata = document.getElementById('list-data');
+
+        if (Array.isArray(json_rt) && json_rt.length > 0) {
+            let columnNames = Object.keys(json_rt[0]);
+            columnNames.forEach(columnName => {
+                let div = document.createElement('div');
+                div.className = "d-flex w-100 px-3";
+                div.innerHTML =
+                `
+                <div id="toggle_${columnName}" class="bg-light w-50 px-2 text-end">
+                ${columnName}
+                </div>
+                <input class="w-50" type="text" value="${json_rt[0][columnName]}"/>
+                `;
+                listdata.appendChild(div);
+                document.getElementById("toggle_"+columnName).addEventListener('click',() => {
+                    toggleDataInGraph(columnName);
+                })
+            })
+        } else {
+            console.log("No data available");
+        }
     }
+
+    toggleDataInGraph()
 </script>
