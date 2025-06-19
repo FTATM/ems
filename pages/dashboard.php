@@ -20,7 +20,7 @@ include '../components/session.php';
         <div class="w-100 h-100 d-flex flex-column justify-content-center">
             <?php include "../components/header.php"; ?>
             <div class="d-flex">
-                <div class="d-flex flex-column w-75">
+                <div class="d-flex flex-column" style="width: 90%;">
                     <div class="w-100 text fs-4 text-center align-items-center py-4">
                         <p><?= $lang['dashboard'] ?></p>
                     </div>
@@ -62,7 +62,7 @@ include '../components/session.php';
                         <div class="" id="chart-linear" style="width: 90%; min-height: 400px;"></div>
                     </div>
                 </div>
-                <div id="list-data" class="w-25 d-flex flex-column align-items-center">
+                <div id="list-data" class="w-auto d-flex flex-column align-items-center">
                     
                 </div>
             </div>

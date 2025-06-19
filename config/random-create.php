@@ -85,12 +85,12 @@ try {
 
     $conn->commit();
 
-    echo json_encode(['status' => 'success']);
+    echo json_encode(['status' => true, 'message' => 'success']);
 } catch (Exception $e) {
     $conn->rollBack();
 
     echo json_encode([
-        'status' => 'error',
+        'status' => false,
         'message' => $e->getMessage()
     ]);
 }

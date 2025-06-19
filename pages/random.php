@@ -22,14 +22,25 @@ include '../components/session.php';
             <div class="d-flex flex-column gap-3 my-4 container">
                 <div class="d-flex flex-column w-25">
                     <label class="text align-middle">Name Device</label>
-                    <input id="name" type="text" class="form-control" placeholder="new device name."/>
+                    <input id="name" type="text" class="form-control" placeholder="new device name." />
+                </div>
+                <div class="d-flex flex-column w-25">
+                    <label class="text align-middle">Add data every (minutes):</label>
+                    <select id="everytime" class="form-select">
+                        <option value="0">+0 mins</option>
+                        <option value="1">+1 mins</option>
+                        <option selected value="5">+5 mins</option>
+                        <option value="10">+10 mins</option>
+                        <option value="15">+15 mins</option>
+                        <option value="30">+30 mins</option>
+                        <option value="60">+60 mins</option>
+                    </select>
                 </div>
                 <div class="d-flex gap-4">
                     <label class="text text-center align-middle">Form</label>
-                    <input id="form" type="text" class="form-control" placeholder="form value 0 - 9999999+"/>
-                    -
+                    <input id="form" type="text" class="form-control" value="0" placeholder="form value 0 - 9999999+" />
                     <label class="text text-center align-middle">To</label>
-                    <input id="to" type="text" class="form-control" placeholder="to value 0 - 9999999+"/>
+                    <input id="to" type="text" class="form-control" value="0" placeholder="to value 0 - 9999999+" />
                 </div>
                 <div class="d-flex gap-2">
                     <button type="button" name="" id="" class="btn btn-primary" onclick="adddata(1)">
@@ -45,7 +56,16 @@ include '../components/session.php';
                         + 20
                     </button>
                 </div>
-
+                <div class="d-flex flex-column w-25">
+                    <label class="text align-middle">Select Device will delete</label>
+                    <select id="delete_select" class="form-select">
+                    </select>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="button" name="" id="" class="btn btn-danger" onclick="deletedata()">
+                        Delete device selected.
+                    </button>
+                </div>
             </div>
         </div>
 

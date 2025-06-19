@@ -1,25 +1,55 @@
 <script>
+    let selectedColumns = [];
+    let fullData = []; // จะเก็บข้อมูลเต็มจาก fetch-realtime.php
+    document.addEventListener("DOMContentLoaded", async () => {
+        fetchAllDevice();
+    });
 
-    function adddata(count_row) {
+    async function fetchAllDevice() {
+        let response = await fetch("../config/fetch-realtime.php");
+        let json = await response.json();
+        fullData = json;
+        GenerateOption('delete_select');
+    }
+
+    async function GenerateOption(id) {
+        let select = document.getElementById(id);
+        let option = document.createElement('option');
+        option.value = "all";
+        option.innerHTML = "-- All --";
+        select.appendChild(option);
+
+        const devices = [...new Set(fullData.map(d => d.name))];
+        devices.forEach(column => {
+            let option = document.createElement('option');
+            option.value = column;
+            option.innerHTML = column;
+            select.appendChild(option);
+        });
+    }
+
+    async function adddata(count_row) {
         let name = document.getElementById('name');
         let from = document.getElementById('form');
         let to = document.getElementById('to');
+        let every = parseInt(document.getElementById('everytime').value);
 
         let namevalue = name.value;
         let formvalue = parseInt(from.value);
         let tovalue = parseInt(to.value);
 
+        let temp = new Date();
         for (let i = 0; i < count_row; i++) {
             let formdata = new FormData();
 
-            const randomDate = new Date(Date.now()).toISOString().slice(0, 19).replace('T', ' '); // format YYYY-MM-DD HH:mm:ss
+            const createDate = temp.toISOString().slice(0, 19).replace("T", " ");
 
             // สุ่มตัวเลขในช่วงต่าง ๆ
             const randomNumber = (min, max) => (Math.random() * (max - min) + min).toFixed(2);
 
             // เพิ่มข้อมูลทั้งหมดใน FormData
             formdata.append('name', namevalue);
-            formdata.append('create_date', randomDate);
+            formdata.append('create_date', createDate);
             formdata.append('Kw', randomNumber(formvalue, tovalue + 500));
             formdata.append('KwHr', randomNumber(formvalue, tovalue + 10000));
             formdata.append('kVA', randomNumber(formvalue, tovalue + 500));
@@ -38,18 +68,32 @@
             formdata.append('is_deleted', 0); // หรือ randomNumber(0, 1) ถ้าต้องการสุ่มสถานะ
 
             // ส่งข้อมูลไปยัง PHP
-            fetch('../config/random-create.php', {
+            let response = await fetch('../config/random-create.php', {
                 method: 'POST',
                 body: formdata
             })
-                .then(response => response.json())
-                .then(result => {
-                    console.log(`Row ${i + 1} created:`, result);
-                })
-                .catch(error => {
-                    console.error(`Error in row ${i + 1}:`, error);
-                });
+            let json = await response.json();
+
+            console.log(" :" + json.status ? json.message : json.message);
+
+            // ➕ เพิ่มเวลา every นาทีให้ temp สำหรับรอบถัดไป
+            temp = new Date(temp.getTime() + (every * 60 * 1000));
+            console.log(temp);
         }
     }
+
+    function deletedata() {
+        let select = document.getElementById('delete_select').value;
+        switch (select) {
+            case 'all':
+                
+                break;
+        
+            default:
+                break;
+        }
+        
+    } deletedata()
+
 
 </script>

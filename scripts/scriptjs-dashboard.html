@@ -213,9 +213,10 @@
     document.addEventListener("DOMContentLoaded", async () => {
         // const chartbar = createBarChart("chart-bar", "Meters load processor", dataPointsBar)
         // const chartpie = createPieChart("chart-pie", "Desktop Browser Market Share in 2016", dataPointsPie)
-        const chartLinear = createLinearChart("chart-linear", "Linear usage enegy.", dataPointsLinear)
+        // const chartLinear = createLinearChart("chart-linear", "Linear usage enegy.", dataPointsLinear)
 
-        generateDataList();
+        fetchDeviceData();
+        generateDataList(); // สร้าง checkbox        generateDataList();
 
         // setInterval(function () {
         //     updateChart(chartbar)
@@ -275,54 +276,36 @@
         chart.render();
     }
     function createLinearChart(idContainer, title, dataPointsLinear) {
-        const lineNames = ["A1", "A2", "B1", "B2"];
-
-        const chartData = [];
-
-        for (let i = 0; i < dataPointsLinear.length; i++) {
-            chartData.push({
-                type: "line",
-                axisYType: "secondary",
-                name: lineNames[i],
-                showInLegend: true,
-                markerSize: 0,
-                yValueFormatString: "$#,###k",
-                dataPoints: dataPointsLinear[i]
-            });
-        }
-        var chart = new CanvasJS.Chart(idContainer, {
-            title: {
-                text: title
-            },
-            axisX: {
-                valueFormatString: "MMM YYYY"
-            },
+        const chart = new CanvasJS.Chart(idContainer, {
+            title: { text: title },
+            axisX: { valueFormatString: "HH:mm:ss" },
             axisY2: {
                 title: "Median List Price",
                 prefix: "",
-                suffix: "kw"
+                suffix: ""
             },
-            toolTip: {
-                shared: true
-            },
+            toolTip: { shared: true },
             legend: {
                 cursor: "pointer",
                 verticalAlign: "top",
                 horizontalAlign: "center",
                 dockInsidePlotArea: true,
-                itemclick: toogleDataSeries
+                itemclick: toggleDataSeries
             },
-            data: chartData
+            data: dataPointsLinear
         });
         chart.render();
+
+        window.myChart = chart; // ✅ เก็บไว้ใช้ภายนอก
     }
-    function toogleDataSeries(e) {
+
+    function toggleDataSeries(e) {
         if (typeof (e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
             e.dataSeries.visible = false;
         } else {
             e.dataSeries.visible = true;
         }
-        chart.render();
+        e.chart.render(); // ✅ ใช้ chart จาก even
     }
 
     async function generateDataList() {
@@ -334,7 +317,6 @@
         if (Array.isArray(json_rt) && json_rt.length > 0) {
             let columnNames = Object.keys(json_rt[0]);
             columnNames.forEach(column => {
-                console.log(column);
                 let div = document.createElement('div');
                 div.className = "d-flex w-100 px-3";
                 div.innerHTML =
@@ -360,5 +342,58 @@
         }
     }
 
-    toggleDataInGraph()
+    async function fetchDeviceData() {
+        let response = await fetch("../config/fetch-realtime.php");
+        let json = await response.json();
+        fullData = json;
+
+        console.log(fullData);
+        // เรียกอัปเดตกราฟครั้งแรก (เช่นแสดง column เริ่มต้น 1 อัน)
+        selectedColumns = ["Kw"];
+        updateChartFromSelection();
+    }
+
+    function updateChartFromSelection() {
+        const chartData = [];
+
+        // หารายชื่อ device ทั้งหมด
+        const devices = [...new Set(fullData.map(d => d.name))];
+
+        selectedColumns.forEach(column => {
+            devices.forEach(device => {
+                const dataPoints = fullData
+                    .filter(row => row.name === device)
+                    .map(row => ({
+                        x: new Date(row.create_date),
+                        y: parseFloat(row[column]) || 0
+                    }));
+
+                chartData.push({
+                    type: "line",
+                    axisYType: "secondary",
+                    name: `${device} - ${column}`,
+                    showInLegend: true,
+                    markerSize: 0,
+                    yValueFormatString: "#,##0.##",
+                    dataPoints: dataPoints
+                });
+            });
+        });
+
+        createLinearChart("chart-linear", "ข้อมูลจากอุปกรณ์", chartData);
+    }
+
+
+    function toggleDataInGraph(columnName) {
+        const index = selectedColumns.indexOf(columnName);
+        if (index === -1) {
+            selectedColumns.push(columnName);
+        } else {
+            selectedColumns.splice(index, 1);
+        }
+        updateChartFromSelection();
+    }
+
+
+
 </script>
