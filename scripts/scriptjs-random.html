@@ -1,0 +1,55 @@
+<script>
+
+    function adddata(count_row) {
+        let name = document.getElementById('name');
+        let from = document.getElementById('form');
+        let to = document.getElementById('to');
+
+        let namevalue = name.value;
+        let formvalue = parseInt(from.value);
+        let tovalue = parseInt(to.value);
+
+        for (let i = 0; i < count_row; i++) {
+            let formdata = new FormData();
+
+            const randomDate = new Date(Date.now()).toISOString().slice(0, 19).replace('T', ' '); // format YYYY-MM-DD HH:mm:ss
+
+            // สุ่มตัวเลขในช่วงต่าง ๆ
+            const randomNumber = (min, max) => (Math.random() * (max - min) + min).toFixed(2);
+
+            // เพิ่มข้อมูลทั้งหมดใน FormData
+            formdata.append('name', namevalue);
+            formdata.append('create_date', randomDate);
+            formdata.append('Kw', randomNumber(formvalue, tovalue + 500));
+            formdata.append('KwHr', randomNumber(formvalue, tovalue + 10000));
+            formdata.append('kVA', randomNumber(formvalue, tovalue + 500));
+            formdata.append('kVAHr', randomNumber(formvalue, tovalue + 10000));
+            formdata.append('kVAR', randomNumber(formvalue, tovalue + 250));
+            formdata.append('kVARHr', randomNumber(formvalue, tovalue + 5000));
+            formdata.append('Vch-P1', randomNumber(formvalue, tovalue + 250));
+            formdata.append('Vch-P2', randomNumber(formvalue, tovalue + 250));
+            formdata.append('Vch-P3', randomNumber(formvalue, tovalue + 250));
+            formdata.append('Amp-L1', randomNumber(formvalue, tovalue + 100));
+            formdata.append('Amp-L2', randomNumber(formvalue, tovalue + 100));
+            formdata.append('Amp-L3', randomNumber(formvalue, tovalue + 100));
+            formdata.append('Amp-N', randomNumber(formvalue, tovalue + 10));
+            formdata.append('Pf', randomNumber(0.8, 1.0));
+            formdata.append('Frequency', randomNumber(30, 60));
+            formdata.append('is_deleted', 0); // หรือ randomNumber(0, 1) ถ้าต้องการสุ่มสถานะ
+
+            // ส่งข้อมูลไปยัง PHP
+            fetch('../config/random-create.php', {
+                method: 'POST',
+                body: formdata
+            })
+                .then(response => response.json())
+                .then(result => {
+                    console.log(`Row ${i + 1} created:`, result);
+                })
+                .catch(error => {
+                    console.error(`Error in row ${i + 1}:`, error);
+                });
+        }
+    }
+
+</script>
