@@ -1,5 +1,5 @@
 <header class="fw-medium">
-    <nav class="navbar d-flex justify-content-center justify-content-lg-between navbar-expand-lg navbar-light" style="background-color: <?= $secon ?>;">
+    <nav class="navbar d-flex justify-content-center justify-content-lg-between navbar-expand-lg navbar-light" style="background-color: <?= $bgsec ?>;">
         <div>
             <button id="sidebar_btn" class="btn ms-2" style="padding: 0;"><i class="bi bi-list fs-3 w-100 h-100"></i> </button>
             <a class="navbar-brand ms-2" href="../pages/home.php">

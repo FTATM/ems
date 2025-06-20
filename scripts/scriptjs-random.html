@@ -82,18 +82,17 @@
         }
     }
 
-    function deletedata() {
+    async function deletedata() {
         let select = document.getElementById('delete_select').value;
-        switch (select) {
-            case 'all':
-                
-                break;
+        let formdata = new FormData();
+        formdata.append('select', select); // หรือ randomNumber(0, 1) ถ้าต้องการสุ่มสถานะ
+        let response = await fetch('../config/random-cleardata.php', {
+            method: 'POST',
+            body: formdata
+        })
+        let json = await response.json();
         
-            default:
-                break;
-        }
-        
-    } deletedata()
+    }
 
 
 </script>

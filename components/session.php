@@ -54,12 +54,12 @@ if (file_exists($langFile)) {
     // fallback ภาษาอังกฤษ
     require_once __DIR__ . "/../lang/en.php";
 }
-function buildLangSwitchLink($targetLang) {
+function buildLangSwitchLink($targetLang)
+{
     $query = $_GET;
     $query['lang'] = $targetLang;
     return '?' . http_build_query($query);
 }
-
 
 // ตรวจสอบการเปลี่ยนภาษาจาก URL
 if (isset($_GET['theme'])) {
@@ -71,15 +71,26 @@ if (!isset($_SESSION['theme'])) {
     $_SESSION['theme'] = 'light';
 }
 
-// สไตล์แบบ inline (ง่ายสุด)
-$theme = $_SESSION['theme'];
-$bg = $theme === 'dark' ? '#666' : '#e5e5e5';
-$bgsec = $theme === 'dark' ? '#aaa' : "#fff";
-$secon = $theme === 'dark' ? '#bbb' : '#555';
-$text = $theme === 'dark' ? '#eee' : '#000';
-$btnColor = $theme === 'dark' ? '#777' : '#999';
+if ($_SESSION['theme'] === 'dark') {
+    // Dark Mode Colors
+    $bg = '#121212';     // Primary background
+    $bgsec = '#1e1e1e';  // Secondary background (cards, modals)
+    $secon = '#9e9e9e';  // Secondary text, icons, borders
+    $text = '#e0e0e0';   // Primary text
+    $btnColor = '#424242'; // Button background/border
+    $accentColor = '#81D4FA'; // Accent color for links, CTA buttons
+} else {
+    // Light Mode Colors (default)
+    $bg = '#f9f9f9';     // Primary background
+    $bgsec = '#eeeeee';  // Secondary background (cards, modals)
+    $secon = '#616161';  // Secondary text, icons, borders
+    $text = '#212121';   // Primary text
+    $btnColor = '#bdbdbd'; // Button background/border
+    $accentColor = '#03A9F4'; // Accent color for links, CTA buttons
+}
 
-function buildthemeSwitchLink($targetheme) {
+function buildthemeSwitchLink($targetheme)
+{
     $query = $_GET;
     $query['theme'] = $targetheme;
     return '?' . http_build_query($query);

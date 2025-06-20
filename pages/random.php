@@ -55,6 +55,9 @@ include '../components/session.php';
                     <button type="button" name="" id="" class="btn btn-danger" onclick="adddata(20)">
                         + 20
                     </button>
+                    <button type="button" name="" id="" class="btn btn-danger" onclick="adddata(50)">
+                        + 50
+                    </button>
                 </div>
                 <div class="d-flex flex-column w-25">
                     <label class="text align-middle">Select Device will delete</label>
@@ -69,7 +72,9 @@ include '../components/session.php';
             </div>
         </div>
 
-
+        <script id="theme-data" type="application/json">
+            <?= json_encode($_SESSION['theme'], JSON_UNESCAPED_UNICODE); ?>
+        </script>
     </div>
     <?php include "../scripts/scriptjs.html"; ?>
     <?php include "../scripts/scriptjs-random.html"; ?>

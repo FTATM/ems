@@ -1,4 +1,4 @@
-<div class="sidebar collapsed " id="sidebar" style="border-right: 1px solid #aaa; transition: width 0.3s ease, padding 0.3s ease; background-color: <?= $bgsec ?>;">
+<div class="sidebar  " id="sidebar" style="border-right: 1px solid #aaa; transition: width 0.3s ease, padding 0.3s ease; background-color: <?= $bgsec ?>;">
     <ul class="navbar-nav gap-2">
         <div class="">
             <img src="../assets/images/logo.png" width="100%">
