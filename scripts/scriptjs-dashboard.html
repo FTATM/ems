@@ -1,7 +1,8 @@
 <script>
 
-    let selectedColumns = ["Kw"];
-    let fullData = []; // จะเก็บข้อมูลเต็มจาก fetch-realtime.php
+    let selectedColumns = ["kW"];
+    let fullData = [];
+    let result = {};
     const themeData = document.getElementById('theme-data').textContent;
     const theme = JSON.parse(themeData);
     document.addEventListener("DOMContentLoaded", async () => {
@@ -43,7 +44,7 @@
     }
     function createPieChart(idContainer, title, dataPoints) {
         var chart = new CanvasJS.Chart(idContainer, {
-            theme: "light2", // "light1", "light2", "dark1", "dark2"
+            theme: theme == 'dark' ? 'dark2' : 'light2',
             exportEnabled: true,
             animationEnabled: true,
             title: {
@@ -102,8 +103,7 @@
 
         if (Array.isArray(fullData) && fullData.length > 0) {
             let columnNames = Object.keys(fullData[0]);
-            let columnvalue = Object.values(fullData);
-            console.log(columnvalue);
+
             columnNames.forEach(column => {
                 if (['id', 'name', 'create_date', 'is_deleted'].includes(column)) {
                     return
@@ -112,34 +112,51 @@
                 div.className = "d-flex w-100 px-3";
                 div.innerHTML =
                     `
-                 <div class="form-check w-100">
+                 <div class="form-check w-50 text-end">
                     <input class="form-check-input toggle-column" type="checkbox" hidden value="${column}" id="chk_${column}" ${selectedColumns.includes(column) ? 'checked' : ''}>
-                    <p class="form-check-label text-end px-2 m-0 rounded py-1" id="label_chk_${column}" for="chk_${column}">
+                    <label class="form-check-label text-end px-2 m-0 rounded py-1" id="label_chk_${column}" for="chk_${column}">
                         ${column}
-                    </p>
+                    </label>
+                </div>
+                <div class="w-50">
+                    <input class="" disabled value="${(result[column].reduce((acc, cur) => acc + parseFloat(cur), 0) / result[column].length).toFixed(2)}">
                 </div>
                 `;
                 listdata.appendChild(div);
                 const chk = document.getElementById("chk_" + column);
                 const label = document.getElementById("label_chk_" + column);
-                chk.addEventListener('click', () => {
-                    toggleDataInGraph(column);
-                    label.style.backgroundColor = chk.checked ? 'yellow' : '';
-                })
-                // <div id="toggle_${columnName}" class="bg-light w-50 px-2 text-end">
-                // ${columnName}
-                // </div>
-                // <input class="w-50" type="text" value="${json_rt[0][columnName]}"/>
+                label.style.backgroundColor = chk.checked ? '#679bca' : '';
+                label.style.color = chk.checked ? 'white' : '';
+                togglehighlight(column);
             })
         } else {
             console.log("No data available");
         }
     }
 
+    function togglehighlight(column) {
+        const chk = document.getElementById("chk_" + column);
+        const label = document.getElementById("label_chk_" + column);
+        chk.addEventListener('click', () => {
+            label.style.backgroundColor = chk.checked ? '#679bca' : '';
+            label.style.color = chk.checked ? 'white' : '';
+            toggleDataInGraph(column);
+        })
+    }
+
     async function fetchDeviceData() {
         let response = await fetch("../config/fetch-realtime.php");
         let json = await response.json();
         fullData = json;
+
+        fullData.forEach(row => {
+            Object.entries(row).forEach(([key, value]) => {
+                if (!result[key]) {
+                    result[key] = [];
+                }
+                result[key].push(value);
+            });
+        });
 
         updateChartFromSelection();
     }
@@ -172,6 +189,19 @@
         });
 
         createLinearChart("chart-linear", "ข้อมูลจากอุปกรณ์", chartData);
+        console.log('result:');
+        console.log(result);
+        let chartdataPie = [];
+
+        selectedColumns.forEach(column => {
+            const dataPoints = result
+                .filter(key, value => key === column)
+                .map(row => ({
+                    label: column,
+                    y: parseFloat(row[column]) || 0
+                }));
+        });
+        createPieChart('chart-pie', "ภาพรวมของข้อมูล", chartdataPie);
     }
 
 

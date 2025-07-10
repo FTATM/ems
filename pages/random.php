@@ -34,6 +34,7 @@ include '../components/session.php';
                         <option value="15">+15 mins</option>
                         <option value="30">+30 mins</option>
                         <option value="60">+60 mins</option>
+                        <option value="1440">+ 1 day</option>
                     </select>
                 </div>
                 <div class="d-flex gap-4">
@@ -55,7 +56,10 @@ include '../components/session.php';
                     <button type="button" name="" id="" class="btn btn-danger" onclick="adddata(20)">
                         + 20
                     </button>
-                    <button type="button" name="" id="" class="btn btn-danger" onclick="adddata(50)">
+                    <button type="button" name="" id="" class="btn btn-secondary" onclick="adddata(30)">
+                        + 30
+                    </button>
+                    <button type="button" name="" id="" class="btn btn-info  " onclick="adddata(50)">
                         + 50
                     </button>
                 </div>

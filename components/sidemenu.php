@@ -1,4 +1,4 @@
-<div class="sidebar  " id="sidebar" style="border-right: 1px solid #aaa; transition: width 0.3s ease, padding 0.3s ease; background-color: <?= $bgsec ?>;">
+<div class="sidebar collapsed" id="sidebar" style="border-right: 1px solid #aaa; transition: width 0.3s ease, padding 0.3s ease; background-color: <?= $bgsec ?>;">
     <ul class="navbar-nav gap-2">
         <div class="">
             <img src="../assets/images/logo.png" width="100%">
@@ -22,6 +22,10 @@
         <li class="d-flex align-items-center gap-2">
             <i class="bi bi-file-person"></i>
             <span><a class="nav-link active text" href="../pages/member.php"><?= $lang['member'] ?></a></span>
+        </li>
+        <li class="d-flex align-items-center gap-2">
+            <i class="bi bi-bug"></i>
+            <span><a class="nav-link active text" href="../pages/random.php">Random data</a></span>
         </li>
         <li class="gap-2">
             <button class="btn btn-link nav-link text px-0" data-bs-toggle="collapse" data-bs-target="#systemSubNav" aria-expanded="false">

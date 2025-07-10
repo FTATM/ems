@@ -50,12 +50,12 @@
             // เพิ่มข้อมูลทั้งหมดใน FormData
             formdata.append('name', namevalue);
             formdata.append('create_date', createDate);
-            formdata.append('Kw', randomNumber(formvalue, tovalue + 500));
-            formdata.append('KwHr', randomNumber(formvalue, tovalue + 10000));
-            formdata.append('kVA', randomNumber(formvalue, tovalue + 500));
-            formdata.append('kVAHr', randomNumber(formvalue, tovalue + 10000));
-            formdata.append('kVAR', randomNumber(formvalue, tovalue + 250));
-            formdata.append('kVARHr', randomNumber(formvalue, tovalue + 5000));
+            formdata.append('Kw', randomNumber(formvalue, tovalue + 100));
+            formdata.append('KwHr', randomNumber(formvalue, tovalue + 1000)/24);
+            formdata.append('kVA', randomNumber(formvalue, tovalue + 100));
+            formdata.append('kVAHr', randomNumber(formvalue, tovalue + 1000)/24);
+            formdata.append('kVAR', randomNumber(formvalue, tovalue + 75));
+            formdata.append('kVARHr', randomNumber(formvalue, tovalue + 5000)/24);
             formdata.append('Vch-P1', randomNumber(formvalue, tovalue + 250));
             formdata.append('Vch-P2', randomNumber(formvalue, tovalue + 250));
             formdata.append('Vch-P3', randomNumber(formvalue, tovalue + 250));
@@ -63,6 +63,9 @@
             formdata.append('Amp-L2', randomNumber(formvalue, tovalue + 100));
             formdata.append('Amp-L3', randomNumber(formvalue, tovalue + 100));
             formdata.append('Amp-N', randomNumber(formvalue, tovalue + 10));
+            formdata.append('VoltageA_B', randomNumber(12, 24));
+            formdata.append('VoltageB_C', randomNumber(12, 24));
+            formdata.append('VoltageC_A', randomNumber(12, 24));
             formdata.append('Pf', randomNumber(0.8, 1.0));
             formdata.append('Frequency', randomNumber(30, 60));
             formdata.append('is_deleted', 0); // หรือ randomNumber(0, 1) ถ้าต้องการสุ่มสถานะ
@@ -73,12 +76,13 @@
                 body: formdata
             })
             let json = await response.json();
-
+            if (json.status) {
+                
+            }
             console.log(" :" + json.status ? json.message : json.message);
 
             // ➕ เพิ่มเวลา every นาทีให้ temp สำหรับรอบถัดไป
             temp = new Date(temp.getTime() + (every * 60 * 1000));
-            console.log(temp);
         }
     }
 

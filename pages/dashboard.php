@@ -21,50 +21,37 @@ include '../components/session.php';
             <?php include "../components/header.php"; ?>
             <div class="d-flex">
                 <div class="d-flex flex-column" style="width: 90%;">
-                    <div class="w-100 text fs-4 text-center align-items-center py-4">
-                        <p><?= $lang['dashboard'] ?></p>
-                    </div>
-                    <div class="w-100 d-flex flex-wrap gap-4 justify-content-center">
-                        <div class="d-flex flex-wrap justify-content-between" style="width: 90%;">
-                            <!-- <div class="" id="chart-bar" style="width: 100%; min-height: 400px;"></div> -->
-                            <!-- <div class="" id="chart-pie" style="width: 49%; min-height: 400px;"></div> -->
-                        </div>
-                        <div class="shadow rounded" id="chart-linear" style="width: 90%; min-height: 400px;"></div>
-                        <div class="d-flex w-90 flex-wrap justify-content-between ">
-                            <div class="summary fs-3 d-flex" style="background-color: <?= $bgsec ?>;">
-                                <div class="bg-primary" style="min-width: 30%; min-height: 100%;"></div>
-                                <div class="text-center w-100">
-                                    <h5>summary</h5>
-                                    54
-                                </div>
-                            </div>
-                            <div class="summary fs-3 d-flex" style="background-color: <?= $bgsec ?>;">
-                                <div class="bg-success" style="min-width: 30%; min-height: 100%;"></div>
-                                <div class="text-center w-100">
-                                    <h5>summary</h5>
-                                    54
-                                </div>
-                            </div>
-                            <div class="summary fs-3 d-flex" style="background-color: <?= $bgsec ?>;">
-                                <div class="bg-warning" style="min-width: 30%; min-height: 100%;"></div>
-                                <div class="text-center w-100">
-                                    <h5>summary</h5>
-                                    54
-                                </div>
-                            </div>
-                            <div class="summary fs-3 d-flex" style="background-color: <?= $bgsec ?>;">
-                                <div class="bg-black" style="min-width: 30%; min-height: 100%;"></div>
-                                <div class="text-center w-100">
-                                    <h5>summary</h5>
-                                    54
-                                </div>
-                            </div>
-                        </div>
+                    <div class="w-100 d-flex flex-wrap justify-content-center">
+                        <div class="rounded w-25 px-2" id="chart-Pie" style="min-height: 400px;  max-width: 350px;"></div>
+                        <div class="rounded w-75 px-2" id="chart-linear" style="min-height: 400px; max-width: 1200px;"></div>
                     </div>
                 </div>
                 <div id="list-data" class="w-auto d-flex flex-column align-items-center">
 
                 </div>
+                <!-- <div class="d-flex w-90 flex-wrap justify-content-between ">
+                    <div class="summary fs-3 d-flex" style="background-color: <?= $bgsec ?>;">
+                        <div class="bg-primary" style="min-width: 30%; min-height: 100%;"></div>
+                        <div class="text-center w-100">
+                            <h5>summary</h5>
+                            54
+                        </div>
+                    </div>
+                    <div class="summary fs-3 d-flex" style="background-color: <?= $bgsec ?>;">
+                        <div class="bg-success" style="min-width: 30%; min-height: 100%;"></div>
+                        <div class="text-center w-100">
+                            <h5>summary</h5>
+                            54
+                        </div>
+                    </div>
+                    <div class="summary fs-3 d-flex" style="background-color: <?= $bgsec ?>;">
+                        <div class="bg-warning" style="min-width: 30%; min-height: 100%;"></div>
+                        <div class="text-center w-100">
+                            <h5>summary</h5>
+                            54
+                        </div>
+                    </div>
+                </div> -->
             </div>
         </div>
 

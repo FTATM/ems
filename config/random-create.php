@@ -27,6 +27,9 @@ try {
         'Amp-L2',
         'Amp-L3',
         'Amp-N',
+        'VoltageA_B',
+        'VoltageB_C',
+        'VoltageC_A',
         'Pf',
         'Frequency',
         'is_deleted'
@@ -52,15 +55,15 @@ try {
     // เพิ่มข้อมูลลงฐานข้อมูล
     $stmt = $conn->prepare("
         INSERT INTO device_realtime (
-            name, create_date, Kw, KwHr, kVA, kVAHr, kVAR, kVARHr,
+            name, create_date, kW, kWh, kVA, kVAh, kVAR, kVARh,
             Vch_P1, Vch_P2, Vch_P3,
-            Amp_L1, Amp_L2, Amp_L3, Amp_N,
+            Amp_L1, Amp_L2, Amp_L3, Amp_N, VoltageA_B, VoltageB_C, VoltageC_A,
             Pf, Frequency, is_deleted
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ");
 
     $stmt->bind_param(
-        "ssdddddddddddddddi",
+        "ssddddddddddddddddddi",
         $name,
         $create_date,
         $values['Kw'],
@@ -76,6 +79,9 @@ try {
         $values['Amp-L2'],
         $values['Amp-L3'],
         $values['Amp-N'],
+        $values['VoltageA_B'],
+        $values['VoltageB_C'],
+        $values['VoltageC_A'],
         $values['Pf'],
         $values['Frequency'],
         $values['is_deleted']
