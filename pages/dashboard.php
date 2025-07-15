@@ -20,6 +20,7 @@ include '../components/session.php';
         <div class="w-100 h-100 d-flex flex-column justify-content-center">
             <?php include "../components/header.php"; ?>
             <div class="d-flex">
+                
                 <div class="d-flex flex-column" style="width: 90%;">
                     <div class="w-100 d-flex flex-wrap justify-content-center">
                         <div class="rounded w-25 px-2" id="chart-Pie" style="min-height: 400px;  max-width: 350px;"></div>
@@ -29,6 +30,7 @@ include '../components/session.php';
                 <div id="list-data" class="w-auto d-flex flex-column align-items-center">
 
                 </div>
+                <input value="Test" class="btn btn-primary" onclick="testapi()">
                 <!-- <div class="d-flex w-90 flex-wrap justify-content-between ">
                     <div class="summary fs-3 d-flex" style="background-color: <?= $bgsec ?>;">
                         <div class="bg-primary" style="min-width: 30%; min-height: 100%;"></div>

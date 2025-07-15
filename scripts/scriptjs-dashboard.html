@@ -7,8 +7,8 @@
     const theme = JSON.parse(themeData);
     document.addEventListener("DOMContentLoaded", async () => {
 
-        await fetchDeviceData();
-        generateDataList();
+        // await fetchDeviceData();
+        // generateDataList();
 
     });
     function updateChart(chart) {
@@ -215,6 +215,32 @@
         updateChartFromSelection();
     }
 
-
+    function testapi() {
+        const payload = {
+            meter_id: 1,
+            data: {
+                kW: 6,
+                kWh: 56,
+                Vch_P1: 612,
+                Vch_P2: 534,
+                Vch_P3: 467
+            }
+        };
+        fetch('../config/meter-data.php', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        })
+            .then(response => response.json())
+            .then(result => {
+                console.log("Result:", result);
+                if (result.status === "success") {
+                } else {
+                    alert("เกิดข้อผิดพลาด: " + result.message);
+                }
+            })
+            .catch(error => {
+                console.error("เกิดข้อผิดพลาด:", error);
+            });
+    }
 
 </script>

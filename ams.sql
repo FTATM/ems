@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 14, 2025 at 08:59 AM
+-- Generation Time: Jul 15, 2025 at 10:37 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -211,12 +211,24 @@ INSERT INTO `locations` (`id`, `name`) VALUES
 
 CREATE TABLE `meter` (
   `id` int(11) NOT NULL,
-  `name` int(11) NOT NULL,
-  `location_id` int(11) NOT NULL,
-  `building_id` int(11) NOT NULL,
+  `name` varchar(50) NOT NULL,
   `room_id` int(11) NOT NULL,
   `is_deleted` tinyint(1) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+
+--
+-- Dumping data for table `meter`
+--
+
+INSERT INTO `meter` (`id`, `name`, `room_id`, `is_deleted`) VALUES
+(1, 'Meter Room A1 01', 1, 0),
+(2, 'Meter Room A1 02', 2, 0),
+(3, 'Meter Room A2 01', 3, 0),
+(4, 'Meter Room A2 02', 4, 0),
+(5, 'Meter Room A1 01', 5, 0),
+(6, 'Meter Room A1 02', 6, 0),
+(7, 'Meter Room A2 01', 7, 0),
+(8, 'Meter Room A2 02', 8, 0);
 
 -- --------------------------------------------------------
 
@@ -263,6 +275,20 @@ CREATE TABLE `rooms` (
   `type` varchar(50) DEFAULT NULL,
   `note` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `rooms`
+--
+
+INSERT INTO `rooms` (`id`, `building_id`, `name`, `size_sqm`, `price_per_month`, `status`, `type`, `note`) VALUES
+(1, 1, 'Room A1 01', 28, 3800.00, 'empty', 'studio', NULL),
+(2, 1, 'Room A1 02', 28, 3800.00, 'empty', 'studio', NULL),
+(3, 2, 'Room A2 01', 28, 3800.00, 'empty', 'studio', NULL),
+(4, 2, 'Room A2 02', 28, 3800.00, 'empty', 'studio', NULL),
+(5, 4, 'Room A1 01', 28, 3600.00, 'empty', 'studio', NULL),
+(6, 4, 'Room A1 02', 28, 3600.00, 'empty', 'studio', NULL),
+(7, 5, 'Room A2 01', 28, 3600.00, 'empty', 'studio', NULL),
+(8, 5, 'Room A2 02', 28, 3600.00, 'empty', 'studio', NULL);
 
 -- --------------------------------------------------------
 
@@ -360,8 +386,6 @@ ALTER TABLE `locations`
 --
 ALTER TABLE `meter`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `location_id` (`location_id`),
-  ADD KEY `building_id` (`building_id`),
   ADD KEY `room_id` (`room_id`);
 
 --
@@ -442,13 +466,19 @@ ALTER TABLE `locations`
 -- AUTO_INCREMENT for table `meter`
 --
 ALTER TABLE `meter`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `meter_data`
 --
 ALTER TABLE `meter_data`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `rooms`
+--
+ALTER TABLE `rooms`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- Constraints for dumped tables
@@ -492,8 +522,6 @@ ALTER TABLE `electricity_readings`
 -- Constraints for table `meter`
 --
 ALTER TABLE `meter`
-  ADD CONSTRAINT `meter_ibfk_1` FOREIGN KEY (`location_id`) REFERENCES `locations` (`id`),
-  ADD CONSTRAINT `meter_ibfk_2` FOREIGN KEY (`building_id`) REFERENCES `buildings` (`id`),
   ADD CONSTRAINT `meter_ibfk_3` FOREIGN KEY (`room_id`) REFERENCES `rooms` (`id`);
 
 --
