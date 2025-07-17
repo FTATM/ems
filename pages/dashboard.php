@@ -31,34 +31,8 @@ include '../components/session.php';
 
                 </div>
                 <input value="Test" class="btn btn-primary" onclick="testapi()">
-                <!-- <div class="d-flex w-90 flex-wrap justify-content-between ">
-                    <div class="summary fs-3 d-flex" style="background-color: <?= $bgsec ?>;">
-                        <div class="bg-primary" style="min-width: 30%; min-height: 100%;"></div>
-                        <div class="text-center w-100">
-                            <h5>summary</h5>
-                            54
-                        </div>
-                    </div>
-                    <div class="summary fs-3 d-flex" style="background-color: <?= $bgsec ?>;">
-                        <div class="bg-success" style="min-width: 30%; min-height: 100%;"></div>
-                        <div class="text-center w-100">
-                            <h5>summary</h5>
-                            54
-                        </div>
-                    </div>
-                    <div class="summary fs-3 d-flex" style="background-color: <?= $bgsec ?>;">
-                        <div class="bg-warning" style="min-width: 30%; min-height: 100%;"></div>
-                        <div class="text-center w-100">
-                            <h5>summary</h5>
-                            54
-                        </div>
-                    </div>
-                </div> -->
             </div>
         </div>
-
-
-
     </div>
 
 
