@@ -82,10 +82,10 @@ if ($_SESSION['theme'] === 'dark') {
 } else {
     // Light Mode Colors (default)
     $bg = '#f9f9f9';     // Primary background
-    $bgsec = '#eeeeee';  // Secondary background (cards, modals)
+    $bgsec = '#383838ff';  // Secondary background (cards, modals)
     $secon = '#616161';  // Secondary text, icons, borders
-    $text = '#212121';   // Primary text
-    $btnColor = '#bdbdbd'; // Button background/border
+    $text = '#ffffffff';   // Primary text
+    $btnColor = '#303030ff'; // Button background/border
     $accentColor = '#03A9F4'; // Accent color for links, CTA buttons
 }
 

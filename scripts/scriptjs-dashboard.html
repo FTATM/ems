@@ -1,28 +1,158 @@
 <script>
 
-    let selectedColumns = ["kW"];
-    let fullData = [];
-    let result = {};
+    let AllMeter = [];
+    let result = ['1', '3'];
+    let type = [];
+    let allvalueinPie = 0;
     const themeData = document.getElementById('theme-data').textContent;
     const theme = JSON.parse(themeData);
     document.addEventListener("DOMContentLoaded", async () => {
 
-        // await fetchDeviceData();
-        // generateDataList();
-
+        await fetchMetersData();
+        await generateDataList();
+        await updateData();
     });
-    function updateChart(chart) {
-        var color, deltaY, yVal;
-        var dps = chart.options.data[0].dataPoints;
-        for (var i = 0; i < dps.length; i++) {
-            deltaY = (2 + Math.random() * (-2 - 2));
-            yVal = Math.min(Math.max(deltaY + dps[i].y, 0), 90);
-            color = yVal > 75 ? "#FF2500" : yVal >= 50 ? "#FF6000" : yVal < 50 ? "#41CF35" : null;
-            dps[i] = { label: dps[i]['label'], y: yVal, color: color };
-        }
-        chart.options.data[0].dataPoints = dps;
-        chart.render();
-    };
+
+    async function fetchMetersData() {
+        let response = await fetch("../config/fetch-meters.php");
+        let json = await response.json();
+        AllMeter = json;
+
+        let responsetype = await fetch("../config/fetch-data_type.php");
+        let jsontype = await responsetype.json();
+        type = jsontype;
+
+
+
+    }
+
+    function prepareLinearData(columnIndex) {
+        const chartData = [];
+
+        Object.values(AllMeter).forEach(meter => {
+            const rawData = meter.data?.[columnIndex];
+
+            if (rawData && Array.isArray(rawData)) {
+                const dataPoints = rawData.map(row => ({
+                    x: new Date(row.create_date),
+                    y: parseFloat(row.value) || 0
+                }));
+
+                chartData.push({
+                    type: "splineArea",
+                    axisYType: "secondary",
+                    name: `${meter.name} - ${getLabelFromIndex(columnIndex)}`,
+                    showInLegend: true,
+                    markerSize: 0,
+                    yValueFormatString: "#,##0.##",
+                    dataPoints: dataPoints
+                });
+            }
+        });
+
+        return chartData;
+    }
+
+    function preparePieData(columnIndex) {
+        const temp = [];
+
+        // ขั้นที่ 1: เก็บ avg ไว้ก่อน
+        Object.values(AllMeter).forEach(meter => {
+            const rawData = meter.data?.[columnIndex];
+
+            if (rawData && Array.isArray(rawData) && rawData.length > 0) {
+                const total = rawData.reduce((sum, row) => sum + (parseFloat(row.value) || 0), 0);
+                const avg = total / rawData.length;
+
+                temp.push({
+                    name: meter.name,
+                    avg: avg
+                });
+                console.log(avg);
+            }
+
+        });
+
+        // ขั้นที่ 2: คำนวณรวมทั้งหมด
+        const totalAll = temp.reduce((acc, cur) => acc + cur.avg, 0);
+
+        console.log(totalAll);
+        // ขั้นที่ 3: คำนวณ % แล้วคืน chartData
+        const chartData = temp.map(item => {
+            const percent = (item.avg / totalAll) * 100;
+            return {
+                label: `${item.name} - ${getLabelFromIndex(columnIndex)}`,
+                y: parseFloat(item.avg.toFixed(2)),
+                indexLabel: `${item.name} - ${percent.toFixed(1)}%`
+            };
+        });
+
+        return chartData;
+    }
+
+    function getLabelFromIndex(index) {
+        let name = "unknown";
+        type.forEach($row => {
+            if ($row['id'] == index) {
+                name = $row['name'];
+            }
+        });
+        return name;
+    }
+
+    async function generateDataList() {
+        let listdata = document.getElementById('list-data');
+        listdata.innerHTML = ''; // เคลียร์ข้อมูลเดิมก่อนสร้างใหม่
+
+        type.forEach($row => {
+            let div = document.createElement('div');
+
+            let button = document.createElement('button');
+            button.textContent = $row['name'];
+            button.setAttribute('data-id', $row['id']);
+            button.classList.add('toggle-button');
+            if (result.includes($row['id'])) {
+                button.classList.add('active');
+            }
+            // Event toggle เมื่อคลิกปุ่ม
+            button.addEventListener('click', function () {
+                const id = $row['id'];
+
+                if (result.includes(id)) {
+                    result = result.filter(item => item !== id);
+                    button.classList.remove('active'); // เปลี่ยน UI ปุ่ม
+                } else {
+                    // ถ้ายังไม่มี ให้เพิ่มเข้าไป
+                    result.push(id);
+                    button.classList.add('active');
+                }
+                updateData();
+            });
+
+            // div.appendChild(button);
+            listdata.appendChild(button);
+        });
+    }
+
+    function updateData() {
+        console.log(result);
+        const LinearchartData = [];
+        const PiechartData = [];
+
+        // linear of result
+        result.forEach(index => {
+            LinearchartData.push(...prepareLinearData(index));
+        });
+        createLinearChart('chart-linear', "linear Test", LinearchartData);
+
+        // avg of result
+        result.forEach(index => {
+            PiechartData.push(...preparePieData(index));
+        });
+
+        createPieChart('chart-Pie', "Pie Test", PiechartData);
+    }
+
     function createBarChart(idContainer, title, dataPoints) {
         var chart = new CanvasJS.Chart(idContainer, {
             title: {
@@ -53,11 +183,11 @@
             data: [{
                 type: "pie",
                 startAngle: 25,
-                toolTipContent: "<b>{label}</b>: {y}%",
+                toolTipContent: "<b>{label}</b>: {y}",
                 showInLegend: "true",
                 legendText: "{label}",
                 indexLabelFontSize: 16,
-                indexLabel: "{label} - {y}%",
+                indexLabel: "{label} - {total}",
                 dataPoints: dataPoints
 
             }]
@@ -96,122 +226,6 @@
             e.dataSeries.visible = true;
         }
         e.chart.render(); // ✅ ใช้ chart จาก even
-    }
-
-    async function generateDataList() {
-        let listdata = document.getElementById('list-data');
-
-        if (Array.isArray(fullData) && fullData.length > 0) {
-            let columnNames = Object.keys(fullData[0]);
-
-            columnNames.forEach(column => {
-                if (['id', 'name', 'create_date', 'is_deleted'].includes(column)) {
-                    return
-                }
-                let div = document.createElement('div');
-                div.className = "d-flex w-100 px-3";
-                div.innerHTML =
-                    `
-                 <div class="form-check w-50 text-end">
-                    <input class="form-check-input toggle-column" type="checkbox" hidden value="${column}" id="chk_${column}" ${selectedColumns.includes(column) ? 'checked' : ''}>
-                    <label class="form-check-label text-end px-2 m-0 rounded py-1" id="label_chk_${column}" for="chk_${column}">
-                        ${column}
-                    </label>
-                </div>
-                <div class="w-50">
-                    <input class="" disabled value="${(result[column].reduce((acc, cur) => acc + parseFloat(cur), 0) / result[column].length).toFixed(2)}">
-                </div>
-                `;
-                listdata.appendChild(div);
-                const chk = document.getElementById("chk_" + column);
-                const label = document.getElementById("label_chk_" + column);
-                label.style.backgroundColor = chk.checked ? '#679bca' : '';
-                label.style.color = chk.checked ? 'white' : '';
-                togglehighlight(column);
-            })
-        } else {
-            console.log("No data available");
-        }
-    }
-
-    function togglehighlight(column) {
-        const chk = document.getElementById("chk_" + column);
-        const label = document.getElementById("label_chk_" + column);
-        chk.addEventListener('click', () => {
-            label.style.backgroundColor = chk.checked ? '#679bca' : '';
-            label.style.color = chk.checked ? 'white' : '';
-            toggleDataInGraph(column);
-        })
-    }
-
-    async function fetchDeviceData() {
-        let response = await fetch("../config/fetch-realtime.php");
-        let json = await response.json();
-        fullData = json;
-
-        fullData.forEach(row => {
-            Object.entries(row).forEach(([key, value]) => {
-                if (!result[key]) {
-                    result[key] = [];
-                }
-                result[key].push(value);
-            });
-        });
-
-        updateChartFromSelection();
-    }
-
-    function updateChartFromSelection() {
-        const chartData = [];
-
-        // หารายชื่อ device ทั้งหมด
-        const devices = [...new Set(fullData.map(d => d.name))];
-
-        selectedColumns.forEach(column => {
-            devices.forEach(device => {
-                const dataPoints = fullData
-                    .filter(row => row.name === device)
-                    .map(row => ({
-                        x: new Date(row.create_date),
-                        y: parseFloat(row[column]) || 0
-                    }));
-
-                chartData.push({
-                    type: "splineArea",
-                    axisYType: "secondary",
-                    name: `${device} - ${column}`,
-                    showInLegend: true,
-                    markerSize: 0,
-                    yValueFormatString: "#,##0.##",
-                    dataPoints: dataPoints
-                });
-            });
-        });
-
-        createLinearChart("chart-linear", "ข้อมูลจากอุปกรณ์", chartData);
-        console.log('result:');
-        console.log(result);
-        let chartdataPie = [];
-
-        selectedColumns.forEach(column => {
-            const dataPoints = result
-                .filter(key, value => key === column)
-                .map(row => ({
-                    label: column,
-                    y: parseFloat(row[column]) || 0
-                }));
-        });
-        createPieChart('chart-pie', "ภาพรวมของข้อมูล", chartdataPie);
-    }
-
-    function toggleDataInGraph(columnName) {
-        const index = selectedColumns.indexOf(columnName);
-        if (index === -1) {
-            selectedColumns.push(columnName);
-        } else {
-            selectedColumns.splice(index, 1);
-        }
-        updateChartFromSelection();
     }
 
     function testapi() {
