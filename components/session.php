@@ -68,7 +68,7 @@ if (isset($_GET['theme'])) {
 
 // ตั้งค่าเริ่มต้นถ้ายังไม่มี session
 if (!isset($_SESSION['theme'])) {
-    $_SESSION['theme'] = 'light';
+    $_SESSION['theme'] = 'dark';
 }
 
 if ($_SESSION['theme'] === 'dark') {
