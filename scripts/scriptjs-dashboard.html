@@ -11,6 +11,60 @@
         await fetchMetersData();
         await generateDataList();
         await updateData();
+
+
+
+        const ctx = document.getElementById('gaugeChart').getContext('2d');
+
+        const gaugeChart = new Chart(ctx, {
+            type: 'gauge',
+            data: {
+                labels: ['Low', 'Medium', 'High'],
+                datasets: [{
+                    value: 45,
+                    minValue: 0,
+                    data: [30, 40, 30], // รวมต้องเป็น 100 หรือใกล้เคียง
+                    backgroundColor: ['#4caf50', '#ffeb3b', '#f44336'],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                animation: {
+                    duration: 1000,
+                    easing: 'easeOutBounce'
+                },
+                title: {
+                    display: true,
+                    text: 'System Load (%)',
+                    font: {
+                        size: 18
+                    }
+                },
+                needle: {
+                    radiusPercentage: 2,
+                    widthPercentage: 3.2,
+                    lengthPercentage: 80,
+                    color: 'black'
+                },
+                valueLabel: {
+                    display: true,
+                    fontSize: 20,
+                    formatter: (value) => value.toFixed(1) + ' %'
+                },
+                layout: {
+                    padding: {
+                        bottom: 30
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
     });
 
     async function fetchMetersData() {
@@ -25,6 +79,7 @@
 
 
     }
+
 
     function prepareLinearData(columnIndex) {
         const chartData = [];
@@ -53,6 +108,47 @@
         return chartData;
     }
 
+    function prepareLinearPrice() {
+        const chartData = [];
+        const pricePerKWh = 4.5; // สมมุติราคาหน่วยละ 4.5 บาท
+        const minuteInterval = 0.5; // สมมติข้อมูลเก็บทุก 1 นาที
+
+        Object.values(AllMeter).forEach(meter => {
+            const rawData = meter.data?.[2];
+
+            if (rawData && Array.isArray(rawData)) {
+                let totalCost = 0;
+
+                const dataPoints = rawData.map(row => {
+                    const powerKW = parseFloat(row.value) || 0;
+
+                    // คำนวณพลังงาน (kWh) สำหรับแต่ละช่วงเวลา: (kW × ชม.)
+                    const energyKWh = (powerKW * minuteInterval) / 60;
+
+                    // รวมค่าใช้จ่าย
+                    totalCost += energyKWh * pricePerKWh;
+
+                    return {
+                        x: new Date(row.create_date),
+                        y: powerKW
+                    };
+                });
+
+                chartData.push({
+                    type: "splineArea",
+                    axisYType: "secondary",
+                    name: `${meter.name} | ค่าใช้จ่าย ~ ${totalCost.toFixed(2)} บาท`,
+                    showInLegend: true,
+                    markerSize: 0,
+                    yValueFormatString: "#,##0.##",
+                    dataPoints: dataPoints
+                });
+            }
+        });
+
+        return chartData;
+    }
+
     function preparePieData(columnIndex) {
         const temp = [];
 
@@ -68,7 +164,6 @@
                     name: meter.name,
                     avg: avg
                 });
-                console.log(avg);
             }
 
         });
@@ -76,13 +171,52 @@
         // ขั้นที่ 2: คำนวณรวมทั้งหมด
         const totalAll = temp.reduce((acc, cur) => acc + cur.avg, 0);
 
-        console.log(totalAll);
         // ขั้นที่ 3: คำนวณ % แล้วคืน chartData
         const chartData = temp.map(item => {
             const percent = (item.avg / totalAll) * 100;
             return {
                 label: `${item.name} - ${getLabelFromIndex(columnIndex)}`,
                 y: parseFloat(item.avg.toFixed(2)),
+                indexLabel: `${item.name} - ${percent.toFixed(1)}%`
+            };
+        });
+
+        return chartData;
+    }
+
+    function preparePiePrice(columnIndex) {
+        const temp = [];
+        const pricePerKWh = 4.5; // ราคาต่อหน่วย (บาท/หน่วย)
+
+        // ขั้นที่ 1: คำนวณค่าเฉลี่ยการใช้งานของแต่ละมิเตอร์
+        Object.values(AllMeter).forEach(meter => {
+            const rawData = meter.data?.[columnIndex];
+
+            if (rawData && Array.isArray(rawData) && rawData.length > 0) {
+                const total = rawData.reduce((sum, row) => sum + (parseFloat(row.value) || 0), 0);
+                const avgKW = total / rawData.length;
+                const avgPrice = avgKW * pricePerKWh;
+
+                temp.push({
+                    name: meter.name,
+                    avgPrice: avgPrice
+                });
+
+                console.log(`Avg Price (${meter.name}):`, avgPrice.toFixed(2));
+            }
+        });
+
+        // ขั้นที่ 2: รวมราคาทั้งหมดเพื่อใช้คำนวณ %
+        const totalPriceAll = temp.reduce((acc, cur) => acc + cur.avgPrice, 0);
+        console.log("Total Price All:", totalPriceAll.toFixed(2));
+
+        // ขั้นที่ 3: แปลงเป็น chartData พร้อมแสดง % และราคาเฉลี่ย
+        const chartData = temp.map(item => {
+            const percent = (item.avgPrice / totalPriceAll) * 100;
+
+            return {
+                label: `${item.name} - ${getLabelFromIndex(columnIndex)}`,
+                y: parseFloat(item.avgPrice.toFixed(2)), // แสดงเป็นค่าใช้จ่ายเฉลี่ย
                 indexLabel: `${item.name} - ${percent.toFixed(1)}%`
             };
         });
@@ -135,22 +269,28 @@
     }
 
     function updateData() {
-        console.log(result);
         const LinearchartData = [];
         const PiechartData = [];
+        const LinearchartData2 = [];
+        const PiechartData2 = [];
 
-        // linear of result
+        
         result.forEach(index => {
             LinearchartData.push(...prepareLinearData(index));
         });
-        createLinearChart('chart-linear', "linear Test", LinearchartData);
+        createLinearChart('chart-linear', "Linear Date & Data", LinearchartData);
 
-        // avg of result
         result.forEach(index => {
             PiechartData.push(...preparePieData(index));
         });
+        createPieChart('chart-Pie', "Ratio of Data", PiechartData);
 
-        createPieChart('chart-Pie', "Pie Test", PiechartData);
+        LinearchartData2.push(...prepareLinearPrice());
+        createLinearChart('chart-linear-price', 'Price of month', LinearchartData2);
+
+        // PiechartData2.push(...preparePiePrice(1));
+        // createPieChart('chart-Pie-price', "Ratio of price avg", PiechartData2);
+
     }
 
     function createBarChart(idContainer, title, dataPoints) {
@@ -218,7 +358,6 @@
 
         window.myChart = chart; // ✅ เก็บไว้ใช้ภายนอก
     }
-
     function toggleDataSeries(e) {
         if (typeof (e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
             e.dataSeries.visible = false;
@@ -226,6 +365,14 @@
             e.dataSeries.visible = true;
         }
         e.chart.render(); // ✅ ใช้ chart จาก even
+    }
+
+
+    // อัปเดตค่าแบบสุ่ม
+    function updateGauge() {
+        const randomValue = Math.floor(Math.random() * 101); // 0-100
+        gaugeChart.data.datasets[0].value = randomValue;
+        gaugeChart.update();
     }
 
     function testapi() {

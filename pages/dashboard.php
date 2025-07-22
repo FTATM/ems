@@ -37,13 +37,22 @@ include '../components/session.php';
                 </select>
             </div>
             <div class="d-flex mt-3">
-                <div class="d-flex flex-column" style="width: 90%;">
+                <div class="d-flex flex-column gap-3" style="width: 90%;">
                     <div class="w-100 d-flex flex-wrap justify-content-center">
                         <div class="rounded w-25 px-2" id="chart-Pie" style="min-height: 400px;  max-width: 350px;"></div>
                         <div class="rounded w-75 px-2" id="chart-linear" style="min-height: 400px; max-width: 1200px;"></div>
                     </div>
+                    <div class="w-100 d-flex flex-wrap justify-content-center">
+                        <canvas id="gaugeChart"></canvas>
+                        <br>
+                        <button onclick="updateGauge()">🎲 สุ่มค่าใหม่</button>
+                        <div class="rounded w-75 px-2" id="chart-linear-price" style="min-height: 400px; max-width: 1200px;"></div>
+                    </div>
                 </div>
                 <div class="w-25">
+                    <div class="" style="background-color: <?= $bgsec ?>;">
+
+                    </div>
                     <div id="list-data" class="w-auto d-flex flex-wrap align-items-center">
 
                     </div>

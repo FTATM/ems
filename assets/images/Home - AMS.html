@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<!-- saved from url=(0035)http://localhost/ams/pages/home.php -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="./Home - AMS_files/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- <link href="css/bootstrap.min.css" rel="stylesheet"> -->
+    <link href="./Home - AMS_files/bootstrap-icons.css" rel="stylesheet">
+    <link href="./Home - AMS_files/ej.web.all.min.css" rel="stylesheet">
+    <link rel="icon" type="image/png" href="http://localhost/ams/assets/images/favicon.png">
+
+    <!-- ✅ ใช้ Chart.js v3 (รองรับ Gauge Plugin) -->
+    <script src="./Home - AMS_files/chart.min.js.download"></script>
+
+    <!-- ✅ โหลด plugin gauge ที่เข้ากันได้ -->
+    <script src="./Home - AMS_files/chartjs-chart-gauge.min.js.download"></script>
+
+
+<style>
+    .body {
+        background-image: url("../assets/images/elec.png");
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center;
+    }
+
+    .background-blur {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-image: url("../assets/images/elec.png");
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center;
+        filter: blur(10px);
+        z-index: -1;
+    }
+
+    .toggle-button {
+        padding: 4px 12px;
+        margin: 5px;
+        border: 1px solid #ccc;
+        background-color: #f0f0f0;
+        cursor: pointer;
+        border-radius: 5px;
+    }
+
+    .toggle-button.active {
+        background-color: #4CAF50;
+        color: white;
+        border-color: #4CAF50;
+    }
+
+    .sidebar {
+        width: 300px;
+        transition: all 0.3s ease-in-out, padding 0.3s ease-in-out;
+        padding: 10px;
+        z-index: 999;
+        display: flex;
+        top: 0;
+        left: 0;
+        box-shadow: 2px;
+        min-height: 100svh;
+    }
+
+    .sidebar.collapsed {
+        /* width: 0; */
+        overflow: hidden;
+        padding: 0px;
+        display: none;
+    }
+
+    @media (max-width: 992px) {
+        .sidebar {
+            position: absolute;
+            width: 100%;
+            height: 200vh;
+            z-index: 999;
+            left: 0;
+            top: 20;
+        }
+    }
+
+    #card {
+        width: 250px;
+        border: 1px solid #ccc;
+        border-radius: 2rem;
+        text-align: center;
+        box-shadow: 2px 2px 7px #222;
+        padding: 10px;
+    }
+
+    .summary {
+        width: 100%;
+        max-width: 300px;
+    }
+
+    .w-90 {
+        width: 90%;
+    }
+</style><title>Home - AMS</title></head>
+
+    
+    
+
+
+<body class="body" style=" color: #e0e0e0; min-height: 100svh;">
+    <div class="background-blur"></div>
+    <div id="main" class="d-flex">
+        <div class="sidebar collapsed" id="sidebar" style="border-right: 1px solid #aaa; transition: width 0.3s ease, padding 0.3s ease; background-color: #1e1e1e;">
+    <ul class="navbar-nav gap-2">
+        <div class="">
+            <img src="./Home - AMS_files/logo.png" width="100%">
+        </div>
+        <li class="d-flex align-items-center gap-2">
+            <i class="bi bi-house"></i>
+            <span><a class="nav-link active text" href="http://localhost/ams/pages/dashboard.php">Dashboard</a></span>
+        </li>
+        <li class="d-flex align-items-center gap-2">
+            <i class="bi bi-journal-check"></i>
+            <span><a class="nav-link active text" href="http://localhost/ams/pages/bill.php">Bills</a></span>
+        </li>
+        <li class="d-flex align-items-center gap-2">
+            <i class="bi bi-file-person"></i>
+            <span><a class="nav-link active text" href="http://localhost/ams/pages/payment.php">Payments</a></span>
+        </li>
+        <li class="d-flex align-items-center gap-2">
+            <i class="bi bi-file-person"></i>
+            <span><a class="nav-link active text" href="http://localhost/ams/pages/meter.php">Meter</a></span>
+        </li>
+        <li class="d-flex align-items-center gap-2">
+            <i class="bi bi-file-person"></i>
+            <span><a class="nav-link active text" href="http://localhost/ams/pages/member.php">Members</a></span>
+        </li>
+        <li class="d-flex align-items-center gap-2">
+            <i class="bi bi-bug"></i>
+            <span><a class="nav-link active text" href="http://localhost/ams/pages/random.php">Random data</a></span>
+        </li>
+        <li class="gap-2">
+            <button class="btn btn-link nav-link text px-0" data-bs-toggle="collapse" data-bs-target="#systemSubNav" aria-expanded="false">
+                <i class="bi bi-gear"></i> System            </button>
+            <ul class="collapse nav flex-column gap-2" id="systemSubNav">
+                <li class="d-flex align-items-start gap-2">
+                    <i class="bi bi-info-square"></i>
+                    <a class="nav-secondary text" href="http://localhost/ams/pages/infomation.php">InformationSystem</a>
+                </li>
+                <li class="d-flex align-items-start gap-2">
+                    <i class="bi bi-bug"></i>
+                    <a class="nav-secondary text" href="http://localhost/ams/pages/log.php">Logs</a>
+                </li>
+                <li class="d-flex align-items-start gap-2">
+                    <i class="bi bi-database-fill-down"></i>
+                    <a class="nav-secondary text" href="http://localhost/ams/pages/backup.php">Backup</a>
+                </li>
+            </ul>
+        </li>
+
+
+        <div class="text-center mt-5">Choose language</div>
+        <!-- วางใน Navbar หรือเมนู -->
+        <div class="d-flex justify-content-center p-2">
+            <a href="http://localhost/ams/pages/home.php?lang=th" class="btn btn-sm " style="background-color: #424242; color: #e0e0e0;">ไทย</a>
+            <a href="http://localhost/ams/pages/home.php?lang=en" class="btn btn-sm active" style="background-color: #424242; color: #e0e0e0;">English</a>
+        </div>
+        <div class="text-center mt-5">Choose theme</div>
+        <!-- วางใน Navbar หรือเมนู -->
+        <div class="d-flex justify-content-center p-2">
+            <a href="http://localhost/ams/pages/home.php?theme=light" class="btn btn-sm &lt;br /&gt;
+&lt;b&gt;Warning&lt;/b&gt;:  Undefined variable $theme in &lt;b&gt;C:\xampp\htdocs\ams\components\sidemenu.php&lt;/b&gt; on line &lt;b&gt;60&lt;/b&gt;&lt;br /&gt;
+" style="background-color: #424242; color: #e0e0e0;">light</a>
+            <a href="http://localhost/ams/pages/home.php?theme=dark" class="btn btn-sm &lt;br /&gt;
+&lt;b&gt;Warning&lt;/b&gt;:  Undefined variable $theme in &lt;b&gt;C:\xampp\htdocs\ams\components\sidemenu.php&lt;/b&gt; on line &lt;b&gt;61&lt;/b&gt;&lt;br /&gt;
+" style="background-color: #424242; color: #e0e0e0;">Dark</a>
+        </div>
+    </ul>
+</div>        <div class="w-100 h-100 d-flex flex-column justify-content-center">
+            <header class="fw-medium">
+    <nav class="navbar d-flex justify-content-center justify-content-lg-between navbar-expand-lg navbar-light" style="background-color: #1e1e1e;">
+        <div>
+            <button id="sidebar_btn" class="btn ms-2" style="padding: 0;"><i class="bi bi-list fs-3 w-100 h-100"></i> </button>
+            <a class="navbar-brand ms-2" href="http://localhost/ams/pages/home.php">
+                <img src="./Home - AMS_files/logo3.png" alt="Logo" width="200">
+            </a>
+        </div>
+        <div class="w-15 d-none d-lg-flex align-items-center">
+
+                            <ul class="navbar-nav gap-3">
+                    <li class="nav-item">
+                        <a class="nav-link active text " style="color: #e0e0e0;" href="http://localhost/ams/pages/login.php">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active text" style="color: #e0e0e0;" href="http://localhost/ams/pages/register.php">Register</a>
+                    </li>
+                </ul>
+                    </div>
+    </nav>
+</header>            <div class="bg-opacity-100" style="min-height: 60vh;"></div>
+            <div id="body" class="w-100 h-100 d-flex flex-wrap align-items-end p-3 row-gap-2"><div class=" d-flex flex-column px-1" style="min-height: 10svh;">
+            <div class="w-100 rounded-3 border p-2" style="height:200px; background-color:#121212">
+                <div id="display-meter" class="bg-opacity-50 rounded d-flex justify-content-center align-items-center" style="min-height: 50%; background-color:#00ab41;">
+                    <h3>6.01 kW</h3>
+                </div>
+                <div id="body-meter" class="bg-opacity-50 d-flex flex-column text-center" style="min-height: 50%;">
+                    <h5 class="fw-bold mt-2">Meter Room A1 01</h5>
+                    <p>click for more info.</p>
+                </div>
+            </div>
+            </div><div class=" d-flex flex-column px-1" style="min-height: 10svh;">
+            <div class="w-100 rounded-3 border p-2" style="height:200px; background-color:#121212">
+                <div id="display-meter" class="bg-opacity-50 rounded d-flex justify-content-center align-items-center" style="min-height: 50%; background-color:#ff0000;">
+                    <h3>NaN kW</h3>
+                </div>
+                <div id="body-meter" class="bg-opacity-50 d-flex flex-column text-center" style="min-height: 50%;">
+                    <h5 class="fw-bold mt-2">Meter Room A1 02</h5>
+                    <p>click for more info.</p>
+                </div>
+            </div>
+            </div><div class=" d-flex flex-column px-1" style="min-height: 10svh;">
+            <div class="w-100 rounded-3 border p-2" style="height:200px; background-color:#121212">
+                <div id="display-meter" class="bg-opacity-50 rounded d-flex justify-content-center align-items-center" style="min-height: 50%; background-color:#ff0000;">
+                    <h3>NaN kW</h3>
+                </div>
+                <div id="body-meter" class="bg-opacity-50 d-flex flex-column text-center" style="min-height: 50%;">
+                    <h5 class="fw-bold mt-2">Meter Room A2 01</h5>
+                    <p>click for more info.</p>
+                </div>
+            </div>
+            </div><div class=" d-flex flex-column px-1" style="min-height: 10svh;">
+            <div class="w-100 rounded-3 border p-2" style="height:200px; background-color:#121212">
+                <div id="display-meter" class="bg-opacity-50 rounded d-flex justify-content-center align-items-center" style="min-height: 50%; background-color:#ff0000;">
+                    <h3>NaN kW</h3>
+                </div>
+                <div id="body-meter" class="bg-opacity-50 d-flex flex-column text-center" style="min-height: 50%;">
+                    <h5 class="fw-bold mt-2">Meter Room A2 02</h5>
+                    <p>click for more info.</p>
+                </div>
+            </div>
+            </div><div class=" d-flex flex-column px-1" style="min-height: 10svh;">
+            <div class="w-100 rounded-3 border p-2" style="height:200px; background-color:#121212">
+                <div id="display-meter" class="bg-opacity-50 rounded d-flex justify-content-center align-items-center" style="min-height: 50%; background-color:#00ab41;">
+                    <h3>NaN kW</h3>
+                </div>
+                <div id="body-meter" class="bg-opacity-50 d-flex flex-column text-center" style="min-height: 50%;">
+                    <h5 class="fw-bold mt-2">Meter Room A1 01</h5>
+                    <p>click for more info.</p>
+                </div>
+            </div>
+            </div><div class=" d-flex flex-column px-1" style="min-height: 10svh;">
+            <div class="w-100 rounded-3 border p-2" style="height:200px; background-color:#121212">
+                <div id="display-meter" class="bg-opacity-50 rounded d-flex justify-content-center align-items-center" style="min-height: 50%; background-color:#00ab41;">
+                    <h3>NaN kW</h3>
+                </div>
+                <div id="body-meter" class="bg-opacity-50 d-flex flex-column text-center" style="min-height: 50%;">
+                    <h5 class="fw-bold mt-2">Meter Room A1 02</h5>
+                    <p>click for more info.</p>
+                </div>
+            </div>
+            </div><div class=" d-flex flex-column px-1" style="min-height: 10svh;">
+            <div class="w-100 rounded-3 border p-2" style="height:200px; background-color:#121212">
+                <div id="display-meter" class="bg-opacity-50 rounded d-flex justify-content-center align-items-center" style="min-height: 50%; background-color:#ff0000;">
+                    <h3>NaN kW</h3>
+                </div>
+                <div id="body-meter" class="bg-opacity-50 d-flex flex-column text-center" style="min-height: 50%;">
+                    <h5 class="fw-bold mt-2">Meter Room A2 01</h5>
+                    <p>click for more info.</p>
+                </div>
+            </div>
+            </div><div class=" d-flex flex-column px-1" style="min-height: 10svh;">
+            <div class="w-100 rounded-3 border p-2" style="height:200px; background-color:#121212">
+                <div id="display-meter" class="bg-opacity-50 rounded d-flex justify-content-center align-items-center" style="min-height: 50%; background-color:#ff0000;">
+                    <h3>NaN kW</h3>
+                </div>
+                <div id="body-meter" class="bg-opacity-50 d-flex flex-column text-center" style="min-height: 50%;">
+                    <h5 class="fw-bold mt-2">Meter Room A2 02</h5>
+                    <p>click for more info.</p>
+                </div>
+            </div>
+            </div></div>
+        </div>
+    </div>
+    <!-- Bootstrap 5 CDN -->
+<script src="./Home - AMS_files/popper.min.js.download" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+<script src="./Home - AMS_files/bootstrap.min.js.download" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
+<script type="text/javascript" src="./Home - AMS_files/canvasjs.min.js.download"></script>
+<script src="./Home - AMS_files/gauge.min.js.download"></script>
+
+
+<script>
+    var sidebar_btn = document.getElementById('sidebar_btn');
+    var sidebar = document.getElementById('sidebar');
+    var mainContent = document.getElementById('main-content');
+    sidebar_btn.addEventListener('click', () => {
+        sidebar.classList.toggle('collapsed');
+    });
+
+    function redirect(target) {
+        window.location.href = "../pages/" + target + ".php";
+    }
+
+
+    // ฟังก์ชันแสดง Notify ลอยอยู่กลางจอด้านบน
+    function showNotify(message) {
+        let notifyDiv = document.createElement("div");
+        notifyDiv.className = "notify-alert alert alert-warning alert-dismissible fade show";
+        notifyDiv.innerHTML = `
+    <div class="modal-header">
+        <h5 class="modal-title" id="notifyModalLabel">Notify</h5>
+        <button type="button" class="btn-close" onclick="this.closest('.notify-alert').remove()"></button>
+    </div>
+    <div class="modal-body">
+        <p>${message}</p>
+    </div>
+    `;
+        document.body.appendChild(notifyDiv);
+    }
+
+</script>    <script>
+    let AllMeters = [];
+    let type = [];
+    document.addEventListener("DOMContentLoaded", async () => {
+        await fetchMetersData();
+        console.log(AllMeters);
+        generateMeter(AllMeters);
+
+    });
+    async function fetchMetersData() {
+        let response = await fetch("../config/fetch-meters.php");
+        let json = await response.json();
+        AllMeters = Object.values(json);
+
+        let responsetype = await fetch("../config/fetch-data_type.php");
+        let jsontype = await responsetype.json();
+        type = jsontype;
+    }
+    function generateMeter(allmeters) {
+        let body = document.getElementById('body');
+        allmeters.forEach(element => {
+            const rawData = element.data?.[1];
+            const total = rawData.reduce((sum, row) => sum + (parseFloat(row.value) || 0), 0);
+            const avgkW = total / rawData.length;
+
+            let div = document.createElement('div');
+            div.className = " d-flex flex-column px-1";
+            div.style.minHeight = '10svh';
+            div.innerHTML = `
+            <div class="w-100 rounded-3 border p-2" style="height:200px; background-color:#121212">
+                <div id="display-meter" class="bg-opacity-50 rounded d-flex justify-content-center align-items-center" style="min-height: 50%; background-color:${element.is_active == '0' ? "#00ab41" : "#ff0000"};">
+                    <h3>${avgkW.toFixed(2)} kW</h3>
+                </div>
+                <div id="body-meter" class="bg-opacity-50 d-flex flex-column text-center" style="min-height: 50%;">
+                    <h5 class="fw-bold mt-2">${element.name}</h5>
+                    <p>click for more info.</p>
+                </div>
+            </div>
+            `;
+            body.appendChild(div);
+        });
+    }
+
+</script>
+
+</body></html>

@@ -1,0 +1,44 @@
+<script>
+    let AllMeters = [];
+    let type = [];
+    document.addEventListener("DOMContentLoaded", async () => {
+        await fetchMetersData();
+        console.log(AllMeters);
+        generateMeter(AllMeters);
+
+    });
+    async function fetchMetersData() {
+        let response = await fetch("../config/fetch-meters.php");
+        let json = await response.json();
+        AllMeters = Object.values(json);
+
+        let responsetype = await fetch("../config/fetch-data_type.php");
+        let jsontype = await responsetype.json();
+        type = jsontype;
+    }
+    function generateMeter(allmeters) {
+        let body = document.getElementById('body');
+        allmeters.forEach(element => {
+            const rawData = element.data?.[1];
+            const total = rawData.reduce((sum, row) => sum + (parseFloat(row.value) || 0), 0);
+            const avgkW = total / rawData.length;
+
+            let div = document.createElement('div');
+            div.className = " d-flex flex-column px-1";
+            div.style.minHeight = '10svh';
+            div.innerHTML = `
+            <div class="w-100 rounded-3 border p-2" style="height:200px; background-color:<?= $bg?>">
+                <div id="display-meter" class="bg-opacity-50 rounded d-flex justify-content-center align-items-center" style="min-height: 50%; background-color:${element.is_active == '0' ? "#00ab41" : "#ff0000"};">
+                    <h3>${avgkW.toFixed(2)} kW</h3>
+                </div>
+                <div id="body-meter" class="bg-opacity-50 d-flex flex-column text-center" style="min-height: 50%;">
+                    <h5 class="fw-bold mt-2">${element.name}</h5>
+                    <p>click for more info.</p>
+                </div>
+            </div>
+            `;
+            body.appendChild(div);
+        });
+    }
+
+</script>
