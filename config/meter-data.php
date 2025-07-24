@@ -13,6 +13,7 @@ $data = json_decode(file_get_contents("php://input"), true);
 
 if ($data) {
     $meter_id = $data['meter_id'];
+    $datetime = $data['datetime'];
     $data_array = $data['data'];
 
     $sql = "SELECT * FROM data_type";
@@ -30,13 +31,13 @@ if ($data) {
 
     // เตรียม statement ล่วงหน้า
     $stmt = $conn->prepare("INSERT INTO meter_data (meter_id, create_date, type_value_id, value) 
-                            VALUES (?, NOW(), ?, ?)");
+                            VALUES (?, ?, ?, ?)");
 
     foreach ($data_array as $key => $valueData) {
         foreach ($column as $type) {
             if ($key === $type['name']) {
                 $type_value_id = $type['id'];
-                $stmt->bind_param("iid", $meter_id, $type_value_id, $valueData);
+                $stmt->bind_param("isid", $meter_id, $datetime, $type_value_id, $valueData);
                 if ($stmt->execute()) {
                     $success_count++;
                 } else {

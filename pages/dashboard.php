@@ -43,9 +43,7 @@ include '../components/session.php';
                         <div class="rounded w-75 px-2" id="chart-linear" style="min-height: 400px; max-width: 1200px;"></div>
                     </div>
                     <div class="w-100 d-flex flex-wrap justify-content-center">
-                        <canvas id="gaugeChart"></canvas>
-                        <br>
-                        <button onclick="updateGauge()">🎲 สุ่มค่าใหม่</button>
+                        <h4 class="px-5">เปลี่ยนรูปแบบการแสดงผล</h4>
                         <div class="rounded w-75 px-2" id="chart-linear-price" style="min-height: 400px; max-width: 1200px;"></div>
                     </div>
                 </div>
