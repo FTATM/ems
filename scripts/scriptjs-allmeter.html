@@ -1,0 +1,92 @@
+<script>
+    AllMeters = [];
+    type = [];
+
+    document.addEventListener("DOMContentLoaded", async () => {
+        await fetchMetersData();
+        // เริ่มแสดงหน้าแรก
+        renderTablePage(AllMeters, currentPage);
+    })
+
+    async function fetchMetersData() {
+        let response = await fetch("../config/fetch-meters.php");
+        let json = await response.json();
+        AllMeters = Object.values(json);
+
+        let responsetype = await fetch("../config/fetch-data_type.php");
+        let jsontype = await responsetype.json();
+        type = jsontype;
+    }
+
+    const rowsPerPage = 10;
+    let currentPage = 1;
+
+    function renderTablePage(data, page) {
+        const table = document.getElementById("table-meter");
+        table.innerHTML = ""; // clear
+
+        // สร้างหัวตาราง (thead)
+        const thead = document.createElement("thead");
+        const headerRow = document.createElement("tr");
+        headerRow.innerHTML = `<th class="text-white" style="background-color:#001B5E;">ชื่อมิเตอร์</th>`;
+
+        type.forEach(col => {
+            const th = document.createElement("th");
+            th.style.backgroundColor = '#001B5E';
+            th.style.color = 'white';
+            th.textContent = col.name;
+            headerRow.appendChild(th);
+        });
+
+        thead.appendChild(headerRow);
+        table.appendChild(thead);
+
+        // slice ข้อมูลเฉพาะหน้าปัจจุบัน
+        const start = (page - 1) * rowsPerPage;
+        const end = start + rowsPerPage;
+        const pageData = data.slice(start, end);
+
+        const tbody = document.createElement("tbody");
+        pageData.forEach(meter => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `<td>${meter.name}</td>`;
+
+            Object.values(meter.data).forEach(column => {
+                const td = document.createElement("td");
+                if (Array.isArray(column) && column.length > 0) {
+                    const last = column[column.length - 1];
+                    td.textContent = last.value; // หรือ `${last.id}` ได้ตามต้องการ
+                } else {
+                    td.textContent = "-";
+                }
+                tr.appendChild(td);
+            });
+
+            tbody.appendChild(tr);
+        });
+
+        table.appendChild(tbody);
+
+        renderPagination(data.length, page);
+    }
+
+    function renderPagination(totalRows, currentPage) {
+        const paginationDiv = document.getElementById("pagination");
+        paginationDiv.innerHTML = "";
+
+        const totalPages = Math.ceil(totalRows / rowsPerPage);
+
+        for (let i = 1; i <= totalPages; i++) {
+            const btn = document.createElement("button");
+            btn.className = `btn btn-sm text-white`;
+            btn.style.backgroundColor = `${i === currentPage ? '#001B5E' : '#555555'}`;
+
+            btn.textContent = i;
+            btn.addEventListener("click", () => {
+                renderTablePage(AllMeters, i);
+            });
+            paginationDiv.appendChild(btn);
+        }
+    }
+
+</script>

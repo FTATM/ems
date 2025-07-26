@@ -236,4 +236,6 @@ $lang = [
     "payment" => "Payments",
     "meter" => "Meter",
     "member" => "Members",
+
+    "allmeter" => "All meter",
 ];

@@ -12,59 +12,6 @@
         await generateDataList();
         await updateData();
 
-
-
-        const ctx = document.getElementById('gaugeChart').getContext('2d');
-
-        const gaugeChart = new Chart(ctx, {
-            type: 'gauge',
-            data: {
-                labels: ['Low', 'Medium', 'High'],
-                datasets: [{
-                    value: 45,
-                    minValue: 0,
-                    data: [30, 40, 30], // รวมต้องเป็น 100 หรือใกล้เคียง
-                    backgroundColor: ['#4caf50', '#ffeb3b', '#f44336'],
-                    borderWidth: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                animation: {
-                    duration: 1000,
-                    easing: 'easeOutBounce'
-                },
-                title: {
-                    display: true,
-                    text: 'System Load (%)',
-                    font: {
-                        size: 18
-                    }
-                },
-                needle: {
-                    radiusPercentage: 2,
-                    widthPercentage: 3.2,
-                    lengthPercentage: 80,
-                    color: 'black'
-                },
-                valueLabel: {
-                    display: true,
-                    fontSize: 20,
-                    formatter: (value) => value.toFixed(1) + ' %'
-                },
-                layout: {
-                    padding: {
-                        bottom: 30
-                    }
-                },
-                plugins: {
-                    legend: {
-                        display: true,
-                        position: 'bottom'
-                    }
-                }
-            }
-        });
     });
 
     async function fetchMetersData() {
@@ -76,10 +23,7 @@
         let jsontype = await responsetype.json();
         type = jsontype;
 
-
-
     }
-
 
     function prepareLinearData(columnIndex) {
         const chartData = [];
@@ -375,32 +319,32 @@
         gaugeChart.update();
     }
 
-    function testapi() {
-        const payload = {
-            meter_id: 1,
-            data: {
-                kW: 6,
-                kWh: 56,
-                Vch_P1: 612,
-                Vch_P2: 534,
-                Vch_P3: 467
-            }
-        };
-        fetch('../config/meter-data.php', {
-            method: 'POST',
-            body: JSON.stringify(payload)
-        })
-            .then(response => response.json())
-            .then(result => {
-                console.log("Result:", result);
-                if (result.status === "success") {
-                } else {
-                    alert("เกิดข้อผิดพลาด: " + result.message);
-                }
-            })
-            .catch(error => {
-                console.error("เกิดข้อผิดพลาด:", error);
-            });
-    }
+    // function testapi() {
+    //     const payload = {
+    //         meter_id: 1,
+    //         data: {
+    //             kW: 6,
+    //             kWh: 56,
+    //             Vch_P1: 612,
+    //             Vch_P2: 534,
+    //             Vch_P3: 467
+    //         }
+    //     };
+    //     fetch('../config/meter-data.php', {
+    //         method: 'POST',
+    //         body: JSON.stringify(payload)
+    //     })
+    //         .then(response => response.json())
+    //         .then(result => {
+    //             console.log("Result:", result);
+    //             if (result.status === "success") {
+    //             } else {
+    //                 alert("เกิดข้อผิดพลาด: " + result.message);
+    //             }
+    //         })
+    //         .catch(error => {
+    //             console.error("เกิดข้อผิดพลาด:", error);
+    //         });
+    // }
 
 </script>

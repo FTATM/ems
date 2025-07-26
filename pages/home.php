@@ -21,6 +21,9 @@ include '../components/session.php';
         <div class="w-100 h-100 d-flex flex-column justify-content-center">
             <?php include "../components/header.php"; ?>
             <div class="bg-opacity-100" style="min-height: 60vh;"></div>
+            <div class="w-100 px-4 text-end">
+                <input class="btn btn-outline-light text-white" value="All" onclick="window.location.href='../pages/allmeter.php';">
+            </div>
             <div id="body" class="w-100 h-100 d-flex flex-wrap justify-content-center align-items-end p-3 gap-3 row-gap-2"></div>
         </div>
     </div>
