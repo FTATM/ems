@@ -3,7 +3,7 @@
         <div>
             <button id="sidebar_btn" class="btn ms-2" style="padding: 0;"><i class="bi bi-list fs-3 w-100 h-100"></i> </button>
             <a class="navbar-brand ms-2" href="../pages/home.php">
-                <img src="../assets/images/logo3.png" alt="Logo" width="200">
+                <img src="../assets/images/logo1600x600tpw.png" alt="Logo" width="200">
             </a>
         </div>
         <div class="w-15 d-none d-lg-flex align-items-center">

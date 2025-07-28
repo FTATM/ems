@@ -27,7 +27,7 @@
             div.className = " d-flex flex-column px-1";
             div.style.minHeight = '10svh';
             div.innerHTML = `
-            <div class="w-100 rounded-3 border p-2" style="height:200px; background-color:<?= $bg?>">
+            <div class="w-100 rounded-3 shadow p-2" style="height:200px; background-color:<?= $bg?>">
                 <div id="display-meter" class="bg-opacity-50 rounded d-flex justify-content-center align-items-center" style="min-height: 50%; background-color:${element.is_active == '0' ? "#00ab41" : "#b90e0a"};">
                     <h3>${avgkW.toFixed(2)} kW</h3>
                 </div>
@@ -37,6 +37,9 @@
                 </div>
             </div>
             `;
+            div.onclick = function () {
+                window.location.href = "../pages/dashboard.php?meter=" + element.id;
+            };
             body.appendChild(div);
         });
     }

@@ -1,0 +1,121 @@
+<script>
+    const rowsPerPage = 10;
+    let currentPage = 1;
+    document.addEventListener("DOMContentLoaded", async () => {
+        let response = await fetch("../config/fetch-location.php");
+        let json = await response.json();
+        let locations = Object.values(json);
+        renderTablePage(locations, currentPage);
+    })
+
+    function renderTablePage(data, page) {
+        const table = document.getElementById("table-location");
+        table.innerHTML = ""; // clear
+
+        // สร้างหัวตาราง (thead)
+        const thead = document.createElement("thead");
+        const headerRow = document.createElement("tr");
+        headerRow.innerHTML = `
+        <th class="text-white w-25" style="background-color:#001B5E;"><?=$lang['id'];?></th>
+        <th class="text-white w-50" style="background-color:#001B5E;"><?=$lang['name'];?></th>
+        <th class="text-white w-25" style="background-color:#001B5E;"><?=$lang['action'];?></th>
+        `;
+
+
+        thead.appendChild(headerRow);
+        table.appendChild(thead);
+
+        // slice ข้อมูลเฉพาะหน้าปัจจุบัน
+        const start = (page - 1) * rowsPerPage;
+        const end = start + rowsPerPage;
+        const pageData = data.slice(start, end);
+
+        const tbody = document.createElement("tbody");
+        pageData.forEach(meter => {
+            const tr = document.createElement("tr");
+
+            tr.innerHTML = `
+            <td>${meter.id}</td>
+            <td>${meter.name}</td>
+            <td class = "d-flex ">
+                <input class="btn btn-sm btn-warning mx-3" value="Rename" onclick="openRenameModal(1, '${meter.name}')">
+                <input class="btn btn-sm btn-danger mx-3" value="Delete" onclick="openDeleteModal(1)">
+            </td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        table.appendChild(tbody);
+
+        renderPagination(data.length, page);
+    }
+
+    function renderPagination(totalRows, currentPage) {
+        const paginationDiv = document.getElementById("pagination");
+        paginationDiv.innerHTML = "";
+
+        const totalPages = Math.ceil(totalRows / rowsPerPage);
+
+        for (let i = 1; i <= totalPages; i++) {
+            const btn = document.createElement("button");
+            btn.className = `btn btn-sm text-white`;
+            btn.style.backgroundColor = `${i === currentPage ? '#001B5E' : '#555555'}`;
+
+            btn.textContent = i;
+            btn.addEventListener("click", () => {
+                renderTablePage(AllMeters, i);
+            });
+            paginationDiv.appendChild(btn);
+        }
+    }
+
+    function updateAction(id, action, value) {
+        let form = new FormData();
+        form.append("id", id);           // เพิ่ม id เข้าไปด้วย (จำเป็นสำหรับการอัปเดต)
+        form.append(action, value);      // เช่น form.append("status", "active")
+
+        fetch('../config/update-location.php', {
+            method: 'POST',
+            body: form
+        })
+            .then(response => response.json())  // แก้การเรียก .json() ให้ถูกต้อง
+            .then(data => {
+                if (data.success) {
+                    console.log("อัปเดตสำเร็จ:", data.message);
+                } else {
+                    console.error("เกิดข้อผิดพลาด:", data.message);
+                }
+            })
+            .catch(error => {
+                console.error("ข้อผิดพลาดในการเชื่อมต่อ:", error);
+            });
+    }
+
+    function openRenameModal(id, currentName) {
+        document.getElementById('rename-id').value = id;
+        document.getElementById('new-name').value = currentName;
+        var modal = new bootstrap.Modal(document.getElementById('renameModal'));
+        modal.show();
+    }
+
+    function submitRename() {
+        let id = document.getElementById('rename-id').value;
+        let newName = document.getElementById('new-name').value;
+
+        updateAction(id, 'rename', newName);
+        bootstrap.Modal.getInstance(document.getElementById('renameModal')).hide();
+    }
+
+    function openDeleteModal(id) {
+        document.getElementById('delete-id').value = id;
+        var modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        modal.show();
+    }
+
+    function submitDelete() {
+        let id = document.getElementById('delete-id').value;
+
+        updateAction(id, 'delete', 1); // value = 1 หมายถึงลบ
+        bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
+    }
+</script>

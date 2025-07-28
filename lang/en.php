@@ -1,6 +1,7 @@
 <?php
 
 $lang = [
+    "id"=> "ID",
     "chooselang" => "Choose language",
     "choosetheme" => "Choose theme",
 
@@ -238,4 +239,8 @@ $lang = [
     "member" => "Members",
 
     "allmeter" => "All meter",
+    "typeofvalue" => "Type of value",
+    "location" => "location",
+    "building" => "building",
+    "floor" => "floor",
 ];

@@ -5,11 +5,11 @@
         </div>
         <li class="d-flex align-items-center gap-2">
             <i class="bi bi-house"></i>
-            <span><a class="nav-link active text" href="../pages/dashboard.php"><?= $lang['dashboard'] ?></a></span>
+            <span><a class="nav-link active text" href="../pages/locations.php"><?= $lang['location'] ?></a></span>
         </li>
         <li class="d-flex align-items-center gap-2">
             <i class="bi bi-journal-check"></i>
-            <span><a class="nav-link active text" href="../pages/bill.php"><?= $lang['bill'] ?></a></span>
+            <span><a class="nav-link active text" href="../pages/buildings.php"><?= $lang['building'] ?></a></span>
         </li>
         <li class="d-flex align-items-center gap-2">
             <i class="bi bi-file-person"></i>

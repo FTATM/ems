@@ -1,6 +1,7 @@
 <?php
 
 $lang = [
+    "id"=> "ID",
     "chooselang" => "เลือกภาษา",
     "choosetheme" => "เลือกธีม",
 
@@ -238,4 +239,8 @@ $lang = [
     "member" => "สมาชิก",
 
     "allmeter" => "มิเตอร์ทั้งหมด",
+    "typeofvalue" => "ชนิดของข้อมูล",
+    "location" => "สถานที่",
+    "building" => "อาคาร",
+    "floor" => "ชั้น",
 ];
