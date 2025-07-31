@@ -243,4 +243,5 @@ $lang = [
     "location" => "location",
     "building" => "building",
     "floor" => "floor",
+    "room" => "room",
 ];

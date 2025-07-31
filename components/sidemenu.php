@@ -13,7 +13,7 @@
         </li>
         <li class="d-flex align-items-center gap-2">
             <i class="bi bi-file-person"></i>
-            <span><a class="nav-link active text" href="../pages/payment.php"><?= $lang['payment'] ?></a></span>
+            <span><a class="nav-link active text" href="../pages/rooms.php"><?= $lang['room'] ?></a></span>
         </li>
         <li class="d-flex align-items-center gap-2">
             <i class="bi bi-file-person"></i>

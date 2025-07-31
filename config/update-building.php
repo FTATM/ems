@@ -1,0 +1,49 @@
+<?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+header('Content-Type: application/json');
+
+include "../config/no-crash.php";
+include "../config/connect.php";
+
+// ตรวจสอบการเชื่อมต่อ
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// รับค่าจาก POST
+$id = $_POST['id'] ?? null;
+$status = $_POST['status'] ?? '';
+$value = $_POST['value'] ?? '';
+
+if (!$id || !$status || $value === '') {
+    echo json_encode(['success' => false, 'message' => 'ข้อมูลไม่ครบถ้วน']);
+    exit;
+}
+
+switch ($status) {
+    case "rename":
+        $stmt = $conn->prepare("UPDATE locations SET name = ? WHERE id = ?");
+        $stmt->bind_param("si", $value, $id);
+        break;
+
+    case "delete":
+        $stmt = $conn->prepare("UPDATE locations SET is_deleted = 1 WHERE id = ?");
+        $stmt->bind_param("i", $id);
+        break;
+
+    default:
+        echo json_encode(['success' => false, 'message' => 'สถานะไม่ถูกต้อง']);
+        exit;
+}
+
+// ทำการ execute
+if ($stmt->execute()) {
+    echo json_encode(['success' => true, 'message' => 'อัปเดตข้อมูลสำเร็จ']);
+} else {
+    echo json_encode(['success' => false, 'message' => 'ไม่สามารถอัปเดตได้']);
+}
+
+$stmt->close();
+$conn->close();

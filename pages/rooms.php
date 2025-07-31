@@ -10,7 +10,7 @@ include '../components/session.php';
 
 <head>
     <meta charset="UTF-8">
-    <title><?= $lang['allmeter'] ?> - AMS</title>
+    <title><?= $lang['room'] ?> - AMS</title>
 </head>
 
 <body style="background-color: <?= $bg ?>; color: <?= $text ?>!important; min-height: 100svh;">
@@ -19,8 +19,8 @@ include '../components/session.php';
         <div class="w-100 h-100 d-flex flex-column justify-content-center">
             <?php include "../components/header.php"; ?>
             <div class="bg-secondary bg-opacity-25 d-flex flex-column pt-5 align-items-center" style="min-height: 80svh;">
-            <div class="my-5 text-center fs-1 fw-bolder">Location Management</div>
-                <table id="table-location" class="container table table-bordered table-striped" style="height: 90%;">
+            <div class="my-5 text-center fs-1 fw-bolder">Room Management</div>
+                <table id="table-room" class="container table " style="height: 90%;">
                 </table>
                 <div id="pagination" class="mt-3 d-flex gap-2 justify-content-center" style="height: 10%;"></div>
             </div>
@@ -73,7 +73,7 @@ include '../components/session.php';
         <?= json_encode($_SESSION['theme'], JSON_UNESCAPED_UNICODE); ?>
     </script>
     <?php include "../scripts/scriptjs.html"; ?>
-    <?php include "../scripts/scriptjs-location.html"; ?>
+    <?php include "../scripts/scriptjs-room.html"; ?>
 </body>
 
 </html>

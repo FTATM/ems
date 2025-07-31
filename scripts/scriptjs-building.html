@@ -1,15 +1,19 @@
 <script>
     const rowsPerPage = 10;
     let currentPage = 1;
+    let locations = [];
     document.addEventListener("DOMContentLoaded", async () => {
-        let response = await fetch("../config/fetch-locations.php");
+        let response_ = await fetch("../config/fetch-locations.php");
+        let json_ = await response_.json();
+        locations = Object.values(json_);
+        let response = await fetch("../config/fetch-buildings.php");
         let json = await response.json();
-        let locations = Object.values(json);
-        renderTablePage(locations, currentPage);
+        let building = Object.values(json);
+        renderTablePage(building, currentPage);
     })
 
     function renderTablePage(data, page) {
-        const table = document.getElementById("table-location");
+        const table = document.getElementById("table-building");
         table.innerHTML = ""; // clear
 
         // สร้างหัวตาราง (thead)
@@ -17,8 +21,9 @@
         const headerRow = document.createElement("tr");
         headerRow.innerHTML = `
         <th class="text-white w-25" style="background-color:#001B5E;"><?=$lang['id'];?></th>
+        <th class="text-white w-25" style="background-color:#001B5E;"><?=$lang['location'];?></th>
         <th class="text-white w-50" style="background-color:#001B5E;"><?=$lang['name'];?></th>
-        <th class="text-white w-25" style="background-color:#001B5E;"><?=$lang['action'];?></th>
+        <th class="text-white" style="width:10%; background-color:#001B5E;"><?=$lang['action'];?></th>
         `;
 
 
@@ -31,14 +36,15 @@
         const pageData = data.slice(start, end);
 
         const tbody = document.createElement("tbody");
-        pageData.forEach(meter => {
+        pageData.forEach(row => {
             const tr = document.createElement("tr");
 
             tr.innerHTML = `
-            <td>${meter.id}</td>
-            <td>${meter.name}</td>
+            <td>${row.id}</td>
+            <td>${getLocationName(row.location_id).name}</td>
+            <td>${row.name}</td>
             <td class = "d-flex ">
-                <input class="btn btn-sm btn-warning mx-3" value="Rename" onclick="openRenameModal(1, '${meter.name}')">
+                <input class="btn btn-sm btn-warning mx-3" value="Rename" onclick="openRenameModal(1, '${row.name}')">
                 <input class="btn btn-sm btn-danger mx-3" value="Delete" onclick="openDeleteModal(1)">
             </td>
             `;
@@ -48,6 +54,16 @@
         table.appendChild(tbody);
 
         renderPagination(data.length, page);
+    }
+
+    function getLocationName(id) {
+        let local = [];
+        locations.forEach(row => {
+            if (row.id === id) {
+                local = row;
+            }
+        });
+        return local ;
     }
 
     function renderPagination(totalRows, currentPage) {
@@ -74,7 +90,7 @@
         form.append("id", id);           // เพิ่ม id เข้าไปด้วย (จำเป็นสำหรับการอัปเดต)
         form.append(action, value);      // เช่น form.append("status", "active")
 
-        fetch('../config/update-location.php', {
+        fetch('../config/update-building.php', {
             method: 'POST',
             body: form
         })
