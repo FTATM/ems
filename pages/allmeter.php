@@ -33,6 +33,7 @@ include '../components/session.php';
     <script id="theme-data" type="application/json">
         <?= json_encode($_SESSION['theme'], JSON_UNESCAPED_UNICODE); ?>
     </script>
+    
     <?php include "../scripts/scriptjs.html"; ?>
     <?php include "../scripts/scriptjs-allmeter.html"; ?>
 </body>

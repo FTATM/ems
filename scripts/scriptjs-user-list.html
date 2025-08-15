@@ -1,0 +1,191 @@
+<script> 
+let currentPage = 1;
+const  rowsPerPage = 10 ; 
+let user_data = [] ;
+
+async function fetchUserData() {
+    const response = await fetch('../config/fetch-user.php'); 
+    return await response.json();
+}
+
+
+document.addEventListener("DOMContentLoaded", async () => {
+    user_data = await fetchUserData(); 
+    // console.log('user_data:', user_data); // เพิ่มบรรทัดนี้เพื่อดูข้อมูลที่ดึงมา
+    renderTablePage(user_data, currentPage) 
+    renderPagination(user_data.length, currentPage) ;
+});
+
+function renderTablePage(user_data, currentPage) {
+    const table = document.getElementById('table-user');
+    // console.log('table:', table); // ต้องไม่เป็น null
+
+    table.innerHTML = "";
+
+    // สร้างหัวตาราง (thead)
+    const thead = document.createElement("thead");
+    const headerRow = document.createElement("tr") ;
+    
+    headerRow.innerHTML = `
+    <th class="text-white" style="background-color:#001B5E;">ID</th>
+    <th class="text-white" style="background-color:#001B5E;">Username</th>
+    <th class="text-white" style="background-color:#001B5E;">Full Name</th>
+    <th class="text-white" style="width:10%; background-color:#001B5E;">Phone</th>
+    <th class="text-white" style="width:10%; background-color:#001B5E;">Email</th>
+    <th class="text-white" style="width:10%; background-color:#001B5E;">ID Card</th>
+    <th class="text-white" style="width:40%; background-color:#001B5E;">Address</th>
+    <th class="text-white" style="width:40%; background-color:#001B5E;">Actions</th>
+`;
+    thead.appendChild(headerRow) ;
+    table.appendChild(thead) ; 
+
+    // slice ข้อมูลเฉพาะหน้าปัจจุบัน
+    const start = (currentPage - 1) * rowsPerPage;
+    const end = start + rowsPerPage;
+    const pageData = user_data.slice(start, end);
+
+    // สร้าง tbody
+        const tbody = document.createElement("tbody");
+        pageData.forEach(row => {
+            const tr = document.createElement("tr");
+
+            tr.innerHTML = `
+            <td>${row.id}</td>
+            <td>${row.username}</td>
+            <td>${row.full_name}</td>
+            <td>${row.phone}</td>
+            <td>${row.email}</td>
+            <td>${row.id_card}</td>
+            <td>${row.address}</td>
+            <td class="d-flex">
+                <input class="btn btn-sm btn-warning mx-3" value="Edit" onclick="openEditModal(${row.id})">
+                <input class="btn btn-sm btn-danger mx-3" value="Delete" onclick="openDeleteModal(${row.id})">
+            </td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        table.appendChild(tbody);
+        
+}
+
+// function ดึงข้อมูลผู้ใช้ตาม ID
+function getUser(id) {
+    let user = [];
+    user_data.forEach(row => {
+        if (row.id === id) {
+            user = row;
+        }
+    })
+    return user; 
+}
+
+function renderPagination(totalRows, currentPage) {
+    const paginationDiv = document.getElementById("pagination") 
+    paginationDiv.innerHTML = "" ;
+
+    const totalPages = Math.ceil(totalRows / rowsPerPage) ;
+
+    for(let i=1 ; i<= totalPages; i++ ){
+        const btn = document.createElement("button"); 
+        btn.className = `btn btn-sm text-white`; 
+        btn.style.backgroundColor = `${i === currentPage ? '#001B5E' : '#555555'}` ; 
+        btn.textContent = i;
+
+        btn.addEventListener("click", () => {
+            currentPage = i; // อัปเดตหน้าปัจจุบัน
+            renderTablePage(user_data, i)
+            renderPagination(user_data.length, i);
+        });
+        paginationDiv.appendChild(btn);
+        
+    }
+}
+
+function UpdatedActionUser(id,action,value) {
+   let form = new FormData();
+   form.append("id", id); 
+   form.append("action", action);  // full_name, phone, address inside => action[] 
+   form.append("value", value); 
+
+   fetch('../config/update-user.php', {
+            method: 'POST',
+            body: form
+        })
+            .then(response => response.json())  // แก้การเรียก .json() ให้ถูกต้อง
+            .then(data => {
+                if (data.success) {
+                    console.log("อัปเดตสำเร็จ:", data.message);
+                    fetchUserData().then(data => {
+                        user_data = data; // อัปเดตข้อมูลผู้ใช้
+                        
+                        renderTablePage(user_data, currentPage); // รีเฟรชตาราง
+                        renderPagination(user_data.length, currentPage); // รีเฟรชการแบ่งหน้า
+                    });
+
+                } else {
+                    console.error("เกิดข้อผิดพลาด:", data.message);
+                }
+            })
+            .catch(error => {
+                console.error("ข้อผิดพลาดในการเชื่อมต่อ:", error);
+            });
+}
+ 
+// open Edit 
+function openEditModal(id) {
+   const userArr = Object.values(user_data);
+    const user = userArr.find(u => u.id == id);
+   console.log(typeof user);
+   console.log(typeof id, 'id:', id); 
+   
+   if(!user) return alert('not found user') ; 
+   document.getElementById('edit-id').value = user.id;
+   document.getElementById('edit-full_name').value = user.full_name; 
+   document.getElementById('edit-phone').value = user.phone
+   document.getElementById('edit-address').value = user.address;
+
+   var modal = new bootstrap.Modal(document.getElementById('editModal'), {
+       keyboard: false
+   });
+   modal.show();
+}
+
+function submitEdit() {
+    let id = document.getElementById('edit-id').value; 
+    let full_name = document.getElementById('edit-full_name').value; 
+    let phone = document.getElementById('edit-phone').value; 
+    let address = document.getElementById('edit-address').value; 
+
+    UpdatedActionUser(id, 'full_name', full_name) ;
+    UpdatedActionUser(id, 'phone', phone) ;
+    UpdatedActionUser(id, 'address', address) ;
+   // close modal
+  bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
+}
+
+// delete user 
+function openDeleteModal(id) {
+   document.getElementById('delete-id').value = id; 
+    const userArr = Object.values(user_data);
+   const user = userArr.find(u => u.id == id);
+
+   if (!user) return alert('not found user');
+   var modal = new bootstrap.Modal(document.getElementById('deleteModal'), {
+       keyboard: false
+   });
+   modal.show();
+}
+
+function submitDelete() {
+    let id = document.getElementById('delete-id').value;
+    UpdatedActionUser(id, 'delete', true);
+    bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
+}
+
+// call test function 
+// UpdatedActionUser(2, 'full_name', 'mark');
+// UpdatedActionUser(2, 'phone', '0812345123');
+// UpdatedActionUser(2, 'address', 'Bangkok 100245555');
+
+</script>

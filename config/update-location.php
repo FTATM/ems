@@ -14,15 +14,16 @@ if ($conn->connect_error) {
 
 // รับค่าจาก POST
 $id = $_POST['id'] ?? null;
-$status = $_POST['status'] ?? '';
+$action = $_POST['action'] ?? '';
 $value = $_POST['value'] ?? '';
 
-if (!$id || !$status || $value === '') {
+
+if (!$id || !$action || $value === '') {
     echo json_encode(['success' => false, 'message' => 'ข้อมูลไม่ครบถ้วน']);
     exit;
 }
 
-switch ($status) {
+switch ($action) {
     case "rename":
         $stmt = $conn->prepare("UPDATE locations SET name = ? WHERE id = ?");
         $stmt->bind_param("si", $value, $id);
