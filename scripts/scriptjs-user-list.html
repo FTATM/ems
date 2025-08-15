@@ -178,7 +178,7 @@ function openDeleteModal(id) {
 }
 
 function submitDelete() {
-    document.getElementById('delete-id').value = id ;
+    let id = document.getElementById('delete-id').value;
     UpdatedActionUser(id, 'delete', true);
     bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
 }

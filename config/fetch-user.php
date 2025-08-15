@@ -4,7 +4,8 @@
 include '../config/connect.php';
 // fetch data in table 
 function fetchUsers($conn) {
-    $result = $conn->query("SELECT * FROM users") ;
+    // Edit delete
+    $result = $conn->query("SELECT * FROM users WHERE is_deleted = 0") ;
     $users = [] ;
 
     while ($rows = $result->fetch_assoc()) {
