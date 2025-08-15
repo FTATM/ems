@@ -11,7 +11,7 @@ include '../components/session.php';
 
 <head>
     <meta charset="UTF-8">
-    <title><?= $lang['home'] ?> - AMS</title>
+    <title><?= $lang['home'] ?> - EMS</title>
 </head>
 
 <body style="background-color: <?= $bg ?>; color: <?= $text ?>!important; min-height: 100svh;">

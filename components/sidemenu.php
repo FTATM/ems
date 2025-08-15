@@ -5,15 +5,15 @@
         </div>
         <li class="d-flex align-items-center gap-2">
             <i class="bi bi-house"></i>
-            <span><a class="nav-link active text" href="../pages/locations.php"><?= $lang['location'] ?></a></span>
+            <span><a class="nav-link text" href="../pages/locations.php"><?= $lang['location'] ?></a></span>
         </li>
         <li class="d-flex align-items-center gap-2">
             <i class="bi bi-journal-check"></i>
-            <span><a class="nav-link active text" href="../pages/buildings.php"><?= $lang['building'] ?></a></span>
+            <span><a class="nav-link text" href="../pages/buildings.php"><?= $lang['building'] ?></a></span>
         </li>
         <li class="d-flex align-items-center gap-2">
             <i class="bi bi-file-person"></i>
-            <span><a class="nav-link active text" href="../pages/rooms.php"><?= $lang['room'] ?></a></span>
+            <span><a class="nav-link text" href="../pages/rooms.php"><?= $lang['room'] ?></a></span>
         </li>
         <li class="d-flex align-items-center gap-2">
             <i class="bi bi-file-person"></i>
@@ -21,11 +21,11 @@
         </li>
         <li class="d-flex align-items-center gap-2">
             <i class="bi bi-file-person"></i>
-            <span><a class="nav-link active text" href="../pages/member.php"><?= $lang['member'] ?></a></span>
+            <span><a class="nav-link text" href="../pages/member.php"><?= $lang['member'] ?></a></span>
         </li>
         <li class="d-flex align-items-center gap-2">
             <i class="bi bi-bug"></i>
-            <span><a class="nav-link active text" href="../pages/random.php">Random data</a></span>
+            <span><a class="nav-link text" href="../pages/random.php">Random data</a></span>
         </li>
         <li class="gap-2">
             <button class="btn btn-link nav-link text px-0" data-bs-toggle="collapse" data-bs-target="#systemSubNav" aria-expanded="false">

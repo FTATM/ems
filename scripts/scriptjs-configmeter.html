@@ -1,0 +1,255 @@
+<script>
+    let meters = [];
+    let selected_meter = [];
+    let types = [];
+    let notifies = [];
+    document.addEventListener("DOMContentLoaded", async () => {
+        await fetchAll();
+        generateMeter(meters);
+    })
+    async function fetchAll() {
+        meters = await fetchMetersData();
+        types = await fetchTypes();
+        notifies = await fetchnotify();
+    }
+    async function fetchMetersData() {
+        let response = await fetch("../config/fetch-meters.php");
+        let json = await response.json();
+        return Object.values(json);
+    }
+    async function fetchTypes() {
+        let response = await fetch("../config/fetch-data_type.php");
+        let json = await response.json();
+        return json;
+    }
+    async function fetchnotify() {
+        let response = await fetch("../config/fetch-notify.php");
+        let json = await response.json();
+        return json;
+    }
+
+    function generateMeter(meters) {
+        let list = document.getElementById('meter-list');
+        list.innerHTML = '';
+        console.log(meters);
+        meters.forEach(meter => {
+            let div = document.createElement('div');
+            div.className = `px-3 mb-2 fw-bold d-flex justify-content-center align-content-center`;
+            div.style.height = '40px';
+            const container = document.createElement("div");
+            container.id = 'meter';
+            container.className = "container text-center align-content-center rounded bg choice";
+            container.textContent = meter.name;
+            div.onclick = () => loadDataMeter(meter);
+            div.appendChild(container);
+            list.appendChild(div);
+        });
+    }
+
+    async function loadDataMeter(meter) {
+        if (Object.keys(meter).length > 0) {
+            selected_meter = meter;
+            let config = document.getElementById('config');
+            if (document.getElementById("menu-config-1").classList.contains("active")) {
+                config.innerHTML = `
+            <div class="w-100 mt-2 d-flex">
+                <div class="w-25 text-end"> <h5>Meter name :</h5> </div>
+                <div class="w-75 px-2"> <input class="w-lg-25 w-d-50  form-control " value='${meter.name}'> </div>
+            </div>
+
+            <div class="w-100 mt-2 d-flex">
+                <div class="w-25 text-end"> <h5>Active :</h5> </div>
+                <div class="w-75 px-2"> <input type="checkbox" class="form-check" ${meter.is_active == 0 ? 'checked' : ''}> </div>
+            </div>
+
+            <div class="w-100 mt-2 d-flex">
+                <div class="w-25 text-end"><h5>Room ID :</h5></div>
+                <div class="w-75 px-2"><input class="w-d-50 w-lg-25 form-control " value="${meter.room_id}"></div>
+            </div>
+
+        `;
+            }
+            else if (document.getElementById("menu-config-2").classList.contains("active")) {
+                config.innerHTML = '';
+                let mother = document.createElement('div');
+                mother.className = 'w-100 h-100 d-flex';
+                let notiData = notifies.filter(notify => notify.meter_id == meter.id);
+                notiData.forEach(row => {
+                    let div = document.createElement('div');
+                    div.className = 'p-2';
+                    div.style.width = '280px';
+                    div.style.height = '380px';
+                    div.innerHTML = `
+                <div class="text-center border fs-5 rounded-top fw-bold align-content-center" style="height:13%; background-color: #001B5E;">${row.name}</div>
+                <div class="bg-white rounded-bottom shadow w-100 p-1 text-black">
+                    <h6 class="ps-2"for="mark"><?=$lang['mark']?></h6>
+                    <select id="select-mark-${row.id}" class="form-select form-select-sm">
+                        <option ${row.mark == '<' ? 'selected' : ''} value="<"><?=$lang['<']?> (<)</option>
+                        <option ${row.mark == '>' ? 'selected' : ''} value=">"><?=$lang['>']?> (>)</option>
+                        <option ${row.mark == '=' ? 'selected' : ''} value="="><?=$lang['=']?> (=)</option>
+                    </select>
+                    <h6 class="ps-2"for="value"><?=$lang['value']?></h6>
+                    <input id="value-${row.id}" class="form-control form-control-sm" type="number" value="${row.value}" placeholder="Number value">
+                    <h6 class="ps-2"for="token"><?=$lang['token']?></h6>
+                    <input id="token-${row.id}" class="form-control form-control-sm" type="text" value="${row.token_line}" placeholder="Line token here">
+                    <h6 class="ps-2"for="email"><?=$lang['email']?></h6>
+                    <input id="email-${row.id}" class="form-control form-control-sm" type="text" value="${row.email}" placeholder="paste email here">
+                    <div class="w-100 py-2 px-3 d-flex justify-content-between">
+                        <input id="active-${row.id}" onclick="UpdateStatusNotify(${meter.id},${row.id},'active')" value="${row.is_active == 0 ? 'Enabled' : 'Disabled'}" class="btn btn-sm ${row.is_active == 0 ? 'btn-success' : 'btn-danger'}" style="width:40%;">
+                        <input id="update-${row.id}" onclick="UpdateStatusNotify(${meter.id},${row.id},'update')" value="Save" class="btn btn-sm btn-primary" style="width:40%;">
+                    </div>
+                </div>
+                `;
+                    mother.appendChild(div);
+                });
+                config.appendChild(mother);
+            }
+            else if (document.getElementById("menu-config-3").classList.contains("active")) {
+                config.innerHTML = `
+            <div class="w-100 mt-2 d-flex">
+                <div class="w-25 text-end"><h5>Protocol :</h5></div>
+                <div class="w-75 px-2">
+                    <select class="w-25 form-select">
+                        <option value="tcp" ${meter.protocol === 'tcp' ? 'selected' : ''}>TCP</option>
+                        <option value="rs485" ${meter.protocol === 'rs485' ? 'selected' : ''}>RS485</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="w-100 mt-2 d-flex">
+                <div class="w-25 text-end"><h5>DNS :</h5></div>
+                <div class="w-75 px-2"><input class="w-d-50 w-lg-25 form-control " value="${meter.dns}"></div>
+            </div>
+
+            <div class="w-100 mt-2 d-flex">
+                <div class="w-25 text-end"><h5>Port :</h5></div>
+                <div class="w-75 px-2"><input type="number" class="w-d-50 w-lg-25 form-control" value="${meter.port}"></div>
+            </div>
+
+            <div class="w-100 mt-2 d-flex">
+                <div class="w-25 text-end"><h5>IP Address :</h5></div>
+                <div class="w-75 px-2"><input class="w-d-50 w-lg-25 form-control " value="${meter.ip_address}"></div>
+            </div>
+
+            <div class="w-100 mt-2 d-flex">
+                <div class="w-25 text-end"><h5>Submask :</h5></div>
+                <div class="w-75 px-2"><input class="w-d-50 w-lg-25 form-control " value="${meter.submask}"></div>
+            </div>
+            <div class="w-100 mt-2 d-flex">
+                <div class="w-25 text-end"><h5>RS485</h5></div>
+                <div class="w-75 d-flex">
+                    <div class="">
+                        <div class="text-center"><h5>Serial Port</h5></div>
+                        <div class="px-4"><input class="form-control" value="${meter.serial_port}"></div>
+                    </div>
+
+                    <div class="">
+                        <div class="text-center"><h5>Baud Rate</h5></div>
+                        <div class="px-4"><input class="form-control" value="${meter.buad_rate}"></div>
+                    </div>
+
+                    <div class="">
+                        <div class="text-center"><h5>Data Bits</h5></div>
+                        <div class="px-4"><input type="number" class="form-control" value="${meter.data_bits}"></div>
+                    </div>
+
+                    <div class="">
+                        <div class="text-center"><h5>parily</h5></div>
+                        <div class="px-4"><input class="form-control" value="${meter.parily}"></div>
+                    </div>
+
+                    <div class="">
+                        <div class="text-center"><h5>Stop Bits</h5></div>
+                        <div class="px-4"><input type="number" class="form-control" value="${meter.stop_bits}"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="w-100 mt-2 d-flex">
+                <div class="w-25 text-end"><h5>Slave ID :</h5></div>
+                <div class="w-75 px-2"><input type="number" class="w-d-50 w-lg-25 form-control" value="${meter.slave_id}"></div>
+            </div>
+
+            <div class="w-100 mt-2 d-flex">
+                <div class="w-25 text-end"><h5>Address :</h5></div>
+                <div class="w-75 px-2"><input class="w-d-50 w-lg-25 form-control " value="${meter.address}"></div>
+            </div>
+
+            <div class="w-100 mt-2 d-flex">
+                <div class="w-25 text-end"><h5>Quality :</h5></div>
+                <div class="w-75 px-2"><input type="number" class="w-d-50 w-lg-25 form-control" value="${meter.quality}"></div>
+            </div>
+
+            <div class="w-100">
+                <h5>Connect meter</h5>
+                <input id="btn-connect" class="btn btn-sm btn-primary" value="Connect">
+                <label id="label-btn-connect" for="btn-connect"></label>
+            </div>
+            `;
+            }
+        }
+    }
+
+    async function UpdateStatusNotify(meter_id, notify_id, status) {
+        let formdata = new FormData();
+        formdata.append('id', notify_id);
+        formdata.append('status', status);
+
+        if (status === 'active') {
+            let btn_active = document.getElementById('active-' + notify_id);
+            let is_active = btn_active.classList.contains('btn-success') ? 1 : 0;
+            formdata.append('value', is_active);
+        } else if (status === 'update') {
+            let select = document.getElementById('select-mark-' + notify_id);
+            let value = document.getElementById('value-' + notify_id);
+            let token = document.getElementById('token-' + notify_id);
+            let email = document.getElementById('email-' + notify_id);
+
+            if (select && value && token && email) {
+                formdata.append('mark', select.value);
+                formdata.append('value', value.value);
+                formdata.append('token', token.value);
+                formdata.append('email', email.value);
+            } else {
+                console.error('One or more input elements not found for ID:', notify_id);
+                return;
+            }
+        }
+
+        showLoading(); // แสดง loading
+        const response = await fetch('../config/update-notify.php', {
+            method: 'POST',
+            body: formdata
+        });
+        const data = await response.json();
+        if (data.success) {
+            console.log(data.message);
+            await fetchAll();
+            loadDataMeter(meters[meter_id - 1]);
+        } else {
+            console.error(`เกิดข้อผิดพลาด: ${data.message || 'ไม่สามารถบันทึกข้อมูลได้'}`);
+        }
+        hideLoading(); // ซ่อนไม่ว่าจะสำเร็จหรือไม่
+    }
+
+    document.getElementById("menu-config-1").addEventListener("click", function () {
+        document.getElementById("menu-config-1").classList.add("active");
+        document.getElementById("menu-config-2").classList.remove("active");
+        document.getElementById("menu-config-3").classList.remove("active");
+        loadDataMeter(selected_meter);
+    });
+
+    document.getElementById("menu-config-2").addEventListener("click", function () {
+        document.getElementById("menu-config-2").classList.add("active");
+        document.getElementById("menu-config-1").classList.remove("active");
+        document.getElementById("menu-config-3").classList.remove("active");
+        loadDataMeter(selected_meter);
+    });
+
+    document.getElementById("menu-config-3").addEventListener("click", function () {
+        document.getElementById("menu-config-3").classList.add("active");
+        document.getElementById("menu-config-1").classList.remove("active");
+        document.getElementById("menu-config-2").classList.remove("active");
+        loadDataMeter(selected_meter);
+    });
+</script>
