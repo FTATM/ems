@@ -39,4 +39,24 @@
         document.body.appendChild(notifyDiv);
     }
 
+    function showLoading() {
+        if (document.getElementById('loading-overlay')) return; // ป้องกันซ้อนซ้ำ
+
+        const overlay = document.createElement('div');
+        overlay.id = 'loading-overlay';
+
+        const spinner = document.createElement('div');
+        spinner.id = 'loading-spinner';
+
+        overlay.appendChild(spinner);
+        document.body.appendChild(overlay);
+    }
+
+    function hideLoading() {
+        const overlay = document.getElementById('loading-overlay');
+        if (overlay) {
+            overlay.remove();
+        }
+    }
+
 </script>
