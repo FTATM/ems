@@ -1,6 +1,7 @@
 <script>
     const rowsPerPage = 10;
     let currentPage = 1;
+    let lastActiveElement = null;
     document.addEventListener("DOMContentLoaded", async () => {
         let response = await fetch("../config/fetch-locations.php");
         let json = await response.json();
@@ -38,8 +39,8 @@
             <td>${meter.id}</td>
             <td>${meter.name}</td>
             <td class = "d-flex ">
-                <input class="btn btn-sm btn-warning mx-3" value="Rename" onclick="openRenameModal(1, '${meter.name}')">
-                <input class="btn btn-sm btn-danger mx-3" value="Delete" onclick="openDeleteModal(1)">
+                <input class="btn btn-sm btn-warning mx-3" value="Rename" onclick="openRenameModal(${meter.id}, '${meter.name}')">
+                <input class="btn btn-sm btn-danger mx-3" value="Delete" onclick="openDeleteModal(${meter.id})">
             </td>
             `;
             tbody.appendChild(tr);
@@ -72,7 +73,8 @@
     function updateAction(id, action, value) {
         let form = new FormData();
         form.append("id", id);           // เพิ่ม id เข้าไปด้วย (จำเป็นสำหรับการอัปเดต)
-        form.append(action, value);      // เช่น form.append("status", "active")
+        form.append("action", action);      // เช่น form.append("status", "active")
+        form.append("value", value);
 
         fetch('../config/update-location.php', {
             method: 'POST',
@@ -82,6 +84,7 @@
             .then(data => {
                 if (data.success) {
                     console.log("อัปเดตสำเร็จ:", data.message);
+                    window.location.reload(); // รีเฟรชหน้าเพื่อแสดงข้อมูลที่อัปเดต
                 } else {
                     console.error("เกิดข้อผิดพลาด:", data.message);
                 }
@@ -92,9 +95,10 @@
     }
 
     function openRenameModal(id, currentName) {
+        lastActiveElement = document.activeElement;
         document.getElementById('rename-id').value = id;
         document.getElementById('new-name').value = currentName;
-        var modal = new bootstrap.Modal(document.getElementById('renameModal'));
+        let modal = new bootstrap.Modal(document.getElementById('renameModal'));
         modal.show();
     }
 
@@ -104,11 +108,17 @@
 
         updateAction(id, 'rename', newName);
         bootstrap.Modal.getInstance(document.getElementById('renameModal')).hide();
+    
+        // โฟกัสกลับไปที่ปุ่มที่เปิด modal
+        if (lastActiveElement) {
+            setTimeout(() => lastActiveElement.focus(), 300);
+        }
     }
 
     function openDeleteModal(id) {
+        lastActiveElement = document.activeElement;
         document.getElementById('delete-id').value = id;
-        var modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        let modal = new bootstrap.Modal(document.getElementById('deleteModal'));
         modal.show();
     }
 
@@ -117,5 +127,10 @@
 
         updateAction(id, 'delete', 1); // value = 1 หมายถึงลบ
         bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
+    
+        // โฟกัสกลับไปที่ปุ่มที่เปิด modal
+        if (lastActiveElement) {
+            setTimeout(() => lastActiveElement.focus(), 300);
+        }
     }
 </script>

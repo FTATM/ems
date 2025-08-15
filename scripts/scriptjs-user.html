@@ -1,0 +1,74 @@
+<script>
+
+const createdUser =  async () => {
+    const data = {
+        username:document.getElementById("username").value , 
+        username:document.getElementById("full_name").value , 
+        phone:document.getElementById("phone").value , 
+        username:document.getElementById("email").value , 
+        password:document.getElementById("password").value , 
+        id_card:document.getElementById("id_card").value , 
+        address:document.getElementById("address").value , 
+    }
+
+    if (!data.username || !data.full_name || !data.phone || !data.email || !data.password || !data.id_card || !data.address) {
+        alert('คุณกรอกข้อมูลไม่ครบท้วน!! ') 
+    return ;
+    }
+    try {
+        const response = await fetch('../config/create-user.php', {
+            method:'POST',
+            headers: {
+                'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            alert('สร้างผู้ใช้สำเร็จ') ;
+        }else {
+            alert('เกิดข้อผิดพลาดในการสร้างผู้ใช้') ;
+        } 
+        
+    }catch (error) {
+        alert('เกิดข้อผิดพลาดในการเชื่อมต่อ API ')
+    }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
