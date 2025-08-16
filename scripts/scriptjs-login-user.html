@@ -1,0 +1,33 @@
+<script>
+function loginUser() {
+  const username = document.getElementById('username').value;
+  const password = document.getElementById('password').value;
+
+  fetch('../config/login-user.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password })
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        Swal.fire({
+          icon: 'success',
+          title: 'เข้าสู่ระบบสำเร็จ',
+          text: 'ยินดีต้อนรับสู่ระบบ',
+          showConfirmButton: false,
+          timer: 1500
+        }).then(() => {
+          window.location.href = 'home.php';
+          console.log('loginUser called');
+        });
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'ผิดพลาด',
+          text: data.message
+        });
+      }
+    });
+}
+</script>

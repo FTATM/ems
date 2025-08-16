@@ -19,16 +19,33 @@ include '../components/session.php';
         <div class="bg-white shadow rounded-2 p-4 w-100" style="max-width: 300px;">
             <h2 class="text-center mb-lg-5 mb-3"><?=$lang['login']?></h2>
             <?php if (!empty($error)) echo "<p style='color:red;'>$error</p>"; ?>
-            <form action="../config/db_login.php" method="post">
+            <form onsubmit="loginUser(); return false;">
                 <label class="form-label fw-medium"><?=$lang['username']?></label>
-                <input class="form-control rounded" type="text" name="username" required placeholder=<?=$lang['husername']?>><br>
+                <input id="username" class="form-control rounded" type="text" name="username" required placeholder="<?=$lang['husername']?>"><br>
                 <label class="form-label fw-medium"><?=$lang['password']?></label>
-                <input class="form-control rounded" type="password" name="password" required placeholder=<?=$lang['hpassword']?>><br>
+                <input id="password" class="form-control rounded" type="password" name="password" required placeholder="<?=$lang['hpassword']?>"><br>
                 <button class="btn btn-primary w-100" type="submit"><?=$lang['login']?></button>
             </form>
         </div>
     </div>
-    <?php include "../scripts/scriptjs.html"; ?>
+        <?php include "../scripts/scriptjs.html"; ?>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script>
+        // แสดง Alert เมื่อ logout สำเร็จ
+        if (window.location.search.includes('logout=success')) {
+            Swal.fire({
+                icon: 'success',
+                title: 'ออกจากระบบสำเร็จ',
+                text: 'คุณได้ออกจากระบบเรียบร้อยแล้ว',
+                timer: 1500,
+                showConfirmButton: false
+            });
+            // ลบ query string ออกหลังแสดง alert
+            window.history.replaceState({}, document.title, window.location.pathname);
+        
+
+        }
+        </script>
 </body>
 
 </html>
