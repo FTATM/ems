@@ -26,8 +26,8 @@ include '../components/session.php';
                     <option value="60">last 1 hours</option>
                     <option value="1440">last 1 days</option>
                     <option value="4320">last 3 days</option>
-                    <option selected value="10080">last 1 week</option>
-                    <option value="43200">last 1 month</option>
+                    <option value="10080">last 1 week</option>
+                    <option selected value="43200">last 1 month</option>
                     <option value="259200">last 6 month</option>
                     <option value="518400">last 1 year</option>
                 </select>

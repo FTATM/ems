@@ -29,7 +29,8 @@ include '../components/session.php';
         </div>
     </div>
         <?php include "../scripts/scriptjs.html"; ?>
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <?php include '../scripts/scriptjs-login-user.html'; ?>
+
         <script>
         // แสดง Alert เมื่อ logout สำเร็จ
         if (window.location.search.includes('logout=success')) {

@@ -84,7 +84,7 @@ include '../components/session.php';
         <?= json_encode($_SESSION['theme'], JSON_UNESCAPED_UNICODE); ?>
     </script>
     <?php include "../scripts/scriptjs.html"; ?>
-    <?php include "../scripts/scriptjs-user-list.html"; ?>
+    <?php include "../scripts/scriptjs-users-management.html"; ?>
 </body>
 
 </html>

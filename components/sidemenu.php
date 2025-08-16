@@ -17,11 +17,11 @@
         </li>
         <li class="d-flex align-items-center gap-2">
             <i class="bi bi-file-person"></i>
-            <span><a class="nav-link active text" href="../pages/allmeter.php"><?= $lang['meter'] ?></a></span>
+            <span><a class="nav-link text" href="../pages/configmeter.php"><?= $lang['meter'] ?></a></span>
         </li>
         <li class="d-flex align-items-center gap-2">
             <i class="bi bi-file-person"></i>
-            <span><a class="nav-link text" href="../pages/member.php"><?= $lang['member'] ?></a></span>
+            <span><a class="nav-link text" href="../pages/users-management.php"><?= $lang['usermnm'] ?></a></span>
         </li>
         <li class="d-flex align-items-center gap-2">
             <i class="bi bi-bug"></i>

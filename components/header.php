@@ -6,7 +6,7 @@
 
         <!-- โลโก้และ sidebar button -->
         <div>
-            <button id="sidebar_btn" class="btn ms-2" style="padding: 0;"><i class="bi bi-list fs-3 w-100 h-100 text-white"></i> </button>
+            <button id="sidebar_btn" class="btn ms-2 text-white" style="padding: 0;"><i class="bi bi-list fs-3 w-100 h-100"></i> </button>
             <a class="navbar-brand ms-2" href="../pages/home.php">
                 <img src="../assets/images/logo1600x600tpw.png" alt="Logo" width="200">
             </a>
@@ -18,11 +18,11 @@
                 <!-- ยังไม่ได้ Login -->
                 <ul class="navbar-nav gap-3">
                     <li class="nav-item">
-                        <a class="nav-link active text" style="color: <?= $text ?>;"
+                        <a class="nav-link text" style="color: <?= $text ?>;"
                             href="../pages/login.php"><?= $lang['login'] ?></a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active text" style="color: <?= $text ?>;"
+                        <a class="nav-link text" style="color: <?= $text ?>;"
                             href="../pages/register.php"><?= $lang['register'] ?></a>
                     </li>
                 </ul>

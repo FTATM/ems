@@ -21,7 +21,6 @@ $lang = [
     "system" => "System",
     "chat" => "General Chat",
     "mycourse" => "Mycourse",
-    "result" => "Result of courses",
     "certificate" => "Certificate",
     "usermanagement" => "Users management system",
     "emailmanagement" => "Email management system",
@@ -97,7 +96,6 @@ $lang = [
     "message" => "Messages someone and chat right now!",
     "chatholder" => "Aaกฮ...",
     "unknown" => "Unknown",
-    "member" => "Members",
     "empty" => "Empty",
     "bot" => "Bot",
 
@@ -116,8 +114,6 @@ $lang = [
     //create / edit course
     "createcourse" => "Create course",
     "editcourse" => "Edit course",
-    "namecourse" => "Name course",
-    "codecourse" => "Code",
     "description" => "Description",
     "exam" => "Examination",
     "obj" => "Objective",
@@ -165,7 +161,6 @@ $lang = [
 
     //email
     "notifies" => "Notify",
-    "email" => "Email",
     "welcometext1" => "Notify system",
     "welcometext2" => "LINE and Email",
     "contenttext" => "content",
@@ -256,4 +251,5 @@ $lang = [
 
     "loading"=> "Loading...",
     "cmisb"=> "Choose meter in side bar.",
+    "usermnm" => "Users Management",
 ];

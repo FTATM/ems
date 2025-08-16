@@ -25,14 +25,11 @@
         let json = await response.json();
         meter = json;
         filteredMeter = structuredClone(json);
-        console.log(meter);
-        console.log('------');
-        console.log(filteredMeter);
-        console.log('++++++');
 
         let responsetype = await fetch("../config/fetch-data_type.php");
         let jsontype = await responsetype.json();
         type = jsontype;
+        console.log(type);
     }
 
     function filterData() {
@@ -88,7 +85,6 @@
         const PiechartData = [];
         const LinearchartData2 = [];
         const PiechartData2 = [];
-
 
         result.forEach(index => {
             LinearchartData.push(...prepareLinearData(index));
@@ -170,8 +166,7 @@
         const chartData = [];
 
         const rawData = filteredMeter[meterID]?.data?.[2];
-
-        if (rawData && Array.isArray(rawData)) {
+        if (rawData && Array.isArray(rawData) && rawData.length > 0) {
             const { powerData, averageCost } = calculateElectricCost(rawData, pricePerKWh);
 
             chartData.push({

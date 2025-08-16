@@ -27,14 +27,13 @@ function renderTablePage(user_data, currentPage) {
     const headerRow = document.createElement("tr") ;
     
     headerRow.innerHTML = `
-    <th class="text-white" style="background-color:#001B5E;">ID</th>
-    <th class="text-white" style="background-color:#001B5E;">Username</th>
-    <th class="text-white" style="background-color:#001B5E;">Full Name</th>
+    <th class="text-white" style="width:10%; background-color:#001B5E;">Username</th>
+    <th class="text-white" style="width:20%; background-color:#001B5E;">Full Name</th>
     <th class="text-white" style="width:10%; background-color:#001B5E;">Phone</th>
     <th class="text-white" style="width:10%; background-color:#001B5E;">Email</th>
     <th class="text-white" style="width:10%; background-color:#001B5E;">ID Card</th>
-    <th class="text-white" style="width:40%; background-color:#001B5E;">Address</th>
-    <th class="text-white" style="width:40%; background-color:#001B5E;">Actions</th>
+    <th class="text-white" style="width:20%; background-color:#001B5E;">Address</th>
+    <th class="text-white" style="width:20%; background-color:#001B5E;">Actions</th>
 `;
     thead.appendChild(headerRow) ;
     table.appendChild(thead) ; 
@@ -50,7 +49,6 @@ function renderTablePage(user_data, currentPage) {
             const tr = document.createElement("tr");
 
             tr.innerHTML = `
-            <td>${row.id}</td>
             <td>${row.username}</td>
             <td>${row.full_name}</td>
             <td>${row.phone}</td>
@@ -58,8 +56,8 @@ function renderTablePage(user_data, currentPage) {
             <td>${row.id_card}</td>
             <td>${row.address}</td>
             <td class="d-flex">
-                <input class="btn btn-sm btn-warning mx-3" value="Edit" onclick="openEditModal(${row.id})">
-                <input class="btn btn-sm btn-danger mx-3" value="Delete" onclick="openDeleteModal(${row.id})">
+                <input class="btn btn-sm btn-warning mx-3 w-50" value="Edit" onclick="openEditModal(${row.id})">
+                <input class="btn btn-sm btn-danger mx-3 w-50" value="Delete" onclick="openDeleteModal(${row.id})">
             </td>
             `;
             tbody.appendChild(tr);
