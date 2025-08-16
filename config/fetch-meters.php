@@ -32,14 +32,18 @@ if ($result->num_rows > 0) {
         }
 
         if (!isset($meters[$meter_id])) {
-            $meters[$meter_id] = [
-                'id' => $row['id'],
-                'name' => $row['name'],
-                'is_active' => $row['is_active'],
-                'room_id' => $row['room_id'],
-                'is_deleted' => $row['is_deleted'],
+            $meters[$meter_id] = $row;
+            $meters[$meter_id] += [
                 'data' => $data_types
             ];
+            // $meters[$meter_id] = [
+            //     'id' => $row['id'],
+            //     'name' => $row['name'],
+            //     'is_active' => $row['is_active'],
+            //     'room_id' => $row['room_id'],
+            //     'is_deleted' => $row['is_deleted'],
+            //     'data' => $data_types
+            // ];
         }
         $sql_data = "SELECT * FROM meter_data WHERE meter_id = ?";
         $stmt = $conn->prepare($sql_data);

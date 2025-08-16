@@ -1,9 +1,19 @@
 <style>
+    .active {
+        background-color: #001B5E;
+        font-size: large;
+        font-weight: bolder;
+    }
+
     .body {
         background-image: url("../assets/images/elec.png");
         background-size: cover;
         background-repeat: no-repeat;
         background-position: center;
+    }
+
+    .bg {
+        background-color: #121212;
     }
 
     .background-blur {
@@ -29,6 +39,19 @@
         box-shadow: 2px 2px 7px #222;
         padding: 10px;
     }
+
+    .choice:hover {
+        opacity: 75%;
+        cursor: pointer;
+        border: 1px solid white;
+    }
+
+    .menu:hover {
+        background-color: #001B5E;
+        cursor: pointer;
+        border: 1px solid white;
+    }
+
 
     .toggle-button {
         padding: 4px 12px;
@@ -64,6 +87,35 @@
         display: none;
     }
 
+    #loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.7); /* เบลอพื้นหลังแบบโปร่ง */
+    backdrop-filter: blur(4px); /* ทำให้พื้นหลังเบลอ */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+#loading-spinner {
+    border: 8px solid #f3f3f3;
+    border-top: 8px solid #3498db;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+
     @media (max-width: 992px) {
         .sidebar {
             position: absolute;
@@ -72,6 +124,18 @@
             z-index: 999;
             left: 0;
             top: 20;
+        }
+
+        .w-d-25 {
+            width: 25% ;
+        }
+
+        .w-d-50 {
+            width: 50% ;
+        }
+
+        .w-d-75 {
+            width: 75% ;
         }
     }
 
@@ -82,10 +146,33 @@
 
     .table {
         border: 0px solid #424242;
-        
+
+    }
+    .w-15{
+        width: 15%;
+    }
+    .w-20{
+        width: 20%;
     }
 
+    .w-lg-25 {
+        width: 25% ;
+    }
+
+    .w-lg-50 {
+        width: 50% ;
+    }
+
+    .w-lg-75 {
+        width: 75% ;
+    }
+    .w-80 {
+        width: 80%;
+    }
     .w-90 {
         width: 90%;
     }
+
+
+    /* ====================== id ======================= */
 </style>

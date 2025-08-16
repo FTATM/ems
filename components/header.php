@@ -6,9 +6,7 @@
 
         <!-- โลโก้และ sidebar button -->
         <div>
-            <button id="sidebar_btn" class="btn ms-2" style="padding: 0;">
-                <i class="bi bi-list fs-3 w-100 h-100"></i>
-            </button>
+            <button id="sidebar_btn" class="btn ms-2" style="padding: 0;"><i class="bi bi-list fs-3 w-100 h-100 text-white"></i> </button>
             <a class="navbar-brand ms-2" href="../pages/home.php">
                 <img src="../assets/images/logo1600x600tpw.png" alt="Logo" width="200">
             </a>

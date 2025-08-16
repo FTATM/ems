@@ -10,7 +10,7 @@ include '../components/session.php';
 
 <head>
     <meta charset="UTF-8">
-    <title><?= $lang['allmeter'] ?> - AMS</title>
+    <title><?= $lang['allmeter'] ?> - EMS</title>
 </head>
 
 <body style="background-color: <?= $bg ?>; color: <?= $text ?>!important; min-height: 100svh;">

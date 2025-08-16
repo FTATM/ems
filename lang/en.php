@@ -1,7 +1,7 @@
 <?php
 
 $lang = [
-    "id"=> "ID",
+    "id" => "ID",
     "chooselang" => "Choose language",
     "choosetheme" => "Choose theme",
 
@@ -244,4 +244,16 @@ $lang = [
     "building" => "building",
     "floor" => "floor",
     "room" => "room",
+
+    "config" => "Config",
+    "mark" => "Mark",
+    "value" => "Value",
+
+    "token" => "Token",
+    "<" => "Less Than",
+    ">" => "Greater Than",
+    "=" => "Equal To",
+
+    "loading"=> "Loading...",
+    "cmisb"=> "Choose meter in side bar.",
 ];
