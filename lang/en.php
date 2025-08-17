@@ -252,4 +252,6 @@ $lang = [
     "loading"=> "Loading...",
     "cmisb"=> "Choose meter in side bar.",
     "usermnm" => "Users Management",
+
+    "reportelec" => "Report Electricity",
 ];

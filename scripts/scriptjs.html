@@ -9,7 +9,6 @@
 <script src="https://cdn.jsdelivr.net/npm/canvas-gauges/gauge.min.js"></script>
 <script src="../assets/js/kuma-gauge.jquery.js"></script>
 
-
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
@@ -23,24 +22,6 @@
     function redirect(target) {
         window.location.href = "../pages/" + target + ".php";
     }
-
-
-    // ฟังก์ชันแสดง Notify ลอยอยู่กลางจอด้านบน
-    function showNotify(message) {
-        let notifyDiv = document.createElement("div");
-        notifyDiv.className = "notify-alert alert alert-warning alert-dismissible fade show";
-        notifyDiv.innerHTML = `
-    <div class="modal-header">
-        <h5 class="modal-title" id="notifyModalLabel"><?=$lang['notify']?></h5>
-        <button type="button" class="btn-close" onclick="this.closest('.notify-alert').remove()"></button>
-    </div>
-    <div class="modal-body">
-        <p>${message}</p>
-    </div>
-    `;
-        document.body.appendChild(notifyDiv);
-    }
-
 
 
     function showLoading() {
