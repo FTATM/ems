@@ -1,6 +1,10 @@
 <script>
     let meters = [];
     let types = [];
+    let locations = [];
+    let buildings = [];
+    let rooms = [];
+    let filtermeters = [];
     let filterDatas = [];
     document.addEventListener("DOMContentLoaded", async () => {
         await prepareData();
@@ -9,8 +13,8 @@
     async function prepareData() {
         showLoading();
         await fetchAll();
+        await createSelect('select-location', locations);
 
-        await loadingChart();
         hideLoading();
     }
 
@@ -23,25 +27,67 @@
         let jsontype = await responsetype.json();
         types = jsontype;
 
+        let responseLocation = await fetch("../config/fetch-locations.php");
+        let jsonLocation = await responseLocation.json();
+        locations = jsonLocation;
+
+        let responsebuilding = await fetch("../config/fetch-buildings.php");
+        let jsonbuilding = await responsebuilding.json();
+        buildings = jsonbuilding;
+
+        let responseRoom = await fetch("../config/fetch-rooms.php");
+        let jsonRoom = await responseRoom.json();
+        rooms = jsonRoom;
+    }
+
+    async function checkLocationAndCreateSelect() {
+        let location = document.getElementById('select-location');
+
+        if (location.value == 'none') {
+            alertMessages('warning', 'Warning message', 'Location not selected.')
+            return;
+        }
+        let buildingfilter = buildings.filter(rows => {
+            return rows.location_id == location.value;
+        });
+        await createSelect('select-building', buildingfilter);
+    }
+
+    function createSelect(id, Values) {
+        let select = document.getElementById(id);
+        select.innerHTML = `<option value = "none">-- Please select --</option>`;
+        Values.forEach(value => {
+            let option = document.createElement('option');
+            option.value = value.id;
+            option.textContent = value.name;
+            select.appendChild(option);
+        });
     }
 
     async function CheckDateData() {
         let location = document.getElementById('select-location');
+        if (location.value == 'none') {
+            alertMessages('warning', 'Warning message', 'Location not selected.')
+            return;
+        }
         let building = document.getElementById('select-building');
+        filtermeters = rooms.flatMap(room => {
+            return Object.values(meters).filter(meter => {
+                return room.id == meter.room_id && room.building_id == building.value;
+            });
+
+        });
         let from = document.getElementById('datetime-from');
         let to = document.getElementById('datetime-to');
 
-        // กรณี input เป็น date เฉย ๆ (เช่น type="date")
         const fromDate = new Date(from.value + " 00:00:00");  // เริ่มต้นวัน
         const toDate = new Date(to.value + " 23:59:59");    // สิ้นสุดวัน
 
-        const filterdatas = Object.values(meters).map(meter => {
+        const filterdatas = Object.values(filtermeters).map(meter => {
             const filteredValueColumn = {};
             Object.entries(meter.data).map(([colName, rows]) => {
                 filteredValueColumn[colName] = Object.values(rows).filter(row => {
                     let rawDate = row.create_date;
-
-                    // แทนที่ "/" เป็น "-" เพื่อให้ new Date() รองรับได้
                     rawDate = rawDate.replace(/\//g, "-");
                     rawDate = rawDate.split(" ")[0];
                     const d2 = new Date(rawDate);
@@ -54,27 +100,31 @@
                 data: filteredValueColumn
             };
         });
-
-        console.log("Filter Data : ", filterdatas);
         return filterdatas;
     }
 
     async function loadingChart() {
         let Data = [];
         filterDatas = await CheckDateData();
+        if (Object.values(filterDatas).length == 0) {
+            console.warn('No meter data found. Please select a new time range.');
+            alertMessages(
+                'warning',
+                'Warning',
+                'No meter data available for the current selection. Please choose a different time range.',
+                3000
+            );
+            return;
+        }
         Object.values(filterDatas).forEach(filterData => {
             Data.push(...prepareLinearData(filterData, 1));
         });
-        createLinearChart('linear-chart', "TEST", Data);
+        createLinearChart('linear-chart', "Preview data", Data);
 
         ReloadTable();
     }
 
     function ReloadTable() {
-        if (filterDatas.length == 0) {
-            console.log('Not found Data PLEASE select new times.');
-            return;
-        }
         const is_check = document.getElementById('is-table-all-value');
         const count = document.getElementById('select-table-show').value;
         if (is_check.checked) {
@@ -102,9 +152,17 @@
             trh.appendChild(th);
         });
         table.querySelector('thead').appendChild(trh);
-        // filterDatas.forEach(Datameter => {
+        if (Object.values(filterDatas[0].data)[0].length == 0) {
+            console.warn('No meter data found. Please select a new time range.');
+            alertMessages(
+                'warning',
+                'Warning',
+                'No meter data available for the current selection. Please choose a different time range.',
+                3000
+            );
+            return;
+        }
         var Datameter = filterDatas[0].data;
-        // make dictionary to list eiei
         Datameter = Object.values(Datameter);
 
         //for by length of rows in database from meter 
@@ -140,7 +198,6 @@
 
     function prepareLinearData(filterData, columnIndex) {
         const chartData = [];
-
         const rawData = filterData.data?.[columnIndex];
 
         if (rawData && Array.isArray(rawData)) {
@@ -191,6 +248,7 @@
     }
 
     function toggleDataSeries(e) {
+
         if (typeof (e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
             e.dataSeries.visible = false;
         } else {
@@ -198,4 +256,92 @@
         }
         e.chart.render(); // ✅ ใช้ chart จาก even
     }
+
+    function ExportCSV() {
+        if (!filterDatas || filterDatas.length === 0) {
+            alert("ไม่มีข้อมูลสำหรับ Export");
+            return;
+        }
+        let csvContent = 'ID, meter, create_date,';
+        //ใส่ header csv
+        csvContent += types.map(t => t.name).join(",") + "\n";
+        // types.forEach(type => {
+        //     th.innerText = type.name;
+        // });
+        //ใส่ data csv
+        filterDatas.forEach(meter => {
+            const Datameter = Object.values(meter.data);
+            for (let i = 0; i < Datameter[0].length; i++) {
+                csvContent += i + 1 + "," + meter.name + "," + Datameter[0][i].create_date + ",";
+                for (let j = 0; j < types.length; j++) {
+                    const type = types[j];
+                    csvContent += Datameter[j][i].value + (j == types.length - 1 ? "" : ",");
+                }
+                csvContent += '\n';
+            };
+        });
+
+        // ใส่ BOM \uFEFF เพื่อให้ Excel รองรับภาษาไทย
+        const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+
+        const link = document.createElement("a");
+        link.href = url;
+        let now = new Date();
+        let timestamp = now.getFullYear() + "-" +
+            String(now.getMonth() + 1).padStart(2, '0') + "-" +
+            String(now.getDate()).padStart(2, '0') + "_" +
+            String(now.getHours()).padStart(2, '0') + "-" +
+            String(now.getMinutes()).padStart(2, '0') + "-" +
+            String(now.getSeconds()).padStart(2, '0');
+
+        link.download = "CSV All Meters " + timestamp + ".csv";
+        link.click();
+
+        URL.revokeObjectURL(url); // cleanup
+    }
+
+    function ExportExcel() {
+        if (!filterDatas || filterDatas.length === 0) {
+            alert("ไม่มีข้อมูลสำหรับ Export");
+            return;
+        }
+
+        // เตรียม header
+        let headers = ["ID", "meter", "create_date", ...types.map(t => t.name)];
+
+        // เตรียม rows
+        let rows = [];
+        filterDatas.forEach(meter => {
+            const Datameter = Object.values(meter.data);
+            for (let i = 0; i < Datameter[0].length; i++) {
+                let row = [];
+                row.push(i + 1); // ID
+                row.push(meter.name); // meter
+                row.push(Datameter[0][i].create_date); // create_date
+                for (let j = 0; j < types.length; j++) {
+                    row.push(Datameter[j][i].value);
+                }
+                rows.push(row);
+            }
+        });
+
+        // สร้าง worksheet + workbook
+        let ws_data = [headers, ...rows];
+        let ws = XLSX.utils.aoa_to_sheet(ws_data);
+        let wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Data");
+
+        // ตั้งชื่อไฟล์ (ใส่ timestamp)
+        let now = new Date();
+        let timestamp = now.getFullYear() + "-" +
+            String(now.getMonth() + 1).padStart(2, '0') + "-" +
+            String(now.getDate()).padStart(2, '0') + "_" +
+            String(now.getHours()).padStart(2, '0') + "-" +
+            String(now.getMinutes()).padStart(2, '0') + "-" +
+            String(now.getSeconds()).padStart(2, '0');
+
+        XLSX.writeFile(wb, "Excel_All_Meters_" + timestamp + ".xlsx");
+    }
+
 </script>

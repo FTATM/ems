@@ -23,16 +23,24 @@ include '../components/session.php';
                 <div class="justify-content-center align-items-center d-flex flex-column gap-2" style="width: 90%;">
                     <div class="d-flex bg-white bg-opacity-10 p-3 w-100">
                         <div class="w-25">
-                            <h4> Choose data</h4>
-                            <label>location</label>
-                            <select id="select-location" class="form-select" onchange="prepareData()"></select>
-                            <label>Building</label>
-                            <select id="select-building" class="form-select" onchange="prepareData()"></select>
-                            <label>Form</label>
-                            <input id="datetime-from" type="date" class="form-control" value="2022-08-15" onchange="prepareData()">
-                            <label>To</label>
-                            <input id="datetime-to" type="date" class="form-control" value="2025-08-16" onchange="prepareData()">
+                            <h4>Choose Data</h4>
+
+                            <label for="select-location">Location</label>
+                            <select id="select-location" class="form-select" onchange="checkLocationAndCreateSelect()">
+                            </select>
+
+                            <label for="select-building">Building</label>
+                            <select id="select-building" class="form-select" onchange="loadingChart()">
+                                <option value="-"> - </option>
+                            </select>
+
+                            <label for="datetime-from">From</label>
+                            <input id="datetime-from" type="date" class="form-control" value="2025-08-01" onchange="loadingChart()">
+
+                            <label for="datetime-to">To</label>
+                            <input id="datetime-to" type="date" class="form-control" value="2025-08-16" onchange="loadingChart()">
                         </div>
+
                         <div class="w-75 p-2" id="linear-chart">
                         </div>
                     </div>
