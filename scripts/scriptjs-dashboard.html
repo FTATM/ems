@@ -89,6 +89,7 @@
         result.forEach(index => {
             LinearchartData.push(...prepareLinearData(index));
         });
+        console.log(LinearchartData);
         createLinearChart('chart-linear', "Linear Date & Data", LinearchartData);
 
         result.forEach(index => {

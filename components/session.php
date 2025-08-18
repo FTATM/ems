@@ -10,27 +10,27 @@ function checkLogin()
     }
 }
 
-function logout()
-{
-    // Logging logout
-    if (isset($_SESSION['user_id']) && isset($_SESSION['username'])) {
-        include "../config/connect.php";
-        $user_id = $_SESSION['user_id'];
-        $username = $_SESSION['username'];
-        $ip_address = $_SERVER['REMOTE_ADDR'];
-        $user_agent = $_SERVER['HTTP_USER_AGENT'];
+// function logout()
+// {
+//     // Logging logout
+//     if (isset($_SESSION['user_id']) && isset($_SESSION['username'])) {
+//         include "../config/connect.php";
+//         $user_id = $_SESSION['user_id'];
+//         $username = $_SESSION['username'];
+//         $ip_address = $_SERVER['REMOTE_ADDR'];
+//         $user_agent = $_SERVER['HTTP_USER_AGENT'];
 
-        $log_sql = "INSERT INTO log_login (user_id, username, action, ip_address, user_agent) 
-                    VALUES ('$user_id', '$username', 'logout', '$ip_address', '$user_agent')";
+//         $log_sql = "INSERT INTO log_login (user_id, username, action, ip_address, user_agent) 
+//                     VALUES ('$user_id', '$username', 'logout', '$ip_address', '$user_agent')";
 
-        $conn->query($log_sql);
-    }
+//         $conn->query($log_sql);
+//     }
 
-    session_unset();
-    session_destroy();
-    header("Location: ../pages/login.php");
-    exit();
-}
+//     session_unset();
+//     session_destroy();
+//     header("Location: ../pages/login.php");
+//     exit();
+// }
 
 // รายการภาษาที่รองรับ
 $supportedLangs = ['th', 'en'];

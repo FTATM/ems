@@ -10,9 +10,9 @@ include "../config/connect.php";
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
-$sql = "SELECT * FROM meter";
+$sql = "SELECT * FROM meter WHERE is_deleted = 0";
 $result = $conn->query($sql);
-$sql = "SELECT * FROM data_type";
+$sql = "SELECT * FROM data_type WHERE is_deleted = 0";
 $column = $conn->query($sql);
 
 $meters = [];
@@ -36,14 +36,6 @@ if ($result->num_rows > 0) {
             $meters[$meter_id] += [
                 'data' => $data_types
             ];
-            // $meters[$meter_id] = [
-            //     'id' => $row['id'],
-            //     'name' => $row['name'],
-            //     'is_active' => $row['is_active'],
-            //     'room_id' => $row['room_id'],
-            //     'is_deleted' => $row['is_deleted'],
-            //     'data' => $data_types
-            // ];
         }
         $sql_data = "SELECT * FROM meter_data WHERE meter_id = ?";
         $stmt = $conn->prepare($sql_data);
@@ -63,7 +55,6 @@ if ($result->num_rows > 0) {
         }
     }
 }
-
 
 // ส่งข้อมูลกลับในรูปแบบ JSON
 header('Content-Type: application/json');
