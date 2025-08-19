@@ -28,7 +28,7 @@
         <?php endif; ?>
         <li class="d-flex align-items-center gap-2">
             <i class="bi bi-bug"></i>
-            <span><a class="nav-link text" href="../pages/random.php">Random data</a></span>
+            <span><a class="nav-link text" href="../pages/report.php"><?= $lang['reportelec'] ?></a></span>
         </li>
         <li class="gap-2">
             <button class="btn btn-link nav-link text px-0" data-bs-toggle="collapse" data-bs-target="#systemSubNav" aria-expanded="false">

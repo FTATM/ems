@@ -5,12 +5,15 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"
     integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy"
     crossorigin="anonymous"></script>
+<!-- Modal -->
 <script type="text/javascript" src="https://cdn.canvasjs.com/canvasjs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/canvas-gauges/gauge.min.js"></script>
 <script src="../assets/js/kuma-gauge.jquery.js"></script>
 
-
+<!-- UI popup -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- excel file -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 <script>
     var sidebar_btn = document.getElementById('sidebar_btn');
@@ -23,24 +26,6 @@
     function redirect(target) {
         window.location.href = "../pages/" + target + ".php";
     }
-
-
-    // ฟังก์ชันแสดง Notify ลอยอยู่กลางจอด้านบน
-    function showNotify(message) {
-        let notifyDiv = document.createElement("div");
-        notifyDiv.className = "notify-alert alert alert-warning alert-dismissible fade show";
-        notifyDiv.innerHTML = `
-    <div class="modal-header">
-        <h5 class="modal-title" id="notifyModalLabel"><?=$lang['notify']?></h5>
-        <button type="button" class="btn-close" onclick="this.closest('.notify-alert').remove()"></button>
-    </div>
-    <div class="modal-body">
-        <p>${message}</p>
-    </div>
-    `;
-        document.body.appendChild(notifyDiv);
-    }
-
 
 
     function showLoading() {
@@ -63,4 +48,14 @@
         }
     }
 
+    function alertMessages(icontxt = 'warning', titletxt = "Default title text.", textmessage = 'Default txt message.', timerShow = 1500) {
+        Swal.fire({
+            icon: icontxt,
+            title: titletxt,
+            text: textmessage,
+            timer: timerShow,
+            showConfirmButton: false
+        });
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
 </script>
