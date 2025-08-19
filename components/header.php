@@ -27,24 +27,9 @@
                     </li>
                 </ul>
             <?php else: ?>
-                <!-- Login แล้ว -->
-                <img src="../assets/images/bg_cards/1.png"
-                    style="border-radius: 25px; height: 50px; width: 50px; margin-right: 10px;">
+                <?php include "../components/avatar.php"; ?>
 
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav">
-                        <li class="nav-item dropdown">
-                            <a class="nav-link text-white" href="#" id="navbarDropdown"
-                                role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <?= $lang['hi'] ?>! <?= htmlspecialchars($_SESSION['username']) ?>
-                            </a>
-                            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                <!-- เพิ่มเมนูอื่นได้ตามต้องการ -->
-                                <li><a class="dropdown-item" href="../pages/logout.php"><?= $lang['logout'] ?></a></li>
-                            </ul>
-                        </li>
-                    </ul>
-                </div>
+               
             <?php endif; ?>
         </div>
     </nav>

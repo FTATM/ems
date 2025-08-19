@@ -20,7 +20,6 @@ if (!$login || !$password) {
     exit;
 }
 
-
 $stmt = $conn->prepare("SELECT * FROM users WHERE (username = ? OR email = ?) AND (is_deleted = 0)");
 $stmt->bind_param("ss", $login, $login); //can login with username or email 
 $stmt->execute();
@@ -37,11 +36,16 @@ if (!$user || !password_verify($password, $user['password'])) {
     $_SESSION['user_id'] = $user['id'] ; 
     $_SESSION['username'] = $user['username'] ; 
     $_SESSION['password'] = $user['password'] ; 
+    $_SESSION['is_admin'] = $user['is_admin'] ;
+    $_SESSION['user'] = $user; // เก็บข้อมูล user ทั้งก้อนถ้าอยากใช้ทีหลัง
 
-    if (isset($_SESSION['username'])) {
-       echo json_encode(['success' => true, 'message' => 'เข้าสู่ระบบสำเร็จ', 'username' => $_SESSION['username']]);
-       exit;
-    }
+    echo json_encode([
+        'success'  => true,
+        'message'  => 'เข้าสู่ระบบสำเร็จ',
+        'username' => $_SESSION['username'],
+        'is_admin' => $_SESSION['is_admin']
+    ]);
+    exit;
     
 }
 
