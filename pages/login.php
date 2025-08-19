@@ -25,6 +25,8 @@ include '../components/session.php';
                 <label class="form-label fw-medium"><?=$lang['password']?></label>
                 <input id="password" class="form-control rounded" type="password" name="password" required placeholder="<?=$lang['hpassword']?>"><br>
                 <button class="btn btn-primary w-100" type="submit"><?=$lang['login']?></button>
+                <a href="admin.php" class="btn btn-light w-100" type="submit">Admin</a>
+                
             </form>
         </div>
     </div>

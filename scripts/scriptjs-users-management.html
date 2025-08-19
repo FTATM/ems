@@ -19,7 +19,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 function renderTablePage(user_data, currentPage) {
     const table = document.getElementById('table-user');
     // console.log('table:', table); // ต้องไม่เป็น null
-
+    
     table.innerHTML = "";
 
     // สร้างหัวตาราง (thead)
@@ -27,13 +27,13 @@ function renderTablePage(user_data, currentPage) {
     const headerRow = document.createElement("tr") ;
     
     headerRow.innerHTML = `
-    <th class="text-white" style="width:10%; background-color:#001B5E;">Username</th>
-    <th class="text-white" style="width:20%; background-color:#001B5E;">Full Name</th>
+    <th class="text-white" style="width:8%; background-color:#001B5E;">Username</th>
+    <th class="text-white" style="width:13%; background-color:#001B5E;">Full Name</th>
     <th class="text-white" style="width:10%; background-color:#001B5E;">Phone</th>
-    <th class="text-white" style="width:10%; background-color:#001B5E;">Email</th>
-    <th class="text-white" style="width:10%; background-color:#001B5E;">ID Card</th>
-    <th class="text-white" style="width:20%; background-color:#001B5E;">Address</th>
-    <th class="text-white" style="width:20%; background-color:#001B5E;">Actions</th>
+    <th class="text-white" style="width:18%; background-color:#001B5E;">Email</th>
+    <th class="text-white" style="width:14%; background-color:#001B5E;">ID Card</th>
+    <th class="text-white" style="width:12%; background-color:#001B5E;">Address</th>
+    <th class="text-white" style="width:24%; background-color:#001B5E;">Actions</th>
 `;
     thead.appendChild(headerRow) ;
     table.appendChild(thead) ; 
@@ -50,14 +50,16 @@ function renderTablePage(user_data, currentPage) {
 
             tr.innerHTML = `
             <td>${row.username}</td>
-            <td>${row.full_name}</td>
+            <td style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 90px;">${row.full_name}</td>
             <td>${row.phone}</td>
             <td>${row.email}</td>
             <td>${row.id_card}</td>
-            <td>${row.address}</td>
-            <td class="d-flex">
-                <input class="btn btn-sm btn-warning mx-3 w-50" value="Edit" onclick="openEditModal(${row.id})">
-                <input class="btn btn-sm btn-danger mx-3 w-50" value="Delete" onclick="openDeleteModal(${row.id})">
+            <td style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100px;">${row.address}</td>
+           
+            <td class="d-flex align-items-center justify-content-center gap-2">
+                <input class="btn btn-sm btn-warning w-40" value="Edit" onclick="openEditModal(${row.id})">
+                <input class="btn btn-sm btn-danger w-40" value="Delete" onclick="openDeleteModal(${row.id})">
+                <input class="btn btn-sm btn-success w-40" value="Change Password" onclick="openChangedPasswordModal(${row.id})">
             </td>
             `;
             tbody.appendChild(tr);
@@ -181,9 +183,72 @@ function submitDelete() {
     bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
 }
 
-// call test function 
-// UpdatedActionUser(2, 'full_name', 'mark');
-// UpdatedActionUser(2, 'phone', '0812345123');
-// UpdatedActionUser(2, 'address', 'Bangkok 100245555');
+
+// forgot password for admin 
+function openChangedPasswordModal(id) {
+    document.getElementById('change-password-id').value = id; 
+    var modal = new bootstrap.Modal(document.getElementById('changePasswordModal'), {
+        keyboard: false
+    });
+    modal.show() ;
+}
+
+
+function submitChangePassword() {
+    let id = document.getElementById('change-password-id').value;
+    let new_password = document.getElementById('change-password-new').value;
+    let confirm_password = document.getElementById('change-password-confirm').value;
+
+    if (new_password !== confirm_password) {
+        return alert("New password and confirmation do not match");
+    }
+
+    let form = new FormData();
+    form.append("user_id", id);
+    form.append("new_password", new_password);
+    form.append("confirm_password", confirm_password);
+
+    fetch('../config/change-password.php', {
+        method: 'POST',
+        body: form
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+        Swal.fire({
+          icon: 'success',
+          title: 'เปลี่ยนรหัสผ่านสำเร็จ',
+          text: 'เปลี่ยนรหัสผ่านสำเร็จ',
+          showConfirmButton: false,
+          timer: 1500
+        }).then(() => {
+          window.location.href = 'users-management.php';
+          console.log('changePassword called');
+        });
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'ผิดพลาด',
+          text: data.message
+        });
+      }
+    })
+    .catch(error => {
+        console.error("Error:", error);
+        alert("เกิดข้อผิดพลาดในการเปลี่ยนรหัสผ่าน กรุณาลองใหม่อีกครั้ง\n" + error);
+    });
+}
+
+
+//เพิ่ม event listener ให้ฟอร์ม เพื่อเรียก submitChangePassword() เมื่อกดปุ่ม Save
+document.addEventListener("DOMContentLoaded", function() {
+    var form = document.getElementById('changePasswordForm');
+    if(form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            submitChangePassword();
+        });
+    }
+});
 
 </script>

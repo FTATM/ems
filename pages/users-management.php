@@ -1,5 +1,9 @@
 <?php
 include '../components/session.php';
+if ($_SESSION['user']['is_admin'] == 0) {
+    header("Location: ../pages/permission_denied.php?permission=denied");
+    exit();
+}
 ?>
 
 <!DOCTYPE html>
@@ -8,9 +12,11 @@ include '../components/session.php';
 <?php include "../scripts/ref.html"; ?>
 <?php include "../scripts/style.html"; ?>
 
+
+
 <head>
     <meta charset="UTF-8">
-    <title><?= $lang['building'] ?> - user list</title>
+    <title><?= $lang['usermnm'] ?> - EMS</title>
 </head>
 
 <body style="background-color: <?= $bg ?>; color: <?= $text ?>!important; min-height: 100svh;">
@@ -72,10 +78,42 @@ include '../components/session.php';
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
                     <button type="button" class="btn btn-danger" onclick="submitDelete()">ยืนยันลบ</button>
+                   
                 </div>
             </div>
         </div>
     </div>
+
+
+    <!-- Modal เปลี่ยนรหัสผ่าน  -->
+     <!-- Modal -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="changePasswordForm">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="changePasswordModalLabel">Change Password</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="change-password-id" name="user_id">
+                    
+                    <div class="mb-3">
+                        <label for="change-password-new" class="form-label">New Password</label>
+                        <input type="password" class="form-control" id="change-password-new" name="change-password-new" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="change-password-confirm" class="form-label">Confirm New Password</label>
+                        <input type="password" class="form-control" id="change-password-confirm" name="change-password-confirm" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Change</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 
 
