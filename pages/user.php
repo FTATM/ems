@@ -23,9 +23,8 @@ checkLogin();
 
         <!-- form CRUD  -->
 
-        <div class="container mx-auto " style="max-width: 500px; margin-top: 20px; ">
-
-            <form class="p-4 bg-white rounded shadow-sm"
+        <div class="container mx-auto " style="max-width: 500px; margin-top: 20px;">
+            <form class="p-4 bg-white bg-opacity-10 rounded shadow-sm"
                 method="POST"
                 action="../config/create-user.php">
 
@@ -61,10 +60,16 @@ checkLogin();
 
                 <div class="mb-3">
                     <label for="address" class="form-label">ที่อยู่</label>
-                    <textarea class="form-control" name="address" id="address" rows="3" placeholder="Enter address" required></textarea>
+                    <textarea class="form-control " name="address" id="address" rows="3" placeholder="Enter address" required></textarea>
                 </div>
-
-
+                <?php if ($_SESSION['user']['is_admin'] == 2): ?>
+                    <div class="mb-3">
+                        <label for="id_admin" class="form-label">ADMIN</label>
+                        <input type="checkbox" class="form-check-input" >
+                        <label for="id_user" class="form-label">USER</label>
+                        <input type="checkbox" class="form-check-input" >
+                    </div>
+                <?php endif; ?>
                 <!-- Button  -->
                 <div class="d-flex justify-content-center grap-4">
                     <div class="d-flex items-center">
@@ -92,7 +97,6 @@ checkLogin();
         <?= json_encode($_SESSION['theme'], JSON_UNESCAPED_UNICODE); ?>
     </script>
     <?php include "../scripts/scriptjs.html"; ?>
-    <?php include "../scripts/scriptjs-building.html"; ?>
 </body>
 
 </html>

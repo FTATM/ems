@@ -6,7 +6,8 @@
     document.addEventListener("DOMContentLoaded", async () => {
         await fetchAll();
         generateMeter(meters);
-    })
+    });
+
     async function fetchAll() {
         meters = await fetchMetersData();
         types = await fetchTypes();
@@ -26,6 +27,15 @@
         let response = await fetch("../config/fetch-notify.php");
         let json = await response.json();
         return json;
+    }
+
+    async function TestConnect() {
+        let select = document.getElementById("select-protocol");
+        console.log(select.value);
+
+        let response = await fetch(`../config/${select.value}.php`);
+        let json = await response.json();
+        console.log("Success : ",json.success, "\nOutput : ",json.output);
     }
 
     function generateMeter(meters) {
@@ -109,7 +119,7 @@
             <div class="w-100 mt-2 d-flex">
                 <div class="w-25 text-end"><h5>Protocol :</h5></div>
                 <div class="w-75 px-2">
-                    <select class="w-25 form-select">
+                    <select id="select-protocol" class="w-25 form-select">
                         <option value="tcp" ${meter.protocol === 'tcp' ? 'selected' : ''}>TCP</option>
                         <option value="rs485" ${meter.protocol === 'rs485' ? 'selected' : ''}>RS485</option>
                     </select>
@@ -182,7 +192,7 @@
 
             <div class="w-100">
                 <h5>Connect meter</h5>
-                <input id="btn-connect" class="btn btn-sm btn-primary" value="Connect">
+                <input id="btn-connect" class="btn btn-sm btn-primary" value="Connect" onclick="TestConnect()">
                 <label id="label-btn-connect" for="btn-connect"></label>
             </div>
             `;

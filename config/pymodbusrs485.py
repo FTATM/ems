@@ -1,34 +1,10 @@
-from pymodbus.client import ModbusTcpClient
+from pymodbus.client import ModbusSerialClient
 import struct
 import tkinter as tk
 import requests
 import threading
 import time
 from datetime import datetime
-import sys
-
-# === config received from php ===
-if len(sys.argv) >= 9:
-    serial_port = sys.argv[1]
-    buad_rate = int(sys.argv[2])
-    data_bits = int(sys.argv[3])
-    parily = sys.argv[4]
-    stop_bits = int(sys.argv[5])
-    slave_id = int(sys.argv[6])
-    address = sys.argv[7]
-    quality = int(sys.argv[8])
-
-    print("🎉 Config received from PHP:")
-    print(f"Serial Port: {serial_port}")
-    print(f"Baud Rate: {buad_rate}")
-    print(f"Data Bits: {data_bits}")
-    print(f"Parily: {parily}")
-    print(f"Stop Bits: {stop_bits}")
-    print(f"Slave ID: {slave_id}")
-    print(f"Address: {address}")
-    print(f"Quality: {quality}")
-else:
-    print("❌ Missing arguments. Expected 8.")
 
 # === API Setup ===
 session = requests.Session()
@@ -53,11 +29,9 @@ def read_time_component(address):
 
 def send_data_to_api(payload):
     url = "http://49.0.69.152/ams/config/meter-data.php"
-
     response = session.post(url, json=payload, timeout=5)
     print(" API Response:", response.status_code, response.text)
     return response
-
 
 # === GUI Setup ===
 root = tk.Tk()
@@ -74,6 +48,7 @@ fields = [
     'Apparent Power A', 'Apparent Power B', 'Apparent Power C', 'Apparent Power Total',
     'Frequency', 'kWh', 'Power Factor', 'kVARh', 'kVAh'
 ]
+
 temp = []
 
 for field in fields:
@@ -109,20 +84,20 @@ float_registers = {
     'Power Factor': 3083,
     'kVARh': 2687,
     'kVAh' : 2695
-
 }
 
 # === Global Config ===
 read_interval = 5       # seconds
 send_interval = 30      # seconds
 latest_data = {}        # cache for latest readings
+timestamp = None        # current timestamp for sending
+last_sent_timestamp = None  # for preventing duplicate sends
 
 # === Reading Function ===
 def update_gui_and_data():
-    global latest_data
+    global latest_data, timestamp
 
-    if not client.is_socket_open():
-        client.connect()
+    if not client.connect():
         for label in labels.values():
             label.config(text="Disconnected")
         root.after(read_interval * 1000, update_gui_and_data)
@@ -138,16 +113,11 @@ def update_gui_and_data():
 
     if None not in (year, month, day, hour, minute, second):
         labels['time'].config(text=f"Time: {year}-{month:02d}-{day:02d} {hour:02d}:{minute:02d}:{second:02d}")
-        # ✅ สร้าง datetime object
         timestamp_dt = datetime(year, month, day, hour, minute, second)
-
-        # ✅ แปลงเป็น ISO 8601 string: 2025-07-24T10:30:45
-        global timestamp
         timestamp = timestamp_dt.isoformat()
-
     else:
         labels['time'].config(text="Time: Read Error")
-        timestamp = None  # เคลียร์ timestamp ถ้าอ่านค่าเวลาไม่ได้
+        timestamp = None
 
     # Read float registers
     for label, addr in float_registers.items():
@@ -162,10 +132,12 @@ def update_gui_and_data():
 
 # === API Send Thread ===
 def api_sender_loop():
+    global last_sent_timestamp
+
     while True:
-        payload = None  # ป้องกันกรณีใช้ตัวแปรที่ยังไม่ถูกประกาศ
+        payload = None
         try:
-            # === ส่งข้อมูล retry ค้างเก่า ===
+            # === ส่ง retry ค้างเก่า ===
             for retry_data in temp[:]:
                 try:
                     print("🔁 Retrying:", retry_data)
@@ -175,44 +147,45 @@ def api_sender_loop():
                     print("⚠️ Retry failed:", retry_err)
                     continue
 
-            # === ส่งข้อมูลล่าสุด ===
-            if 'Active Power Total' in latest_data:
-                payload = {
-                    "meter_id": 1,
-                    "datetime": timestamp,
-                    "data": {
-                        "kW": latest_data.get('Active Power Total', 0),
-                        "kWh": latest_data.get('kWh', 0),
-                        "kVA": latest_data.get('Active Power Total', 0),
-                        "kVAh": latest_data.get('kVAh', 0),
-                        "kVAR": latest_data.get('Reactive Power Total', 0),
-                        "kVARh": latest_data.get('kVARh', 0),
-                        "Vch_P1": latest_data.get('Voltage A-N', 0),
-                        "Vch_P2": latest_data.get('Voltage B-N', 0),
-                        "Vch_P3": latest_data.get('Voltage C-N', 0),
-                        "Amp_L1": latest_data.get('Current A', 0),
-                        "Amp_L2": latest_data.get('Current B', 0),
-                        "Amp_L3": latest_data.get('Current C', 0),
-                        "Amp_N": latest_data.get('Current Avg', 0),
-                        "Voltage A_B": latest_data.get('Voltage A-B', 0),
-                        "Voltage B_C": latest_data.get('Voltage B-C', 0),
-                        "Voltage C_A": latest_data.get('Voltage C-A', 0),
-                        "Pf": latest_data.get('Power Factor', 0),
-                        "Frequency": latest_data.get('Frequency', 0),
+            # === ส่งข้อมูลล่าสุดถ้า timestamp เปลี่ยน ===
+            if 'Active Power Total' in latest_data and timestamp is not None:
+                if timestamp != last_sent_timestamp:
+                    payload = {
+                        "meter_id": 1,
+                        "datetime": timestamp,
+                        "data": {
+                            "kW": latest_data.get('Active Power Total', 0),
+                            "kWh": latest_data.get('kWh', 0),
+                            "kVA": latest_data.get('Active Power Total', 0),
+                            "kVAh": latest_data.get('kVAh', 0),
+                            "kVAR": latest_data.get('Reactive Power Total', 0),
+                            "kVARh": latest_data.get('kVARh', 0),
+                            "Vch_P1": latest_data.get('Voltage A-N', 0),
+                            "Vch_P2": latest_data.get('Voltage B-N', 0),
+                            "Vch_P3": latest_data.get('Voltage C-N', 0),
+                            "Amp_L1": latest_data.get('Current A', 0),
+                            "Amp_L2": latest_data.get('Current B', 0),
+                            "Amp_L3": latest_data.get('Current C', 0),
+                            "Amp_N": latest_data.get('Current Avg', 0),
+                            "Voltage A_B": latest_data.get('Voltage A-B', 0),
+                            "Voltage B_C": latest_data.get('Voltage B-C', 0),
+                            "Voltage C_A": latest_data.get('Voltage C-A', 0),
+                            "Pf": latest_data.get('Power Factor', 0),
+                            "Frequency": latest_data.get('Frequency', 0),
+                        }
                     }
-                }
-                print("📤 Sending to API:", payload)
-                response = send_data_to_api(payload)
+                    print("📤 Sending to API:", payload)
+                    response = send_data_to_api(payload)
+                    last_sent_timestamp = timestamp
 
         except Exception as e:
             print("⚠️ Error in API sender:", e)
-            temp.append(payload)
-            print("📦 Saved to temp for retry (status code not OK).")
-
+            if payload:
+                temp.append(payload)
+                print("📦 Saved to temp for retry.")
 
         print(f"🧊 Temp retry queue size: {len(temp)}")
         time.sleep(send_interval)
-
 
 # === On Closing ===
 def on_closing():
@@ -220,8 +193,17 @@ def on_closing():
         client.close()
     root.destroy()
 
-# === Connect to Modbus ===
-client = ModbusTcpClient(address, port= serial_port)
+# === Connect to Modbus RTU via RS485 ===
+client = ModbusSerialClient(
+    method='rtu',
+    port='COM1',         # เปลี่ยนตามเครื่อง เช่น /dev/ttyUSB0 บน Linux
+    baudrate=9600,
+    bytesize=8,
+    parity='N',
+    stopbits=1,
+    timeout=1
+)
+
 if not client.connect():
     for label in labels.values():
         label.config(text="Connection Failed")

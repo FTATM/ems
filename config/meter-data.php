@@ -34,9 +34,9 @@ if ($data) {
                             VALUES (?, ?, ?, ?)");
 
     foreach ($data_array as $key => $valueData) {
-        foreach ($column as $type) {
-            if ($key === $type['name']) {
-                $type_value_id = $type['id'];
+        foreach ($column as $row) {
+            if ($key === $row['name']) {
+                $type_value_id = $row['id'];
                 $stmt->bind_param("isid", $meter_id, $datetime, $type_value_id, $valueData);
                 if ($stmt->execute()) {
                     $success_count++;
