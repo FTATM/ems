@@ -20,7 +20,6 @@
             <span><a class="nav-link text" href="../pages/configmeter.php"><?= $lang['meter'] ?></a></span>
         </li>
         <?php if ($_SESSION['user']['is_admin'] == 1) : ?>
-            
             <li class="d-flex align-items-center gap-2">
                 <i class="bi bi-file-person"></i>
                 <span><a class="nav-link text" href="../pages/users-management.php"><?= $lang['usermnm'] ?></a></span>

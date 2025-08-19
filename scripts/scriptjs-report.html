@@ -23,6 +23,8 @@
         let json = await response.json();
         meters = json;
 
+        console.log(meters);
+
         let responsetype = await fetch("../config/fetch-data_type.php");
         let jsontype = await responsetype.json();
         types = jsontype;
@@ -42,14 +44,15 @@
 
     async function checkLocationAndCreateSelect() {
         let location = document.getElementById('select-location');
-
         if (location.value == 'none') {
             alertMessages('warning', 'Warning message', 'Location not selected.')
             return;
         }
         let buildingfilter = buildings.filter(rows => {
+            // console.log(rows, "element.value :" , location.value, rows.location_id == location.value);
             return rows.location_id == location.value;
         });
+
         await createSelect('select-building', buildingfilter);
     }
 
@@ -75,7 +78,6 @@
             return Object.values(meters).filter(meter => {
                 return room.id == meter.room_id && room.building_id == building.value;
             });
-
         });
         let from = document.getElementById('datetime-from');
         let to = document.getElementById('datetime-to');
