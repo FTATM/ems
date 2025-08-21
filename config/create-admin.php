@@ -20,11 +20,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($stmt->execute()) {
         // Redirect or display success message
-        echo json_encode(["success" => true]);
+        echo json_encode(["success" => true, "message" => "Admin created successfully"]);
         header("Location: ../pages/adminList.php");
         exit;
     } else {
         // Handle error
-        echo json_encode(["success" => false, "error" => $stmt->error]);
+        echo json_encode(["success" => false, "message" => $stmt->error]);
     }
 }

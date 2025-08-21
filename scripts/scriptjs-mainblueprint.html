@@ -1,0 +1,349 @@
+<script>
+    let meters = [];
+    let types = [];
+    let locations = [];
+    let buildings = [];
+    let rooms = [];
+    let filtermeters = [];
+    let filterDatas = [];
+    document.addEventListener("DOMContentLoaded", async () => {
+        await prepareData();
+    });
+
+    async function prepareData() {
+        showLoading();
+        await fetchAll();
+        await createSelect('select-location', locations);
+
+        hideLoading();
+    }
+
+    async function fetchAll() {
+        let response = await fetch('../config/fetch-meters.php');
+        let json = await response.json();
+        meters = json;
+
+        console.log(meters);
+
+        let responsetype = await fetch("../config/fetch-data_type.php");
+        let jsontype = await responsetype.json();
+        types = jsontype;
+
+        let responseLocation = await fetch("../config/fetch-locations.php");
+        let jsonLocation = await responseLocation.json();
+        locations = jsonLocation;
+
+        let responsebuilding = await fetch("../config/fetch-buildings.php");
+        let jsonbuilding = await responsebuilding.json();
+        buildings = jsonbuilding;
+
+        let responseRoom = await fetch("../config/fetch-rooms.php");
+        let jsonRoom = await responseRoom.json();
+        rooms = jsonRoom;
+    }
+
+    async function checkLocationAndCreateSelect() {
+        let location = document.getElementById('select-location');
+        if (location.value == 'none') {
+            alertMessages('warning', 'Warning message', 'Location not selected.')
+            return;
+        }
+        let buildingfilter = buildings.filter(rows => {
+            // console.log(rows, "element.value :" , location.value, rows.location_id == location.value);
+            return rows.location_id == location.value;
+        });
+
+        await createSelect('select-building', buildingfilter);
+    }
+
+    function createSelect(id, Values) {
+        let select = document.getElementById(id);
+        select.innerHTML = `<option value = "none">-- Please select --</option>`;
+        Values.forEach(value => {
+            let option = document.createElement('option');
+            option.value = value.id;
+            option.textContent = value.name;
+            select.appendChild(option);
+        });
+    }
+
+    async function CheckDateData() {
+        let location = document.getElementById('select-location');
+        if (location.value == 'none') {
+            alertMessages('warning', 'Warning message', 'Location not selected.')
+            return;
+        }
+        let building = document.getElementById('select-building');
+        filtermeters = rooms.flatMap(room => {
+            return Object.values(meters).filter(meter => {
+                return room.id == meter.room_id && room.building_id == building.value;
+            });
+        });
+        let from = document.getElementById('datetime-from');
+        let to = document.getElementById('datetime-to');
+
+        const fromDate = new Date(from.value + " 00:00:00");  // เริ่มต้นวัน
+        const toDate = new Date(to.value + " 23:59:59");    // สิ้นสุดวัน
+
+        const filterdatas = Object.values(filtermeters).map(meter => {
+            const filteredValueColumn = {};
+            Object.entries(meter.data).map(([colName, rows]) => {
+                filteredValueColumn[colName] = Object.values(rows).filter(row => {
+                    let rawDate = row.create_date;
+                    rawDate = rawDate.replace(/\//g, "-");
+                    rawDate = rawDate.split(" ")[0];
+                    const d2 = new Date(rawDate);
+                    return d2 >= fromDate && d2 <= toDate;
+                });
+            })
+
+            return {
+                ...meter,
+                data: filteredValueColumn
+            };
+        });
+        return filterdatas;
+    }
+
+    async function loadingChart() {
+        let Data = [];
+        filterDatas = await CheckDateData();
+        if (Object.values(filterDatas).length == 0) {
+            console.warn('No meter data found. Please select a new time range.');
+            alertMessages(
+                'warning',
+                'Warning',
+                'No meter data available for the current selection. Please choose a different time range.',
+                3000
+            );
+            return;
+        }
+        Object.values(filterDatas).forEach(filterData => {
+            Data.push(...prepareLinearData(filterData, 1));
+        });
+        createLinearChart('linear-chart', "Preview data", Data);
+
+        ReloadTable();
+    }
+
+    function ReloadTable() {
+        const is_check = document.getElementById('is-table-all-value');
+        const count = document.getElementById('select-table-show').value;
+        if (is_check.checked) {
+            TableData(filterDatas, Object.values(filterDatas[0].data)[0].length);
+        } else {
+            TableData(filterDatas, parseInt(count));
+        }
+    }
+
+    function TableData(filterDatas, countShow) {
+        let table = document.getElementById('table-data');
+        table.innerHTML = `
+            <thead>
+            </thead>
+            <tbody>
+            </tbody>`;
+        let trh = document.createElement('tr');
+        trh.innerHTML = `
+            <th>No.</th>
+            <th>Create Date</th>
+        `;
+        types.forEach(type => {
+            let th = document.createElement('th');
+            th.innerText = type.name;
+            trh.appendChild(th);
+        });
+        table.querySelector('thead').appendChild(trh);
+        if (Object.values(filterDatas[0].data)[0].length == 0) {
+            console.warn('No meter data found. Please select a new time range.');
+            alertMessages(
+                'warning',
+                'Warning',
+                'No meter data available for the current selection. Please choose a different time range.',
+                3000
+            );
+            return;
+        }
+        var Datameter = filterDatas[0].data;
+        Datameter = Object.values(Datameter);
+
+        //for by length of rows in database from meter 
+        // for (let i = 0; i < Datameter[0].length; i++) {
+        for (let i = Datameter[0].length - 1; i > (Datameter[0].length - 1) - countShow; i--) {
+            let trd = document.createElement('tr');
+            trd.innerHTML = `
+                <td>${i + 1}</td>
+                <td>${Datameter[0][i].create_date}</td>
+            `;
+            for (let j = 0; j < types.length; j++) {
+                const type = types[j];
+                let td = document.createElement('td');
+                td.textContent = Datameter[j][i].value;
+                trd.appendChild(td);
+            }
+            table.querySelector('tbody').appendChild(trd);
+        };
+
+        // });
+
+    }
+
+    function getRandomColor(index) {
+        const colors = [
+            "#ff6384", "#36a2eb", "#44B530", "#ffce56", "#4bc0c0",
+            "#9966ff", "#ff9f40", "#c9cbcf", "#00b894", "#e17055",
+            "#D5AAFF", "#A0E7E5", "#B4F8C8", "#FBE7C6", "#FFABAB",
+            "#FFC3A0", "#D0F4DE", "#A9DEF9", "#E4C1F9", "#F694C1"
+        ];
+        return colors[index];
+    }
+
+    function prepareLinearData(filterData, columnIndex) {
+        const chartData = [];
+        const rawData = filterData.data?.[columnIndex];
+
+        if (rawData && Array.isArray(rawData)) {
+            const dataPoints = rawData.map(row => ({
+                x: new Date(row.create_date),
+                y: parseFloat(row.value) || 0
+            }));
+
+            chartData.push({
+                type: "splineArea",
+                axisYType: "secondary",
+                name: `${filterData.name}`,
+                showInLegend: true,
+                markerSize: 0,
+                yValueFormatString: "#,##0.##",
+                dataPoints: dataPoints,
+                color: getRandomColor(columnIndex)
+            });
+        }
+
+        return chartData;
+    }
+
+    function createLinearChart(idContainer, title, dataPointsLinear) {
+        const chart = new CanvasJS.Chart(idContainer, {
+            theme: 'dark2',
+            backgroundColor: "#1B1C1D",
+            title: { text: title },
+            axisX: { valueFormatString: "HH:mm:ss" },
+            axisY2: {
+                title: "Median List Price",
+                prefix: "",
+                suffix: ""
+            },
+            toolTip: { shared: true },
+            legend: {
+                cursor: "pointer",
+                verticalAlign: "top",
+                horizontalAlign: "center",
+                dockInsidePlotArea: true,
+                itemclick: toggleDataSeries
+            },
+            data: dataPointsLinear
+        });
+        chart.render();
+
+        window.myChart = chart; // ✅ เก็บไว้ใช้ภายนอก
+    }
+
+    function toggleDataSeries(e) {
+
+        if (typeof (e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
+            e.dataSeries.visible = false;
+        } else {
+            e.dataSeries.visible = true;
+        }
+        e.chart.render(); // ✅ ใช้ chart จาก even
+    }
+
+    function ExportCSV() {
+        if (!filterDatas || filterDatas.length === 0) {
+            alert("ไม่มีข้อมูลสำหรับ Export");
+            return;
+        }
+        let csvContent = 'ID, meter, create_date,';
+        //ใส่ header csv
+        csvContent += types.map(t => t.name).join(",") + "\n";
+        // types.forEach(type => {
+        //     th.innerText = type.name;
+        // });
+        //ใส่ data csv
+        filterDatas.forEach(meter => {
+            const Datameter = Object.values(meter.data);
+            for (let i = 0; i < Datameter[0].length; i++) {
+                csvContent += i + 1 + "," + meter.name + "," + Datameter[0][i].create_date + ",";
+                for (let j = 0; j < types.length; j++) {
+                    const type = types[j];
+                    csvContent += Datameter[j][i].value + (j == types.length - 1 ? "" : ",");
+                }
+                csvContent += '\n';
+            };
+        });
+
+        // ใส่ BOM \uFEFF เพื่อให้ Excel รองรับภาษาไทย
+        const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+
+        const link = document.createElement("a");
+        link.href = url;
+        let now = new Date();
+        let timestamp = now.getFullYear() + "-" +
+            String(now.getMonth() + 1).padStart(2, '0') + "-" +
+            String(now.getDate()).padStart(2, '0') + "_" +
+            String(now.getHours()).padStart(2, '0') + "-" +
+            String(now.getMinutes()).padStart(2, '0') + "-" +
+            String(now.getSeconds()).padStart(2, '0');
+
+        link.download = "CSV All Meters " + timestamp + ".csv";
+        link.click();
+
+        URL.revokeObjectURL(url); // cleanup
+    }
+
+    function ExportExcel() {
+        if (!filterDatas || filterDatas.length === 0) {
+            alert("ไม่มีข้อมูลสำหรับ Export");
+            return;
+        }
+
+        // เตรียม header
+        let headers = ["ID", "meter", "create_date", ...types.map(t => t.name)];
+
+        // เตรียม rows
+        let rows = [];
+        filterDatas.forEach(meter => {
+            const Datameter = Object.values(meter.data);
+            for (let i = 0; i < Datameter[0].length; i++) {
+                let row = [];
+                row.push(i + 1); // ID
+                row.push(meter.name); // meter
+                row.push(Datameter[0][i].create_date); // create_date
+                for (let j = 0; j < types.length; j++) {
+                    row.push(Datameter[j][i].value);
+                }
+                rows.push(row);
+            }
+        });
+
+        // สร้าง worksheet + workbook
+        let ws_data = [headers, ...rows];
+        let ws = XLSX.utils.aoa_to_sheet(ws_data);
+        let wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Data");
+
+        // ตั้งชื่อไฟล์ (ใส่ timestamp)
+        let now = new Date();
+        let timestamp = now.getFullYear() + "-" +
+            String(now.getMonth() + 1).padStart(2, '0') + "-" +
+            String(now.getDate()).padStart(2, '0') + "_" +
+            String(now.getHours()).padStart(2, '0') + "-" +
+            String(now.getMinutes()).padStart(2, '0') + "-" +
+            String(now.getSeconds()).padStart(2, '0');
+
+        XLSX.writeFile(wb, "Excel_All_Meters_" + timestamp + ".xlsx");
+    }
+
+</script>

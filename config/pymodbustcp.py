@@ -14,6 +14,7 @@ def read_float_register(client, start_address):
     return round(hex_to_float((regs[0] << 16) + regs[1]), 2)
 
 # === Modbus Config ===
+# client = ModbusTcpClient('192.168.0.7', port=8800)
 client = ModbusTcpClient('192.168.0.7', port=8800)
 client.connect()
 

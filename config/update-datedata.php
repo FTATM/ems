@@ -7,10 +7,7 @@ error_reporting(E_ALL);
 include "../config/no-crash.php";
 include "../config/connect.php";
 
-// ตรวจสอบการเชื่อมต่อ
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
+
 
 // 1. ดึงข้อมูลทั้งหมดเรียงตาม create_date
 $sql = "SELECT id, create_date FROM meter_data";

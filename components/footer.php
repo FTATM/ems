@@ -10,6 +10,7 @@
                     E-mail : MD@ft-atm.com, napatchoong@ft-atm.com ,sales1@ft-atm.com ,sales2@ft-atm.com<br>
                     <a href="https://www.ft-atm.com" target="_new">www.ft-atm.com</a>
                 </span>
+                <p>'image: Flaticon.com'. This cover has been designed using resources from Flaticon.com</p>
             </div>
             <div class="col-12 col-lg-2 ">
                 <div class="d-flex justify-content-center">

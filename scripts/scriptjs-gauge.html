@@ -1,0 +1,46 @@
+<script>
+    let meters = [];
+    let types = [];
+    let locations = [];
+    let buildings = [];
+    let rooms = [];
+    let filtermeters = [];
+    let filterDatas = [];
+    document.addEventListener("DOMContentLoaded", async () => {
+        await prepareData();
+    });
+
+    async function prepareData() {
+        showLoading();
+        await fetchAll();
+        await createSelect('select-location', locations);
+
+        hideLoading();
+    }
+
+    async function fetchAll() {
+        let response = await fetch('../config/fetch-meters.php');
+        let json = await response.json();
+        meters = json.success ? json.data : [];
+
+        console.log(meters);
+
+        let responsetype = await fetch("../config/fetch-data_type.php");
+        let jsontype = await responsetype.json();
+        types = jsontype;
+
+        let responseLocation = await fetch("../config/fetch-locations.php");
+        let jsonLocation = await responseLocation.json();
+        locations = jsonLocation;
+
+        let responsebuilding = await fetch("../config/fetch-buildings.php");
+        let jsonbuilding = await responsebuilding.json();
+        buildings = jsonbuilding;
+
+        let responseRoom = await fetch("../config/fetch-rooms.php");
+        let jsonRoom = await responseRoom.json();
+        rooms = jsonRoom;
+    }
+
+
+</script>

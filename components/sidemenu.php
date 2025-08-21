@@ -16,17 +16,21 @@
             <span><a class="nav-link text" href="../pages/rooms.php"><?= $lang['room'] ?></a></span>
         </li>
         <li class="d-flex align-items-center gap-2">
-            <i class="bi bi-file-person"></i>
-            <span><a class="nav-link text" href="../pages/configmeter.php"><?= $lang['meter'] ?></a></span>
+            <i class="bi bi-setting-meter"></i>
+            <span><a class="nav-link text" href="../pages/configmeter.php"><?= $lang['metermnm'] ?></a></span>
         </li>
-        <?php if ($_SESSION['user']['is_admin'] == 1) : ?>
+        <?php if (isset($_SESSION['user']) && $_SESSION['user']['is_admin'] == 1) : ?>
             <li class="d-flex align-items-center gap-2">
-                <i class="bi bi-file-person"></i>
+                <i class="bi bi-people"></i>
                 <span><a class="nav-link text" href="../pages/users-management.php"><?= $lang['usermnm'] ?></a></span>
             </li>
         <?php endif; ?>
         <li class="d-flex align-items-center gap-2">
-            <i class="bi bi-bug"></i>
+            <i class="bi bi-speedometer"></i>
+            <span><a class="nav-link text" href="../pages/gauge.php"><?= $lang['gaugemnm'] ?></a></span>
+        </li>
+        <li class="d-flex align-items-center gap-2">
+            <i class="bi bi-receipt"></i>
             <span><a class="nav-link text" href="../pages/report.php"><?= $lang['reportelec'] ?></a></span>
         </li>
         <li class="gap-2">
