@@ -4,8 +4,10 @@
     let locations = [];
     let buildings = [];
     let rooms = [];
-    let filtermeters = [];
-    let filterDatas = [];
+    let refreshIntervalId; // เก็บ interval id
+    const gaugeInstances = {};
+    const urlParams = new URLSearchParams(window.location.search);
+    const meterId = urlParams.get('meter_id') || '1';  // ได้ค่า เช่น "123"
     document.addEventListener("DOMContentLoaded", async () => {
         await prepareData();
     });
@@ -13,34 +15,158 @@
     async function prepareData() {
         showLoading();
         await fetchAll();
-        await createSelect('select-location', locations);
-
+        await generateGauge();
+        setRefreshTime();
         hideLoading();
     }
 
     async function fetchAll() {
+
         let response = await fetch('../config/fetch-meters.php');
         let json = await response.json();
-        meters = json.success ? json.data : [];
-
-        console.log(meters);
+        meters = json.data;
 
         let responsetype = await fetch("../config/fetch-data_type.php");
         let jsontype = await responsetype.json();
-        types = jsontype;
+        types = jsontype.data;
 
         let responseLocation = await fetch("../config/fetch-locations.php");
         let jsonLocation = await responseLocation.json();
-        locations = jsonLocation;
+        locations = jsonLocation.data;
 
         let responsebuilding = await fetch("../config/fetch-buildings.php");
         let jsonbuilding = await responsebuilding.json();
-        buildings = jsonbuilding;
+        buildings = jsonbuilding.data;
 
         let responseRoom = await fetch("../config/fetch-rooms.php");
         let jsonRoom = await responseRoom.json();
-        rooms = jsonRoom;
+        rooms = jsonRoom.data;
     }
 
+    async function generateGauge() {
+        const listGauge = document.getElementById('list-gauge');
+        listGauge.innerHTML = ''; // Clear previous gauges
+        Object.values(types).forEach(type => {
+            let gaugediv = document.createElement('canvas');
+            gaugediv.id = 'gauge_' + type.id;
+            listGauge.appendChild(gaugediv);
+            gaugeGenerate('gauge_' + type.id, type.name, type.name, 0, 0, type.maxvaluecolumn, 5);
+        });
+    }
+
+    function checkTimeChange() {
+        const listGauge = document.getElementById('list-gauge');
+        const time = document.getElementById('select-time');
+        if (time.value === '-') {
+            aleartmessages('error', 'Error', 'Time picker element not found.');
+            return;
+        }
+        let now = new Date();
+        console.log("Current Time: ", now);
+        let selectedDateTime;
+        if (time.value === "all") {
+            selectedDateTime = new Date(1970, 0, 1);
+        } else if (time.value === "now") {
+            selectedDateTime = new Date(now.getTime() - 0.5 * 60000);
+        } else {
+            selectedDateTime = new Date(now.getTime() - parseInt(time.value, 10) * 60000);
+        }
+        let filtermeter = filterData(selectedDateTime);
+        console.log("Filtered Meter Data: ", filtermeter);
+        console.log("Filtered Meter Data length: ", Object.values(filtermeter.data)[0].length);
+        Object.entries(filtermeter.data).forEach(([key, values]) => {
+            // if (!values.length) return;
+            let avgcolumn = 0;
+            let maxvalue = !isNaN(values[0]) ? parseFloat(values[0].value) : 0;
+            let minvalue = !isNaN(values[0]) ? parseFloat(values[0].value) : 0;
+            values.forEach(row => {
+                let val = parseFloat(row.value);
+                avgcolumn += val;
+                maxvalue = val > maxvalue ? val : maxvalue;
+                minvalue = val < minvalue ? val : minvalue;
+            });
+            avgcolumn = avgcolumn / values.length;
+            // Update gauge value using RadialGauge instance
+            gaugeGenerate('gauge_' + key, types[key - 1].name, types[key - 1].name, avgcolumn);
+        });
+
+    }
+
+    function filterData(selectedDateTime) {
+        const filteredValueColumn = {};
+        console.log(meters[meterId]);
+        Object.entries(meters[meterId].data).map(([colName, rows]) => {
+            filteredValueColumn[colName] = Object.values(rows).filter(row => {
+                let rawDate = row.create_date;
+                rawDate = rawDate.replace(/\//g, "-");
+                const d2 = new Date(rawDate);
+                return d2 >= selectedDateTime;
+            });
+        })
+        return {
+            ...meters[meterId],
+            data: filteredValueColumn
+        };
+    }
+
+    function gaugeGenerate(id, title, unitname, value = 0, minValue = 0, maxValue = 200, step = 10, width = 250, height = 250) {
+        if (id === undefined || unitname === undefined) {
+            console.error(`ID:${id} or title:${title} or unitname:${unitname} are required for gauge generation.`);
+            alertMessages('error', 'Error', 'ID and unit name are required for gauge generation.');
+            return;
+        }
+        let majorTicks = [];
+        for (let i = minValue; i <= maxValue; i += maxValue / step) {
+            majorTicks.push(parseFloat(i).toFixed(1).toString());
+        }
+        if (!gaugeInstances[id]) {
+            gaugeInstances[id] = new RadialGauge({
+                renderTo: id,
+                title: title,
+                width: width,
+                height: height,
+                // units: unitname,
+                minValue: minValue,
+                maxValue: maxValue,
+                majorTicks: majorTicks,
+                minorTicks: 2,
+                highlights: [
+                    { from: maxValue - (maxValue / 3), to: maxValue, color: "rgba(200, 50, 50, .75)" }
+                ],
+                value: value,
+                animationDuration: 500,
+                animationRule: "linear",
+                colorPlate: "rgba(0,0,0,.1)",
+                colorMajorTicks: "#fff",
+                colorMinorTicks: "#fff",
+                colorTitle: "#fff",
+                colorUnits: "#fff",
+                colorNumbers: "#fff",
+                colorNeedle: "#fff",
+                needleWidth: 1,
+                needleCircleSize: 4,
+            }).draw();
+        } else {
+            gaugeInstances[id].value = value;
+        }
+    }
+
+    function setRefreshTime() {
+        const inputRefresh = document.getElementById('input-refresh');
+        const refreshTime = parseInt(inputRefresh.value, 10);
+        if (isNaN(refreshTime) || refreshTime < 1 || refreshTime > 60) {
+            alertMessages('error', 'Error', 'Please enter a valid refresh time between 1 and 30 seconds.');
+            return;
+        }
+        // เคลียร์ interval เก่า
+        clearInterval(refreshIntervalId);
+
+        console.log("Setting refresh time to:", refreshTime);
+
+        // ตั้ง interval ใหม่
+        refreshIntervalId = setInterval(() => {
+            checkTimeChange();
+        }, refreshTime * 1000);
+    }
 
 </script>
