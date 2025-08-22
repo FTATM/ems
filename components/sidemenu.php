@@ -27,7 +27,7 @@
         <?php endif; ?>
         <li class="d-flex align-items-center gap-2">
             <i class="bi bi-speedometer"></i>
-            <span><a class="nav-link text" href="../pages/gauge.php"><?= $lang['gaugemnm'] ?></a></span>
+            <span><a class="nav-link text" href="../pages/gauge.php"><?= $lang['gauge'] ?></a></span>
         </li>
         <li class="d-flex align-items-center gap-2">
             <i class="bi bi-receipt"></i>
