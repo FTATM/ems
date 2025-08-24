@@ -5,10 +5,10 @@
     document.addEventListener("DOMContentLoaded", async () => {
         let response_ = await fetch("../config/fetch-buildings.php");
         let json_ = await response_.json();
-        building = Object.values(json_);
+        building = Object.values(json_.data);
         let response = await fetch("../config/fetch-rooms.php");
         let json = await response.json();
-        let room = Object.values(json);
+        let room = Object.values(json.data);
         renderTablePage(room, currentPage);
     })
 

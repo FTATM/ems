@@ -23,12 +23,12 @@
     async function fetchMetersData() {
         let response = await fetch("../config/fetch-meters.php");
         let json = await response.json();
-        meter = json;
+        meter = json.data;
         filteredMeter = structuredClone(json);
 
         let responsetype = await fetch("../config/fetch-data_type.php");
         let jsontype = await responsetype.json();
-        type = jsontype;
+        type = jsontype.data;
         console.log(type);
     }
 

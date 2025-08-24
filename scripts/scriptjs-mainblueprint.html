@@ -21,25 +21,25 @@
     async function fetchAll() {
         let response = await fetch('../config/fetch-meters.php');
         let json = await response.json();
-        meters = json;
+        meters = json.data;
 
         console.log(meters);
 
         let responsetype = await fetch("../config/fetch-data_type.php");
         let jsontype = await responsetype.json();
-        types = jsontype;
+        types = jsontype.data;
 
         let responseLocation = await fetch("../config/fetch-locations.php");
         let jsonLocation = await responseLocation.json();
-        locations = jsonLocation;
+        locations = jsonLocation.data;
 
         let responsebuilding = await fetch("../config/fetch-buildings.php");
         let jsonbuilding = await responsebuilding.json();
-        buildings = jsonbuilding;
+        buildings = jsonbuilding.data;
 
         let responseRoom = await fetch("../config/fetch-rooms.php");
         let jsonRoom = await responseRoom.json();
-        rooms = jsonRoom;
+        rooms = jsonRoom.data;
     }
 
     async function checkLocationAndCreateSelect() {
