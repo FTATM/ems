@@ -27,7 +27,7 @@ if ($result->num_rows > 0) {
     // ใช้เวลาปัจจุบันของเครื่องเป็น baseTime
     $baseTime = new DateTime('now');
     $baseTime->modify('-3 hour');
-    echo "Base Time (Server -1hr): " . $baseTime->format('Y-m-d H:i:s') . "<br>";
+    echo "Base Time (Server -3hr): " . $baseTime->format('Y-m-d H:i:s') . "<br>";
 
     foreach ($rows as $index => $row) {
         // คำนวณกลุ่ม (ทุก 18 แถวถือเป็น 1 กลุ่ม)

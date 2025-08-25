@@ -1,0 +1,244 @@
+<script>
+    let meters = [];
+    let types = [];
+    let locations = [];
+    let buildings = [];
+    let rooms = [];
+    let refreshIntervalId; // เก็บ interval id
+    const gaugeInstances = {};
+    const urlParams = new URLSearchParams(window.location.search);
+    const meterId = urlParams.get('meter_id') || '1';  // ได้ค่า เช่น "123"
+    document.addEventListener("DOMContentLoaded", async () => {
+        await prepareData();
+    });
+
+    async function prepareData() {
+        showLoading();
+        await fetchAll();
+        await generateGauge();
+        setRefreshTime();
+        hideLoading();
+    }
+
+    async function fetchAll() {
+
+        let response = await fetch('../config/fetch-meters.php');
+        let json = await response.json();
+        meters = json.data;
+
+        let responsetype = await fetch("../config/fetch-data_type.php");
+        let jsontype = await responsetype.json();
+        types = jsontype.data;
+
+        let responseLocation = await fetch("../config/fetch-locations.php");
+        let jsonLocation = await responseLocation.json();
+        locations = jsonLocation.data;
+
+        let responsebuilding = await fetch("../config/fetch-buildings.php");
+        let jsonbuilding = await responsebuilding.json();
+        buildings = jsonbuilding.data;
+
+        let responseRoom = await fetch("../config/fetch-rooms.php");
+        let jsonRoom = await responseRoom.json();
+        rooms = jsonRoom.data;
+    }
+
+    async function generateGauge() {
+        const listGauge = document.getElementById('list-gauge');
+        listGauge.innerHTML = ''; // Clear previous gauges
+        Object.values(types).forEach(type => {
+            if (["Voltage A-N", "Voltage B-N", "Voltage C-N"].includes(type.name)) {
+                let divHeader = document.createElement('div');
+                let gaugediv = document.createElement('canvas');
+                gaugediv.className = 'mb-2';
+                gaugediv.id = 'gauge_' + type.id;
+                divHeader.appendChild(gaugediv);
+                divHeader.innerHTML += `
+                <div class="d-grid bg-white bg-opacity-10 p-3" style="text-align: center; color: #f0f0f0; margin-bottom: 20px;">
+                    <strong class="my-2 fs-3">${type.name}</strong>
+                    <div class="d-flex justify-content-center align-items-center" style="margin-top: 10px;">
+                        <label class="w-50" for="input-Voltage-${type.id}">Voltage</label>
+                        <input class="w-50"  type="text" id="input-Voltage-${type.id}" value="0" readonly style="width: 80px; text-align: center; background: transparent; color: #fff; font-size: 1.2rem; margin-left: 10px;">
+                    </div>
+                    <div class="d-flex justify-content-center align-items-center" style="margin-top: 10px;">
+                        <label class="w-50" for="input-current-${type.id}">Current</label>
+                        <input class="w-50"  type="text" id="input-current-${type.id}" value="0" readonly style="width: 80px; text-align: center; background: transparent; color: #fff; font-size: 1.2rem; margin-left: 10px;">
+                    </div>
+                    <div class="d-flex justify-content-center align-items-center" style="margin-top: 10px;">
+                        <label class="w-50" for="input-pf-${type.id}">Pf</label>
+                        <input class="w-50"  type="text" id="input-pf-${type.id}" value="0" readonly style="width: 80px; text-align: center; background: transparent; color: #fff; font-size: 1.2rem; margin-left: 10px;">
+                    </div>
+                    <div class="d-flex justify-content-center align-items-center" style="margin-top: 10px;">
+                        <label class="w-50" for="input-kw-${type.id}">kW</label>
+                        <input class="w-50"  type="text" id="input-kw-${type.id}" value="0" readonly style="width: 80px; text-align: center; background: transparent; color: #fff; font-size: 1.2rem; margin-left: 10px;">
+                    </div>
+                    <div class="d-flex justify-content-center align-items-center" style="margin-top: 10px;">
+                        <label class="w-50" for="input-kva-${type.id}">kVA</label>
+                        <input class="w-50"  type="text" id="input-kva-${type.id}" value="0" readonly style="width: 80px; text-align: center; background: transparent; color: #fff; font-size: 1.2rem; margin-left: 10px;">
+                    </div>
+                </div>
+                `;
+
+                listGauge.appendChild(divHeader);
+                gaugeGenerate('gauge_' + type.id, type.name, type.name, 0, 0, type.maxvaluecolumn, 5, width = 500, height = 500);
+
+
+            }
+        });
+    }
+
+    function checkTimeChange() {
+        const listGauge = document.getElementById('list-gauge');
+        const time = document.getElementById('select-time');
+        if (time.value === '-') {
+            aleartmessages('error', 'Error', 'Time picker element not found.');
+            return;
+        }
+        let now = new Date();
+        console.log("-=-=-=-=-= Refresh =-=-=-=-=");
+        console.log("Current Time: ", now.toLocaleTimeString());
+        let selectedDateTime;
+        if (time.value === "all") {
+            selectedDateTime = new Date(1970, 0, 1);
+        } else if (time.value === "now") {
+            selectedDateTime = new Date(now.getTime() - 0.5 * 60000);
+        } else {
+            selectedDateTime = new Date(now.getTime() - parseInt(time.value, 10) * 60000);
+        }
+        let filtermeter = filterData(selectedDateTime);
+        console.log("Filtered Meter Data: ", filtermeter.data);
+        console.log("Filtered Meter Data length: ", Object.values(filtermeter.data)[0].length);
+        console.log("-=-=-=-=-=-=-=-=-=-=-=-=-=-=");
+        Object.entries(filtermeter.data).forEach(([key, values]) => {
+            // if (!values.length) return;
+            // console.log(`Processing column: ${key} with values:`, values);
+            if (['7', '8', '9'].includes(key)) {  // Voltage A-N, B-N, C-N IDs == 7,8,9
+                let avgcolumn = 0;
+                let maxvalue = !isNaN(values[0]) ? parseFloat(values[0].value) : 0;
+                let minvalue = !isNaN(values[0]) ? parseFloat(values[0].value) : 0;
+                values.forEach(row => {
+                    let val = parseFloat(row.value);
+                    avgcolumn += val;
+                    maxvalue = val > maxvalue ? val : maxvalue;
+                    minvalue = val < minvalue ? val : minvalue;
+                });
+                avgcolumn = avgcolumn / values.length;
+                // Update gauge value using RadialGauge instance
+                gaugeGenerate('gauge_' + key, types[key - 1].name, types[key - 1].name, avgcolumn);
+
+                let avgVoltage = 0;
+                let avgCurrent = 0;
+                let avgPf = 0;
+                let avgKw = 0;
+                let avgKva = 0;
+                values.forEach(row => {
+                    let voltageKey = key;
+                    let currentKey = (parseInt(key) + 3).toString();
+                    let pfKey = "17";
+                    let kwKey = "1";
+                    let kvaKey = "3";
+
+                    avgVoltage += parseFloat(row.value) || 0;
+                    avgCurrent += parseFloat(filtermeter.data[currentKey]?.find(r => r.create_date === row.create_date)?.value) || 0;
+                    avgPf += parseFloat(filtermeter.data[pfKey]?.find(r => r.create_date === row.create_date)?.value) || 0;
+                    avgKw += parseFloat(filtermeter.data[kwKey]?.find(r => r.create_date === row.create_date)?.value) || 0;
+                    avgKva += parseFloat(filtermeter.data[kvaKey]?.find(r => r.create_date === row.create_date)?.value) || 0;
+                });
+                const count = values.length || 1; // ป้องกันการหารด้วยศูนย์
+                avgVoltage /= count;
+                avgCurrent /= count;
+                avgPf /= count;
+                avgKw /= count;
+                avgKva /= count;
+
+                document.getElementById(`input-Voltage-${key}`).value = avgVoltage.toFixed(2);
+                document.getElementById(`input-current-${key}`).value = avgCurrent.toFixed(2);
+                document.getElementById(`input-pf-${key}`).value = avgPf.toFixed(2);
+                document.getElementById(`input-kw-${key}`).value = avgKw.toFixed(2);
+                document.getElementById(`input-kva-${key}`).value = avgKva.toFixed(2);
+            }
+        });
+
+    }
+
+    function filterData(selectedDateTime) {
+        const filteredValueColumn = {};
+        Object.entries(meters[meterId].data).map(([colName, rows]) => {
+            filteredValueColumn[colName] = Object.values(rows).filter(row => {
+                let rawDate = row.create_date;
+                rawDate = rawDate.replace(/\//g, "-");
+                const d2 = new Date(rawDate);
+                return d2 >= selectedDateTime;
+            });
+        })
+        return {
+            ...meters[meterId],
+            data: filteredValueColumn
+        };
+    }
+
+    function gaugeGenerate(id, title, unitname, value = 0, minValue = 0, maxValue = 200, step = 10, width = 250, height = 250) {
+        // console.log(`Generating gauge for ID: ${id}, Title: ${title}, Value: ${value}`);
+        if (id === undefined || unitname === undefined) {
+            console.error(`ID:${id} or title:${title} or unitname:${unitname} are required for gauge generation.`);
+            alertMessages('error', 'Error', 'ID and unit name are required for gauge generation.');
+            return;
+        }
+        let majorTicks = [];
+        for (let i = minValue; i <= maxValue; i += maxValue / step) {
+            majorTicks.push(parseFloat(i).toFixed(1).toString());
+        }
+        if (!gaugeInstances[id]) {
+            gaugeInstances[id] = new RadialGauge({
+                renderTo: id,
+                title: title,
+                width: width,
+                height: height,
+                // units: unitname,
+                minValue: minValue,
+                maxValue: maxValue,
+                majorTicks: majorTicks,
+                minorTicks: 2,
+                highlights: [
+                    { from: maxValue - (maxValue / 3), to: maxValue, color: "rgba(200, 50, 50, .75)" }
+                ],
+                value: value,
+                valueBox: true,
+                animationDuration: 500,
+                animationRule: "linear",
+                colorPlate: "rgba(0,0,0,.1)",
+                colorMajorTicks: "#fff",
+                colorMinorTicks: "#fff",
+                colorTitle: "#fff",
+                colorUnits: "#fff",
+                colorNumbers: "#fff",
+                colorNeedle: "#fff",
+                colorNeedleEnd: "#fff",
+                needleWidth: 1,
+                needleCircleSize: 4,
+            }).draw();
+        } else {
+            gaugeInstances[id].value = value;
+        }
+    }
+
+    function setRefreshTime() {
+        const inputRefresh = document.getElementById('input-refresh');
+        const refreshTime = parseInt(inputRefresh.value, 10);
+        if (isNaN(refreshTime) || refreshTime < 1 || refreshTime > 60) {
+            alertMessages('error', 'Error', 'Please enter a valid refresh time between 1 and 30 seconds.');
+            return;
+        }
+        // เคลียร์ interval เก่า
+        clearInterval(refreshIntervalId);
+
+        console.log("Setting refresh time to:", refreshTime);
+
+        // ตั้ง interval ใหม่
+        refreshIntervalId = setInterval(() => {
+            checkTimeChange();
+        }, refreshTime * 1000);
+    }
+
+
+</script>

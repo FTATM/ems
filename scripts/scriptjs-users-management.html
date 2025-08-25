@@ -5,20 +5,19 @@ let user_data = [] ;
 
 async function fetchUserData() {
     const response = await fetch('../config/fetch-user.php'); 
-    return await response.json();
+    const json = await response.json();
+    return json.data;
 }
 
 
 document.addEventListener("DOMContentLoaded", async () => {
     user_data = await fetchUserData(); 
-    // console.log('user_data:', user_data); // เพิ่มบรรทัดนี้เพื่อดูข้อมูลที่ดึงมา
     renderTablePage(user_data, currentPage) 
     renderPagination(user_data.length, currentPage) ;
 });
 
 function renderTablePage(user_data, currentPage) {
     const table = document.getElementById('table-user');
-    // console.log('table:', table); // ต้องไม่เป็น null
     
     table.innerHTML = "";
 

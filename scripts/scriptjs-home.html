@@ -10,11 +10,11 @@
     async function fetchMetersData() {
         let response = await fetch("../config/fetch-meters.php");
         let json = await response.json();
-        AllMeters = Object.values(json);
+        AllMeters = Object.values(json.data);
 
         let responsetype = await fetch("../config/fetch-data_type.php");
         let jsontype = await responsetype.json();
-        type = jsontype;
+        type = jsontype.data;
     }
     function generateMeter(allmeters) {
         let body = document.getElementById('body');

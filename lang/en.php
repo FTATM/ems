@@ -268,4 +268,5 @@ $lang = [
     "gaugemnm" => "Gauge management",
 
     "reportelec" => "Report Electricity",
+
 ];
