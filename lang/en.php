@@ -269,4 +269,5 @@ $lang = [
 
     "reportelec" => "Report Electricity",
 
+    "overview" => "Overview",
 ];

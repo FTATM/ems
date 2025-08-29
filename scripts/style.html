@@ -31,6 +31,19 @@
         z-index: -1;
     }
 
+    .bg-rainbow {
+        --bs-bg-opacity: 1;
+        /* ค่าเริ่มต้น */
+        background: linear-gradient(90deg,
+                rgba(255, 0, 0, var(--bs-bg-opacity)),
+                rgba(255, 165, 0, var(--bs-bg-opacity)),
+                rgba(255, 255, 0, var(--bs-bg-opacity)),
+                rgba(0, 128, 0, var(--bs-bg-opacity)),
+                rgba(0, 0, 255, var(--bs-bg-opacity)),
+                rgba(75, 0, 130, var(--bs-bg-opacity)),
+                rgba(238, 130, 238, var(--bs-bg-opacity)));
+    }
+
     #card {
         width: 250px;
         border: 1px solid #ccc;
@@ -46,6 +59,16 @@
         border: 1px solid white;
     }
 
+    .hotspot {
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 4px 8px;
+        font-size: 14px;
+        cursor: pointer;
+    }
+
     .menu:hover {
         background-color: #001B5E;
         cursor: pointer;
@@ -56,11 +79,11 @@
         color: #222;
     }
 
-     .needle {
-      stroke-width: 4px;
-      stroke-linecap: round;
+    .needle {
+        stroke-width: 4px;
+        stroke-linecap: round;
     }
-    
+
     .toggle-button {
         padding: 4px 12px;
         margin: 5px;
@@ -92,16 +115,31 @@
         cursor: pointer;
     }
 
-    table,
-    table th,
-    table td {
-        color: #e0e0e0 !important;
-        background-color: transparent !important;
+    #loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: rgba(0, 0, 0, 0.7);
+        /* เบลอพื้นหลังแบบโปร่ง */
+        backdrop-filter: blur(4px);
+        /* ทำให้พื้นหลังเบลอ */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
     }
 
-    table td {
-        color: #b6b6b6 !important;
+    #loading-spinner {
+        border: 8px solid #f3f3f3;
+        border-top: 8px solid #3498db;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        animation: spin 1s linear infinite;
     }
+
 
     select,
     select option {
@@ -142,30 +180,22 @@
         display: none;
     }
 
-    #loading-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        background-color: rgba(0, 0, 0, 0.7);
-        /* เบลอพื้นหลังแบบโปร่ง */
-        backdrop-filter: blur(4px);
-        /* ทำให้พื้นหลังเบลอ */
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 9999;
+    #map-container {
+        height: 600px;
+        width: 100%;
     }
 
-    #loading-spinner {
-        border: 8px solid #f3f3f3;
-        border-top: 8px solid #3498db;
-        border-radius: 50%;
-        width: 60px;
-        height: 60px;
-        animation: spin 1s linear infinite;
+    table,
+    table th,
+    table td {
+        color: #e0e0e0 !important;
+        background-color: transparent !important;
     }
+
+    table td {
+        color: #b6b6b6 !important;
+    }
+
 
     #table-user tr {
         height: 20px;
@@ -263,5 +293,41 @@
         background-repeat: no-repeat;
         background-position: center;
         vertical-align: middle;
+    }
+
+
+    /* ====================== scene ======================== */
+    .scene {
+        perspective: 800px;
+        /* มุมมองความลึก */
+    }
+
+    .world {
+        position: relative;
+        transform-style: preserve-3d;
+        transform: rotateX(-10deg) rotateY(10deg);
+        transition: transform 0.1s linear;
+    }
+
+    .cube {
+        position: relative;
+        transform-style: preserve-3d;
+    }
+
+    .cube div {
+        position: absolute;
+        background: rgba(0, 150, 255, 0.7);
+        border: 1px solid white;
+    }
+
+
+    @keyframes spinmap {
+        from {
+            transform: rotateX(-20deg) rotateY(0deg);
+        }
+
+        to {
+            transform: rotateX(-20deg) rotateY(360deg);
+        }
     }
 </style>
