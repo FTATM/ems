@@ -35,7 +35,7 @@
 
         let response = await fetch(`../config/${select.value}.php`);
         let json = await response.json();
-        console.log("Success : ",json.success, "\nOutput : ",json.output);
+        console.log("Success : ", json.success, "\nOutput : ", json.output);
     }
 
     function generateMeter(meters) {
