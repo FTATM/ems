@@ -22,6 +22,7 @@
         let response = await fetch('../config/fetch-meters.php');
         let json = await response.json();
         meters = json.data;
+
         console.log(meters);
 
         let responsetype = await fetch("../config/fetch-data_type.php");

@@ -18,17 +18,17 @@
     async function fetchMetersData() {
         let response = await fetch("../config/fetch-meters.php");
         let json = await response.json();
-        return Object.values(json);
+        return Object.values(json.data);
     }
     async function fetchTypes() {
         let response = await fetch("../config/fetch-data_type.php");
         let json = await response.json();
-        return json;
+        return json.data;
     }
     async function fetchnotify() {
         let response = await fetch("../config/fetch-notify.php");
         let json = await response.json();
-        return json;
+        return json.data;
     }
 
     async function TestConnect() {
@@ -37,7 +37,7 @@
 
         let response = await fetch(`../config/${select.value}.php`);
         let json = await response.json();
-        console.log("Success : ",json.success, "\nOutput : ",json.output);
+        console.log("Success : ", json.success, "\nOutput : ", json.output);
     }
 
     function generateMeter(meters) {

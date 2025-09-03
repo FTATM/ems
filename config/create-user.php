@@ -28,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $insertStmt->bind_param("sssssss", $username, $full_name, $phone, $email, $password, $id_card, $address);
     if ($insertStmt->execute()) {
         $insertStmt->close();
-        echo json_encode(['success' => true]);
+        echo json_encode(['success' => true, 'message' => 'User created successfully']);
         exit();
     } else {
         $errorMsg = $insertStmt->error;

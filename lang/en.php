@@ -226,13 +226,6 @@ $lang = [
     "confirmdelete" => "Confirm deleted",
     "textconfirmdelete" => "Are you want this",
 
-    //menu
-    "dashboard" => "Dashboard",
-    "bill" => "Bills",
-    "payment" => "Payments",
-    "meter" => "Meter",
-    "member" => "Members",
-
     "allmeter" => "All meter",
     "typeofvalue" => "Type of value",
     "location" => "location",
@@ -254,7 +247,30 @@ $lang = [
 
     "loading"=> "Loading...",
     "cmisb"=> "Choose meter in side bar.",
-    "usermnm" => "Users Management",
   
+    //menu
+    "user" => "Users",
+    "usermnm" => "Users Management",
+
+    "dashboard" => "Dashboard",
+    "dashboardmnm" => "Dashboard management",
+
+    "bill" => "Bill",
+    "billmnm" => "Bill management",
+
+    "payment" => "Payment",
+    "paymentmnm" => "Payment management",
+
+    "meter" => "Meter",
+    "metermnm" => "Meter management",
+
+    "member" => "Member",
+    "membermnm" => "Member management",
+
+    "gauge" => "Gauge",
+    "gaugemnm" => "Gauge management",
+
     "reportelec" => "Report Electricity",
+
+    "overview" => "Overview",
 ];

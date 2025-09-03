@@ -4,11 +4,6 @@ include "../config/connect.php";
 
 header('Content-Type: application/json');
 
-// ตรวจสอบการเชื่อมต่อ
-if ($conn->connect_error) {
-    die(json_encode(["status" => "error", "message" => "DB Connection failed"]));
-}
-
 $data = json_decode(file_get_contents("php://input"), true);
 
 if ($data) {
@@ -48,13 +43,13 @@ if ($data) {
     }
 
     $response = [
-        "status" => "success",
+        "success" => true,
         "inserted" => $success_count,
         "errors" => $error_count
     ];
 } else {
     $response = [
-        "status" => "error",
+        "success" => false,
         "message" => "Invalid request"
     ];
 }

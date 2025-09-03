@@ -6,10 +6,7 @@ error_reporting(E_ALL);
 include "../config/no-crash.php";
 include "../config/connect.php";
 
-// ตรวจสอบการเชื่อมต่อ
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
+
 $sql = "SELECT * FROM meter WHERE is_deleted = 0";
 $result = $conn->query($sql);
 $sql = "SELECT * FROM data_type WHERE is_deleted = 0";
@@ -58,7 +55,7 @@ if ($result->num_rows > 0) {
 
 // ส่งข้อมูลกลับในรูปแบบ JSON
 header('Content-Type: application/json');
-echo json_encode($meters);
+echo json_encode(['success' => true, 'data' => $meters]);
 
 // ปิดการเชื่อมต่อ
 $conn->close();

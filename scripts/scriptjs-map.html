@@ -142,7 +142,6 @@
         <input class="w-100 btn border btn-sm" value="close" onclick="document.getElementById('infomation-meter').style.display='none';">
       `;
     };
-
   }
 
   function deleteHotspot(modelViewer, slot) {
@@ -178,6 +177,7 @@
 
     let imageViewer = document.getElementById('3d-viewer');
 
+
     let selectMeter = document.getElementById('select-meter');
     selectMeter.style.display = 'block';
     selectMeter.innerHTML = `<option value="">-- Select Meter --</option>`;
@@ -187,6 +187,7 @@
         bm.meters.forEach(meter => {
           selectMeter.innerHTML += `<option ${firstLoading ? "selected" : ""} value="${meter.id}">${meter.name}</option>`;
           firstLoading = false;
+
           // addHotspot(modelViewer, meter, "hotspot-" + meter.id, `${meter.id * 50}m 25m -0m`, "0m 1m 0m", meter.name);
           let div = document.createElement('div');
           div.className = "point";
@@ -198,6 +199,7 @@
       //     deleteHotspot(modelViewer, "hotspot-" + meter.id);
       //   });
       // }
+
     });
     showValueOnView();
   }

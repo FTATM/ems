@@ -1,21 +1,20 @@
-
 <?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
-include '../config/connect.php';
-// fetch data in table 
-function fetchUsers($conn) {
-    // Edit delete
-    $result = $conn->query("SELECT * FROM users WHERE is_deleted = 0") ;
-    $users = [] ;
+include "../config/no-crash.php";
+include "../config/connect.php";
 
-    while ($rows = $result->fetch_assoc()) {
-        $users[] = $rows ;
+$sql = "SELECT * FROM users WHERE is_deleted = 0";
+$result = $conn->query($sql);
+
+$rows = [];
+
+if ($result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) {
+        $rows[] = $row;
     }
-    return $users;
 }
-$users = fetchUsers($conn);
-echo json_encode($users, JSON_UNESCAPED_UNICODE);
 
-
-
-
+echo json_encode(['success' => true, 'data' => $rows]);

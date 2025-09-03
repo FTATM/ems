@@ -6,26 +6,23 @@ error_reporting(E_ALL);
 include "../config/no-crash.php";
 include "../config/connect.php";
 
-// ตรวจสอบการเชื่อมต่อ
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
+
 
 $sql = "SELECT * FROM data_type";
 $result = $conn->query($sql);
 
-$meters = [];
+$rows = [];
 
 if ($result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
-        $meters[] = $row;
+        $rows[] = $row;
     }
 }
 
 
 // ส่งข้อมูลกลับในรูปแบบ JSON
 header('Content-Type: application/json');
-echo json_encode($meters);
+echo json_encode(['success' => true, 'data' => $rows]);
 
 // ปิดการเชื่อมต่อ
 $conn->close();

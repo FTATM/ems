@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
@@ -16,7 +16,7 @@ if (!$conn) {
 
 // ใช้ Ternary operator
 $id = $_POST['id'] ?? null;
-$value = $_POST['value'] ?? ''; 
+$value = $_POST['value'] ?? '';
 // $status = $_POST['status'] ?? ''; 
 
 
@@ -27,22 +27,20 @@ if (!$id || !$value) {
 
 $fields = ['full_name', 'phone', 'address'];
 if (in_array($_POST['action'], $fields)) {
-    $sql = "UPDATE users SET {$_POST['action']} = ? WHERE id = ?" ;
-    $stmt = $conn->prepare($sql); 
+    $sql = "UPDATE users SET {$_POST['action']} = ? WHERE id = ?";
+    $stmt = $conn->prepare($sql);
     if ($stmt) {
         $stmt->bind_param("si", $value, $id);
         if ($stmt->execute()) {
-            echo json_encode(['success' => true, 'message' => 'ดำเนินการสำเร็จ']); 
-
-    }else {
-        echo json_encode(['success' => false, 'message' => 'เกิดข้อผิดพลาดในการดำเนินการ']); 
+            echo json_encode(['success' => true, 'message' => 'ดำเนินการสำเร็จ']);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'เกิดข้อผิดพลาดในการดำเนินการ']);
+        }
+        $stmt->close();
+    } else {
+        echo json_encode(['success' => false, 'message' => 'SQL Error']);
     }
-    $stmt->close(); 
-    }else {
-    echo json_encode(['success' => false, 'message' => 'SQL Error']);
-    }
-
-}else {
+} else {
     echo json_encode(['success' => false, 'message' => 'เกิดข้อผิดพลาดในการดำเนินการ']);
 }
 
