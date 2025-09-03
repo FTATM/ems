@@ -246,5 +246,64 @@
 
 
 
-    /* ====================== id ======================= */
+    /* ====================== icons ======================= */
+
+    .bi-setting-meter {
+        filter: brightness(0) invert(1);
+        display: inline-block;
+        width: 1.2em;
+        height: 1.2em;
+        background-image: url('../assets/icons/electric-meter.png');
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+        vertical-align: middle;
+    }
+
+
+    /* ====================== scene ======================== */
+    .scene {
+        perspective: 800px;
+        /* มุมมองความลึก */
+    }
+
+    .world {
+        position: relative;
+        transform-style: preserve-3d;
+        transform: rotateX(-10deg) rotateY(10deg);
+        transition: transform 0.1s linear;
+    }
+
+    .cube {
+        position: relative;
+        transform-style: preserve-3d;
+    }
+
+    .cube div {
+        position: absolute;
+        background: rgba(0, 150, 255, 0.7);
+        border: 1px solid white;
+    }
+
+
+    @keyframes spinmap {
+        from {
+            transform: rotateX(-20deg) rotateY(0deg);
+        }
+
+        to {
+            transform: rotateX(-20deg) rotateY(360deg);
+        }
+    }
+
+    .point {
+        position: absolute;
+        background: rgba(7, 7, 7, 0.1);
+        color: white;
+        padding: 5px 10px;
+        border-radius: 8px;
+    }
+    .point:hover {
+        background-color: rgba(0, 0, 0, 0.7);
+    }
 </style>

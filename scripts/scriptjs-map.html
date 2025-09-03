@@ -1,0 +1,240 @@
+<script>
+  let meters = [];
+  let types = [];
+  let locations = [];
+  let buildings = [];
+  let rooms = [];
+  let filtermeters = [];
+  let buildingAndMeterFilter = [];
+  let boxMeshes = {};
+  let refreshIntervalId; // เก็บ interval id
+  let location_id = "1"; // กำหนดค่าเริ่มต้นเป็น null
+  let firstLoading = true;
+  document.addEventListener("DOMContentLoaded", async () => {
+    await processData();
+  });
+
+  async function processData() {
+    showLoading();
+    await fetchAll();
+    await stepRefreshData();
+    await refreshTime();
+    await loadBuilding(buildingAndMeterFilter[0].building.id);
+    hideLoading();
+  }
+
+  async function fetchAll() {
+    let response = await fetch("../config/fetch-meters.php");
+    let json = await response.json();
+    meters = json.data;
+
+    let responsetype = await fetch("../config/fetch-data_type.php");
+    let jsontype = await responsetype.json();
+    types = jsontype.data;
+
+    let responseLocation = await fetch("../config/fetch-locations.php");
+    let jsonLocation = await responseLocation.json();
+    locations = jsonLocation.data;
+
+    let responsebuilding = await fetch("../config/fetch-buildings.php");
+    let jsonbuilding = await responsebuilding.json();
+    buildings = jsonbuilding.data;
+
+    let responseRoom = await fetch("../config/fetch-rooms.php");
+    let jsonRoom = await responseRoom.json();
+    rooms = jsonRoom.data;
+  }
+
+  async function stepRefreshData() {
+    await filterData(location_id);
+    await generateListBuildings();
+  }
+
+  function filterData(location_id) {
+    let filterbuildings = [];
+    if (location_id) {
+      filterbuildings = buildings.filter((b) => b.location_id === location_id);
+    } else {
+      filterbuildings = buildings;
+    }
+
+    buildingAndMeterFilter = Object.values(filterbuildings).map((b) => {
+      filtermeters = rooms.flatMap((r) => {
+        return Object.values(meters).filter((meter) => {
+          return r.id == meter.room_id && r.building_id == b.id;
+        });
+      });
+      return {
+        building: b,
+        meters: filtermeters,
+      };
+    });
+
+    // console.log(buildingAndMeterFilter);
+  }
+
+  function addHotspot(modelViewer, meter, slot, position, normal, label) {
+    const btn = document.createElement("button");
+    btn.className = "hotspot";
+    btn.setAttribute("slot", slot);
+    btn.setAttribute("data-position", position);
+    btn.setAttribute("data-normal", normal);
+    btn.textContent = label;
+    onClickTemplate(btn, meter);
+    modelViewer.appendChild(btn);
+  }
+
+  function onClickTemplate(parent, meter) {
+    let lastIndex = meter?.data['7'].length - 1;
+    let is_Null = meter?.data['7'][lastIndex]?.value ? true : false;
+    let MeterValue = {
+      "VoltageA": is_Null ? meter.data['7'][lastIndex].value : 0,
+      "VoltageB": is_Null ? meter.data['8'][lastIndex].value : 0,
+      "VoltageC": is_Null ? meter.data['9'][lastIndex].value : 0,
+      "CurrentA": is_Null ? meter.data['10'][lastIndex].value : 0,
+      "CurrentB": is_Null ? meter.data['11'][lastIndex].value : 0,
+      "CurrentC": is_Null ? meter.data['12'][lastIndex].value : 0,
+      "Pf": is_Null ? meter.data['17'][lastIndex].value : 0,
+      "frequency": is_Null ? meter.data['18'][lastIndex].value : 0,
+    };
+    parent.onclick = () => {
+      let info = document.getElementById('infomation-meter');
+      info.style.display = "flex";
+      info.innerHTML = `
+        <div class="text-end position-absolute" style="top:0px; right:5px;"><i class="bi bi-x" onclick="document.getElementById('infomation-meter').style.display='none';"></i></div>
+        <h5 class="w-100 text-center">${meter.name}</h5>
+        <div class="w-100 d-flex gap-2">
+            <div class="flex-fill">
+                <h6 class="m-0">V_A</h6>
+                <input type="text" value="${MeterValue['VoltageA']}" class="bg-secondary bg-opacity-25" style="width:50px; font-size:0.75rem;" readonly>
+            </div>
+            <div class="flex-fill">
+                <h6 class="m-0">V_B</h6>
+                <input type="text" value="${MeterValue['VoltageB']}" class="bg-secondary bg-opacity-25" style="width:50px; font-size:0.75rem;" readonly>
+            </div>
+            <div class="flex-fill">
+                <h6 class="m-0">V_C</h6>
+                <input type="text" value="${MeterValue['VoltageC']}" class="bg-secondary bg-opacity-25" style="width:50px; font-size:0.75rem;" readonly>
+            </div>
+        </div>
+        <div class="w-100 d-flex gap-2">
+            <div class="flex-fill">
+                <h6 class="m-0">C_A</h6>
+                <input type="text" value="${MeterValue['CurrentA']}" class="bg-secondary bg-opacity-25" style="width:50px; font-size:0.75rem;" readonly>
+            </div>
+            <div class="flex-fill">
+                <h6 class="m-0">C_B</h6>
+                <input type="text" value="${MeterValue['CurrentB']}" class="bg-secondary bg-opacity-25" style="width:50px; font-size:0.75rem;" readonly>
+            </div>
+            <div class="flex-fill">
+                <h6 class="m-0">C_C</h6>
+                <input type="text" value="${MeterValue['CurrentC']}" class="bg-secondary bg-opacity-25" style="width:50px; font-size:0.75rem;" readonly>
+            </div>
+        </div>
+        <div class="w-100">
+            <h6 class="ps-2 m-0">Pf</h6>
+            <input type="text" value="${MeterValue['Pf']}" class="w-100 bg-secondary bg-opacity-25" style="font-size:0.75rem;" readonly>
+        </div>
+        <div class="w-100">
+            <h6 class="ps-2 m-0">Frequency</h6>
+            <input type="text" value="${MeterValue['frequency']}" class="w-100 bg-secondary bg-opacity-25" style="font-size:0.75rem;" readonly>
+        </div>
+        <input class="w-100 btn border btn-sm" value="close" onclick="document.getElementById('infomation-meter').style.display='none';">
+      `;
+    };
+
+  }
+
+  function deleteHotspot(modelViewer, slot) {
+    const hotspot = modelViewer.querySelector(`[slot="${slot}"]`);
+    if (hotspot) {
+      modelViewer.removeChild(hotspot);
+      console.log("ลบ hotspot:", slot);
+    }
+  }
+
+  function generateListBuildings() {
+    let list = document.getElementById("listbuilding");
+    list.innerHTML = `
+      <h3 class="text-center my-4">Buildings</h3>
+    `;
+    Object.values(buildingAndMeterFilter).forEach((bm) => {
+      let div = document.createElement("div");
+      div.className = "p-2 mx-2 d-flex justify-content-between";
+      div.style.backgroundColor = bm.building.is_active === "1" ? "rgba(64, 160, 64)" : "rgba(255, 255, 255, 0.2)";
+      div.innerHTML = `
+        <h4 class="text-center">${bm.building.name}</h4>
+        <p class="text-center mb-0">${bm.building.is_active === "1" ? "Active" : "Inactive"}</p>
+      `;
+      div.onclick = () => loadBuilding(bm.building.id);
+      list.appendChild(div);
+    });
+  }
+
+  //add meter label to 3D model
+  function loadBuilding(id) {
+    // const modelViewer = document.getElementById("myModel");
+    // modelViewer.src = "../assets/NY.glb";
+
+    let imageViewer = document.getElementById('3d-viewer');
+
+    let selectMeter = document.getElementById('select-meter');
+    selectMeter.style.display = 'block';
+    selectMeter.innerHTML = `<option value="">-- Select Meter --</option>`;
+    buildingAndMeterFilter.flatMap(bm => {
+      if (bm.building.id == id) {
+        document.getElementById('name-building').textContent = "Building : " + bm.building.name;
+        bm.meters.forEach(meter => {
+          selectMeter.innerHTML += `<option ${firstLoading ? "selected" : ""} value="${meter.id}">${meter.name}</option>`;
+          firstLoading = false;
+          // addHotspot(modelViewer, meter, "hotspot-" + meter.id, `${meter.id * 50}m 25m -0m`, "0m 1m 0m", meter.name);
+          let div = document.createElement('div');
+          div.className = "point";
+          imageViewer.innerHTML += `<div class="point" style="top:${bm.building.id * 50}px; Left:${meter.id * 50}px;"></div>`;
+        });
+      }
+      // else {
+      //   bm.meters.forEach(meter => {
+      //     deleteHotspot(modelViewer, "hotspot-" + meter.id);
+      //   });
+      // }
+    });
+    showValueOnView();
+  }
+
+  function refreshTime() {
+    // เคลียร์ interval เก่า
+    clearInterval(refreshIntervalId);
+
+    console.log("กำลัง refresh ข้อมูล...");
+    // ตั้ง interval ใหม่
+    refreshIntervalId = setInterval(() => {
+      stepRefreshData();
+    }, 30 * 1000);
+  }
+
+  function showValueOnView() {
+    let selectMeter = document.getElementById("select-meter");
+    let selectedMeterId = selectMeter.value;
+    let meter = meters[selectedMeterId];
+    let lastIndex = meter?.data['7'].length - 1;
+    let is_Null = meter?.data['7'][lastIndex]?.value ? true : false;
+    let idsAndValues = {
+      "VoltageA": is_Null ? meter.data['7'][lastIndex].value : 0,
+      "VoltageB": is_Null ? meter.data['8'][lastIndex].value : 0,
+      "VoltageC": is_Null ? meter.data['9'][lastIndex].value : 0,
+      "CurrentA": is_Null ? meter.data['10'][lastIndex].value : 0,
+      "CurrentB": is_Null ? meter.data['11'][lastIndex].value : 0,
+      "CurrentC": is_Null ? meter.data['12'][lastIndex].value : 0,
+      "Pf": is_Null ? meter.data['17'][lastIndex].value : 0,
+      "frequency": is_Null ? meter.data['18'][lastIndex].value : 0,
+    };
+    Object.entries(idsAndValues).forEach(([key, value]) => {
+      let element = document.getElementById(key);
+      if (element) {
+        element.value = value;
+      }
+    });
+
+  }
+</script>

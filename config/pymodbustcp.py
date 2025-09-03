@@ -1,8 +1,19 @@
-from pymodbus.client import ModbusTcpClient
 import struct
-import json
+import requests
+import sys
+from datetime import datetime
+from pymodbus.client.sync import ModbusTcpClient
 
-# === Helper ===
+if len(sys.argv) < 4:
+    print("Usage: pymodbustcp.py <meter_id> <ip> <port>")
+    sys.exit(1)
+
+meter_id = int(sys.argv[1])
+ip = sys.argv[2]
+port = int(sys.argv[3])
+
+# === Modbus Functions ===
+>>>>>>> Stashed changes
 def hex_to_float(hex_val):
     return struct.unpack('<f', struct.pack('<I', hex_val))[0]
 
@@ -13,8 +24,7 @@ def read_float_register(client, start_address):
     regs = result.registers
     return round(hex_to_float((regs[0] << 16) + regs[1]), 2)
 
-# === Modbus Config ===
-client = ModbusTcpClient('192.168.0.7', port=8800)
+client = ModbusTcpClient(ip, port=port, timeout=3)
 client.connect()
 
 # === ตัวอย่าง Register ที่ต้องการอ่าน ===
@@ -53,7 +63,22 @@ for label, addr in float_registers.items():
     value = read_float_register(client, addr)
     data[label] = value if value is not None else "Error"
 
-client.close()
+# === Add timestamp ===
+timestamp = datetime.now().isoformat()
+payload = {
+    "meter_id": meter_id,
+    "datetime": timestamp,
+    "data": data
+}
 
-# === Print JSON สำหรับให้ PHP/JS ใช้ ===
-print(json.dumps(data))
+# === Send to API ===
+try:
+    # url = "http://49.0.69.152/ams/config/meter-data.php"
+    # response = requests.post(url, json=payload, timeout=5)
+    # print("API Response:", response.status_code, response.text)
+    print("Payload", payload)
+except Exception as e:
+    print("API Error:", e)
+
+# === Print Result for PHP ou
+>>>>>>> Stashed changes

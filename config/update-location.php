@@ -18,7 +18,7 @@ $action = $_POST['action'] ?? '';
 $value = $_POST['value'] ?? '';
 
 
-if (!$id || !$action || $value === '') {
+if (!$id || $action === '' || $value === '') {
     echo json_encode(['success' => false, 'message' => 'ข้อมูลไม่ครบถ้วน']);
     exit;
 }
@@ -32,6 +32,10 @@ switch ($action) {
     case "delete":
         $stmt = $conn->prepare("UPDATE locations SET is_deleted = 1 WHERE id = ?");
         $stmt->bind_param("i", $id);
+        break;
+    case "new":
+        $stmt = $conn->prepare("INSERT INTO locations (`name`) VALUES (?)");
+        $stmt->bind_param("s", $value);
         break;
 
     default:

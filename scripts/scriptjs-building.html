@@ -2,14 +2,17 @@
     const rowsPerPage = 10;
     let currentPage = 1;
     let locations = [];
+    let buildings = [];
     document.addEventListener("DOMContentLoaded", async () => {
+        showLoading();
         let response_ = await fetch("../config/fetch-locations.php");
         let json_ = await response_.json();
-        locations = Object.values(json_);
+        locations = Object.values(json_.data);
         let response = await fetch("../config/fetch-buildings.php");
         let json = await response.json();
-        let building = Object.values(json);
-        renderTablePage(building, currentPage);
+        buildings = Object.values(json.data);
+        renderTablePage(buildings, currentPage);
+        hideLoading();
     })
 
     function renderTablePage(data, page) {
@@ -44,8 +47,8 @@
             <td>${getLocationName(row.location_id).name}</td>
             <td>${row.name}</td>
             <td class = "d-flex ">
-                <input class="btn btn-sm btn-warning mx-3" value="Rename" onclick="openRenameModal(1, '${row.name}')">
-                <input class="btn btn-sm btn-danger mx-3" value="Delete" onclick="openDeleteModal(1)">
+                <input class="btn btn-sm btn-warning mx-3" value="Rename" onclick="openRenameModal(${row.id}, '${row.name}')">
+                <input class="btn btn-sm btn-danger mx-3" value="Delete" onclick="openDeleteModal(${row.id})">
             </td>
             `;
             tbody.appendChild(tr);
@@ -63,7 +66,7 @@
                 local = row;
             }
         });
-        return local ;
+        return local;
     }
 
     function renderPagination(totalRows, currentPage) {
@@ -79,16 +82,18 @@
 
             btn.textContent = i;
             btn.addEventListener("click", () => {
-                renderTablePage(AllMeters, i);
+                renderTablePage(buildings, i);
             });
             paginationDiv.appendChild(btn);
         }
     }
 
-    function updateAction(id, action, value) {
+    function updateAction(id, action, value, location_id = 0) {
         let form = new FormData();
         form.append("id", id);           // เพิ่ม id เข้าไปด้วย (จำเป็นสำหรับการอัปเดต)
-        form.append(action, value);      // เช่น form.append("status", "active")
+        form.append("action", action);      // เช่น form.append("status", "active")
+        form.append("value", value);      // เช่น form.append("status", "active")
+        form.append('location_id', location_id);
 
         fetch('../config/update-building.php', {
             method: 'POST',
@@ -114,12 +119,14 @@
         modal.show();
     }
 
-    function submitRename() {
+    async function submitRename() {
         let id = document.getElementById('rename-id').value;
         let newName = document.getElementById('new-name').value;
 
-        updateAction(id, 'rename', newName);
+        await updateAction(id, 'rename', newName);
         bootstrap.Modal.getInstance(document.getElementById('renameModal')).hide();
+
+        window.location.reload();
     }
 
     function openDeleteModal(id) {
@@ -128,10 +135,34 @@
         modal.show();
     }
 
-    function submitDelete() {
+    async function submitDelete() {
         let id = document.getElementById('delete-id').value;
 
-        updateAction(id, 'delete', 1); // value = 1 หมายถึงลบ
+        await updateAction(id, 'delete', 1); // value = 1 หมายถึงลบ
         bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
+
+        window.location.reload();
+    }
+
+    function openBuildingModal(id, currentName) {
+        let select = document.getElementById('select-Location');
+        locations.forEach(location => {
+            let option = document.createElement('option');
+            option.value = location.id;
+            option.textContent = location.name;
+            select.appendChild(option);
+        });
+        var modal = new bootstrap.Modal(document.getElementById('newBuildingModal'));
+        modal.show();
+    }
+
+    async function submitnewBuilding() {
+        let newName = document.getElementById('newName').value;
+        let location_id = document.getElementById('select-Location').value;
+
+        await updateAction('new', 'new', newName, location_id);
+        bootstrap.Modal.getInstance(document.getElementById('newBuildingModal')).hide();
+
+        window.location.reload();
     }
 </script>

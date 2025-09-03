@@ -1,12 +1,15 @@
 <script>
     const rowsPerPage = 10;
     let currentPage = 1;
+    let locations = [];
     let lastActiveElement = null;
     document.addEventListener("DOMContentLoaded", async () => {
+        showLoading();
         let response = await fetch("../config/fetch-locations.php");
         let json = await response.json();
-        let locations = Object.values(json);
+        locations = Object.values(json.data);
         renderTablePage(locations, currentPage);
+        hideLoading();
     })
 
     function renderTablePage(data, page) {
@@ -19,7 +22,7 @@
         headerRow.innerHTML = `
         <th class="text-white w-25" style="background-color:#001B5E;"><?=$lang['id'];?></th>
         <th class="text-white w-50" style="background-color:#001B5E;"><?=$lang['name'];?></th>
-        <th class="text-white w-25" style="background-color:#001B5E;"><?=$lang['action'];?></th>
+        <th class="text-white w-15" style="background-color:#001B5E;"><?=$lang['action'];?></th>
         `;
 
 
@@ -39,7 +42,7 @@
             <td>${meter.id}</td>
             <td>${meter.name}</td>
             <td class = "d-flex ">
-                <input class="btn btn-sm btn-warning mx-3" value="Rename" onclick="openRenameModal(${meter.id}, '${meter.name}')">
+                <input class="btn btn-sm btn-secondary mx-3" value="Rename" onclick="openRenameModal(${meter.id}, '${meter.name}')">
                 <input class="btn btn-sm btn-danger mx-3" value="Delete" onclick="openDeleteModal(${meter.id})">
             </td>
             `;
@@ -64,7 +67,7 @@
 
             btn.textContent = i;
             btn.addEventListener("click", () => {
-                renderTablePage(AllMeters, i);
+                renderTablePage(locations, i);
             });
             paginationDiv.appendChild(btn);
         }
@@ -75,6 +78,8 @@
         form.append("id", id);           // เพิ่ม id เข้าไปด้วย (จำเป็นสำหรับการอัปเดต)
         form.append("action", action);      // เช่น form.append("status", "active")
         form.append("value", value);
+
+        console.log("id : ", id, " | action : ", action, " |value : ", value);
 
         fetch('../config/update-location.php', {
             method: 'POST',
@@ -102,17 +107,18 @@
         modal.show();
     }
 
-    function submitRename() {
+    async function submitRename() {
         let id = document.getElementById('rename-id').value;
         let newName = document.getElementById('new-name').value;
 
-        updateAction(id, 'rename', newName);
+        await updateAction(id, 'rename', newName);
         bootstrap.Modal.getInstance(document.getElementById('renameModal')).hide();
-    
+
         // โฟกัสกลับไปที่ปุ่มที่เปิด modal
         if (lastActiveElement) {
             setTimeout(() => lastActiveElement.focus(), 300);
         }
+        window.location.reload();
     }
 
     function openDeleteModal(id) {
@@ -122,15 +128,35 @@
         modal.show();
     }
 
-    function submitDelete() {
+    async function submitDelete() {
         let id = document.getElementById('delete-id').value;
 
-        updateAction(id, 'delete', 1); // value = 1 หมายถึงลบ
+        await updateAction(id, 'delete', 1); // value = 1 หมายถึงลบ
         bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
-    
+
         // โฟกัสกลับไปที่ปุ่มที่เปิด modal
         if (lastActiveElement) {
             setTimeout(() => lastActiveElement.focus(), 300);
         }
+        window.location.reload();
+    }
+
+    function openNewLocationModal() {
+        lastActiveElement = document.activeElement;
+        let modal = new bootstrap.Modal(document.getElementById('newLocationModal'));
+        modal.show();
+    }
+
+    async function submitNewLocation() {
+        let newName = document.getElementById('newName').value;
+
+        await updateAction('new', 'new', newName);
+        bootstrap.Modal.getInstance(document.getElementById('newLocationModal')).hide();
+
+        // โฟกัสกลับไปที่ปุ่มที่เปิด modal
+        if (lastActiveElement) {
+            setTimeout(() => lastActiveElement.focus(), 300);
+        }
+        window.location.reload();
     }
 </script>
