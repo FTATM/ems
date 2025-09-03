@@ -80,6 +80,11 @@
     btn.setAttribute("data-position", position);
     btn.setAttribute("data-normal", normal);
     btn.textContent = label;
+    onClickTemplate(btn, meter);
+    modelViewer.appendChild(btn);
+  }
+
+  function onClickTemplate(parent, meter) {
     let lastIndex = meter?.data['7'].length - 1;
     let is_Null = meter?.data['7'][lastIndex]?.value ? true : false;
     let MeterValue = {
@@ -92,7 +97,7 @@
       "Pf": is_Null ? meter.data['17'][lastIndex].value : 0,
       "frequency": is_Null ? meter.data['18'][lastIndex].value : 0,
     };
-    btn.onclick = () => {
+    parent.onclick = () => {
       let info = document.getElementById('infomation-meter');
       info.style.display = "flex";
       info.innerHTML = `
@@ -137,8 +142,6 @@
         <input class="w-100 btn border btn-sm" value="close" onclick="document.getElementById('infomation-meter').style.display='none';">
       `;
     };
-
-    modelViewer.appendChild(btn);
   }
 
   function deleteHotspot(modelViewer, slot) {
@@ -169,8 +172,11 @@
 
   //add meter label to 3D model
   function loadBuilding(id) {
-    const modelViewer = document.getElementById("myModel");
-    modelViewer.src = "../assets/NY.glb";
+    // const modelViewer = document.getElementById("myModel");
+    // modelViewer.src = "../assets/NY.glb";
+
+    let imageViewer = document.getElementById('3d-viewer');
+
 
     let selectMeter = document.getElementById('select-meter');
     selectMeter.style.display = 'block';
@@ -181,14 +187,19 @@
         bm.meters.forEach(meter => {
           selectMeter.innerHTML += `<option ${firstLoading ? "selected" : ""} value="${meter.id}">${meter.name}</option>`;
           firstLoading = false;
-          addHotspot(modelViewer, meter, "hotspot-" + meter.id, `${meter.id * 50}m 25m -0m`, "0m 1m 0m", meter.name);
+
+          // addHotspot(modelViewer, meter, "hotspot-" + meter.id, `${meter.id * 50}m 25m -0m`, "0m 1m 0m", meter.name);
+          let div = document.createElement('div');
+          div.className = "point";
+          imageViewer.innerHTML += `<div class="point" style="top:${bm.building.id * 50}px; Left:${meter.id * 50}px;"></div>`;
         });
       }
-      else {
-        bm.meters.forEach(meter => {
-          deleteHotspot(modelViewer, "hotspot-" + meter.id);
-        });
-      }
+      // else {
+      //   bm.meters.forEach(meter => {
+      //     deleteHotspot(modelViewer, "hotspot-" + meter.id);
+      //   });
+      // }
+
     });
     showValueOnView();
   }

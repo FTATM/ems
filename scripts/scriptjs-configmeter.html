@@ -4,8 +4,10 @@
     let types = [];
     let notifies = [];
     document.addEventListener("DOMContentLoaded", async () => {
+        showLoading();
         await fetchAll();
         generateMeter(meters);
+        hideLoading();
     });
 
     async function fetchAll() {

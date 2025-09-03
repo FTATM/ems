@@ -1,9 +1,19 @@
 import struct
 import requests
+import sys
 from datetime import datetime
 from pymodbus.client.sync import ModbusTcpClient
 
+if len(sys.argv) < 4:
+    print("Usage: pymodbustcp.py <meter_id> <ip> <port>")
+    sys.exit(1)
+
+meter_id = int(sys.argv[1])
+ip = sys.argv[2]
+port = int(sys.argv[3])
+
 # === Modbus Functions ===
+
 def hex_to_float(hex_val):
     return struct.unpack('<f', struct.pack('<I', hex_val))[0]
 
@@ -13,9 +23,13 @@ def read_float_register(client, start_address):
         return None
     regs = result.registers
     return round(hex_to_float((regs[0] << 16) + regs[1]), 2)
-
 # === Connect Modbus ===
-client = ModbusTcpClient('192.168.0.7', port=8800, timeout=3)
+
+client = ModbusTcpClient(ip, port=port, timeout=3)
+client.connect()
+
+
+
 
 if not client.connect():
     print("Connection failed")
@@ -51,17 +65,17 @@ for label, addr in float_registers.items():
 # === Add timestamp ===
 timestamp = datetime.now().isoformat()
 payload = {
-    "meter_id": 1,
+    "meter_id": meter_id,
     "datetime": timestamp,
     "data": data
 }
 
 # === Send to API ===
 try:
-    url = "http://49.0.69.152/ams/config/meter-data.php"
-    response = requests.post(url, json=payload, timeout=5)
-    print("API Response:", response.status_code, response.text)
+    # url = "http://49.0.69.152/ams/config/meter-data.php"
+    # response = requests.post(url, json=payload, timeout=5)
+    # print("API Response:", response.status_code, response.text)
+    print("Payload", payload)
 except Exception as e:
     print("API Error:", e)
 
-# === Print Result for PHP ou

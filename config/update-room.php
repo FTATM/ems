@@ -21,15 +21,19 @@ if (!$id || !$status || $value === '') {
 
 switch ($status) {
     case "rename":
-        $stmt = $conn->prepare("UPDATE locations SET name = ? WHERE id = ?");
+        $stmt = $conn->prepare("UPDATE rooms SET name = ? WHERE id = ?");
         $stmt->bind_param("si", $value, $id);
         break;
 
     case "delete":
-        $stmt = $conn->prepare("UPDATE locations SET is_deleted = 1 WHERE id = ?");
+        $stmt = $conn->prepare("UPDATE rooms SET is_deleted = 1 WHERE id = ?");
         $stmt->bind_param("i", $id);
         break;
 
+    case "new":
+        $stmt = $conn->prepare("INSERT INTO rooms");
+        $stmt->bind_param("si", $value, $id);
+        break;
     default:
         echo json_encode(['success' => false, 'message' => 'สถานะไม่ถูกต้อง']);
         exit;

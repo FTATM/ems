@@ -9,25 +9,32 @@ include "../config/connect.php";
 
 
 
+
 // รับค่าจาก POST
 $id = $_POST['id'] ?? null;
-$status = $_POST['status'] ?? '';
+$action = $_POST['action'] ?? '';
 $value = $_POST['value'] ?? '';
 
-if (!$id || !$status || $value === '') {
+if (!$id || !$action || $value === '') {
     echo json_encode(['success' => false, 'message' => 'ข้อมูลไม่ครบถ้วน']);
     exit;
 }
 
-switch ($status) {
+switch ($action) {
     case "rename":
-        $stmt = $conn->prepare("UPDATE locations SET name = ? WHERE id = ?");
+        $stmt = $conn->prepare("UPDATE buildings SET `name` = ? WHERE id = ?");
         $stmt->bind_param("si", $value, $id);
         break;
 
     case "delete":
-        $stmt = $conn->prepare("UPDATE locations SET is_deleted = 1 WHERE id = ?");
+        $stmt = $conn->prepare("UPDATE buildings SET is_deleted = 1 WHERE id = ?");
         $stmt->bind_param("i", $id);
+        break;
+
+    case "new":
+        $location_id = $_POST['location_id'] ?? '';
+        $stmt = $conn->prepare("INSERT INTO buildings (name,location_id) VALUES (?,?)");
+        $stmt->bind_param("ss", $value, $location_id);
         break;
 
     default:
