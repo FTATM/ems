@@ -25,13 +25,11 @@ def read_float_register(client, start_address):
     return round(hex_to_float((regs[0] << 16) + regs[1]), 2)
 # === Connect Modbus ===
 
-client = ModbusTcpClient(ip, port=port, timeout=3)
-client.connect()
-
-
+client = ModbusTcpClient(ip, port, timeout=3)
 
 
 if not client.connect():
+    print("ip : ",ip, "port : ",port)
     print("Connection failed")
     exit(1)
 
