@@ -19,13 +19,45 @@ include '../components/session.php';
         <div class="w-100 h-100 d-flex flex-column justify-content-center">
             <?php include "../components/header.php"; ?>
             <div class="bg-secondary bg-opacity-25 d-flex flex-column pt-5 align-items-center" style="min-height: 80svh;">
-            <div class="my-5 text-center fs-1 fw-bolder">Room Management</div>
-                <table id="table-room" class="container table " style="height: 90%;">
+                <div class="my-5 text-center fs-1 fw-bolder"><?= $lang['roommnm'] ?></div>
+                <div class="container mb-2 text-end">
+                    <input class=" btn btn-primary bg-primary w-10" value="create" onclick="openNewRoomModal()">
+                </div>
+                <table id="table-room" class="container table table-bordered table-striped" style="height: 90%;">
                 </table>
                 <div id="pagination" class="mt-3 d-flex gap-2 justify-content-center" style="height: 10%;"></div>
             </div>
         </div>
     </div>
+
+    <!-- 🔧 Modal เพิ่ม -->
+    <div class="modal fade" id="newRoomModal" tabindex="-1" aria-labelledby="newRoomModalLabel">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><?=$lang['nroom']?></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="ปิด"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="select-Location" class="form-label"><?= $lang['clocation'] ?></label>
+                        <select type="text" class="form-select border text-black" required id="select-Location" onchange="findBuilding()"></select>
+
+                        <label for="select-building" class="form-label"><?= $lang['cbuilding'] ?></label>
+                        <select type="text" class="form-select border text-black" required id="select-building"></select>
+
+                        <label for="newName" class="form-label"><?=$lang['nname']?></label>
+                        <input type="text" class="form-control text-black" id="newName">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+                    <button type="button" class="btn btn-primary" onclick="submitNewRoom()">บันทึก</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- 🔧 Modal แก้ไขชื่อ -->
     <div class="modal fade" id="renameModal" tabindex="-1" aria-labelledby="renameModalLabel">
         <div class="modal-dialog">

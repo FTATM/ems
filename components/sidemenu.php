@@ -23,15 +23,13 @@
             <i class="bi bi-setting-meter"></i>
             <span><a class="nav-link text" href="../pages/configmeter.php"><?= $lang['metermnm'] ?></a></span>
         </li>
-        <?php if (isset($_SESSION['user']) && $_SESSION['user']['is_admin'] == 1) : ?>
-            <li class="d-flex align-items-center gap-2">
-                <i class="bi bi-people"></i>
-                <span><a class="nav-link text" href="../pages/users-management.php"><?= $lang['usermnm'] ?></a></span>
-            </li>
-        <?php endif; ?>
+        <li class="d-flex align-items-center gap-2">
+            <i class="bi bi-people"></i>
+            <span><a class="nav-link text" href="../pages/users-management.php"><?= $lang['usermnm'] ?></a></span>
+        </li>
         <li class="d-flex align-items-center gap-2">
             <i class="bi bi-speedometer"></i>
-            <span><a class="nav-link text" href="../pages/gauge.php"><?= $lang['gauge'] ?></a></span>
+            <span><a class="nav-link text" href="../pages/gauge.php"><?= $lang['gaugemnm'] ?></a></span>
         </li>
         <li class="d-flex align-items-center gap-2">
             <i class="bi bi-receipt"></i>

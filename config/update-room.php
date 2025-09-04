@@ -11,15 +11,15 @@ include "../config/connect.php";
 
 // รับค่าจาก POST
 $id = $_POST['id'] ?? null;
-$status = $_POST['status'] ?? '';
+$action = $_POST['action'] ?? '';
 $value = $_POST['value'] ?? '';
 
-if (!$id || !$status || $value === '') {
+if (!$id || !$action || $value === '') {
     echo json_encode(['success' => false, 'message' => 'ข้อมูลไม่ครบถ้วน']);
     exit;
 }
 
-switch ($status) {
+switch ($action) {
     case "rename":
         $stmt = $conn->prepare("UPDATE rooms SET name = ? WHERE id = ?");
         $stmt->bind_param("si", $value, $id);
@@ -31,8 +31,9 @@ switch ($status) {
         break;
 
     case "new":
-        $stmt = $conn->prepare("INSERT INTO rooms");
-        $stmt->bind_param("si", $value, $id);
+        $building_id = $_POST['building_id'] ?? '';
+        $stmt = $conn->prepare("INSERT INTO rooms (building_id, name) VALUES (?,?)");
+        $stmt->bind_param("ss", $building_id, $value);
         break;
     default:
         echo json_encode(['success' => false, 'message' => 'สถานะไม่ถูกต้อง']);

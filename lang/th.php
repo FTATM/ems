@@ -228,10 +228,23 @@ $lang = [
 
     "allmeter" => "มิเตอร์ทั้งหมด",
     "typeofvalue" => "ชนิดของข้อมูล",
-    "location" => "สถานที่",
-    "building" => "อาคาร",
-    "floor" => "ชั้น",
+
+    "location" => "ตำแหน่งที่ตั้ง",
+    "locationmnm" => "การจัดการตำแหน่งที่ตั้ง",
+    "clocation" => "เลือกตำแหน่งที่ตั้ง",
+    "nlocation" => "สร้างตำแหน่งที่ตั้งใหม่",
+
+    "building" => "ตึก",
+    "buildingmnm" => "การจัดการตึก",
+    "cbuilding" => "เลือกตึก",
+    "nbuilding" => "สร้างตึกใหม่",
+
     "room" => "ห้อง",
+    "roommnm" => "การจัดการห้องพัก",
+    "croom" => "เลือกห้อง",
+    "nroom" => "สร้างห้องใหม่",
+
+    "nname" => "สร้างชื่อใหม่",
 
     "config" => "ตั้งค่า",
     "mark" => "เครื่องหมาย",
@@ -267,7 +280,7 @@ $lang = [
     "gauge" => "เกจ/เครื่องวัด",
     "gaugemnm" => "การจัดการเกจ/เครื่องวัด",
 
-    "reportelec" => "Report Electricity",
+    "reportelec" => "รายงานบิลไฟฟ้า",
 
-    "overview" => "Overview",
+    "overview" => "ภาพรวม",
 ];
