@@ -60,6 +60,7 @@ for label, addr in float_registers.items():
     value = read_float_register(client, addr)
     data[label] = value if value is not None else "Error"
 
+
 # === Add timestamp ===
 timestamp = datetime.now().isoformat()
 payload = {
@@ -76,4 +77,9 @@ try:
     print("Payload", payload)
 except Exception as e:
     print("API Error:", e)
+
+    # listcompreh
+    
+client.close()
+
 

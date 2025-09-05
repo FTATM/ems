@@ -55,7 +55,8 @@ if ($result->num_rows > 0) {
 
 // ส่งข้อมูลกลับในรูปแบบ JSON
 header('Content-Type: application/json');
-echo json_encode(['success' => true, 'data' => $meters]);
+echo json_encode(['success' => true, 'data' => $meters, 'dataType' => $data_types]);
 
 // ปิดการเชื่อมต่อ
 $conn->close();
+exit;
