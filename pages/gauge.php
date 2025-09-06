@@ -18,7 +18,7 @@ include '../components/session.php';
         <?php include "../components/sidemenu.php"; ?>
         <div class="w-100 h-100 d-flex flex-column justify-content-center">
             <?php include "../components/header.php"; ?>
-            <div class="py-2 justify-content-center d-flex" style="min-height: 600px; width: 100svw;">
+            <div class="py-2 justify-content-center d-flex" style="min-height: 600px;">
                 <div class="w-90 d-flex flex-column">
                     <div class="px-4 d-flex justify-content-start my-3 gap-2 bg-white bg-opacity-10 py-3">
                         <div class="d-flex align-items-center gap-2" style="width: 15svw;">

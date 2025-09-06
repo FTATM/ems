@@ -21,12 +21,11 @@ include '../components/session.php';
             <?php if (!empty($error)) echo "<p style='color:red;'>$error</p>"; ?>
             <form onsubmit="loginUser(); return false;">
                 <label class="form-label fw-medium"><?=$lang['username']?></label>
-                <input id="username" class="form-control rounded" type="text" name="username" required placeholder="<?=$lang['husername']?>"><br>
+                <input id="username" class="form-control rounded text-black" type="text" name="username" required placeholder="<?=$lang['husername']?>"><br>
                 <label class="form-label fw-medium"><?=$lang['password']?></label>
-                <input id="password" class="form-control rounded" type="password" name="password" required placeholder="<?=$lang['hpassword']?>"><br>
+                <input id="password" class="form-control rounded text-black" type="password" name="password" required placeholder="<?=$lang['hpassword']?>"><br>
                 <button class="btn btn-primary w-100" type="submit"><?=$lang['login']?></button>
-                <a href="admin.php" class="btn btn-light w-100" type="submit">Admin</a>
-                
+                <!-- <a href="admin.php" class="btn btn-light w-100" type="submit">Admin</a> -->
             </form>
         </div>
     </div>

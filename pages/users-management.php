@@ -25,7 +25,7 @@ if ($_SESSION['user']['is_admin'] == 0) {
         <div class="w-100 h-100 d-flex flex-column justify-content-center">
             <?php include "../components/header.php"; ?>
             <div class="bg-secondary bg-opacity-25 d-flex flex-column pt-5 align-items-center" style="min-height: 80svh;">
-                <div class="my-5 text-center fs-1 fw-bolder">User list</div>
+                <div class="my-5 text-center fs-1 fw-bolder"><?=$lang['usermnm']?></div>
                 <!-- ตาราง -->
                 <table id="table-user" class="container table table-bordered table-striped" style="height: 90%;">
                 </table>
@@ -40,23 +40,23 @@ if ($_SESSION['user']['is_admin'] == 0) {
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">แก้ไขชื่อ</h5>
+                    <h5 class="modal-title">แก้ไขข้อมูลส่วนตัว</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="ปิด"></button>
                 </div>
                 <div class="modal-body">
                     <input type="hidden" id="edit-id">
                     <div class="mb-3">
                         <label for="edit-full_name" class="form-label">ชื่อใหม่</label>
-                        <input type="text" class="form-control" id="edit-full_name">
+                        <input type="text" class="form-control text-black" id="edit-full_name">
                         <label for="edit-phone" class="form-label">เบอร์โทรศัพท์</label>
-                        <input type="text" class="form-control" id="edit-phone">
+                        <input type="text" class="form-control text-black" id="edit-phone">
                         <label for="edit-address" class="form-label">ที่อยู่</label>
-                        <input type="text" class="form-control" id="edit-address">
+                        <input type="text" class="form-control text-black" id="edit-address">
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
-                    <button type="button" class="btn btn-primary" onclick="submitEdit()">บันทึก</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?=$lang['cancel']?></button>
+                    <button type="button" class="btn btn-primary" onclick="submitEdit()"><?=$lang['save']?></button>
                 </div>
             </div>
         </div>
@@ -76,8 +76,8 @@ if ($_SESSION['user']['is_admin'] == 0) {
                     <input type="hidden" id="delete-id">
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
-                    <button type="button" class="btn btn-danger" onclick="submitDelete()">ยืนยันลบ</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?=$lang['cancel']?></button>
+                    <button type="button" class="btn btn-danger" onclick="submitDelete()"><?=$lang['confirm']?></button>
                    
                 </div>
             </div>
@@ -100,15 +100,15 @@ if ($_SESSION['user']['is_admin'] == 0) {
                     
                     <div class="mb-3">
                         <label for="change-password-new" class="form-label">New Password</label>
-                        <input type="password" class="form-control" id="change-password-new" name="change-password-new" required>
+                        <input type="password" class="form-control text-black" id="change-password-new" name="change-password-new" required>
                     </div>
                     <div class="mb-3">
                         <label for="change-password-confirm" class="form-label">Confirm New Password</label>
-                        <input type="password" class="form-control" id="change-password-confirm" name="change-password-confirm" required>
+                        <input type="password" class="form-control text-black" id="change-password-confirm" name="change-password-confirm" required>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">Change</button>
+                    <button type="submit" class="btn btn-primary"><?=$lang['change']?></button>
                 </div>
             </form>
         </div>
