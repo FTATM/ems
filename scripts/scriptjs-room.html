@@ -1,16 +1,23 @@
 <script>
     const rowsPerPage = 10;
     let currentPage = 1;
-    let building = [];
+    let locations = [];
+    let buildings = [];
+    let rooms = [];
     document.addEventListener("DOMContentLoaded", async () => {
+        showLoading();
+        let res = await fetch("../config/fetch-locations.php");
+        let json_l = await res.json();
+        locations = Object.values(json_l.data);
         let response_ = await fetch("../config/fetch-buildings.php");
-        let json_ = await response_.json();
-        building = Object.values(json_.data);
+        let json_b = await response_.json();
+        buildings = Object.values(json_b.data);
         let response = await fetch("../config/fetch-rooms.php");
-        let json = await response.json();
-        let room = Object.values(json.data);
-        renderTablePage(room, currentPage);
-    })
+        let json_r = await response.json();
+        rooms = Object.values(json_r.data);
+        renderTablePage(rooms, currentPage);
+        hideLoading();
+    });
 
     function renderTablePage(data, page) {
         const table = document.getElementById("table-room");
@@ -20,12 +27,12 @@
         const thead = document.createElement("thead");
         const headerRow = document.createElement("tr");
         headerRow.innerHTML = `
-        <th class="text-white w-25" style="background-color:#001B5E;"><?=$lang['id'];?></th>
-        <th class="text-white w-25" style="background-color:#001B5E;"><?=$lang['location'];?></th>
-        <th class="text-white w-50" style="background-color:#001B5E;"><?=$lang['name'];?></th>
-        <th class="text-white" style="width:10%; background-color:#001B5E;"><?=$lang['action'];?></th>
+        <th class="text-white w-10"><?=$lang['id'];?></th>
+        <th class="text-white w-15"><?=$lang['location'];?></th>
+        <th class="text-white w-15"><?=$lang['building'];?></th>
+        <th class="text-white w-25"><?=$lang['name'];?></th>
+        <th class="text-white w-25"><?=$lang['action'];?></th>
         `;
-
 
         thead.appendChild(headerRow);
         table.appendChild(thead);
@@ -36,16 +43,17 @@
         const pageData = data.slice(start, end);
 
         const tbody = document.createElement("tbody");
-        pageData.forEach(row => {
+        pageData.forEach(r => {
             const tr = document.createElement("tr");
 
             tr.innerHTML = `
-            <td style="background-color:#292B2D; color:white;">${row.id}</td>
-            <td style="background-color:#292B2D; color:white;">${getLocationName(row.building_id).name}</td>
-            <td style="background-color:#292B2D; color:white;">${row.name}</td>
-            <td style="background-color:#292B2D; color:white;" class = "d-flex ">
-                <input class="btn btn-sm btn-warning mx-3" value="Rename" onclick="openRenameModal(1, '${row.name}')">
-                <input class="btn btn-sm btn-danger mx-3" value="Delete" onclick="openDeleteModal(1)">
+            <td style="background-color:#292B2D; color:white;">${r.id}</td>
+            <td style="background-color:#292B2D; color:white;">${getLocationName(r.building_id).name}</td>
+            <td style="background-color:#292B2D; color:white;">${getBuildingName(r.building_id).name}</td>
+            <td style="background-color:#292B2D; color:white;">${r.name}</td>
+            <td style="background-color:#292B2D; color:white;" class = "d-flex w-100">
+                <input class="btn btn-sm btn-warning mx-3 w-50" value="Rename" onclick="openRenameModal(1, '${r.name}')">
+                <input class="btn btn-sm btn-danger mx-3 w-50" value="Delete" onclick="openDeleteModal(1)">
             </td>
             `;
             tbody.appendChild(tr);
@@ -56,16 +64,26 @@
         renderPagination(data.length, page);
     }
 
-    function getLocationName(id) {
-        let local = [];
-        building.forEach(row => {
-            if (row.id === id) {
-                local = row;
+    function getLocationName(Bid) {
+        let value = [];
+        buildings.forEach(b => {
+            if (b.id === Bid) {
+                value = locations.find(l => { return parseInt(l.id) === parseInt(b.location_id) });
+
             }
         });
-        return local;
+        return value;
     }
 
+    function getBuildingName(id) {
+        let value = [];
+        buildings.forEach(row => {
+            if (row.id === id) {
+                value = row;
+            }
+        });
+        return value;
+    }
     function renderPagination(totalRows, currentPage) {
         const paginationDiv = document.getElementById("pagination");
         paginationDiv.innerHTML = "";
@@ -85,10 +103,12 @@
         }
     }
 
-    function updateAction(id, action, value) {
+    function updateAction(id, action, value, building_id = 0) {
         let form = new FormData();
-        form.append("id", id);           // เพิ่ม id เข้าไปด้วย (จำเป็นสำหรับการอัปเดต)
-        form.append(action, value);      // เช่น form.append("status", "active")
+        form.append('id', id);           // เพิ่ม id เข้าไปด้วย (จำเป็นสำหรับการอัปเดต)
+        form.append('action', action);      // เช่น form.append("status", "active")
+        form.append('value', value);      // เช่น form.append("status", "active")
+        form.append('building_id', building_id);      // เช่น form.append("status", "active")
 
         fetch('../config/update-room.php', {
             method: 'POST',
@@ -105,6 +125,40 @@
             .catch(error => {
                 console.error("ข้อผิดพลาดในการเชื่อมต่อ:", error);
             });
+    }
+
+    function openNewRoomModal() {
+        let selectL = document.getElementById('select-Location');
+        selectL.innerHTML = "<option>-- <?=$lang['select']?> --</option>";
+        locations.forEach(l => {
+            let option = document.createElement('option');
+            option.value = l.id;
+            option.textContent = l.name;
+            selectL.appendChild(option);
+        });
+        var modal = new bootstrap.Modal(document.getElementById('newRoomModal'));
+        modal.show();
+    }
+
+    function findBuilding() {
+        let l_id = document.getElementById('select-Location').value;
+        let selectB = document.getElementById('select-building');
+        buildings.forEach(b => {
+            if (b.location_id === l_id) {
+                let option = document.createElement('option');
+                option.value = b.id;
+                option.textContent = b.name;
+                selectB.appendChild(option);
+            }
+        });
+    }
+
+    function submitNewRoom() {
+        let b_id = document.getElementById('select-building').value;
+        let newName = document.getElementById('newName').value;
+
+        updateAction('new', 'new', newName, b_id);
+        bootstrap.Modal.getInstance(document.getElementById('renameModal')).hide();
     }
 
     function openRenameModal(id, currentName) {

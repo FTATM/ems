@@ -222,20 +222,30 @@ $lang = [
     "roles" => "Roles",
 
     //Modal
-    "quiz" => " quiz",
+    "quiz" => " Quiz",
     "confirmdelete" => "Confirm deleted",
     "textconfirmdelete" => "Are you want this",
 
     "allmeter" => "All meter",
     "typeofvalue" => "Type of value",
-    "location" => "location",
-    "locationmnm" => "Location management",
-    "building" => "building",
-    "buildingmnm" => "building management",
-    "room" => "room",
-    "roommnm" => "room managment",
 
-    "floor" => "floor",
+    "location" => "Location",
+    "locationmnm" => "Location management",
+    "clocation" => "Choose location",
+    "nlocation" => "New location",
+
+    "building" => "Building",
+    "buildingmnm" => "Building management",
+    "cbuilding" => "Choose building",
+    "nbuilding" => "New building",
+
+    "room" => "Room",
+    "roommnm" => "Room management",
+    "croom" => "Choose room",
+    "nroom" => "New room",
+
+    "nname" => "New name",
+
     "config" => "Config",
     "mark" => "Mark",
     "value" => "Value",
@@ -245,12 +255,8 @@ $lang = [
     ">" => "Greater Than",
     "=" => "Equal To",
 
-    "loading"=> "Loading...",
-    "cmisb"=> "Choose meter in side bar.",
-
-
-    "usermnm" => "Users Management",
-    "roomnm" => "rooms Management",
+    "loading" => "Loading...",
+    "cmisb" => "Choose meter in side bar.",
   
     //menu
     "user" => "Users",
