@@ -37,7 +37,7 @@ if (!$user || !password_verify($password, $user['password'])) {
     $_SESSION['username'] = $user['username'] ; 
     $_SESSION['password'] = $user['password'] ; 
     $_SESSION['is_admin'] = $user['is_admin'] ;
-    $_SESSION['user'] = $user; // เก็บข้อมูล user ทั้งก้อนถ้าอยากใช้ทีหลัง
+    $_SESSION['user'] = $user; 
 
     echo json_encode([
         'success'  => true,

@@ -32,7 +32,7 @@ function renderTablePage(user_data, currentPage) {
     <th class="text-white" style="width:18%; background-color:#001B5E;">Email</th>
     <th class="text-white" style="width:14%; background-color:#001B5E;">ID Card</th>
     <th class="text-white" style="width:12%; background-color:#001B5E;">Address</th>
-    <th class="text-white" style="width:24%; background-color:#001B5E;">Actions</th>
+    <th class="text-white" style="width:20%; background-color:#001B5E;">Actions</th>
 `;
     thead.appendChild(headerRow) ;
     table.appendChild(thead) ; 
@@ -54,11 +54,10 @@ function renderTablePage(user_data, currentPage) {
             <td>${row.email}</td>
             <td>${row.id_card}</td>
             <td style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100px;">${row.address}</td>
-           
             <td class="d-flex align-items-center justify-content-center gap-2">
-                <input class="btn btn-sm btn-warning w-40" value="Edit" onclick="openEditModal(${row.id})">
-                <input class="btn btn-sm btn-danger w-40" value="Delete" onclick="openDeleteModal(${row.id})">
-                <input class="btn btn-sm btn-success w-40" value="Change Password" onclick="openChangedPasswordModal(${row.id})">
+                <input class="btn btn-sm btn-warning w-75" value="Edit" onclick="openEditModal(${row.id})">
+                <input class="btn btn-sm btn-danger w-75" value="Delete" onclick="openDeleteModal(${row.id})">
+                <input class="btn btn-sm btn-success w-75" value="Change Password" onclick="openChangedPasswordModal(${row.id})">
             </td>
             `;
             tbody.appendChild(tr);
@@ -68,7 +67,6 @@ function renderTablePage(user_data, currentPage) {
         
 }
 
-// function ดึงข้อมูลผู้ใช้ตาม ID
 function getUser(id) {
     let user = [];
     user_data.forEach(row => {
@@ -131,7 +129,6 @@ function UpdatedActionUser(id,action,value) {
             });
 }
  
-// open Edit 
 function openEditModal(id) {
    const userArr = Object.values(user_data);
     const user = userArr.find(u => u.id == id);
@@ -163,7 +160,6 @@ function submitEdit() {
   bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
 }
 
-// delete user 
 function openDeleteModal(id) {
    document.getElementById('delete-id').value = id; 
     const userArr = Object.values(user_data);
@@ -182,8 +178,6 @@ function submitDelete() {
     bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
 }
 
-
-// forgot password for admin 
 function openChangedPasswordModal(id) {
     document.getElementById('change-password-id').value = id; 
     var modal = new bootstrap.Modal(document.getElementById('changePasswordModal'), {
@@ -191,7 +185,6 @@ function openChangedPasswordModal(id) {
     });
     modal.show() ;
 }
-
 
 function submitChangePassword() {
     let id = document.getElementById('change-password-id').value;
@@ -238,8 +231,6 @@ function submitChangePassword() {
     });
 }
 
-
-//เพิ่ม event listener ให้ฟอร์ม เพื่อเรียก submitChangePassword() เมื่อกดปุ่ม Save
 document.addEventListener("DOMContentLoaded", function() {
     var form = document.getElementById('changePasswordForm');
     if(form) {

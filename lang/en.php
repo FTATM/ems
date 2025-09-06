@@ -280,10 +280,13 @@ $lang = [
     "gauge" => "Gauge",
     "gaugemnm" => "Gauge management",
 
+    "phasorovv" => "Phasor Overview",
+
     "reportelec" => "Report Electricity",
 
     "overview" => "Overview",
 
-    "reportMeter" => "Report Meter"
+    "reportMeter" => "Report Meter",
 
+    "phasor"  => "Phasor"
 ];
