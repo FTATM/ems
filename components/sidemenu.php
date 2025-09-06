@@ -17,16 +17,29 @@
         </li>
         <li class="d-flex align-items-center gap-2">
             <i class="bi bi-file-person"></i>
+
             <span><a class="nav-link text" href="../pages/rooms.php"><?= $lang['roommnm'] ?></a></span>
+ 
         </li>
         <li class="d-flex align-items-center gap-2">
             <i class="bi bi-setting-meter"></i>
             <span><a class="nav-link text" href="../pages/configmeter.php"><?= $lang['metermnm'] ?></a></span>
         </li>
-        <li class="d-flex align-items-center gap-2">
-            <i class="bi bi-people"></i>
-            <span><a class="nav-link text" href="../pages/users-management.php"><?= $lang['usermnm'] ?></a></span>
-        </li>
+        <?php if (isset($_SESSION['user']) && $_SESSION['user']['is_admin'] > 0) : ?>
+            <li class="d-flex align-items-center gap-2">
+                <i class="bi bi-people"></i>
+                <span><a class="nav-link text" href="../pages/users-management.php"><?= $lang['usermnm'] ?></a></span>
+            </li>
+            <li class="d-flex align-items-center gap-2">
+                <i class="bi bi-file-person"></i>
+                <span><a class="nav-link text" href="../pages/room.php"><?= $lang['room'] ?></a></span>
+            </li>
+
+            <li class="d-flex align-items-center gap-2">
+                <i class="bi bi-file-person"></i>
+                <span><a class="nav-link text" href="../pages/report-meter.php"><?= $lang['reportMeter'] ?></a></span>
+            </li>
+        <?php endif; ?>
         <li class="d-flex align-items-center gap-2">
             <i class="bi bi-speedometer"></i>
             <span><a class="nav-link text" href="../pages/gauge.php"><?= $lang['gaugemnm'] ?></a></span>
@@ -52,6 +65,7 @@
                     <i class="bi bi-database-fill-down"></i>
                     <a class="nav-secondary text" href="../pages/backup.php"><?= $lang['backup'] ?></a>
                 </li>
+
             </ul>
         </li>
 
