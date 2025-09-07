@@ -284,6 +284,9 @@ $lang = [
 
     "overview" => "Overview",
 
-    "reportMeter" => "Report Meter"
+    "reportMeter" => "Report Meter",
 
+    "phasor"  => "Phasor",
+
+    "alltype" => "All types",
 ];
