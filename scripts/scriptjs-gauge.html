@@ -6,8 +6,6 @@
     let rooms = [];
     let refreshIntervalId; // เก็บ interval id
     const gaugeInstances = {};
-    const urlParams = new URLSearchParams(window.location.search);
-    const meterId = urlParams.get('meter_id') || '1';  // ได้ค่า เช่น "123"
     document.addEventListener("DOMContentLoaded", async () => {
         await prepareData();
     });
@@ -15,6 +13,7 @@
     async function prepareData() {
         showLoading();
         await fetchAll();
+        await generateSelect('select-meters', Object.values(meters));
         await generateGauge();
         setRefreshTime();
         hideLoading();
@@ -52,50 +51,84 @@
             listGauge.appendChild(gaugediv);
             gaugeGenerate('gauge_' + type.id, type.name, type.name, 0, 0, type.maxvaluecolumn, 5);
         });
+        generateDataList();
+    }
+
+    async function generateDataList() {
+        let listdata = document.getElementById('list-data');
+        meterID = document.getElementById('select-meters').value;
+        listdata.innerHTML = `
+        <div class="w-100 p-2 text-center">
+            <h4><?=$lang['alltype']?></h4>
+        </div>`; // เคลียร์ข้อมูลเดิมก่อนสร้างใหม่
+        console.log(meterID);
+
+        types.forEach($row => {
+            let div = document.createElement('div');
+            div.className = "d-flex w-100";
+            let label = document.createElement('label');
+            label.className = "w-50 fs-6 text-end pe-3";
+            label.textContent = $row.name;
+            let input = document.createElement('input');
+            input.id = "type-" + $row.id;
+            input.className = "w-50 form-control form-control-sm border-opacity-50 disabled";
+            input.value = "0.00";
+            // input.value = meters[meterID].data[$row.id][meters[meterID].data[$row.id].length - 1].value;
+
+            div.appendChild(label);
+            div.appendChild(input);
+            listdata.appendChild(div);
+        });
+    }
+
+    function generateSelect(id, datas) {
+        let select = document.getElementById(id);
+        // select.innerHTML = `<option value="0">-- <?=$lang['select']?> --</option>`;
+        datas.forEach(row => {
+            let option = document.createElement('option');
+            option.value = row.id;
+            option.textContent = `[${row.id}] ${row.name}`;
+            option.selected = datas[0].id === row.id ? true : false;
+            select.appendChild(option);
+        });
     }
 
     function checkTimeChange() {
         const listGauge = document.getElementById('list-gauge');
         const time = document.getElementById('select-time');
-        if (time.value === '-') {
-            aleartmessages('error', 'Error', 'Time picker element not found.');
+        meterID = document.getElementById('select-meters').value;
+        if (!Number(time.value)) {
+            console.log(time.value);
+            alertMessages('error', 'Error', 'Time picker Data not found.');
             return;
         }
         let now = new Date();
-        console.log("Current Time: ", now);
         let selectedDateTime;
-        if (time.value === "all") {
+        if (time.value === "0") {
             selectedDateTime = new Date(1970, 0, 1);
-        } else if (time.value === "now") {
+        } else if (time.value === "1") {
             selectedDateTime = new Date(now.getTime() - 0.5 * 60000);
         } else {
             selectedDateTime = new Date(now.getTime() - parseInt(time.value, 10) * 60000);
         }
-        let filtermeter = filterData(selectedDateTime);
-        console.log("Filtered Meter Data: ", filtermeter);
-        console.log("Filtered Meter Data length: ", Object.values(filtermeter.data)[0].length);
+        let filtermeter = filterData(meterID, selectedDateTime);
         Object.entries(filtermeter.data).forEach(([key, values]) => {
-            // if (!values.length) return;
-            let avgcolumn = 0;
-            let maxvalue = !isNaN(values[0]) ? parseFloat(values[0].value) : 0;
-            let minvalue = !isNaN(values[0]) ? parseFloat(values[0].value) : 0;
+            let maxvalue = parseFloat(values[0]?.value) || 0;
+            let minvalue = parseFloat(values[0]?.value) || 0;
+            let lastValue = parseFloat(values[values.length - 1]?.value) || "00.00";
             values.forEach(row => {
                 let val = parseFloat(row.value);
-                avgcolumn += val;
                 maxvalue = val > maxvalue ? val : maxvalue;
                 minvalue = val < minvalue ? val : minvalue;
             });
-            avgcolumn = avgcolumn / values.length;
-            // Update gauge value using RadialGauge instance
-            gaugeGenerate('gauge_' + key, types[key - 1].name, types[key - 1].name, avgcolumn);
+            document.getElementById('type-' + key).value = lastValue;
+            gaugeGenerate('gauge_' + key, types[key - 1].name, types[key - 1].name, lastValue);
         });
-
     }
 
-    function filterData(selectedDateTime) {
+    function filterData(id, selectedDateTime) {
         const filteredValueColumn = {};
-        console.log(meters[meterId]);
-        Object.entries(meters[meterId].data).map(([colName, rows]) => {
+        Object.entries(meters[id].data).map(([colName, rows]) => {
             filteredValueColumn[colName] = Object.values(rows).filter(row => {
                 let rawDate = row.create_date;
                 rawDate = rawDate.replace(/\//g, "-");
@@ -104,12 +137,12 @@
             });
         })
         return {
-            ...meters[meterId],
+            ...meters[id],
             data: filteredValueColumn
         };
     }
 
-    function gaugeGenerate(id, title, unitname, value = 0, minValue = 0, maxValue = 200, step = 10, width = 250, height = 250) {
+    function gaugeGenerate(id, title, unitname, value = 0, minValue = 0, maxValue = 200, step = 10, width = 225, height = 225) {
         if (id === undefined || unitname === undefined) {
             console.error(`ID:${id} or title:${title} or unitname:${unitname} are required for gauge generation.`);
             alertMessages('error', 'Error', 'ID and unit name are required for gauge generation.');

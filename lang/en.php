@@ -288,5 +288,8 @@ $lang = [
 
     "reportMeter" => "Report Meter",
 
-    "phasor"  => "Phasor"
+    "phasor"  => "Phasor",
+
+    "alltype" => "All types",
+
 ];
