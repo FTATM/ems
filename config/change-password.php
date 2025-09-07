@@ -7,7 +7,7 @@ header('Content-Type: application/json');
 
 // ตรวจสอบสิทธิ์ (ต้องเป็น admin เท่านั้น)
 
-if (!isset($_SESSION['user']) || $_SESSION['is_admin'] != 1) {
+if (!isset($_SESSION['user']) || $_SESSION['is_admin'] == 0) {
     http_response_code(403);
     echo json_encode(["success" => false, "error" => "Permission denied"]);
     exit;

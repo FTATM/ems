@@ -3,12 +3,17 @@
     let selected_meter = [];
     let types = [];
     let notifies = [];
+    let outputText = '';
     document.addEventListener("DOMContentLoaded", async () => {
+        process();
+    });
+    async function process() {
         showLoading();
         await fetchAll();
         generateMeter(meters);
         hideLoading();
-    });
+
+    }
 
     async function fetchAll() {
         meters = await fetchMetersData();
@@ -33,17 +38,34 @@
 
     async function TestConnect() {
         let select = document.getElementById("select-protocol");
-        console.log(select.value);
+        let id = document.getElementById("meter-id");
+        let ip = document.getElementById("ip-meter");
+        let port = document.getElementById("port");
+        let labelStatusConnect = document.getElementById("label-btn-connect");
+        let detailmore = document.getElementById("detailmore");
+        detailmore.style.display = "block";
+        labelStatusConnect.textContent = "Loading...";
+        labelStatusConnect.style.color = "white";
 
-        let response = await fetch(`../config/${select.value}.php`);
+        let form = new FormData();
+        form.append('meter_id', id.value);
+        form.append('ip', ip.value);
+        form.append('port', port.value);
+
+        let response = await fetch(`../config/${select.value}.php`, {
+            method: "POST",
+            body: form
+        });
+
         let json = await response.json();
-        console.log("Success : ", json.success, "\nOutput : ", json.output);
+        outputText = json.message + "\n" + json.output;
+        labelStatusConnect.textContent = json.success ? "Connected" : "Failed";
+        labelStatusConnect.style.color = json.success ? "green" : "red";
     }
 
     function generateMeter(meters) {
         let list = document.getElementById('meter-list');
         list.innerHTML = '';
-        console.log(meters);
         meters.forEach(meter => {
             let div = document.createElement('div');
             div.className = `px-3 mb-2 fw-bold d-flex justify-content-center align-content-center`;
@@ -65,20 +87,115 @@
             if (document.getElementById("menu-config-1").classList.contains("active")) {
                 config.innerHTML = `
             <div class="w-100 mt-2 d-flex">
+                <div class="w-25 text-end"> <h5>Meter ID :</h5> </div>
+                <div class="w-75 px-2"> 
+                    <input class="w-lg-25 w-d-50 form-control border-opcity-50" value='${meter.id}' disabled>
+                    <input id="meter-id" name="id" type="hidden" value='${meter.id}'>
+                </div>
+            </div>
+
+            <div class="w-100 mt-2 d-flex">
                 <div class="w-25 text-end"> <h5>Meter name :</h5> </div>
-                <div class="w-75 px-2"> <input class="w-lg-25 w-d-50  form-control " value='${meter.name}'> </div>
+                <div class="w-75 px-2"> <input name="name" class="w-lg-25 w-d-50 form-control border-opcity-50" value='${meter.name}'> </div>
             </div>
 
             <div class="w-100 mt-2 d-flex">
                 <div class="w-25 text-end"> <h5>Active :</h5> </div>
-                <div class="w-75 px-2"> <input type="checkbox" class="form-check" ${meter.is_active == 0 ? 'checked' : ''}> </div>
+                <div class="w-75 px-2"> 
+                    <input name="is_active" type="hidden" value=${meter.is_active}>    
+                    <input name="is_active" type="checkbox" class="form-check" ${meter.is_active == 1 ? 'checked' : ''}> 
+                </div>
             </div>
 
             <div class="w-100 mt-2 d-flex">
                 <div class="w-25 text-end"><h5>Room ID :</h5></div>
-                <div class="w-75 px-2"><input class="w-d-50 w-lg-25 form-control " value="${meter.room_id}"></div>
+                <div class="w-75 px-2"><input name="room_id" class="w-d-50 w-lg-25 form-control border-opcity-50" value="${meter.room_id}"></div>
+            </div>
+           <div class="w-100 mt-2 d-flex">
+                <div class="w-25 text-end"><h5>Protocol :</h5></div>
+                <div class="w-75 px-2">
+                    <select id="select-protocol" name="select_protocol" class="w-25 form-select border-opcity-50">
+                        <option value="tcp" ${meter.protocol === 'tcp' ? 'selected' : ''}>TCP</option>
+                        <option value="rs485" ${meter.protocol === 'rs485' ? 'selected' : ''}>RS485</option>
+                    </select>
+                </div>
             </div>
 
+            <div class="w-100 mt-2 d-flex">
+                <div class="w-25 text-end"><h5>DNS :</h5></div>
+                <div class="w-75 px-2"><input name="dns" class="w-d-50 w-lg-25 form-control border-opcity-50" value="${meter.dns}"></div>
+            </div>
+
+            <div class="w-100 mt-2 d-flex">
+                <div class="w-25 text-end"><h5>Port :</h5></div>
+                <div class="w-75 px-2"><input name="port" id="port" type="number" class="w-d-50 w-lg-25 form-control border-opcity-50" value="${meter.port}"></div>
+            </div>
+
+            <div class="w-100 mt-2 d-flex">
+                <div class="w-25 text-end"><h5>IP Address :</h5></div>
+                <div class="w-75 px-2"><input name="ip" id="ip-meter" class="w-d-50 w-lg-25 form-control border-opcity-50" value="${meter.ip_address}"></div>
+            </div>
+
+            <div class="w-100 mt-2 d-flex">
+                <div class="w-25 text-end"><h5>Submask :</h5></div>
+                <div class="w-75 px-2"><input name="submask" class="w-d-50 w-lg-25 form-control border-opcity-50" value="${meter.submask}"></div>
+            </div>
+            <div class="w-100 mt-2 d-flex">
+                <div class="w-25 text-end"><h5>RS485</h5></div>
+                <div class="w-75 d-flex">
+                    <div class="">
+                        <div class="text-center"><h5>Serial Port</h5></div>
+                        <div class="px-4"><input name="serialport" class="form-control border-opcity-50" value="${meter.serial_port}"></div>
+                    </div>
+
+                    <div class="">
+                        <div class="text-center"><h5>Baud Rate</h5></div>
+                        <div class="px-4"><input name="buad_rate" class="form-control border-opcity-50" value="${meter.buad_rate}"></div>
+                    </div>
+
+                    <div class="">
+                        <div class="text-center"><h5>Data Bits</h5></div>
+                        <div class="px-4"><input name="data_bits" type="number" class="form-control border-opcity-50" value="${meter.data_bits}"></div>
+                    </div>
+
+                    <div class="">
+                        <div class="text-center"><h5>parily</h5></div>
+                        <div class="px-4"><input name="parily" class="form-control border-opcity-50" value="${meter.parily}"></div>
+                    </div>
+
+                    <div class="">
+                        <div class="text-center"><h5>Stop Bits</h5></div>
+                        <div class="px-4"><input name="stop_bits" type="number" class="form-control border-opcity-50" value="${meter.stop_bits}"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="w-100 mt-2 d-flex">
+                <div class="w-25 text-end"><h5>Slave ID :</h5></div>
+                <div class="w-75 px-2"><input name="slave_ID" type="number" class="w-d-50 w-lg-25 form-control border-opcity-50" value="${meter.slave_id}"></div>
+            </div>
+
+            <div class="w-100 mt-2 d-flex">
+                <div class="w-25 text-end"><h5>Address :</h5></div>
+                <div class="w-75 px-2"><input name="address" class="w-d-50 w-lg-25 form-control border-opcity-50" value="${meter.address}"></div>
+            </div>
+
+            <div class="w-100 mt-2 d-flex">
+                <div class="w-25 text-end"><h5>Quality :</h5></div>
+                <div class="w-75 px-2"><input name="quality" type="number" class="w-d-50 w-lg-25 form-control border-opcity-50" value="${meter.quality}"></div>
+            </div>
+
+            <div class="w-100 mx-3">
+                <h5>Connect meter</h5>
+                <input id="btn-connect" class="btn btn-sm btn-primary" value="Connect" onclick="TestConnect()">
+                <label id="label-btn-connect" class="mx-3" for="btn-connect"></label>
+                <div id="detailmore" style="display:none;" class="clickable" onclick="openDetail()">Detail more...</div>
+            </div>
+
+            <div class="w-100 text-end my-2">
+                <input class="btn btn-sm btn-primary bg-opacity-50" onclick="updateMeter()" value="Save">
+                <input class="btn btn-sm btn-danger" value="Cancel">
+            </div>
         `;
             }
             else if (document.getElementById("menu-config-2").classList.contains("active")) {
@@ -92,114 +209,35 @@
                     div.style.width = '280px';
                     div.style.height = '380px';
                     div.innerHTML = `
-                <div class="text-center border fs-5 rounded-top fw-bold align-content-center" style="height:13%; background-color: #001B5E;">${row.name}</div>
-                <div class="bg-white rounded-bottom shadow w-100 p-1 text-black">
-                    <h6 class="ps-2"for="mark"><?=$lang['mark']?></h6>
-                    <select id="select-mark-${row.id}" class="form-select form-select-sm">
-                        <option ${row.mark == '<' ? 'selected' : ''} value="<"><?=$lang['<']?> (<)</option>
-                        <option ${row.mark == '>' ? 'selected' : ''} value=">"><?=$lang['>']?> (>)</option>
-                        <option ${row.mark == '=' ? 'selected' : ''} value="="><?=$lang['=']?> (=)</option>
-                    </select>
-                    <h6 class="ps-2"for="value"><?=$lang['value']?></h6>
-                    <input id="value-${row.id}" class="form-control form-control-sm" type="number" value="${row.value}" placeholder="Number value">
-                    <h6 class="ps-2"for="token"><?=$lang['token']?></h6>
-                    <input id="token-${row.id}" class="form-control form-control-sm" type="text" value="${row.token_line}" placeholder="Line token here">
-                    <h6 class="ps-2"for="email"><?=$lang['email']?></h6>
-                    <input id="email-${row.id}" class="form-control form-control-sm" type="text" value="${row.email}" placeholder="paste email here">
-                    <div class="w-100 py-2 px-3 d-flex justify-content-between">
-                        <input id="active-${row.id}" onclick="UpdateStatusNotify(${meter.id},${row.id},'active')" value="${row.is_active == 0 ? 'Enabled' : 'Disabled'}" class="btn btn-sm ${row.is_active == 0 ? 'btn-success' : 'btn-danger'}" style="width:40%;">
-                        <input id="update-${row.id}" onclick="UpdateStatusNotify(${meter.id},${row.id},'update')" value="Save" class="btn btn-sm btn-primary" style="width:40%;">
-                    </div>
-                </div>
+                        <div class="text-center border fs-5 rounded-top fw-bold align-content-center" style="height:13%; background-color: #001B5E;">${row.name}</div>
+                        <div class="bg-white rounded-bottom shadow w-100 p-1 text-black">
+                            <h6 class="ps-2"for="mark"><?=$lang['mark']?></h6>
+                            <select id="select-mark-${row.id}" class="form-select form-select-sm">
+                                <option ${row.mark == '<' ? 'selected' : ''} value="<"><?=$lang['<']?> (<)</option>
+                                <option ${row.mark == '>' ? 'selected' : ''} value=">"><?=$lang['>']?> (>)</option>
+                                <option ${row.mark == '=' ? 'selected' : ''} value="="><?=$lang['=']?> (=)</option>
+                            </select>
+                            <h6 class="ps-2"for="value"><?=$lang['value']?></h6>
+                            <input id="value-${row.id}" class="form-control form-control-sm" type="number" value="${row.value}" placeholder="Number value">
+                            <h6 class="ps-2"for="token"><?=$lang['token']?></h6>
+                            <input id="token-${row.id}" class="form-control form-control-sm" type="text" value="${row.token_line}" placeholder="Line token here">
+                            <h6 class="ps-2"for="email"><?=$lang['email']?></h6>
+                            <input id="email-${row.id}" class="form-control form-control-sm" type="text" value="${row.email}" placeholder="paste email here">
+                            <div class="w-100 py-2 px-3 d-flex justify-content-between">
+                                <input id="active-${row.id}" onclick="UpdateStatusNotify(${meter.id},${row.id},'active')" value="${row.is_active == 0 ? 'Enabled' : 'Disabled'}" class="btn btn-sm ${row.is_active == 0 ? 'btn-success' : 'btn-danger'}" style="width:40%;">
+                                <input id="update-${row.id}" onclick="UpdateStatusNotify(${meter.id},${row.id},'update')" value="Save" class="btn btn-sm btn-primary" style="width:40%;">
+                            </div>
+                        </div>
                 `;
                     mother.appendChild(div);
                 });
                 config.appendChild(mother);
             }
-            else if (document.getElementById("menu-config-3").classList.contains("active")) {
-                config.innerHTML = `
-            <div class="w-100 mt-2 d-flex">
-                <div class="w-25 text-end"><h5>Protocol :</h5></div>
-                <div class="w-75 px-2">
-                    <select id="select-protocol" class="w-25 form-select">
-                        <option value="tcp" ${meter.protocol === 'tcp' ? 'selected' : ''}>TCP</option>
-                        <option value="rs485" ${meter.protocol === 'rs485' ? 'selected' : ''}>RS485</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="w-100 mt-2 d-flex">
-                <div class="w-25 text-end"><h5>DNS :</h5></div>
-                <div class="w-75 px-2"><input class="w-d-50 w-lg-25 form-control " value="${meter.dns}"></div>
-            </div>
-
-            <div class="w-100 mt-2 d-flex">
-                <div class="w-25 text-end"><h5>Port :</h5></div>
-                <div class="w-75 px-2"><input type="number" class="w-d-50 w-lg-25 form-control" value="${meter.port}"></div>
-            </div>
-
-            <div class="w-100 mt-2 d-flex">
-                <div class="w-25 text-end"><h5>IP Address :</h5></div>
-                <div class="w-75 px-2"><input class="w-d-50 w-lg-25 form-control " value="${meter.ip_address}"></div>
-            </div>
-
-            <div class="w-100 mt-2 d-flex">
-                <div class="w-25 text-end"><h5>Submask :</h5></div>
-                <div class="w-75 px-2"><input class="w-d-50 w-lg-25 form-control " value="${meter.submask}"></div>
-            </div>
-            <div class="w-100 mt-2 d-flex">
-                <div class="w-25 text-end"><h5>RS485</h5></div>
-                <div class="w-75 d-flex">
-                    <div class="">
-                        <div class="text-center"><h5>Serial Port</h5></div>
-                        <div class="px-4"><input class="form-control" value="${meter.serial_port}"></div>
-                    </div>
-
-                    <div class="">
-                        <div class="text-center"><h5>Baud Rate</h5></div>
-                        <div class="px-4"><input class="form-control" value="${meter.buad_rate}"></div>
-                    </div>
-
-                    <div class="">
-                        <div class="text-center"><h5>Data Bits</h5></div>
-                        <div class="px-4"><input type="number" class="form-control" value="${meter.data_bits}"></div>
-                    </div>
-
-                    <div class="">
-                        <div class="text-center"><h5>parily</h5></div>
-                        <div class="px-4"><input class="form-control" value="${meter.parily}"></div>
-                    </div>
-
-                    <div class="">
-                        <div class="text-center"><h5>Stop Bits</h5></div>
-                        <div class="px-4"><input type="number" class="form-control" value="${meter.stop_bits}"></div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="w-100 mt-2 d-flex">
-                <div class="w-25 text-end"><h5>Slave ID :</h5></div>
-                <div class="w-75 px-2"><input type="number" class="w-d-50 w-lg-25 form-control" value="${meter.slave_id}"></div>
-            </div>
-
-            <div class="w-100 mt-2 d-flex">
-                <div class="w-25 text-end"><h5>Address :</h5></div>
-                <div class="w-75 px-2"><input class="w-d-50 w-lg-25 form-control " value="${meter.address}"></div>
-            </div>
-
-            <div class="w-100 mt-2 d-flex">
-                <div class="w-25 text-end"><h5>Quality :</h5></div>
-                <div class="w-75 px-2"><input type="number" class="w-d-50 w-lg-25 form-control" value="${meter.quality}"></div>
-            </div>
-
-            <div class="w-100">
-                <h5>Connect meter</h5>
-                <input id="btn-connect" class="btn btn-sm btn-primary" value="Connect" onclick="TestConnect()">
-                <label id="label-btn-connect" for="btn-connect"></label>
-            </div>
-            `;
-            }
         }
+    }
+
+    function openDetail() {
+        alertMessages('info', "Information", outputText, 100000, true);
     }
 
     async function UpdateStatusNotify(meter_id, notify_id, status) {
@@ -247,21 +285,37 @@
     document.getElementById("menu-config-1").addEventListener("click", function () {
         document.getElementById("menu-config-1").classList.add("active");
         document.getElementById("menu-config-2").classList.remove("active");
-        document.getElementById("menu-config-3").classList.remove("active");
         loadDataMeter(selected_meter);
     });
 
     document.getElementById("menu-config-2").addEventListener("click", function () {
         document.getElementById("menu-config-2").classList.add("active");
         document.getElementById("menu-config-1").classList.remove("active");
-        document.getElementById("menu-config-3").classList.remove("active");
         loadDataMeter(selected_meter);
     });
 
-    document.getElementById("menu-config-3").addEventListener("click", function () {
-        document.getElementById("menu-config-3").classList.add("active");
-        document.getElementById("menu-config-1").classList.remove("active");
-        document.getElementById("menu-config-2").classList.remove("active");
-        loadDataMeter(selected_meter);
-    });
+    async function updateMeter() {
+        let formMeter = document.getElementById('meter-form');
+        if (!formMeter) {
+            console.error("Form element not found!");
+            return;
+        }
+        let form = new FormData(formMeter);
+        fetch('../config/update-meter.php', {
+            method: "POST",
+            body: form
+        })
+            .then(res => res.json())
+            .then(async data => {
+                console.log("Success : ", data.success, "\n message : ", data.message);
+                alertMessages('success', "Data Saved Successfully", "Your information has been recorded in the system.");
+                setTimeout(() => {
+                    process();
+                }, 2000);
+            })
+            .catch(e => {
+                console.error(e)
+                alertMessages('error', "Save Failed", "An unexpected error occurred. Please check your internet connection and try again.");
+            })
+    }
 </script>

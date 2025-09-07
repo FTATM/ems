@@ -65,13 +65,13 @@
         }
     }
 
-    function alertMessages(icontxt = 'warning', titletxt = "Default title text.", textmessage = 'Default txt message.', timerShow = 1500) {
+    function alertMessages(icontxt = 'warning', titletxt = "Default title text.", textmessage = 'Default txt message.', timerShow = 1500, confirmbtn = false) {
         Swal.fire({
             icon: icontxt,
             title: titletxt,
             text: textmessage,
             timer: timerShow,
-            showConfirmButton: false
+            showConfirmButton: confirmbtn
         });
         window.history.replaceState({}, document.title, window.location.pathname);
     }

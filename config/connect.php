@@ -19,7 +19,4 @@ if ($conn->connect_error) {
     $password = "";
     $database = "ams";
     $conn = new mysqli($servername, $username, $password, $database);
-    
-    // echo json_encode(['success' => false, 'message' => 'Connection failed: ' . $conn->connect_error, 'data' => null]);
-
 }
