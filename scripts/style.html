@@ -44,6 +44,20 @@
                 rgba(238, 130, 238, var(--bs-bg-opacity)));
     }
 
+    .border-opcity-50 {
+        border-color: #ffffff80 !important;
+    }
+
+    .clickable {
+        cursor: pointer;
+        text-decoration: underline;
+        /* ตัวเลือก: เพิ่มขีดเส้นใต้ */
+    }
+    .clickable:hover {
+        color: #fff;
+        font-weight: bolder;
+    }
+
     #card {
         width: 250px;
         border: 1px solid #ccc;
@@ -250,6 +264,7 @@
         border: 0px solid #424242;
 
     }
+
     .w-10 {
         width: 10%;
     }
@@ -334,6 +349,7 @@
             transform: rotateX(-20deg) rotateY(360deg);
         }
     }
+
     .point {
         position: absolute;
         background: rgba(7, 7, 7, 0.1);
@@ -341,11 +357,8 @@
         padding: 5px 10px;
         border-radius: 8px;
     }
+
     .point:hover {
         background-color: rgba(0, 0, 0, 0.7);
     }
-
-
-    
-
 </style>

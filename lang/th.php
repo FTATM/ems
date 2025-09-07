@@ -280,7 +280,13 @@ $lang = [
     "gauge" => "เกจ/เครื่องวัด",
     "gaugemnm" => "การจัดการเกจ/เครื่องวัด",
 
+    "phasorovv" => "ภาพรวม Phase meter",
+
     "reportelec" => "รายงานบิลไฟฟ้า",
 
     "overview" => "ภาพรวม",
 
+    "reportMeter" => "รายงานมิเตอร์",
+
+    "phasor" => "เฟส"
+];
