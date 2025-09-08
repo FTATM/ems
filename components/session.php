@@ -2,6 +2,21 @@
 session_start();
 
 
+$timeout = 900; // 900 วินาที = 15 นาที
+
+// ตรวจสอบว่าเคยมีการบันทึก last_activity ไว้ไหม
+if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity']) > $timeout) {
+    // ถ้าเวลาที่ไม่ใช้งานเกินกำหนด -> logout
+    session_unset();     // ลบ session variables
+    session_destroy();   // ทำลาย session
+    header("Location: login.php?timeout=1"); // redirect ไปหน้า login พร้อมแจ้งหมดเวลา
+    exit;
+}
+
+// อัพเดทเวลาล่าสุดที่ใช้งาน
+$_SESSION['last_activity'] = time();
+
+
 function checkLogin()
 {
     if (!isset($_SESSION['user_id'])) {
@@ -10,27 +25,27 @@ function checkLogin()
     }
 }
 
-// function logout()
-// {
-//     // Logging logout
-//     if (isset($_SESSION['user_id']) && isset($_SESSION['username'])) {
-//         include "../config/connect.php";
-//         $user_id = $_SESSION['user_id'];
-//         $username = $_SESSION['username'];
-//         $ip_address = $_SERVER['REMOTE_ADDR'];
-//         $user_agent = $_SERVER['HTTP_USER_AGENT'];
+function logout()
+{
+    // Logging logout
+    if (isset($_SESSION['user_id']) && isset($_SESSION['username'])) {
+        // include "../config/connect.php";
+        // $user_id = $_SESSION['user_id'];
+        // $username = $_SESSION['username'];
+        // $ip_address = $_SERVER['REMOTE_ADDR'];
+        // $user_agent = $_SERVER['HTTP_USER_AGENT'];
 
-//         $log_sql = "INSERT INTO log_login (user_id, username, action, ip_address, user_agent) 
-//                     VALUES ('$user_id', '$username', 'logout', '$ip_address', '$user_agent')";
+        // $log_sql = "INSERT INTO log_login (user_id, username, action, ip_address, user_agent) 
+        //             VALUES ('$user_id', '$username', 'logout', '$ip_address', '$user_agent')";
 
-//         $conn->query($log_sql);
-//     }
+        // $conzn->query($log_sql);
+    }
 
-//     session_unset();
-//     session_destroy();
-//     header("Location: ../pages/login.php");
-//     exit();
-// }
+    session_unset();
+    session_destroy();
+    header("Location: ../pages/login.php");
+    exit();
+}
 
 // รายการภาษาที่รองรับ
 $supportedLangs = ['th', 'en'];
