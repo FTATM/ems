@@ -23,7 +23,7 @@ include '../components/session.php';
                 <h4 class="px-2">Filter</h4>
 
                 <select id="select-filter-value" class="form-select bg-secondary border-0 text-white" style="width: 10%;" onchange="filterData()">
-                    <option value="60">last 1 hours</option>
+                    <option value="60">last 1 hour</option>
                     <option value="1440">last 1 days</option>
                     <option value="4320">last 3 days</option>
                     <option value="10080">last 1 week</option>

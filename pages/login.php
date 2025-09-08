@@ -1,5 +1,8 @@
 <?php
 include '../components/session.php';
+if (isset($_SESSION['user_id'])) {
+    header("Location: ../pages/locations.php");
+}
 ?>
 
 
@@ -8,46 +11,34 @@ include '../components/session.php';
 
 <?php include "../scripts/ref.html"; ?>
 <?php include "../scripts/style.html"; ?>
+
 <head>
     <meta charset="UTF-8">
-    <title><?=$lang['login']?> - RMS</title>
+    <title><?= $lang['login'] ?> - EMS</title>
 </head>
 
 <body>
     <?php include "../components/header.php"; ?>
     <div class="d-flex justify-content-center align-items-center flex-column" style="width: 100vw; height: 90vh;">
         <div class="bg-white shadow rounded-2 p-4 w-100" style="max-width: 300px;">
-            <h2 class="text-center mb-lg-5 mb-3"><?=$lang['login']?></h2>
+            <h2 class="text-center mb-lg-5 mb-3"><?= $lang['login'] ?></h2>
             <?php if (!empty($error)) echo "<p style='color:red;'>$error</p>"; ?>
-            <form onsubmit="loginUser(); return false;">
-                <label class="form-label fw-medium"><?=$lang['username']?></label>
-                <input id="username" class="form-control rounded text-black" type="text" name="username" required placeholder="<?=$lang['husername']?>"><br>
-                <label class="form-label fw-medium"><?=$lang['password']?></label>
-                <input id="password" class="form-control rounded text-black" type="password" name="password" required placeholder="<?=$lang['hpassword']?>"><br>
-                <button class="btn btn-primary w-100" type="submit"><?=$lang['login']?></button>
+            <form onsubmit="login(); return false;">
+                <label class="form-label fw-medium"><?= $lang['username'] ?></label>
+                <input id="username" class="form-control rounded text-black" type="text" name="username" required placeholder="<?= $lang['husername'] ?>"><br>
+                <label class="form-label fw-medium"><?= $lang['password'] ?></label>
+                <input id="password" class="form-control rounded text-black" type="password" name="password" required placeholder="<?= $lang['hpassword'] ?>"><br>
+                <button class="btn btn-primary w-100"><?= $lang['login'] ?></button>
                 <!-- <a href="admin.php" class="btn btn-light w-100" type="submit">Admin</a> -->
             </form>
         </div>
     </div>
-        <?php include "../scripts/scriptjs.html"; ?>
-        <?php include '../scripts/scriptjs-login-user.html'; ?>
+    <?php include "../scripts/scriptjs.html"; ?>
+    <?php include "../scripts/scriptjs-login.html"; ?>
 
-        <script>
-        // แสดง Alert เมื่อ logout สำเร็จ
-        if (window.location.search.includes('logout=success')) {
-            Swal.fire({
-                icon: 'success',
-                title: 'ออกจากระบบสำเร็จ',
-                text: 'คุณได้ออกจากระบบเรียบร้อยแล้ว',
-                timer: 1500,
-                showConfirmButton: false
-            });
-            // ลบ query string ออกหลังแสดง alert
-            window.history.replaceState({}, document.title, window.location.pathname);
-        
+    <script>
 
-        }
-        </script>
+    </script>
 </body>
 
 </html>
