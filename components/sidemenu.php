@@ -13,15 +13,27 @@
         </li>
         <li class="d-flex align-items-center gap-2">
             <i class="bi bi-receipt"></i>
-            <span><a class="nav-link text" href="../pages/report.php"><?= $lang['reportelec'] ?></a></span>
-        </li>
-        <li class="d-flex align-items-center gap-2">
-            <i class="bi bi-setting-meter"></i>
-            <span><a class="nav-link text" href="../pages/configmeter.php"><?= $lang['metermnm'] ?></a></span>
+            <span><a class="nav-link text" href="../pages/report-electric.php"><?= $lang['reportelec'] ?></a></span>
         </li>
         <li class="d-flex align-items-center gap-2">
             <i class="bi bi-speedometer"></i>
             <span><a class="nav-link text" href="../pages/gauge.php"><?= $lang['gauge'] ?></a></span>
+        </li>
+        <li class="d-flex align-items-center gap-2">
+            <i class="bi bi-house"></i>
+            <span><a class="nav-link text" href="../pages/home.php">home (not priolity)</a></span>
+        </li>
+        <li class="d-flex align-items-center gap-2">
+            <i class="bi bi-speedometer"></i>
+            <span><a class="nav-link text" href="../pages/allmeter.php">Allmeter (not priolity)</a></span>
+        </li>
+        <li class="d-flex align-items-center gap-2">
+            <i class="bi bi-receipt"></i>
+            <span><a class="nav-link text" href="../pages/dashboard.php">Dashboard (not priolity)</a></span>
+        </li>
+        <li class="d-flex align-items-center gap-2">
+            <i class="bi bi-speedometer"></i>
+            <span><a class="nav-link text" href="../pages/phasor.php">Phasor (not priolity)</a></span>
         </li>
         <li class="gap-2">
             <button class="btn btn-link nav-link text px-0" data-bs-toggle="collapse" data-bs-target="#systemSubNav" aria-expanded="false">
@@ -30,33 +42,20 @@
             <ul class="collapse nav flex-column gap-2" id="systemSubNav">
                 <li class="d-flex align-items-center gap-2">
                     <i class="bi bi-house"></i>
-                    <span><a class="nav-link text" href="../pages/locations.php"><?= $lang['locationmnm'] ?></a></span>
+                    <span><a class="nav-link text" href="../pages/management-locations.php"><?= $lang['locationmnm'] ?></a></span>
                 </li>
                 <li class="d-flex align-items-center gap-2">
                     <i class="bi bi-journal-check"></i>
-                    <span><a class="nav-link text" href="../pages/buildings.php"><?= $lang['buildingmnm'] ?></a></span>
+                    <span><a class="nav-link text" href="../pages/management-groups.php"><?= $lang['groupmnm'] ?></a></span>
                 </li>
                 <li class="d-flex align-items-center gap-2">
-                    <i class="bi bi-file-person"></i>
-                    <span><a class="nav-link text" href="../pages/rooms.php"><?= $lang['roommnm'] ?></a></span>
+                    <i class="bi bi-setting-meter"></i>
+                    <span><a class="nav-link text" href="../pages/management-meters.php"><?= $lang['metermnm'] ?></a></span>
                 </li>
                 <li class="d-flex align-items-center gap-2">
                     <i class="bi bi-people"></i>
-                    <span><a class="nav-link text" href="../pages/users-management.php"><?= $lang['usermnm'] ?></a></span>
+                    <span><a class="nav-link text" href="../pages/management-users.php"><?= $lang['usermnm'] ?></a></span>
                 </li>
-                <!-- <li class="d-flex align-items-start gap-2">
-                    <i class="bi bi-info-square"></i>
-                    <a class="nav-secondary text" href="../pages/infomation.php"><?= $lang['information'] ?><?= $lang['system'] ?></a>
-                </li>
-                <li class="d-flex align-items-start gap-2">
-                    <i class="bi bi-bug"></i>
-                    <a class="nav-secondary text" href="../pages/log.php"><?= $lang['logs'] ?></a>
-                </li>
-                <li class="d-flex align-items-start gap-2">
-                    <i class="bi bi-database-fill-down"></i>
-                    <a class="nav-secondary text" href="../pages/backup.php"><?= $lang['backup'] ?></a>
-                </li> -->
-
             </ul>
         </li>
 

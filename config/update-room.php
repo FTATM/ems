@@ -31,9 +31,9 @@ switch ($action) {
         break;
 
     case "new":
-        $building_id = $_POST['building_id'] ?? '';
-        $stmt = $conn->prepare("INSERT INTO rooms (building_id, name) VALUES (?,?)");
-        $stmt->bind_param("ss", $building_id, $value);
+        $group_id = $_POST['group_id'] ?? '';
+        $stmt = $conn->prepare("INSERT INTO rooms (group_id, name) VALUES (?,?)");
+        $stmt->bind_param("ss", $group_id, $value);
         break;
     default:
         echo json_encode(['success' => false, 'message' => 'สถานะไม่ถูกต้อง']);

@@ -1,0 +1,79 @@
+<script>
+    const rowsPerPage = 10;
+    let currentPage = 1;
+    let groups = [];
+
+    const locationID = new URLSearchParams(window.location.search).get('locate') || '1';  // ได้ค่า เช่น "123"
+    document.addEventListener("DOMContentLoaded", async () => {
+        showLoading();
+        let response = await fetch("../config/fetch-groups.php");
+        let json = await response.json();
+        groups = Object.values(json.data);
+        generateTable(groups, currentPage);
+        hideLoading();
+    })
+
+    function generateTable(data, page) {
+        const table = document.getElementById("table-group");
+        table.innerHTML = ""; // clear
+
+        // slice ข้อมูลเฉพาะหน้าปัจจุบัน
+        const start = (page - 1) * rowsPerPage;
+        const end = start + rowsPerPage;
+        const pageData = data.slice(start, end);
+
+        const tbody = document.createElement("tbody");
+        pageData.forEach(row => {
+            if (row.location_id === locationID) {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>${row.id}</td>
+                    <td>${row.name}</td>
+                    <td class = "d-flex ">
+                    </td>
+                    `;
+                tbody.appendChild(tr);
+            }
+        });
+
+        table.querySelector('tbody').appendChild(tbody);
+        renderPagination(data.length, page);
+    }
+
+    function renderPagination(totalRows, currentPage) {
+        const paginationDiv = document.getElementById("pagination");
+        paginationDiv.innerHTML = "";
+
+        const totalPages = Math.ceil(totalRows / rowsPerPage);
+
+        for (let i = 1; i <= totalPages; i++) {
+            const btn = document.createElement("button");
+            btn.className = `btn btn-sm text-white`;
+            btn.style.backgroundColor = `${i === currentPage ? '#001B5E' : '#555555'}`;
+
+            btn.textContent = i;
+            btn.addEventListener("click", () => {
+                generateTable(groups, i);
+            });
+            paginationDiv.appendChild(btn);
+        }
+    }
+
+    function openRenameModal(id, currentName) {
+        document.getElementById('rename-id').value = id;
+        document.getElementById('new-name').value = currentName;
+        var modal = new bootstrap.Modal(document.getElementById('renameModal'));
+        modal.show();
+    }
+
+    async function submitRename() {
+        let id = document.getElementById('rename-id').value;
+        let newName = document.getElementById('new-name').value;
+
+        await updateAction(id, 'rename', newName);
+        bootstrap.Modal.getInstance(document.getElementById('renameModal')).hide();
+
+        window.location.reload();
+    }
+
+</script>

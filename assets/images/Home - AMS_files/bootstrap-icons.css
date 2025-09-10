@@ -1898,8 +1898,8 @@ url("./fonts/bootstrap-icons.woff?e34853135f9e39acf64315236852cd5a") format("wof
 .bi-building-slash::before { content: "\f879"; }
 .bi-building-up::before { content: "\f87a"; }
 .bi-building-x::before { content: "\f87b"; }
-.bi-buildings-fill::before { content: "\f87c"; }
-.bi-buildings::before { content: "\f87d"; }
+.bi-groups-fill::before { content: "\f87c"; }
+.bi-groups::before { content: "\f87d"; }
 .bi-bus-front-fill::before { content: "\f87e"; }
 .bi-bus-front::before { content: "\f87f"; }
 .bi-ev-front-fill::before { content: "\f880"; }

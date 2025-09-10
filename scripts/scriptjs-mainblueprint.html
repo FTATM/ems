@@ -2,8 +2,7 @@
     let meters = [];
     let types = [];
     let locations = [];
-    let buildings = [];
-    let rooms = [];
+    let groups = [];
     let filtermeters = [];
     let filterDatas = [];
     document.addEventListener("DOMContentLoaded", async () => {
@@ -33,13 +32,10 @@
         let jsonLocation = await responseLocation.json();
         locations = jsonLocation.data;
 
-        let responsebuilding = await fetch("../config/fetch-buildings.php");
-        let jsonbuilding = await responsebuilding.json();
-        buildings = jsonbuilding.data;
+        let responsegroup = await fetch("../config/fetch-groups.php");
+        let jsongroup = await responsegroup.json();
+        groups = jsongroup.data;
 
-        let responseRoom = await fetch("../config/fetch-rooms.php");
-        let jsonRoom = await responseRoom.json();
-        rooms = jsonRoom.data;
     }
 
     async function checkLocationAndCreateSelect() {
@@ -48,12 +44,12 @@
             alertMessages('warning', 'Warning message', 'Location not selected.')
             return;
         }
-        let buildingfilter = buildings.filter(rows => {
+        let groupfilter = groups.filter(rows => {
             // console.log(rows, "element.value :" , location.value, rows.location_id == location.value);
             return rows.location_id == location.value;
         });
 
-        await createSelect('select-building', buildingfilter);
+        await createSelect('select-group', groupfilter);
     }
 
     function createSelect(id, Values) {
@@ -73,11 +69,9 @@
             alertMessages('warning', 'Warning message', 'Location not selected.')
             return;
         }
-        let building = document.getElementById('select-building');
-        filtermeters = rooms.flatMap(room => {
-            return Object.values(meters).filter(meter => {
-                return room.id == meter.room_id && room.building_id == building.value;
-            });
+        let group = document.getElementById('select-group');
+        filtermeters = Object.values(meters).filter(meter => {
+            return meter.group_id == group.value;
         });
         let from = document.getElementById('datetime-from');
         let to = document.getElementById('datetime-to');

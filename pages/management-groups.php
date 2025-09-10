@@ -1,5 +1,6 @@
 <?php
 include '../components/session.php';
+checkLogin();
 ?>
 
 <!DOCTYPE html>
@@ -10,7 +11,7 @@ include '../components/session.php';
 
 <head>
     <meta charset="UTF-8">
-    <title><?= $lang['room'] ?> - EMS</title>
+    <title><?= $lang['group'] ?> - EMS</title>
 </head>
 
 <body style="background-color: <?= $bg ?>; color: <?= $text ?>!important; min-height: 100svh;">
@@ -19,11 +20,11 @@ include '../components/session.php';
         <div class="w-100 h-100 d-flex flex-column justify-content-center">
             <?php include "../components/header.php"; ?>
             <div class="bg-secondary bg-opacity-25 d-flex flex-column pt-5 align-items-center" style="min-height: 80svh;">
-                <div class="my-5 text-center fs-1 fw-bolder"><?= $lang['roommnm'] ?></div>
+                <div class="my-5 text-center fs-1 fw-bolder">Group Management</div>
                 <div class="container mb-2 text-end">
-                    <input class=" btn btn-primary bg-primary w-10" value="create" onclick="openNewRoomModal()">
+                    <input class=" btn btn-primary bg-primary w-10" value="create" onclick="openGroupModal()">
                 </div>
-                <table id="table-room" class="container table table-bordered table-striped" style="height: 90%;">
+                <table id="table-group" class="container table table-bordered table-striped" style="height: 90%;">
                 </table>
                 <div id="pagination" class="mt-3 d-flex gap-2 justify-content-center" style="height: 10%;"></div>
             </div>
@@ -31,28 +32,26 @@ include '../components/session.php';
     </div>
 
     <!-- 🔧 Modal เพิ่ม -->
-    <div class="modal fade" id="newRoomModal" tabindex="-1" aria-labelledby="newRoomModalLabel">
+    <div class="modal fade" id="newGroupModal" tabindex="-1" aria-labelledby="newGroupModalLabel">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title"><?=$lang['nroom']?></h5>
+                    <h5 class="modal-title">สร้างกลุ่มใหม่</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="ปิด"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="select-Location" class="form-label"><?= $lang['clocation'] ?></label>
-                        <select type="text" class="form-select border text-black" required id="select-Location" onchange="findBuilding()"></select>
+                        <label for="select-Location" class="form-label">เลือกโลเคชั่น</label>
+                        <select type="text" class="form-select text-black" required id="select-Location">
 
-                        <label for="select-building" class="form-label"><?= $lang['cbuilding'] ?></label>
-                        <select type="text" class="form-select border text-black" required id="select-building"></select>
-
-                        <label for="newName" class="form-label"><?=$lang['nname']?></label>
+                        </select>
+                        <label for="newName" class="form-label">ชื่อใหม่</label>
                         <input type="text" class="form-control text-black" id="newName">
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
-                    <button type="button" class="btn btn-primary" onclick="submitNewRoom()">บันทึก</button>
+                    <button type="button" class="btn btn-primary" onclick="submitnewGroup()">บันทึก</button>
                 </div>
             </div>
         </div>
@@ -70,7 +69,7 @@ include '../components/session.php';
                     <input type="hidden" id="rename-id">
                     <div class="mb-3">
                         <label for="new-name" class="form-label">ชื่อใหม่</label>
-                        <input type="text" class="form-control" id="new-name">
+                        <input type="text" class="form-control text-black" id="new-name">
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -90,7 +89,7 @@ include '../components/session.php';
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="ปิด"></button>
                 </div>
                 <div class="modal-body">
-                    <p>คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลนี้?</p>
+                    <p class="text-black">คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลนี้?</p>
                     <input type="hidden" id="delete-id">
                 </div>
                 <div class="modal-footer">
@@ -105,7 +104,7 @@ include '../components/session.php';
         <?= json_encode($_SESSION['theme'], JSON_UNESCAPED_UNICODE); ?>
     </script>
     <?php include "../scripts/scriptjs.html"; ?>
-    <?php include "../scripts/scriptjs-room.html"; ?>
+    <?php include "../scripts/scriptjs-management-groups.html"; ?>
 </body>
 
 </html>

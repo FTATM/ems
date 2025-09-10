@@ -22,18 +22,18 @@ if (!$id || !$action || $value === '') {
 
 switch ($action) {
     case "rename":
-        $stmt = $conn->prepare("UPDATE buildings SET `name` = ? WHERE id = ?");
+        $stmt = $conn->prepare("UPDATE groups SET `name` = ? WHERE id = ?");
         $stmt->bind_param("si", $value, $id);
         break;
 
     case "delete":
-        $stmt = $conn->prepare("UPDATE buildings SET is_deleted = 1 WHERE id = ?");
+        $stmt = $conn->prepare("UPDATE groups SET is_deleted = 1 WHERE id = ?");
         $stmt->bind_param("i", $id);
         break;
 
     case "new":
         $location_id = $_POST['location_id'] ?? '';
-        $stmt = $conn->prepare("INSERT INTO buildings (name,location_id) VALUES (?,?)");
+        $stmt = $conn->prepare("INSERT INTO groups (name,location_id) VALUES (?,?)");
         $stmt->bind_param("ss", $value, $location_id);
         break;
 

@@ -29,8 +29,8 @@ checkLogin();
                             <select id="select-location" class="form-select" onchange="checkLocationAndCreateSelect()">
                             </select>
 
-                            <label for="select-building">Building</label>
-                            <select id="select-building" class="form-select" onchange="loadingChart()">
+                            <label for="select-group">Group</label>
+                            <select id="select-group" class="form-select" onchange="loadingChart()">
                                 <option value="-"> - </option>
                             </select>
 

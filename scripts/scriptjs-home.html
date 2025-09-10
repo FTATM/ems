@@ -1,47 +1,162 @@
 <script>
-    let AllMeters = [];
-    let type = [];
+    const rowsPerPage = 10;
+    let currentPage = 1;
+    let locations = [];
+    let lastActiveElement = null;
     document.addEventListener("DOMContentLoaded", async () => {
-        await fetchMetersData();
-        console.log(AllMeters);
-        generateMeter(AllMeters);
-
-    });
-    async function fetchMetersData() {
-        let response = await fetch("../config/fetch-meters.php");
+        showLoading();
+        let response = await fetch("../config/fetch-locations.php");
         let json = await response.json();
-        AllMeters = Object.values(json.data);
+        locations = Object.values(json.data);
+        renderTablePage(locations, currentPage);
+        hideLoading();
+    })
 
-        let responsetype = await fetch("../config/fetch-data_type.php");
-        let jsontype = await responsetype.json();
-        type = jsontype.data;
-    }
-    function generateMeter(allmeters) {
-        let body = document.getElementById('body');
-        allmeters.forEach(element => {
-            const rawData = element.data?.[1];
-            const total = rawData.reduce((sum, row) => sum + (parseFloat(row.value) || 0), 0);
-            const avgkW = total / rawData.length;
+    function renderTablePage(data, page) {
+        const table = document.getElementById("table-location");
+        table.innerHTML = ""; // clear
 
-            let div = document.createElement('div');
-            div.className = " d-flex flex-column px-1";
-            div.style.minHeight = '10svh';
-            div.innerHTML = `
-            <div class="w-100 rounded-3 shadow p-2" style="height:200px; background-color:<?= $bg?>">
-                <div id="display-meter" class="bg-opacity-50 rounded d-flex justify-content-center align-items-center" style="min-height: 50%; background-color:${element.is_active == '0' ? "#00ab41" : "#b90e0a"};">
-                    <h3>${avgkW.toFixed(2)} kW</h3>
-                </div>
-                <div id="body-meter" class="bg-opacity-50 d-flex flex-column text-center" style="min-height: 50%;">
-                    <h5 class="fw-bold mt-2">${element.name}</h5>
-                    <p>click for more info.</p>
-                </div>
-            </div>
+        // สร้างหัวตาราง (thead)
+        const thead = document.createElement("thead");
+        const headerRow = document.createElement("tr");
+        headerRow.innerHTML = `
+        <th class="text-white w-25" style="background-color:#001B5E;"><?=$lang['id'];?></th>
+        <th class="text-white w-50" style="background-color:#001B5E;"><?=$lang['name'];?></th>
+        <th class="text-white w-15" style="background-color:#001B5E;"><?=$lang['action'];?></th>
+        `;
+
+
+        thead.appendChild(headerRow);
+        table.appendChild(thead);
+
+        // slice ข้อมูลเฉพาะหน้าปัจจุบัน
+        const start = (page - 1) * rowsPerPage;
+        const end = start + rowsPerPage;
+        const pageData = data.slice(start, end);
+
+        const tbody = document.createElement("tbody");
+        pageData.forEach(meter => {
+            const tr = document.createElement("tr");
+
+            tr.innerHTML = `
+            <td>${meter.id}</td>
+            <td>${meter.name}</td>
+            <td class = "d-flex ">
+                <input class="btn btn-sm btn-warning mx-3" value="Rename" onclick="openRenameModal(${meter.id}, '${meter.name}')">
+                <input class="btn btn-sm btn-danger mx-3" value="Delete" onclick="openDeleteModal(${meter.id})">
+            </td>
             `;
-            div.onclick = function () {
-                window.location.href = "../pages/dashboard.php?meter=" + element.id;
-            };
-            body.appendChild(div);
+            tbody.appendChild(tr);
         });
+
+        table.appendChild(tbody);
+
+        renderPagination(data.length, page);
     }
 
+    function renderPagination(totalRows, currentPage) {
+        const paginationDiv = document.getElementById("pagination");
+        paginationDiv.innerHTML = "";
+
+        const totalPages = Math.ceil(totalRows / rowsPerPage);
+
+        for (let i = 1; i <= totalPages; i++) {
+            const btn = document.createElement("button");
+            btn.className = `btn btn-sm text-white`;
+            btn.style.backgroundColor = `${i === currentPage ? '#001B5E' : '#555555'}`;
+
+            btn.textContent = i;
+            btn.addEventListener("click", () => {
+                renderTablePage(locations, i);
+            });
+            paginationDiv.appendChild(btn);
+        }
+    }
+
+    function updateAction(id, action, value) {
+        let form = new FormData();
+        form.append("id", id);           // เพิ่ม id เข้าไปด้วย (จำเป็นสำหรับการอัปเดต)
+        form.append("action", action);      // เช่น form.append("status", "active")
+        form.append("value", value);
+
+        console.log("id : ", id, " | action : ", action, " |value : ", value);
+
+        fetch('../config/update-location.php', {
+            method: 'POST',
+            body: form
+        })
+            .then(response => response.json())  // แก้การเรียก .json() ให้ถูกต้อง
+            .then(data => {
+                if (data.success) {
+                    console.log("อัปเดตสำเร็จ:", data.message);
+                    window.location.reload(); // รีเฟรชหน้าเพื่อแสดงข้อมูลที่อัปเดต
+                } else {
+                    console.error("เกิดข้อผิดพลาด:", data.message);
+                }
+            })
+            .catch(error => {
+                console.error("ข้อผิดพลาดในการเชื่อมต่อ:", error);
+            });
+    }
+
+    function openRenameModal(id, currentName) {
+        lastActiveElement = document.activeElement;
+        document.getElementById('rename-id').value = id;
+        document.getElementById('new-name').value = currentName;
+        let modal = new bootstrap.Modal(document.getElementById('renameModal'));
+        modal.show();
+    }
+
+    async function submitRename() {
+        let id = document.getElementById('rename-id').value;
+        let newName = document.getElementById('new-name').value;
+
+        await updateAction(id, 'rename', newName);
+        bootstrap.Modal.getInstance(document.getElementById('renameModal')).hide();
+
+        // โฟกัสกลับไปที่ปุ่มที่เปิด modal
+        if (lastActiveElement) {
+            setTimeout(() => lastActiveElement.focus(), 300);
+        }
+        window.location.reload();
+    }
+
+    function openDeleteModal(id) {
+        lastActiveElement = document.activeElement;
+        document.getElementById('delete-id').value = id;
+        let modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        modal.show();
+    }
+
+    async function submitDelete() {
+        let id = document.getElementById('delete-id').value;
+
+        await updateAction(id, 'delete', 1); // value = 1 หมายถึงลบ
+        bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
+
+        // โฟกัสกลับไปที่ปุ่มที่เปิด modal
+        if (lastActiveElement) {
+            setTimeout(() => lastActiveElement.focus(), 300);
+        }
+        window.location.reload();
+    }
+
+    function openNewLocationModal() {
+        lastActiveElement = document.activeElement;
+        let modal = new bootstrap.Modal(document.getElementById('newLocationModal'));
+        modal.show();
+    }
+
+    async function submitNewLocation() {
+        let newName = document.getElementById('newName').value;
+
+        await updateAction('new', 'new', newName);
+        bootstrap.Modal.getInstance(document.getElementById('newLocationModal')).hide();
+
+        // โฟกัสกลับไปที่ปุ่มที่เปิด modal
+        if (lastActiveElement) {
+            setTimeout(() => lastActiveElement.focus(), 300);
+        }
+        window.location.reload();
+    }
 </script>

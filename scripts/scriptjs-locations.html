@@ -1,0 +1,52 @@
+<script>
+    let meters = [];
+    let types = [];
+    let locations = [];
+    document.addEventListener("DOMContentLoaded", async () => {
+        await process();
+    });
+    async function fetchAll() {
+        let responselocation = await fetch("../config/fetch-locations.php");
+        let json_l = await responselocation.json();
+        locations = json_l.data;
+
+        let response = await fetch("../config/fetch-meters.php");
+        let json = await response.json();
+        meters = json.data;
+
+        let responsetypes = await fetch("../config/fetch-data_type.php");
+        let jsontypes = await responsetypes.json();
+        types = jsontypes.data;
+    }
+
+    async function process() {
+        showLoading();
+        await fetchAll();
+        await generateTable();
+        hideLoading();
+    }
+
+    function generateTable() {
+        let table = document.getElementById('table-location');
+        locations.forEach(row => {
+            let trd = document.createElement('tr');
+            trd.innerHTML += `
+            <td class="py-2">${row.id}</td>
+            <td class="clickable py-2" onmouseover="loadHoverImage('${row.name}')" onclick="goToGroups(${row.id})">${row.name}</td>
+            `;
+            table.querySelector('tbody').appendChild(trd);
+        });
+
+    }
+
+    function loadHoverImage(name) {
+        console.log("Hover on : " + name);
+        let img = document.getElementById('img-showLocation');
+        img.setAttribute('src', '../assets/images/provinces/' + name + '.png');
+    }
+
+    function goToGroups(id) {
+        window.location.href = 'groups.php?locate=' + id;
+    }
+
+</script>
