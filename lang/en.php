@@ -234,10 +234,10 @@ $lang = [
     "clocation" => "Choose location",
     "nlocation" => "New location",
 
-    "building" => "Building",
-    "buildingmnm" => "Building management",
-    "cbuilding" => "Choose building",
-    "nbuilding" => "New building",
+    "group" => "Group",
+    "groupmnm" => "Group management",
+    "cgroup" => "Choose group",
+    "ngroup" => "New group",
 
     "room" => "Room",
     "roommnm" => "Room management",

@@ -2,21 +2,21 @@
     const rowsPerPage = 10;
     let currentPage = 1;
     let locations = [];
-    let buildings = [];
+    let groups = [];
     document.addEventListener("DOMContentLoaded", async () => {
         showLoading();
         let response_ = await fetch("../config/fetch-locations.php");
         let json_ = await response_.json();
         locations = Object.values(json_.data);
-        let response = await fetch("../config/fetch-buildings.php");
+        let response = await fetch("../config/fetch-groups.php");
         let json = await response.json();
-        buildings = Object.values(json.data);
-        renderTablePage(buildings, currentPage);
+        groups = Object.values(json.data);
+        renderTablePage(groups, currentPage);
         hideLoading();
     })
 
     function renderTablePage(data, page) {
-        const table = document.getElementById("table-building");
+        const table = document.getElementById("table-group");
         table.innerHTML = ""; // clear
 
         // สร้างหัวตาราง (thead)
@@ -82,7 +82,7 @@
 
             btn.textContent = i;
             btn.addEventListener("click", () => {
-                renderTablePage(buildings, i);
+                renderTablePage(groups, i);
             });
             paginationDiv.appendChild(btn);
         }
@@ -95,7 +95,7 @@
         form.append("value", value);      // เช่น form.append("status", "active")
         form.append('location_id', location_id);
 
-        fetch('../config/update-building.php', {
+        fetch('../config/update-group.php', {
             method: 'POST',
             body: form
         })
@@ -144,7 +144,7 @@
         window.location.reload();
     }
 
-    function openBuildingModal(id, currentName) {
+    function openGroupModal(id, currentName) {
         let select = document.getElementById('select-Location');
         locations.forEach(location => {
             let option = document.createElement('option');
@@ -152,16 +152,16 @@
             option.textContent = location.name;
             select.appendChild(option);
         });
-        var modal = new bootstrap.Modal(document.getElementById('newBuildingModal'));
+        var modal = new bootstrap.Modal(document.getElementById('newGroupModal'));
         modal.show();
     }
 
-    async function submitnewBuilding() {
+    async function submitnewGroup() {
         let newName = document.getElementById('newName').value;
         let location_id = document.getElementById('select-Location').value;
 
         await updateAction('new', 'new', newName, location_id);
-        bootstrap.Modal.getInstance(document.getElementById('newBuildingModal')).hide();
+        bootstrap.Modal.getInstance(document.getElementById('newGroupModal')).hide();
 
         window.location.reload();
     }

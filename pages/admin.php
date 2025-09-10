@@ -10,7 +10,7 @@ include '../components/session.php';
 
 <head>
     <meta charset="UTF-8">
-    <title><?= $lang['building'] ?> - AMS</title>
+    <title><?= $lang['group'] ?> - AMS</title>
 </head>
 
 <body style="background-color: <?= $bg ?>; color: <?= $text ?>!important; min-height: 100svh;">
@@ -75,7 +75,7 @@ include '../components/session.php';
         <?= json_encode($_SESSION['theme'], JSON_UNESCAPED_UNICODE); ?>
     </script>
     <?php include "../scripts/scriptjs.html"; ?>
-    <?php include "../scripts/scriptjs-building.html"; ?>
+    <?php include "../scripts/scriptjs-group.html"; ?>
 </body>
 
 </html>

@@ -122,7 +122,7 @@ if ($_SESSION['user']['is_admin'] == 0) {
         <?= json_encode($_SESSION['theme'], JSON_UNESCAPED_UNICODE); ?>
     </script>
     <?php include "../scripts/scriptjs.html"; ?>
-    <?php include "../scripts/scriptjs-users-management.html"; ?>
+    <?php include "../scripts/scriptjs-management-users.html"; ?>
 </body>
 
 </html>

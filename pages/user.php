@@ -11,7 +11,7 @@ checkLogin();
 
 <head>
     <meta charset="UTF-8">
-    <title><?= $lang['building'] ?> - AMS</title>
+    <title><?= $lang['group'] ?> - AMS</title>
 </head>
 
 <body style="background-color: <?= $bg ?>; color: <?= $text ?>!important; min-height: 100svh;">

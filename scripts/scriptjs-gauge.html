@@ -2,8 +2,7 @@
     let meters = [];
     let types = [];
     let locations = [];
-    let buildings = [];
-    let rooms = [];
+    let groups = [];
     let refreshIntervalId; // เก็บ interval id
     const gaugeInstances = {};
     document.addEventListener("DOMContentLoaded", async () => {
@@ -33,13 +32,10 @@
         let jsonLocation = await responseLocation.json();
         locations = jsonLocation.data;
 
-        let responsebuilding = await fetch("../config/fetch-buildings.php");
-        let jsonbuilding = await responsebuilding.json();
-        buildings = jsonbuilding.data;
+        let responsegroup = await fetch("../config/fetch-groups.php");
+        let jsongroup = await responsegroup.json();
+        groups = jsongroup.data;
 
-        let responseRoom = await fetch("../config/fetch-rooms.php");
-        let jsonRoom = await responseRoom.json();
-        rooms = jsonRoom.data;
     }
 
     async function generateGauge() {

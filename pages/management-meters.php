@@ -49,7 +49,7 @@ checkLogin();
         <?= json_encode($_SESSION['theme'], JSON_UNESCAPED_UNICODE); ?>
     </script>
     <?php include "../scripts/scriptjs.html"; ?>
-    <?php include "../scripts/scriptjs-configmeter.html"; ?>
+    <?php include "../scripts/scriptjs-management-meters.html"; ?>
 </body>
 
 </html>

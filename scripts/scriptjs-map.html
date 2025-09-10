@@ -2,10 +2,9 @@
   let meters = [];
   let types = [];
   let locations = [];
-  let buildings = [];
-  let rooms = [];
+  let groups = [];
   let filtermeters = [];
-  let buildingAndMeterFilter = [];
+  let groupAndMeterFilter = [];
   let boxMeshes = {};
   let refreshIntervalId; // เก็บ interval id
   let location_id = "1"; // กำหนดค่าเริ่มต้นเป็น null
@@ -19,7 +18,7 @@
     await fetchAll();
     await stepRefreshData();
     await refreshTime();
-    await loadBuilding(buildingAndMeterFilter[0].building.id);
+    await loadGroup(groupAndMeterFilter[0].group.id);
     hideLoading();
   }
 
@@ -36,41 +35,35 @@
     let jsonLocation = await responseLocation.json();
     locations = jsonLocation.data;
 
-    let responsebuilding = await fetch("../config/fetch-buildings.php");
-    let jsonbuilding = await responsebuilding.json();
-    buildings = jsonbuilding.data;
+    let responsegroup = await fetch("../config/fetch-groups.php");
+    let jsongroup = await responsegroup.json();
+    groups = jsongroup.data;
 
-    let responseRoom = await fetch("../config/fetch-rooms.php");
-    let jsonRoom = await responseRoom.json();
-    rooms = jsonRoom.data;
   }
 
   async function stepRefreshData() {
     await filterData(location_id);
-    await generateListBuildings();
+    await generateListGroups();
   }
 
   function filterData(location_id) {
-    let filterbuildings = [];
+    let filtergroups = [];
     if (location_id) {
-      filterbuildings = buildings.filter((b) => b.location_id === location_id);
+      filtergroups = groups.filter((b) => b.location_id === location_id);
     } else {
-      filterbuildings = buildings;
+      filtergroups = groups;
     }
-
-    buildingAndMeterFilter = Object.values(filterbuildings).map((b) => {
-      filtermeters = rooms.flatMap((r) => {
-        return Object.values(meters).filter((meter) => {
-          return r.id == meter.room_id && r.building_id == b.id;
-        });
+    groupAndMeterFilter = Object.values(filtergroups).map((b) => {
+      filtermeters = Object.values(meters).filter((meter) => {
+        return meter.group_id == b.value;
       });
       return {
-        building: b,
+        group: b,
         meters: filtermeters,
       };
     });
 
-    // console.log(buildingAndMeterFilter);
+    console.log(groupAndMeterFilter);
   }
 
   function addHotspot(modelViewer, meter, slot, position, normal, label) {
@@ -152,26 +145,26 @@
     }
   }
 
-  function generateListBuildings() {
-    let list = document.getElementById("listbuilding");
+  function generateListGroups() {
+    let list = document.getElementById("listgroup");
     list.innerHTML = `
-      <h3 class="text-center my-4">Buildings</h3>
+      <h3 class="text-center my-4">Groups</h3>
     `;
-    Object.values(buildingAndMeterFilter).forEach((bm) => {
+    Object.values(groupAndMeterFilter).forEach((bm) => {
       let div = document.createElement("div");
       div.className = "p-2 mx-2 d-flex justify-content-between";
-      div.style.backgroundColor = bm.building.is_active === "1" ? "rgba(64, 160, 64)" : "rgba(255, 255, 255, 0.2)";
+      div.style.backgroundColor = bm.group.is_active === "1" ? "rgba(64, 160, 64)" : "rgba(255, 255, 255, 0.2)";
       div.innerHTML = `
-        <h4 class="text-center">${bm.building.name}</h4>
-        <p class="text-center mb-0">${bm.building.is_active === "1" ? "Active" : "Inactive"}</p>
+        <h4 class="text-center">${bm.group.name}</h4>
+        <p class="text-center mb-0">${bm.group.is_active === "1" ? "Active" : "Inactive"}</p>
       `;
-      div.onclick = () => loadBuilding(bm.building.id);
+      div.onclick = () => loadGroup(bm.group.id);
       list.appendChild(div);
     });
   }
 
   //add meter label to 3D model
-  function loadBuilding(id) {
+  function loadGroup(id) {
     // const modelViewer = document.getElementById("myModel");
     // modelViewer.src = "../assets/NY.glb";
 
@@ -181,9 +174,9 @@
     let selectMeter = document.getElementById('select-meter');
     selectMeter.style.display = 'block';
     selectMeter.innerHTML = `<option value="">-- Select Meter --</option>`;
-    buildingAndMeterFilter.flatMap(bm => {
-      if (bm.building.id == id) {
-        document.getElementById('name-building').textContent = "Building : " + bm.building.name;
+    groupAndMeterFilter.flatMap(bm => {
+      if (bm.group.id == id) {
+        document.getElementById('name-group').textContent = "Group : " + bm.group.name;
         bm.meters.forEach(meter => {
           selectMeter.innerHTML += `<option ${firstLoading ? "selected" : ""} value="${meter.id}">${meter.name}</option>`;
           firstLoading = false;
@@ -191,7 +184,7 @@
           // addHotspot(modelViewer, meter, "hotspot-" + meter.id, `${meter.id * 50}m 25m -0m`, "0m 1m 0m", meter.name);
           let div = document.createElement('div');
           div.className = "point";
-          imageViewer.innerHTML += `<div class="point" style="top:${bm.building.id * 50}px; Left:${meter.id * 50}px;"></div>`;
+          imageViewer.innerHTML += `<div class="point" style="top:${bm.group.id * 50}px; Left:${meter.id * 50}px;"></div>`;
         });
       }
       // else {
