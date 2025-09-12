@@ -16,9 +16,9 @@ checkLogin();
 
 <body style="background-color: <?= $bg ?>; color: <?= $text ?>!important; min-height: 100svh;">
     <div id="main" class="d-flex">
-        <?php include "../components/sidemenu.php"; ?>
         <div class="w-100 h-100 d-flex flex-column justify-content-center">
             <?php include "../components/header.php"; ?>
+<<<<<<< Updated upstream
             <div class="bg-secondary bg-opacity-25 d-flex flex-column pt-5 align-items-center" style="min-height: 80svh;">
                 <div class="my-5 text-center fs-1 fw-bolder">Location Management</div>
                 <div class="w-80 justify-content-center d-flex flex-column">
@@ -49,6 +49,23 @@ checkLogin();
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
                     <button type="button" class="btn btn-primary" onclick="submitNewLocation()">บันทึก</button>
+=======
+            <div class="d-flex justify-content-center mt-3">
+                <div class="w-50 border border-end-0">
+                    <table id="table-location" class="w-100 table-striped table table-borderless bg-light bg-opacity-10 mb-0 w-25">
+                        <thead class="text-center">
+                            <tr>
+                                <th class="fs-3">ID</th>
+                                <th class="fs-3"><?= $lang['location'] ?></th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-center">
+                        </tbody>
+                    </table>
+                </div>
+                <div class="w-25 justify-content-center d-flex border" style="min-height: 70svh;">
+                    <img id="img-showLocation" width="100%" height="100%" style="max-height: 650px;">
+>>>>>>> Stashed changes
                 </div>
             </div>
         </div>

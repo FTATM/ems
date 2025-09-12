@@ -1,0 +1,105 @@
+<script>
+    const rowsPerPage = 10;
+    let currentPage = 1;
+    let locations = [];
+    let groups = [];
+
+    const locationID = new URLSearchParams(window.location.search).get('locate') || '1';  // ได้ค่า เช่น "123"
+    console.log("locationID = ", locationID, "typeof =", typeof locationID);
+    document.addEventListener("DOMContentLoaded", async () => {
+        process();
+    })
+
+    async function process() {
+        showLoading();
+        await fetchAll();
+        generateTable();
+        hideLoading();
+    }
+
+    async function fetchAll() {
+        let reslocations = await fetch("../config/fetch-locations.php");
+        let jlocate = await reslocations.json();
+        locations = Object.values(jlocate.data);
+
+        let resgroups = await fetch("../config/fetch-groups.php");
+        let jgroups = await resgroups.json();
+        groups = Object.values(jgroups.data);
+    }
+
+    function generateTable() {
+        const table = document.getElementById("table-group");
+        table.querySelector('tbody').innerHTML = ""; // clear
+
+        const start = (currentPage - 1) * rowsPerPage;
+        const end = start + rowsPerPage;
+        const pageData = groups.slice(start, end);
+
+        const tbody = document.createElement("tbody");
+        tbody.className = "text-center";
+        pageData.forEach(row => {
+            if (row.location_id === locationID) {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>${row.id}</td>
+                    <td>${getNameLocation(locationID).name}</td>
+                    <td>${row.name}</td>
+                    <td class = "d-flex w-100 text-white justify-content-center gap-2">
+                        <button class="btn btn-light" value="<?=$lang['electrical']?>" onclick="reDirectTo('electrical',${row.id})"><?=$lang['electrical']?></button>
+                        <button class="btn btn-light" value="<?=$lang['water']?>" onclick="reDirectTo('water',${row.id})"><?=$lang['water']?></button>
+                        <button class="btn btn-light" value="<?=$lang['room']?>" onclick="reDirectTo('room',${row.id})"><?=$lang['room']?></button>
+                    </td>
+                    `;
+                tbody.appendChild(tr);
+            }
+        });
+
+        table.appendChild(tbody);
+        renderPagination(groups.length, currentPage);
+    }
+
+    function getNameLocation(id) {
+        return locations.find(l => l.id === id);
+    }
+
+    function reDirectTo(type, gid) {
+        window.location.href = "dashboard.php?type=" + type + "&groupID=" + gid;
+    }
+
+    function renderPagination(totalRows, currentPage) {
+        const paginationDiv = document.getElementById("pagination");
+        paginationDiv.innerHTML = "";
+
+        const totalPages = Math.ceil(totalRows / rowsPerPage);
+
+        for (let i = 1; i <= totalPages; i++) {
+            const btn = document.createElement("button");
+            btn.className = `btn btn-sm text-white`;
+            btn.style.backgroundColor = `${i === currentPage ? '#001B5E' : '#555555'}`;
+
+            btn.textContent = i;
+            btn.addEventListener("click", () => {
+                generateTable(groups, i);
+            });
+            paginationDiv.appendChild(btn);
+        }
+    }
+
+    function openRenameModal(id, currentName) {
+        document.getElementById('rename-id').value = id;
+        document.getElementById('new-name').value = currentName;
+        var modal = new bootstrap.Modal(document.getElementById('renameModal'));
+        modal.show();
+    }
+
+    async function submitRename() {
+        let id = document.getElementById('rename-id').value;
+        let newName = document.getElementById('new-name').value;
+
+        await updateAction(id, 'rename', newName);
+        bootstrap.Modal.getInstance(document.getElementById('renameModal')).hide();
+
+        window.location.reload();
+    }
+
+</script>

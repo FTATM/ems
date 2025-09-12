@@ -78,12 +78,6 @@ $lang = [
     'chemistry' => 'เคมี',
     'biology' => 'ชีววิทยา',
 
-    // Engineering departments
-    'civil' => 'วิศวกรรมโยธา',
-    'mechanical' => 'วิศวกรรมเครื่องกล',
-    'electrical' => 'วิศวกรรมไฟฟ้า',
-    'computer_eng' => 'วิศวกรรมคอมพิวเตอร์',
-
     //certificate
     "certificatemanagement" => "CMS - ระบบจัดการใบรับรองผลการเรียน",
     "template" => "แม่แบบใบรับรอง",
@@ -292,4 +286,7 @@ $lang = [
 
     "alltype" => "ชนิดของข้อมูลทั้งหมด",
 
+    "project" => "โปรเจค",
+    "electrical" => "ค่าไฟฟ้า",
+    "water" => "ค่าน้ำ",
 ];
