@@ -61,30 +61,6 @@ checkLogin();
             </div>
         </div>
     </div>
-
-    <!-- ❌ Modal ยืนยันการลบ -->
-    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">ยืนยันการลบ</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="ปิด"></button>
-                </div>
-                <div class="modal-body">
-                    <p class="text-black">คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลนี้?</p>
-                    <input type="hidden" id="delete-id">
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
-                    <button type="button" class="btn btn-danger" onclick="submitDelete()">ยืนยันลบ</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script id="theme-data" type="application/json">
-        <?= json_encode($_SESSION['theme'], JSON_UNESCAPED_UNICODE); ?>
-    </script>
     <?php include "../scripts/scriptjs.html"; ?>
     <?php include "../scripts/scriptjs-locations.html"; ?>
 </body>
