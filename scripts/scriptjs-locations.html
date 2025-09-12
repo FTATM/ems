@@ -5,6 +5,14 @@
     document.addEventListener("DOMContentLoaded", async () => {
         await process();
     });
+
+    async function process() {
+        showLoading();
+        await fetchAll();
+        await generateTable();
+        hideLoading();
+    }
+
     async function fetchAll() {
         let responselocation = await fetch("../config/fetch-locations.php");
         let json_l = await responselocation.json();
@@ -17,13 +25,6 @@
         let responsetypes = await fetch("../config/fetch-data_type.php");
         let jsontypes = await responsetypes.json();
         types = jsontypes.data;
-    }
-
-    async function process() {
-        showLoading();
-        await fetchAll();
-        await generateTable();
-        hideLoading();
     }
 
     function generateTable() {
@@ -46,7 +47,7 @@
     }
 
     function goToGroups(id) {
-        window.location.href = 'groups.php?locate=' + id;
+        window.location.href = 'groups.php?locate=' + parseInt(id);
     }
 
 </script>

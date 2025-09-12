@@ -22,11 +22,12 @@ checkLogin();
             <div class="bg-secondary bg-opacity-25 d-flex flex-column pt-5 align-items-center" style="min-height: 80svh;">
                 <div class="my-5 text-center fs-1 fw-bolder"><?= $lang['groupmnm'] ?></div>
                 <table id="table-group" class="container table table-bordered table-striped" style="height: 90%;">
-                    <thead>
+                    <thead class="text-center">
                         <tr>
                             <th class="text-white w-25" style="background-color:#001B5E;"><?= $lang['id']; ?></th>
+                            <th class="text-white w-25" style="background-color:#001B5E;"><?= $lang['location']; ?></th>
                             <th class="text-white w-25" style="background-color:#001B5E;"><?= $lang['name']; ?></th>
-                            <th class="text-white w-50" style="width:10%; background-color:#001B5E;"><?= $lang['action']; ?></th>
+                            <th class="text-white w-25" style="background-color:#001B5E;"><?= $lang['action']; ?></th>
                         </tr>
                     </thead>
                     <tbody>

@@ -1,43 +1,68 @@
 <script>
     const rowsPerPage = 10;
     let currentPage = 1;
+    let locations = [];
     let groups = [];
 
     const locationID = new URLSearchParams(window.location.search).get('locate') || '1';  // ได้ค่า เช่น "123"
+    console.log("locationID = ", locationID, "typeof =", typeof locationID);
     document.addEventListener("DOMContentLoaded", async () => {
-        showLoading();
-        let response = await fetch("../config/fetch-groups.php");
-        let json = await response.json();
-        groups = Object.values(json.data);
-        generateTable(groups, currentPage);
-        hideLoading();
+        process();
     })
 
-    function generateTable(data, page) {
-        const table = document.getElementById("table-group");
-        table.innerHTML = ""; // clear
+    async function process() {
+        showLoading();
+        await fetchAll();
+        generateTable();
+        hideLoading();
+    }
 
-        // slice ข้อมูลเฉพาะหน้าปัจจุบัน
-        const start = (page - 1) * rowsPerPage;
+    async function fetchAll() {
+        let reslocations = await fetch("../config/fetch-locations.php");
+        let jlocate = await reslocations.json();
+        locations = Object.values(jlocate.data);
+
+        let resgroups = await fetch("../config/fetch-groups.php");
+        let jgroups = await resgroups.json();
+        groups = Object.values(jgroups.data);
+    }
+
+    function generateTable() {
+        const table = document.getElementById("table-group");
+        table.querySelector('tbody').innerHTML = ""; // clear
+
+        const start = (currentPage - 1) * rowsPerPage;
         const end = start + rowsPerPage;
-        const pageData = data.slice(start, end);
+        const pageData = groups.slice(start, end);
 
         const tbody = document.createElement("tbody");
+        tbody.className = "text-center";
         pageData.forEach(row => {
             if (row.location_id === locationID) {
                 const tr = document.createElement("tr");
                 tr.innerHTML = `
                     <td>${row.id}</td>
+                    <td>${getNameLocation(locationID).name}</td>
                     <td>${row.name}</td>
-                    <td class = "d-flex ">
+                    <td class = "d-flex w-100 text-white justify-content-center gap-2">
+                        <button class="btn btn-light" value="<?=$lang['electrical']?>" onclick="reDirectTo('electrical',${row.id})"><?=$lang['electrical']?></button>
+                        <button class="btn btn-light" value="<?=$lang['water']?>" onclick="reDirectTo('water',${row.id})"><?=$lang['water']?></button>
+                        <button class="btn btn-light" value="<?=$lang['room']?>" onclick="reDirectTo('room',${row.id})"><?=$lang['room']?></button>
                     </td>
                     `;
                 tbody.appendChild(tr);
             }
         });
+        table.appendChild(tbody);
+        renderPagination(groups.length, currentPage);
+    }
 
-        table.querySelector('tbody').appendChild(tbody);
-        renderPagination(data.length, page);
+    function getNameLocation(id) {
+        return locations.find(l => l.id === id);
+    }
+
+    function reDirectTo(type, gid) {
+        window.location.href = "dashboard.php?type=" + type + "&groupID=" + gid;
     }
 
     function renderPagination(totalRows, currentPage) {

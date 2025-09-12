@@ -22,7 +22,6 @@
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    hideLoading();
                     alertMessages('success', 'เข้าสู่ระบบสำเร็จ', 'ยินดีต้อนรับคุณ ' + username, 2000);
                     setTimeout(() => {
                         window.location.href = 'locations.php';
@@ -30,6 +29,7 @@
                 } else {
                     alertMessages('error', 'ผิดพลาด', data.message, 2000);
                 }
+                hideLoading();
             });
     }
 </script>

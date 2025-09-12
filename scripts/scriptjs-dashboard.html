@@ -1,146 +1,222 @@
 <script>
-    let meter = [];
-    let filteredMeter = [];
+    let meters = [];
+    let filteredMeters = [];
+    let locations = [];
+    let groups = [];
+    let types = [];
     let result = ['1', '3'];
-    let type = [];
-    let allvalueinPie = 0;
-    let pricePerKWh = 4.5;
-    const themeData = document.getElementById('theme-data').textContent;
-    const theme = JSON.parse(themeData);
-    const urlParams = new URLSearchParams(window.location.search);
+    let refreshIntervalId;
+
     // ดึงค่าตัวแปรจาก URL
-    const meterID = urlParams.get('meter');  // 'JohnDoe'
+    const urlParams = new URLSearchParams(window.location.search);
+    const typeMeter = urlParams.get('type');
+    const groupID = urlParams.get('groupID');
 
     document.addEventListener("DOMContentLoaded", async () => {
-
-        await fetchMetersData();
-        await filterData();
-        await generateDataList();
-        await generateInfomation();
-
+        showLoading();
+        await process();
+        await setRefreshTime();
+        hideLoading();
     });
 
-    async function fetchMetersData() {
+    async function process() {
+        await fetchAll();
+        await filterMeters();
+        generateDataList();
+    }
+
+    async function fetchAll() {
+        let res_location = await fetch("../config/fetch-locations.php");
+        let json_location = await res_location.json();
+        locations = json_location.data;
+
+        let res_group = await fetch("../config/fetch-groups.php");
+        let json_group = await res_group.json();
+        groups = json_group.data;
+
         let response = await fetch("../config/fetch-meters.php");
         let json = await response.json();
-        meter = json.data;
-        filteredMeter = structuredClone(json);
+        meters = json.data;
 
         let responsetype = await fetch("../config/fetch-data_type.php");
         let jsontype = await responsetype.json();
-        type = jsontype.data;
-        console.log(type);
+        types = jsontype.data;
     }
 
-    function filterData() {
-        const select = document.getElementById("select-filter-value");
+    function filterMeters() {
+        filteredMeters = Object.values(meters).filter(m => {
+            return m.group_id === groupID;
+        });
+        let select = document.getElementById('select-meters');
+        select.innerHTML = '<option>=== <?=$lang["select"]?> === </option>';
+        filteredMeters.forEach(fm => {
+            let option = document.createElement('option');
+            option.value = fm.id;
+            option.textContent = `[${fm.id}] ${fm.name}`;
+            option.selected = filteredMeters[0].id === fm.id;
+            select.appendChild(option);
+        });
 
-        const selectedMinutes = parseInt(select.value); // ดึงจำนวนนาทีจาก select
-        const now = new Date();
-        const cutoffTime = new Date(now.getTime() - selectedMinutes * 60 * 1000);
+        filterDataInMeters();
+    }
 
-        // สร้าง object ใหม่หลังกรอง
-        const filteredData = {};
-        if (meterID) {
-            for (const key in meter[meterID]['data']) {
-                filteredData[key] = meter[meterID]['data'][key].filter(item => {
-                    const itemTime = new Date(item.create_date);
-                    return itemTime >= cutoffTime;
+    function filterDataInMeters() {
+        const time = document.getElementById('select-filter-value');
+        let now = new Date();
+        let selectedDateTime = new Date(now.getTime() - parseInt(time.value, 10) * 60000);
+        const filteredDataInMeters = Object.values(filteredMeters).map(fm => {
+            let Datafiltered = {};
+            Object.entries(fm.data).map(([key, rows]) => {
+                Datafiltered[key] = Object.values(rows).filter(datatype => {
+                    let date = new Date(datatype.create_date);
+                    return date >= selectedDateTime;
                 });
-            }
-            filteredMeter[meterID]['data'] = filteredData;
-            updateData();
-        }
-        else {
-            alert('Not Found Page ;( \nplease contact to administrators.');
-            window.location.href = '../pages/home.php';
-        }
-
-    }
-
-    function generateInfomation() {
-        let div = document.getElementById('infomation');
-
-        let table = document.createElement('table');
-        table.className = 'table table-borderless';
-        Object.entries(meter[meterID]).forEach(([key, $data]) => {
-            if (['name', 'is_active'].includes(key)) {
-                let row = document.createElement('tr');
-                let cell1 = document.createElement('td');
-                let cell2 = document.createElement('td');
-                cell1.className = 'text-end px-4';
-                cell1.innerText = key + ' : ';
-                cell2.innerText = $data;
-                row.appendChild(cell1);
-                row.appendChild(cell2);
-                table.appendChild(row);
+            });
+            return {
+                ...fm,
+                data: Datafiltered,
             }
         });
-        div.appendChild(table);
+        updateData(filteredDataInMeters);
 
     }
 
-    function updateData() {
+
+    function updateData(filteredDataInMeters) {
         const LinearchartData = [];
         const PiechartData = [];
         const LinearchartData2 = [];
         const PiechartData2 = [];
+        let select = document.getElementById('select-meters');
+        const selectedMeter = filteredDataInMeters[parseInt(select.value) - 1];
+
+        // show infomation in table
+        generateInfomation(selectedMeter);
 
         result.forEach(index => {
-            LinearchartData.push(...prepareLinearData(index));
+            LinearchartData.push(...prepareLinearData(selectedMeter, index));
         });
-        console.log(LinearchartData);
         createLinearChart('chart-linear', "Linear Date & Data", LinearchartData);
 
         result.forEach(index => {
-            PiechartData.push(...preparePieData(index));
+            PiechartData.push(...preparePieData(selectedMeter, index));
         });
         createPieChart('chart-Pie', "Ratio of Data", PiechartData);
 
-        LinearchartData2.push(...prepareLinearPrice(pricePerKWh));
+        LinearchartData2.push(...prepareLinearPrice(selectedMeter));
         createLinearChart('chart-linear-price', 'Price of month', LinearchartData2);
 
-        $('.demo').kumaGauge({
-            value: Math.floor((Math.random() * 99) + 1),
-            radius: 160,
-            paddingX: 10,
-            paddingY: 40,
-            gaugeWidth: 30,
-            showNeedle: false,
-            gaugeBackground: '#f4f4f4',
-            background: '#1B1C1D',
-            valueLabel: {
-                display: true,
-                fontColor: '#fff',
-                fontSize: 40,
-            },
-            title: {
-                display: true,
-                value: 'Test',
-                fontFamily: 'Arial',
-                fontColor: '#fff',
-                fontSize: 40,
-                fontWeight: 'normal'
-            },
-            label: {
-                display: false,
-                left: 'Low',
-                right: 'High',
-                fontFamily: 'Arial',
-                fontColor: '#fff',
-                fontSize: 12,
-                fontWeight: 'normal'
+    }
+
+    function getNameLocation(gid) {
+        return locations.find(l => {
+            return groups.filter(g => {
+                return g.id === gid;
+            })
+        }).name;
+    }
+
+    function getNameGroup(id) {
+        return groups.find(g => {
+            return g.id === id;
+        }).name;
+    }
+
+    // refer from meter
+    function generateInfomation(selectMeter) {
+        let div = document.getElementById('infomation');
+        div.innerHTML = `    
+        <h3 class='text-center pb-2'><?= $lang['information'] ?></h3>
+        `;
+
+        let table = document.createElement('table');
+        table.className = 'table table-borderless';
+        table.innerHTML = `
+            <tr>
+                <td class="text-end px-4">Location : </td>
+                <td>${getNameLocation(groupID)}</td>
+            </tr>
+            <tr>
+                <td class="text-end px-4">Group : </td>
+                <td>${getNameGroup(groupID)}</td>
+            </tr>
+        `;
+        Object.entries(selectMeter).forEach(([key, data]) => {
+            if (['name', 'is_active', 'ip_address', 'port'].includes(key)) {
+                let row = document.createElement('tr');
+                let cell1 = document.createElement('td');
+                let cell2 = document.createElement('td');
+                cell1.className = 'text-end px-4';
+                cell1.style.width = '40%';
+                cell1.innerText = key + ' : ';
+                cell2.innerText = key === "is_active" && Number(data) ? parseInt(data) == 1 ? 'True' : 'False' : data;
+                row.appendChild(cell1);
+                row.appendChild(cell2);
+                table.querySelector('tbody').appendChild(row);
             }
+        });
+        div.appendChild(table);
+    }
 
+    // refer from types
+    async function generateDataList() {
+        let listdata = document.getElementById('list-data');
+        listdata.innerHTML = ''; // เคลียร์ข้อมูลเดิมก่อนสร้างใหม่
 
+        types.forEach($row => {
+            let div = document.createElement('div');
 
+            let button = document.createElement('button');
+            button.textContent = $row['name'];
+            button.setAttribute('data-id', $row['id']);
+            button.classList.add('toggle-button');
+            if (result.includes($row['id'])) {
+                button.classList.add('active');
+            }
+            // Event toggle เมื่อคลิกปุ่ม
+            button.addEventListener('click', function () {
+                const id = $row['id'];
+
+                if (result.includes(id)) {
+                    result = result.filter(item => item !== id);
+                    button.classList.remove('active'); // เปลี่ยน UI ปุ่ม
+                } else {
+                    // ถ้ายังไม่มี ให้เพิ่มเข้าไป
+                    result.push(id);
+                    button.classList.add('active');
+                }
+                filterDataInMeters();
+            });
+
+            // div.appendChild(button);
+            listdata.appendChild(button);
         });
     }
 
-    function prepareLinearData(columnIndex) {
+    function setRefreshTime() {
+        const inputRefresh = document.getElementById('input-refresh');
+        const refreshTime = parseInt(inputRefresh.value, 10);
+        if (isNaN(refreshTime) || refreshTime < 1 || refreshTime > 60) {
+            alertMessages('error', 'Error', 'Please enter a valid refresh time between 1 and 30 seconds.');
+            return;
+        }
+        // เคลียร์ interval เก่า
+        clearInterval(refreshIntervalId);
+
+        console.log("Setting refresh time to:", refreshTime);
+
+        // ตั้ง interval ใหม่
+        refreshIntervalId = setInterval(() => {
+            process();
+        }, refreshTime * 1000);
+    }
+
+    // ======== prepare Data for Chart and Chart function ========
+
+    function prepareLinearData(SelectedFilterMeter, columnIndex) {
         const chartData = [];
 
-        const rawData = filteredMeter[meterID].data?.[columnIndex];
+        const rawData = SelectedFilterMeter.data?.[columnIndex];
 
         if (rawData && Array.isArray(rawData)) {
             const dataPoints = rawData.map(row => ({
@@ -151,7 +227,7 @@
             chartData.push({
                 type: "splineArea",
                 axisYType: "secondary",
-                name: `${filteredMeter[meterID].name} - ${getLabelFromIndex(columnIndex)}`,
+                name: `${SelectedFilterMeter.name} - ${getLabelFromIndex(columnIndex)}`,
                 showInLegend: true,
                 markerSize: 0,
                 yValueFormatString: "#,##0.##",
@@ -163,17 +239,17 @@
         return chartData;
     }
 
-    function prepareLinearPrice(pricePerKWh) {
+    function prepareLinearPrice(SelectedFilterMeter) {
         const chartData = [];
 
-        const rawData = filteredMeter[meterID]?.data?.[2];
+        const rawData = SelectedFilterMeter.data?.[2];
         if (rawData && Array.isArray(rawData) && rawData.length > 0) {
-            const { powerData, averageCost } = calculateElectricCost(rawData, pricePerKWh);
+            const { powerData, averageCost } = calculateElectricCost(rawData, 4);
 
             chartData.push({
                 type: "splineArea",
                 axisYType: "secondary",
-                name: `${filteredMeter[meterID].name} | ค่าใช้จ่าย ~ ${averageCost} บาท`,
+                name: `${SelectedFilterMeter.name} | ค่าใช้จ่าย ~ ${averageCost} บาท`,
                 showInLegend: true,
                 markerSize: 0,
                 yValueFormatString: "#,##0.##",
@@ -185,17 +261,17 @@
         return chartData;
     }
 
-    function preparePieData(columnIndex) {
+    function preparePieData(SelectedFilterMeter, columnIndex) {
         const temp = [];
 
-        const rawData = filteredMeter[meterID].data?.[columnIndex];
+        const rawData = SelectedFilterMeter.data?.[columnIndex];
 
         if (rawData && Array.isArray(rawData) && rawData.length > 0) {
             const total = rawData.reduce((sum, row) => sum + (parseFloat(row.value) || 0), 0);
             const avg = total / rawData.length;
 
             temp.push({
-                name: filteredMeter[meterID].name,
+                name: SelectedFilterMeter.name,
                 avg: avg
             });
         }
@@ -223,7 +299,7 @@
         const pricePerKWh = 4.5; // ราคาต่อหน่วย (บาท/หน่วย)
 
         // ขั้นที่ 1: คำนวณค่าเฉลี่ยการใช้งานของแต่ละมิเตอร์
-        const rawData = filteredMeter[meterID].data?.[columnIndex];
+        const rawData = SelectedFilterMeter.data?.[columnIndex];
 
         if (rawData && Array.isArray(rawData) && rawData.length > 0) {
             const total = rawData.reduce((sum, row) => sum + (parseFloat(row.value) || 0), 0);
@@ -231,11 +307,11 @@
             const avgPrice = avgKW * pricePerKWh;
 
             temp.push({
-                name: filteredMeter[meterID].name,
+                name: SelectedFilterMeter.name,
                 avgPrice: avgPrice
             });
 
-            console.log(`Avg Price (${filteredMeter[meterID].name}):`, avgPrice.toFixed(2));
+            console.log(`Avg Price (${SelectedFilterMeter.name}):`, avgPrice.toFixed(2));
         }
 
         // ขั้นที่ 2: รวมราคาทั้งหมดเพื่อใช้คำนวณ %
@@ -279,46 +355,12 @@
 
     function getLabelFromIndex(index) {
         let name = "unknown";
-        type.forEach($row => {
+        types.forEach($row => {
             if ($row['id'] == index) {
                 name = $row['name'];
             }
         });
         return name;
-    }
-
-    async function generateDataList() {
-        let listdata = document.getElementById('list-data');
-        listdata.innerHTML = ''; // เคลียร์ข้อมูลเดิมก่อนสร้างใหม่
-
-        type.forEach($row => {
-            let div = document.createElement('div');
-
-            let button = document.createElement('button');
-            button.textContent = $row['name'];
-            button.setAttribute('data-id', $row['id']);
-            button.classList.add('toggle-button');
-            if (result.includes($row['id'])) {
-                button.classList.add('active');
-            }
-            // Event toggle เมื่อคลิกปุ่ม
-            button.addEventListener('click', function () {
-                const id = $row['id'];
-
-                if (result.includes(id)) {
-                    result = result.filter(item => item !== id);
-                    button.classList.remove('active'); // เปลี่ยน UI ปุ่ม
-                } else {
-                    // ถ้ายังไม่มี ให้เพิ่มเข้าไป
-                    result.push(id);
-                    button.classList.add('active');
-                }
-                updateData();
-            });
-
-            // div.appendChild(button);
-            listdata.appendChild(button);
-        });
     }
 
     function getRandomColor(index) {
@@ -353,10 +395,10 @@
     }
     function createPieChart(idContainer, title, dataPoints) {
         var chart = new CanvasJS.Chart(idContainer, {
-            theme: theme == 'dark' ? 'dark2' : 'light2',
+            theme: 'dark2',
             backgroundColor: "#1B1C1D",
             exportEnabled: true,
-            animationEnabled: true,
+            animationEnabled: false,
             title: {
                 text: title
             },
@@ -372,16 +414,16 @@
 
             }],
             toolTip: {
-                enabled: false 
+                enabled: false
             },
-            creditText: "",    
-            creditHref: "",    
+            creditText: "",
+            creditHref: "",
         });
         chart.render();
     }
     function createLinearChart(idContainer, title, dataPointsLinear) {
         const chart = new CanvasJS.Chart(idContainer, {
-            theme: theme == 'dark' ? 'dark2' : 'light2',
+            theme: 'dark2',
             backgroundColor: "#1B1C1D",
             title: { text: title },
             axisX: { valueFormatString: "HH:mm:ss" },
@@ -412,6 +454,8 @@
         }
         e.chart.render(); // ✅ ใช้ chart จาก even
     }
+
+
 
 
 

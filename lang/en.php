@@ -80,12 +80,6 @@ $lang = [
     'chemistry' => 'Chemistry',
     'biology' => 'Biology',
 
-    // Engineering departments
-    'civil' => 'Civil Engineering',
-    'mechanical' => 'Mechanical Engineering',
-    'electrical' => 'Electrical Engineering',
-    'computer_eng' => 'Computer Engineering',
-
     //certificate
     "certificatemanagement" => "CMS - Certificate Management System.",
     "template" => "Template",
@@ -257,7 +251,7 @@ $lang = [
 
     "loading" => "Loading...",
     "cmisb" => "Choose meter in side bar.",
-  
+
     //menu
     "user" => "Users",
     "usermnm" => "Users Management",
@@ -292,4 +286,7 @@ $lang = [
 
     "alltype" => "All types",
 
+    "project" => "Project",
+    "electrical" => "Electical",
+    "water" => "Water",
 ];

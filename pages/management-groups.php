@@ -16,15 +16,21 @@ checkLogin();
 
 <body style="background-color: <?= $bg ?>; color: <?= $text ?>!important; min-height: 100svh;">
     <div id="main" class="d-flex">
-        <?php include "../components/sidemenu.php"; ?>
         <div class="w-100 h-100 d-flex flex-column justify-content-center">
             <?php include "../components/header.php"; ?>
             <div class="bg-secondary bg-opacity-25 d-flex flex-column pt-5 align-items-center" style="min-height: 80svh;">
-                <div class="my-5 text-center fs-1 fw-bolder">Group Management</div>
-                <div class="container mb-2 text-end">
-                    <input class=" btn btn-primary bg-primary w-10" value="create" onclick="openGroupModal()">
-                </div>
+                <div class="my-5 text-center fs-1 fw-bolder"><?= $lang['group'] ?>/<?= $lang['project'] ?></div>
                 <table id="table-group" class="container table table-bordered table-striped" style="height: 90%;">
+                    <thead class="text-center">
+                        <tr>
+                            <th class="text-white w-10" style="background-color:#001B5E;"><?= $lang['id']; ?></th>
+                            <th class="text-white w-15" style="background-color:#001B5E;"><?= $lang['location']; ?></th>
+                            <th class="text-white w-25" style="background-color:#001B5E;"><?= $lang['name']; ?></th>
+                            <th class="text-white w-25" style="width:10%; background-color:#001B5E;"><?= $lang['action']; ?></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
                 </table>
                 <div id="pagination" class="mt-3 d-flex gap-2 justify-content-center" style="height: 10%;"></div>
             </div>
