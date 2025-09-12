@@ -8,7 +8,7 @@ include "../config/connect.php";
 
 
 
-$sql = "SELECT * FROM buildings ";
+$sql = "SELECT * FROM groups";
 $result = $conn->query($sql);
 
 $rows = [];

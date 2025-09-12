@@ -3,7 +3,6 @@ include '../components/session.php';
 checkLogin();
 ?>
 
-
 <!DOCTYPE html>
 <html lang="<?= $langCode ?>">
 
@@ -12,28 +11,54 @@ checkLogin();
 
 <head>
     <meta charset="UTF-8">
-    <title><?= $lang['home'] ?> - EMS</title>
+    <title><?= $lang['group'] ?> - EMS</title>
 </head>
 
 <body style="background-color: <?= $bg ?>; color: <?= $text ?>!important; min-height: 100svh;">
     <div id="main" class="d-flex">
+        <?php include "../components/sidemenu.php"; ?>
         <div class="w-100 h-100 d-flex flex-column justify-content-center">
             <?php include "../components/header.php"; ?>
-            <div class="d-flex justify-content-center mt-3">
-                <div class="w-50 border border-end-0">
-                    <table id="table-location" class="w-100 table-striped table table-borderless bg-light bg-opacity-10 mb-0 w-25">
-                        <thead class="text-center">
-                            <tr>
-                                <th class="fs-3">ID</th>
-                                <th class="fs-3"><?= $lang['location'] ?></th>
-                            </tr>
-                        </thead>
-                        <tbody class="text-center">
-                        </tbody>
-                    </table>
+            <div class="bg-secondary bg-opacity-25 d-flex flex-column pt-5 align-items-center" style="min-height: 80svh;">
+                <div class="my-5 text-center fs-1 fw-bolder"><?= $lang['groupmnm'] ?></div>
+                <table id="table-group" class="container table table-bordered table-striped" style="height: 90%;">
+                    <thead class="text-center">
+                        <tr>
+                            <th class="text-white w-25" style="background-color:#001B5E;"><?= $lang['id']; ?></th>
+                            <th class="text-white w-25" style="background-color:#001B5E;"><?= $lang['location']; ?></th>
+                            <th class="text-white w-25" style="background-color:#001B5E;"><?= $lang['name']; ?></th>
+                            <th class="text-white w-25" style="background-color:#001B5E;"><?= $lang['action']; ?></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+                <div id="pagination" class="mt-3 d-flex gap-2 justify-content-center" style="height: 10%;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🔧 Modal เพิ่ม -->
+    <div class="modal fade" id="newGroupModal" tabindex="-1" aria-labelledby="newGroupModalLabel">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">สร้างกลุ่มใหม่</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="ปิด"></button>
                 </div>
-                <div class="w-25 justify-content-center d-flex border" style="min-height: 70svh;">
-                    <img id="img-showLocation" width="100%" height="100%" style="max-height: 650px;">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="select-Location" class="form-label">เลือกโลเคชั่น</label>
+                        <select type="text" class="form-select text-black" required id="select-Location">
+
+                        </select>
+                        <label for="newName" class="form-label">ชื่อใหม่</label>
+                        <input type="text" class="form-control text-black" id="newName">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+                    <button type="button" class="btn btn-primary" onclick="submitnewGroup()">บันทึก</button>
                 </div>
             </div>
         </div>
@@ -51,7 +76,7 @@ checkLogin();
                     <input type="hidden" id="rename-id">
                     <div class="mb-3">
                         <label for="new-name" class="form-label">ชื่อใหม่</label>
-                        <input type="text" class="form-control  text-black" id="new-name">
+                        <input type="text" class="form-control text-black" id="new-name">
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -86,7 +111,7 @@ checkLogin();
         <?= json_encode($_SESSION['theme'], JSON_UNESCAPED_UNICODE); ?>
     </script>
     <?php include "../scripts/scriptjs.html"; ?>
-    <?php include "../scripts/scriptjs-locations.html"; ?>
+    <?php include "../scripts/scriptjs-groups.html"; ?>
 </body>
 
 </html>

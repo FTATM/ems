@@ -11,7 +11,7 @@ checkLogin();
 
 <head>
     <meta charset="UTF-8">
-    <title><?= $lang['building'] ?> - EMS</title>
+    <title><?= $lang['group'] ?> - EMS</title>
 </head>
 
 <body style="background-color: <?= $bg ?>; color: <?= $text ?>!important; min-height: 100svh;">
@@ -19,14 +19,7 @@ checkLogin();
         <div class="w-100 h-100 d-flex flex-column justify-content-center">
             <?php include "../components/header.php"; ?>
             <div class="bg-secondary bg-opacity-25 d-flex flex-column pt-5 align-items-center" style="min-height: 80svh;">
-<<<<<<< Updated upstream:pages/buildings.php
-                <div class="my-5 text-center fs-1 fw-bolder">Building Management</div>
-                <div class="container mb-2 text-end">
-                    <input class=" btn btn-primary bg-primary w-10" value="create" onclick="openBuildingModal()">
-                </div>
-                <table id="table-building" class="container table table-bordered table-striped" style="height: 90%;">
-=======
-                <div class="my-5 text-center fs-1 fw-bolder"><?= $lang['group'] ?>/<?= $lang['project']?></div>
+                <div class="my-5 text-center fs-1 fw-bolder"><?= $lang['group'] ?>/<?= $lang['project'] ?></div>
                 <table id="table-group" class="container table table-bordered table-striped" style="height: 90%;">
                     <thead class="text-center">
                         <tr>
@@ -38,7 +31,6 @@ checkLogin();
                     </thead>
                     <tbody>
                     </tbody>
->>>>>>> Stashed changes:pages/groups.php
                 </table>
                 <div id="pagination" class="mt-3 d-flex gap-2 justify-content-center" style="height: 10%;"></div>
             </div>
@@ -46,11 +38,11 @@ checkLogin();
     </div>
 
     <!-- 🔧 Modal เพิ่ม -->
-    <div class="modal fade" id="newBuildingModal" tabindex="-1" aria-labelledby="newBuildingModalLabel">
+    <div class="modal fade" id="newGroupModal" tabindex="-1" aria-labelledby="newGroupModalLabel">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">สร้างตึกใหม่</h5>
+                    <h5 class="modal-title">สร้างกลุ่มใหม่</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="ปิด"></button>
                 </div>
                 <div class="modal-body">
@@ -65,7 +57,7 @@ checkLogin();
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
-                    <button type="button" class="btn btn-primary" onclick="submitnewBuilding()">บันทึก</button>
+                    <button type="button" class="btn btn-primary" onclick="submitnewGroup()">บันทึก</button>
                 </div>
             </div>
         </div>
@@ -118,7 +110,7 @@ checkLogin();
         <?= json_encode($_SESSION['theme'], JSON_UNESCAPED_UNICODE); ?>
     </script>
     <?php include "../scripts/scriptjs.html"; ?>
-    <?php include "../scripts/scriptjs-building.html"; ?>
+    <?php include "../scripts/scriptjs-management-groups.html"; ?>
 </body>
 
 </html>
