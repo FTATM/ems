@@ -5,12 +5,13 @@
     let groups = [];
     let types = [];
     let result = ['1', '3'];
+    let lastSelectValueTime = '0';
     let refreshIntervalId;
 
-    // ดึงค่าตัวแปรจาก URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const typeMeter = urlParams.get('type');
-    const groupID = urlParams.get('groupID');
+    const typeMeterID = "<?=$_SESSION['tid'];?>";
+    const groupID = "<?=$_SESSION['gid'];?>";
+
+    console.log(typeMeterID, typeof (typeMeterID), groupID, typeof (groupID));
 
     document.addEventListener("DOMContentLoaded", async () => {
         showLoading();
@@ -45,7 +46,7 @@
 
     function filterMeters() {
         filteredMeters = Object.values(meters).filter(m => {
-            return m.group_id === groupID;
+            return m.group_id === groupID && m.meter_type_id === typeMeterID;
         });
         let select = document.getElementById('select-meters');
         select.innerHTML = '<option>=== <?=$lang["select"]?> === </option>';
@@ -77,10 +78,10 @@
                 data: Datafiltered,
             }
         });
+
         updateData(filteredDataInMeters);
 
     }
-
 
     function updateData(filteredDataInMeters) {
         const LinearchartData = [];
@@ -90,6 +91,10 @@
         let select = document.getElementById('select-meters');
         const selectedMeter = filteredDataInMeters[parseInt(select.value) - 1];
 
+        if (lastSelectValueTime !== select.value && (selectedMeter.data['1']?.length ?? 0) < 1) {
+            alertMessages('warning', "No Data Available", "No data was found for the selected period. Please choose a different timeframe.", 5000, true);
+            lastSelectValueTime = select.value;
+        }
         // show infomation in table
         generateInfomation(selectedMeter);
 

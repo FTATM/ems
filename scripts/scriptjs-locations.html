@@ -46,8 +46,11 @@
         img.setAttribute('src', '../assets/images/provinces/' + name + '.png');
     }
 
-    function goToGroups(id) {
-        window.location.href = 'groups.php?locate=' + parseInt(id);
+    async function goToGroups(id) {
+        let success = await setSession('lid', id);
+        if (success) {
+            window.location.href = 'groups.php';
+        }
     }
 
 </script>

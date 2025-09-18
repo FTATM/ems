@@ -12,7 +12,7 @@ include "../config/connect.php";
 $id = $_POST['id'] ?? null;
 $name = $_POST['name'] ?? null;
 $is_active = $_POST['is_active'] == "on" ? 1 : 0;
-$room_id = $_POST['room_id'] ?? null;
+$group_id = $_POST['group_id'] ?? null;
 $protocol = $_POST['select_protocol'] ?? null;
 $dns = $_POST['dns'] ?? null;
 $port = $_POST['port'] ?? null;
@@ -26,6 +26,9 @@ $stop_bits = $_POST['stop_bits'] ?? null;
 $slave_id = $_POST['slave_ID'] ?? null;
 $address = $_POST['address'] ?? null;
 $quality = $_POST['quality'] ?? null;
+$x = $_POST['x'] ?? null;
+$y = $_POST['y'] ?? null;
+$z = $_POST['z'] ?? null;
 
 if (!$id) {
     echo json_encode(['success' => false, 'message' => 'ไม่พบมิเตอร์นี้']);
@@ -33,8 +36,8 @@ if (!$id) {
 }
 
 
-$stmt = $conn->prepare("UPDATE meter SET name = ?, is_active = ?, room_id = ?, protocol = ?, dns = ?, port = ?, ip_address = ?, submask = ?, serial_port = ?, buad_rate = ?, data_bits = ?, parily = ?, stop_bits = ?, slave_id = ?, address = ?, quality = ?  WHERE id = ?");
-$stmt->bind_param( "siississsiiisiisi", $name, $is_active, $room_id, $protocol, $dns, $port, $ip, $submask, $serialport, $buad_rate, $data_bits, $parily, $stop_bits, $slave_id, $address, $quality, $id);
+$stmt = $conn->prepare("UPDATE meter SET name = ?, is_active = ?, group_id = ?, protocol = ?, dns = ?, port = ?, ip_address = ?, submask = ?, serial_port = ?, buad_rate = ?, data_bits = ?, parily = ?, stop_bits = ?, slave_id = ?, address = ?, quality = ?, x = ?, y = ?, z = ? WHERE id = ?");
+$stmt->bind_param( "siississsiiisiisiiii", $name, $is_active, $group_id, $protocol, $dns, $port, $ip, $submask, $serialport, $buad_rate, $data_bits, $parily, $stop_bits, $slave_id, $address, $quality, $x, $y, $z, $id);
 // ทำการ execute
 if ($stmt->execute()) {
     echo json_encode(['success' => true, 'message' => 'อัปเดตข้อมูลสำเร็จ']);

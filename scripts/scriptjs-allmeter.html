@@ -1,58 +1,131 @@
 <script>
-    AllMeters = [];
-    type = [];
+    let meters = [];
+    let filteredMeters = [];
+    let filteredDataInMeters = [];
+    let types = [];
+    let locations = [];
+    let groups = [];
+    const rowsPerPage = 10;
+    let currentPage = 1;
+    let refreshIntervalId;
 
+    const typeMeterID = "<?=$_SESSION['tid'];?>";
+    const groupID = "<?=$_SESSION['gid'];?>";
+
+    console.log("type : ", typeMeterID, "group : ", groupID);
     document.addEventListener("DOMContentLoaded", async () => {
-        await fetchMetersData();
-        // เริ่มแสดงหน้าแรก
-        renderTablePage(AllMeters, currentPage);
-    })
+        showLoading();
+        await process();
+        setRefreshTime();
+        hideLoading();
+    });
 
-    async function fetchMetersData() {
+    async function fetchAll() {
+
+
+        let res_location = await fetch("../config/fetch-locations.php");
+        let json_location = await res_location.json();
+        locations = json_location.data;
+
+        let res_group = await fetch("../config/fetch-groups.php");
+        let json_group = await res_group.json();
+        groups = json_group.data;
+
         let response = await fetch("../config/fetch-meters.php");
         let json = await response.json();
-        AllMeters = Object.values(json.data);
+        meters = Object.values(json.data);
 
         let responsetype = await fetch("../config/fetch-data_type.php");
         let jsontype = await responsetype.json();
-        type = jsontype.data;
+        types = jsontype.data;
     }
 
-    const rowsPerPage = 10;
-    let currentPage = 1;
+    async function process() {
+        await fetchAll();
+        await createTable();
+        await filterMeters();
+    }
 
-    function renderTablePage(data, page) {
+    function filterMeters() {
+        filteredMeters = Object.values(meters).filter(m => {
+            return m.group_id === groupID && m.meter_type_id === typeMeterID;
+        });
+        filteredMeters = groupID === 0 ? meters : filteredMeters;
+
+        filterDataInMeters();
+    }
+
+    function filterDataInMeters() {
+        const time = document.getElementById('select-filter-value');
+        let now = new Date();
+        let selectedDateTime = new Date(now.getTime() - parseInt(10, 10) * 60000);
+        filteredDataInMeters = Object.values(filteredMeters).map(fm => {
+            let Datafiltered = {};
+            Object.entries(fm.data).map(([key, rows]) => {
+                Datafiltered[key] = Object.values(rows).filter(datatype => {
+                    let date = new Date(datatype.create_date);
+                    return date >= selectedDateTime;
+                });
+            });
+            return {
+                ...fm,
+                data: Datafiltered,
+            }
+        });
+        updateData(currentPage);
+    }
+
+    function createTable() {
         const table = document.getElementById("table-meter");
-        table.innerHTML = ""; // clear
+        table.querySelector('thead').innerHTML = "";
 
-        // สร้างหัวตาราง (thead)
-        const thead = document.createElement("thead");
         const headerRow = document.createElement("tr");
-        headerRow.innerHTML = `<th class="text-white" style="background-color:#001B5E;">ชื่อมิเตอร์</th>`;
+        headerRow.innerHTML = `
+            <th class="text-white" style="min-width:180px; background-color:#001B5E;"><?=$lang['nmeters']?></th>
+            <th class="text-white" style="background-color:#001B5E;"><?=$lang['location']?></th>
+            <th class="text-white" style="background-color:#001B5E;"><?=$lang['group']?>/<?=$lang['project']?></th>
+            <th class="text-white text-center" style="background-color:#001B5E;"><?=$lang['ip']?></th>
+            <th class="text-white text-center" style="background-color:#001B5E;"><?=$lang['port']?></th>
+            <th class="text-white text-center" style="background-color:#001B5E;"><?=$lang['protocol']?></th>
+        `;
 
-        type.forEach(col => {
+        types.forEach(col => {
             const th = document.createElement("th");
             th.style.backgroundColor = '#001B5E';
+            th.style.whiteSpace = "nowrap";
+            th.className = "text-center";
             th.style.color = 'white';
             th.textContent = col.name;
             headerRow.appendChild(th);
         });
 
-        thead.appendChild(headerRow);
-        table.appendChild(thead);
+        table.querySelector('thead').appendChild(headerRow);
+    }
+
+    function updateData(page) {
+        const table = document.getElementById("table-meter");
+        table.querySelector('tbody').innerHTML = ""; // clear
+
 
         // slice ข้อมูลเฉพาะหน้าปัจจุบัน
         const start = (page - 1) * rowsPerPage;
         const end = start + rowsPerPage;
-        const pageData = data.slice(start, end);
+        const pageData = filteredDataInMeters.slice(start, end);
 
-        const tbody = document.createElement("tbody");
         pageData.forEach(meter => {
             const tr = document.createElement("tr");
-            tr.innerHTML = `<td>${meter.name}</td>`;
+            tr.innerHTML = `
+            <td>${meter.name}</td>
+            <td class="text-center">${getNameLocation(meter.group_id)}</td>
+            <td class="text-center">${getNameGroup(meter.group_id)}</td>
+            <td class="text-center">${meter.ip_address}</td>
+            <td class="text-center">${meter.port}</td>
+            <td class="text-center">${meter.protocol}</td>
+            `;
 
             Object.values(meter.data).forEach(column => {
                 const td = document.createElement("td");
+                td.className = "text-center";
                 if (Array.isArray(column) && column.length > 0) {
                     const last = column[column.length - 1];
                     td.textContent = last.value; // หรือ `${last.id}` ได้ตามต้องการ
@@ -61,13 +134,10 @@
                 }
                 tr.appendChild(td);
             });
-
-            tbody.appendChild(tr);
+            table.querySelector('tbody').appendChild(tr);
         });
 
-        table.appendChild(tbody);
-
-        renderPagination(data.length, page);
+        renderPagination(meters.length, page);
     }
 
     function renderPagination(totalRows, currentPage) {
@@ -80,13 +150,43 @@
             const btn = document.createElement("button");
             btn.className = `btn btn-sm text-white`;
             btn.style.backgroundColor = `${i === currentPage ? '#001B5E' : '#555555'}`;
-
             btn.textContent = i;
             btn.addEventListener("click", () => {
-                renderTablePage(AllMeters, i);
+                updateData(i);
             });
             paginationDiv.appendChild(btn);
         }
     }
 
+    function getNameLocation(gid) {
+        return locations.find(l => {
+            return groups.filter(g => {
+                return g.id === gid;
+            })
+        }).name;
+    }
+
+    function getNameGroup(id) {
+        return groups.find(g => {
+            return g.id === id;
+        }).name;
+    }
+
+    function setRefreshTime() {
+        const inputRefresh = document.getElementById('input-refresh');
+        const refreshTime = parseInt(inputRefresh.value, 10);
+        if (isNaN(refreshTime) || refreshTime < 1 || refreshTime > 60) {
+            alertMessages('error', 'Error', 'Please enter a valid refresh time between 1 and 30 seconds.');
+            return;
+        }
+        // เคลียร์ interval เก่า
+        clearInterval(refreshIntervalId);
+
+        console.log("Setting refresh time to:", refreshTime);
+
+        // ตั้ง interval ใหม่
+        refreshIntervalId = setInterval(() => {
+            process();
+        }, refreshTime * 1000);
+    }
 </script>

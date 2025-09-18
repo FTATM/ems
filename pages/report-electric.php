@@ -11,7 +11,7 @@ checkLogin();
 
 <head>
     <meta charset="UTF-8">
-    <title><?= $lang['allmeter'] ?> - EMS</title>
+    <title><?= $lang['report'] ?> - EMS</title>
 </head>
 
 <body style="background-color: <?= $bg ?>; color: <?= $text ?>!important; min-height: 100svh;">
@@ -23,25 +23,26 @@ checkLogin();
                 <div class="justify-content-center align-items-center d-flex flex-column gap-2" style="width: 90%;">
                     <div class="d-flex bg-white bg-opacity-10 p-3 w-100">
                         <div class="w-25">
-                            <h4>Choose Data</h4>
+                            <h4 class="text-center"><?= $lang['choosedate'] ?></h4>
 
-                            <label for="select-location">Location</label>
-                            <select id="select-location" class="form-select" onchange="checkLocationAndCreateSelect()">
+                            <h4 class="me-2 fw-semibold"><?=$lang['meter']?></h4>
+                            <select id="select-meter-show" class="form-select" onchange="loadingChart()">
+                                <option>No value</option>
                             </select>
-
-                            <label for="select-group">Group</label>
-                            <select id="select-group" class="form-select" onchange="loadingChart()">
-                                <option value="-"> - </option>
-                            </select>
-
-                            <label for="datetime-from">From</label>
-                            <input id="datetime-from" type="date" class="form-control" value="2025-08-01" onchange="loadingChart()">
-
-                            <label for="datetime-to">To</label>
-                            <input id="datetime-to" type="date" class="form-control" value="2025-08-16" onchange="loadingChart()">
+                            <div class="d-flex my-2">
+                                <div class="w-50 pe-1">
+                                    <h4><?= $lang['from'] ?></h4>
+                                    <input id="datetime-from" type="date" class="form-control form-control-sm" value="2025-09-14" onchange="filterMeters()">
+                                </div>
+                                <div class="w-50 ps-1">
+                                    <h4><?= $lang['to'] ?></h4>
+                                    <input id="datetime-to" type="date" class="form-control form-control-sm" value="2025-09-14" onchange="filterMeters()">
+                                </div>
+                            </div>
                         </div>
-
-                        <div class="w-75 p-2" id="linear-chart">
+                        <div class="w-75 d-flex flex-column" style="height: 400px;">
+                            <h3 class="w-100 text-center"><?= $lang['preview'] ?></h3>
+                            <div class="p-2 flex-fill" id="linear-chart"></div>
                         </div>
                     </div>
                     <div class="bg-white bg-opacity-10 p-3 w-100">
@@ -63,7 +64,8 @@ checkLogin();
 
                             <!-- Select Rows -->
                             <div class="d-flex align-items-center">
-                                <label for="select-table-show" class="me-2 mb-0 fw-semibold">Rows :</label>
+
+                                <label for="select-table-show" class="me-2 mb-0 ms-2 fw-semibold">Rows :</label>
                                 <select id="select-table-show" class="form-select form-select-sm w-auto" onchange="ReloadTable()">
                                     <!-- <option value="all">All</option> -->
                                     <option selected value="5">5</option>

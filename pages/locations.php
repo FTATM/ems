@@ -33,7 +33,7 @@ checkLogin();
                     </table>
                 </div>
                 <div class="w-25 justify-content-center d-flex border" style="min-height: 70svh;">
-                    <img id="img-showLocation" width="100%" height="100%" style="max-height: 650px;">
+                    <img id="img-showLocation" src="../assets/images/provinces/Thailand.png" width="100%" height="100%" style="max-height: 650px;">
                 </div>
             </div>
         </div>
