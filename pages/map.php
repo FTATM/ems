@@ -22,11 +22,17 @@ checkLogin();
             <?php include "../components/header.php"; ?>
             <div class="w-100 justify-content-center align-items-center d-flex">
                 <div class="justify-content-center align-items-center d-flex flex-column" style="width: 90%;">
-                    <h2 class="w-100 text-center py-4 m-0 bg-secondary bg-opacity-10"><?= $lang['overview'] ?></h2>
+                    <div class="w-100 text-center py-4 px-5 m-0 my-2 bg-secondary bg-opacity-25 d-flex justify-content-center position-relative">
+                        <h2 class="m-0">Overview</h2>
+                        <div class="d-flex gap-2 align-items-center position-absolute end-0 me-5">
+                            <label for="input-refresh" class="form-label form-label-sm text-end text-nowrap">Refresh every :</label>
+                            <input type="number" id="input-refresh" class="form-control form-control-sm ms-2" style="width: 80px;" value="15" min="1" max="30" onchange="setRefreshTime()">
+                            <label for="input-refresh" class="form-label form-label-sm">Seconds</label>
+                        </div>
+                    </div>
                     <div class="d-flex w-100 justify-content-center" style="height: 80svh;">
                         <div class="w-25 px-5 bg-light bg-opacity-10 shadow-sm d-flex flex-column gap-2">
-                            <h3 class="w-100 text-center my-4" id="name-building">-</h3>
-                            <select id="select-meter" class="form-select form-select-sm" style="display: none;" onchange="showValueOnView()"></select>
+                            <h3 class="w-100 text-center my-4" id="name-meter">-</h3>
                             <div class="w-100 border mb-3" id="gauge-kW" style="min-height: 20%;"></div>
                             <div class="w-100 d-flex gap-2">
                                 <div>
@@ -76,7 +82,7 @@ checkLogin();
                             </div>
                             <div class="position-absolute w-25 bg-light bg-opacity-10 px-3 py-2 rounded flex-column gap-2" id="infomation-meter" style="top: 10px; right: 10px; display: none;">sadagsd</div>
                         </div>
-                        <div class="w-25 px-5 bg-white bg-opacity-10 shadow-sm d-flex flex-column gap-1" id="listbuilding">
+                        <div class="w-25 px-3 bg-white bg-opacity-10 shadow-sm d-flex flex-column gap-1" id="listgroup">
                         </div>
                     </div>
                 </div>

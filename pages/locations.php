@@ -18,38 +18,6 @@ checkLogin();
     <div id="main" class="d-flex">
         <div class="w-100 h-100 d-flex flex-column justify-content-center">
             <?php include "../components/header.php"; ?>
-<<<<<<< Updated upstream
-            <div class="bg-secondary bg-opacity-25 d-flex flex-column pt-5 align-items-center" style="min-height: 80svh;">
-                <div class="my-5 text-center fs-1 fw-bolder">Location Management</div>
-                <div class="w-80 justify-content-center d-flex flex-column">
-                    <div class="container mb-2 text-end">
-                        <input class=" btn btn-primary bg-primary w-10" value="create" onclick="openNewLocationModal()">
-                    </div>
-                    <table id="table-location" class="container table table-bordered table-striped" style=" width: 100%; height: 90%;">
-                    </table>
-                </div>
-                <div id="pagination" class="mt-3 d-flex gap-2 justify-content-center" style="height: 10%;"></div>
-            </div>
-        </div>
-    </div>
-    <!-- 🔧 Modal เพิ่ม -->
-    <div class="modal fade" id="newLocationModal" tabindex="-1" aria-labelledby="newLocationModalLabel">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">สร้างตำแหน่งใหม่</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="ปิด"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="newName" class="form-label">ชื่อใหม่</label>
-                        <input type="text" class="form-control text-black" id="newName">
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
-                    <button type="button" class="btn btn-primary" onclick="submitNewLocation()">บันทึก</button>
-=======
             <div class="d-flex justify-content-center mt-3">
                 <div class="w-50 border border-end-0">
                     <table id="table-location" class="w-100 table-striped table table-borderless bg-light bg-opacity-10 mb-0 w-25">
@@ -64,8 +32,7 @@ checkLogin();
                     </table>
                 </div>
                 <div class="w-25 justify-content-center d-flex border" style="min-height: 70svh;">
-                    <img id="img-showLocation" width="100%" height="100%" style="max-height: 650px;">
->>>>>>> Stashed changes
+                    <img id="img-showLocation" src="../assets/images/provinces/Thailand.png" width="100%" height="100%" style="max-height: 650px;">
                 </div>
             </div>
         </div>

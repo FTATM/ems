@@ -5,21 +5,22 @@
   let buildings = [];
   let rooms = [];
   let filtermeters = [];
-  let buildingAndMeterFilter = [];
   let boxMeshes = {};
   let refreshIntervalId; // เก็บ interval id
-  let location_id = "1"; // กำหนดค่าเริ่มต้นเป็น null
   let firstLoading = true;
+
+  const typeMeterID = "<?=$_SESSION['tid'];?>";
+  const groupID = "<?=$_SESSION['gid'];?>";
+
   document.addEventListener("DOMContentLoaded", async () => {
     await processData();
   });
 
   async function processData() {
     showLoading();
-    await fetchAll();
-    await stepRefreshData();
-    await refreshTime();
-    await loadBuilding(buildingAndMeterFilter[0].building.id);
+    await process();
+    await setRefreshTime();
+    await loadMeter(filtermeters[0].id);
     hideLoading();
   }
 
@@ -45,32 +46,18 @@
     rooms = jsonRoom.data;
   }
 
-  async function stepRefreshData() {
-    await filterData(location_id);
-    await generateListBuildings();
+  async function process() {
+    await fetchAll();
+    await filterData();
+    await generateListGroups();
   }
 
-  function filterData(location_id) {
-    let filterbuildings = [];
-    if (location_id) {
-      filterbuildings = buildings.filter((b) => b.location_id === location_id);
+  function filterData() {
+    if (groupID) {
+      filtermeters = Object.values(meters).filter((m) => m.group_id === groupID && m.meter_type_id === typeMeterID);
     } else {
-      filterbuildings = buildings;
+      filtermeters = Object.values(meters);
     }
-
-    buildingAndMeterFilter = Object.values(filterbuildings).map((b) => {
-      filtermeters = rooms.flatMap((r) => {
-        return Object.values(meters).filter((meter) => {
-          return r.id == meter.room_id && r.building_id == b.id;
-        });
-      });
-      return {
-        building: b,
-        meters: filtermeters,
-      };
-    });
-
-    // console.log(buildingAndMeterFilter);
   }
 
   function addHotspot(modelViewer, meter, slot, position, normal, label) {
@@ -155,45 +142,42 @@
   function generateListBuildings() {
     let list = document.getElementById("listbuilding");
     list.innerHTML = `
-      <h3 class="text-center my-4">Buildings</h3>
+      <h3 class="text-center my-4">Meters</h3>
     `;
-    Object.values(buildingAndMeterFilter).forEach((bm) => {
+    Object.values(filtermeters).forEach((m) => {
       let div = document.createElement("div");
-      div.className = "p-2 mx-2 d-flex justify-content-between";
-      div.style.backgroundColor = bm.building.is_active === "1" ? "rgba(64, 160, 64)" : "rgba(255, 255, 255, 0.2)";
+      div.className = "p-2 mx-2 d-flex justify-content-between clickable";
+      div.style.backgroundColor = m.is_active === "1" ? "rgba(64, 160, 64)" : "rgba(255, 255, 255, 0.2)";
       div.innerHTML = `
-        <h4 class="text-center">${bm.building.name}</h4>
-        <p class="text-center mb-0">${bm.building.is_active === "1" ? "Active" : "Inactive"}</p>
+        <h4 class="text-center">${m.name}</h4>
+        <p class="text-center mb-0">${m.is_active === "1" ? "Active" : "Inactive"}</p>
       `;
-      div.onclick = () => loadBuilding(bm.building.id);
+      div.onclick = () => loadMeter(m.id);
       list.appendChild(div);
     });
   }
 
   //add meter label to 3D model
-  function loadBuilding(id) {
+
+  function loadMeter(id) {
     // const modelViewer = document.getElementById("myModel");
     // modelViewer.src = "../assets/NY.glb";
 
     let imageViewer = document.getElementById('3d-viewer');
+    imageViewer.innerHTML = `
+      <img src="../assets/images/map.png" alt="My PNG" style="width: 100%; height: auto;">
+    `;
 
-
-    let selectMeter = document.getElementById('select-meter');
-    selectMeter.style.display = 'block';
-    selectMeter.innerHTML = `<option value="">-- Select Meter --</option>`;
-    buildingAndMeterFilter.flatMap(bm => {
-      if (bm.building.id == id) {
-        document.getElementById('name-building').textContent = "Building : " + bm.building.name;
-        bm.meters.forEach(meter => {
-          selectMeter.innerHTML += `<option ${firstLoading ? "selected" : ""} value="${meter.id}">${meter.name}</option>`;
-          firstLoading = false;
-
-          // addHotspot(modelViewer, meter, "hotspot-" + meter.id, `${meter.id * 50}m 25m -0m`, "0m 1m 0m", meter.name);
-          let div = document.createElement('div');
-          div.className = "point";
-          imageViewer.innerHTML += `<div class="point" style="top:${bm.building.id * 50}px; Left:${meter.id * 50}px;"></div>`;
-        });
+    filtermeters.flatMap(m => {
+      if (m.id == id) {
+        document.getElementById('name-meter').textContent = m.name;
+        firstLoading = false;
       }
+
+      // addHotspot(modelViewer, meter, "hotspot-" + meter.id, `${meter.id * 50}m 25m -0m`, "0m 1m 0m", meter.name);
+      let div = document.createElement('div');
+      div.className = "point";
+      imageViewer.innerHTML += `<div class="point" style="Left:${m.x}px; top:${m.z}px;" onclick="loadMeter(${m.id})">${m.id}</div>`;
       // else {
       //   bm.meters.forEach(meter => {
       //     deleteHotspot(modelViewer, "hotspot-" + meter.id);
@@ -201,24 +185,29 @@
       // }
 
     });
-    showValueOnView();
+    showValueOnView(id);
   }
 
-  function refreshTime() {
+  function setRefreshTime() {
+    const inputRefresh = document.getElementById('input-refresh');
+    const refreshTime = parseInt(inputRefresh.value, 10);
+    if (isNaN(refreshTime) || refreshTime < 1 || refreshTime > 60) {
+      alertMessages('error', 'Error', 'Please enter a valid refresh time between 1 and 30 seconds.');
+      return;
+    }
     // เคลียร์ interval เก่า
     clearInterval(refreshIntervalId);
 
-    console.log("กำลัง refresh ข้อมูล...");
+    console.log("Setting refresh time to:", refreshTime);
+
     // ตั้ง interval ใหม่
     refreshIntervalId = setInterval(() => {
-      stepRefreshData();
-    }, 30 * 1000);
+      process();
+    }, refreshTime * 1000);
   }
 
-  function showValueOnView() {
-    let selectMeter = document.getElementById("select-meter");
-    let selectedMeterId = selectMeter.value;
-    let meter = meters[selectedMeterId];
+  function showValueOnView(id) {
+    const meter = filtermeters.find(m => m.id === id);
     let lastIndex = meter?.data['7'].length - 1;
     let is_Null = meter?.data['7'][lastIndex]?.value ? true : false;
     let idsAndValues = {

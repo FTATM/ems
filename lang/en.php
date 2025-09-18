@@ -289,4 +289,16 @@ $lang = [
     "project" => "Project",
     "electrical" => "Electical",
     "water" => "Water",
+
+    "nmeters" => "Name meters",
+    "ip" => "IP",
+    "port" => "Port",
+    "protocol" => "Protocol",
+
+    "report" => "Report",
+    "preview" => "Preview",
+
+    "choosedate" => "Choose date",
+    "from" => "From",
+    "to" => "To",
 ];

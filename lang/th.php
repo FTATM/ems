@@ -289,4 +289,16 @@ $lang = [
     "project" => "โปรเจค",
     "electrical" => "ค่าไฟฟ้า",
     "water" => "ค่าน้ำ",
+
+    "nmeters" => "ชื่อมิเตอร์",
+    "ip" => "IP",
+    "port" => "Port",
+    "protocol" => "Protocol",
+
+    "report" => "รายงาน",
+    "preview" => "ตัวอย่าง",
+
+    "choosedate" => "เลือกวันเวลาของข้อมูล",
+    "from" => "จาก",
+    "to" => "ถึง",
 ];

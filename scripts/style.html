@@ -180,7 +180,8 @@
         transition: all 0.3s ease-in-out, padding 0.3s ease-in-out;
         padding: 10px;
         z-index: 999;
-        display: flex;
+        display: block;
+        position: fixed;
         top: 0;
         left: 0;
         box-shadow: 2px;
@@ -352,7 +353,7 @@
 
     .point {
         position: absolute;
-        background: rgba(7, 7, 7, 0.1);
+        background: rgba(7, 7, 7, 0.3);
         color: white;
         padding: 5px 10px;
         border-radius: 8px;
@@ -360,5 +361,9 @@
 
     .point:hover {
         background-color: rgba(0, 0, 0, 0.7);
+    }
+
+    .text {
+        color : white;
     }
 </style>

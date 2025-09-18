@@ -3,9 +3,8 @@
     let currentPage = 1;
     let locations = [];
     let groups = [];
+    let locationID = "<?=$_SESSION['lid'];?>";
 
-    const locationID = new URLSearchParams(window.location.search).get('locate') || '1';  // ได้ค่า เช่น "123"
-    console.log("locationID = ", locationID, "typeof =", typeof locationID);
     document.addEventListener("DOMContentLoaded", async () => {
         process();
     })
@@ -45,9 +44,9 @@
                     <td>${getNameLocation(locationID).name}</td>
                     <td>${row.name}</td>
                     <td class = "d-flex w-100 text-white justify-content-center gap-2">
-                        <button class="btn btn-light" value="<?=$lang['electrical']?>" onclick="reDirectTo('electrical',${row.id})"><?=$lang['electrical']?></button>
-                        <button class="btn btn-light" value="<?=$lang['water']?>" onclick="reDirectTo('water',${row.id})"><?=$lang['water']?></button>
-                        <button class="btn btn-light" value="<?=$lang['room']?>" onclick="reDirectTo('room',${row.id})"><?=$lang['room']?></button>
+                        <button class="btn btn-light" value="<?=$lang['electrical']?>" onclick="reDirectTo(1,${row.id})"><?=$lang['electrical']?></button>
+                        <button disabled class="btn btn-light" value="<?=$lang['water']?>" onclick="reDirectTo(2,${row.id})"><?=$lang['water']?></button>
+                        <button disabled class="btn btn-light" value="<?=$lang['room']?>" onclick="reDirectTo(3,${row.id})"><?=$lang['room']?></button>
                     </td>
                     `;
                 tbody.appendChild(tr);
@@ -62,8 +61,10 @@
         return locations.find(l => l.id === id);
     }
 
-    function reDirectTo(type, gid) {
-        window.location.href = "dashboard.php?type=" + type + "&groupID=" + gid;
+    async function reDirectTo(tid, gid) {
+        let a = await setSession('tid', tid);
+        let b = await setSession('gid', gid);
+        if (a && b) { window.location.href = "dashboard.php"; }
     }
 
     function renderPagination(totalRows, currentPage) {

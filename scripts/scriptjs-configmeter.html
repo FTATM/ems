@@ -108,9 +108,18 @@
             </div>
 
             <div class="w-100 mt-2 d-flex">
-                <div class="w-25 text-end"><h5>Room ID :</h5></div>
-                <div class="w-75 px-2"><input name="room_id" class="w-d-50 w-lg-25 form-control border-opcity-50" value="${meter.room_id}"></div>
+                <div class="w-25 text-end"><h5>Group ID :</h5></div>
+                <div class="w-75 px-2"><input name="group_id" class="w-d-50 w-lg-25 form-control border-opcity-50" value="${meter.group_id}"></div>
             </div>
+            <div class="w-100 mt-2 d-flex">
+                <div class="w-25 text-end"><h5>Postion (x, y, z) : </h5></div>
+                <div class="w-75 d-flex px-2 gap-2">
+                    <input name="x" class="form-control w-10 border-opcity-50" value="${meter.x}">
+                    <input name="y" class="form-control w-10 border-opcity-50" value="${meter.y}">
+                    <input name="z" class="form-control w-10 border-opcity-50" value="${meter.z}">
+                </div>
+            </div>
+            <hr>
            <div class="w-100 mt-2 d-flex">
                 <div class="w-25 text-end"><h5>Protocol :</h5></div>
                 <div class="w-75 px-2">
@@ -193,8 +202,8 @@
             </div>
 
             <div class="w-100 text-end my-2">
-                <input class="btn btn-sm btn-primary bg-opacity-50" onclick="updateMeter()" value="Save">
-                <input class="btn btn-sm btn-danger" value="Cancel">
+                <input class="btn btn-sm btn-primary bg-opacity-50 " onclick="updateMeter()" value="Save">
+                <input class="btn btn-sm btn-danger clickable" value="Cancel">
             </div>
         `;
             }

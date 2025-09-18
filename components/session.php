@@ -110,3 +110,19 @@ function buildthemeSwitchLink($targetheme)
     $query['theme'] = $targetheme;
     return '?' . http_build_query($query);
 }
+
+function setLocation($targetLocationID)
+{
+    $_SESSION['lid'] = $targetLocationID;
+}
+
+function setGroup($targetGroupID)
+{
+    $_SESSION['gid'] = $targetGroupID;
+}
+
+function setTypeMeter($targetTypeMeterID)
+{
+    $_SESSION['tmid'] = $targetTypeMeterID;
+}
+// ตั้งค่าเริ่มต้นถ้ายังไม่มี session

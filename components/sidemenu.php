@@ -1,8 +1,21 @@
 <div class="sidebar collapsed" id="sidebar" style="border-right: 1px solid #aaa; transition: width 0.3s ease, padding 0.3s ease; background-color: <?= $bgsec ?>;">
     <ul class="navbar-nav gap-2">
-        <div class="">
+        <div class="d-flex position-relative">
             <img src="../assets/images/logo.png" width="100%">
+            <button id="sidebar_close"
+                class="btn px-1 text-white position-absolute rounded-circle border"
+                style="padding: 0; top:0px; right:-25px; background-color: <?= $bg; ?>;">
+                <i class="bi bi-arrow-left w-100 h-100"></i>
+            </button>
         </div>
+        <li class="d-flex align-items-center gap-2">
+            <i class="bi bi-receipt"></i>
+            <span><a class="nav-link text" href="../pages/dashboard.php">Dashboard</a></span>
+        </li>
+        <li class="d-flex align-items-center gap-2">
+            <i class="bi bi-speedometer"></i>
+            <span><a class="nav-link text" href="../pages/allmeter.php">Allmeter</a></span>
+        </li>
         <li class="d-flex align-items-center gap-2">
             <i class="bi bi-house"></i>
             <span><a class="nav-link text" href="../pages/map.php"><?= $lang['overview'] ?></a></span>
@@ -22,6 +35,15 @@
         <li class="d-flex align-items-center gap-2">
             <i class="bi bi-speedometer"></i>
             <span><a class="nav-link text" href="../pages/gauge.php"><?= $lang['gauge'] ?></a></span>
+        </li>
+
+        <li class="d-flex align-items-center gap-2">
+            <i class="bi bi-house"></i>
+            <span><a class="nav-link text" href="../pages/home.php">home (not priolity)</a></span>
+        </li>
+        <li class="d-flex align-items-center gap-2">
+            <i class="bi bi-speedometer"></i>
+            <span><a class="nav-link text" href="../pages/phasor.php">Phasor (not priolity)</a></span>
         </li>
         <li class="gap-2">
             <button class="btn btn-link nav-link text px-0" data-bs-toggle="collapse" data-bs-target="#systemSubNav" aria-expanded="false">

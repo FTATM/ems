@@ -2,19 +2,22 @@
     let meters = [];
     let types = [];
     let locations = [];
-    let buildings = [];
-    let rooms = [];
+    let groups = [];
     let filtermeters = [];
     let filterDatas = [];
+
+    const typeMeterID = "<?=$_SESSION['tid'];?>";
+    const groupID = "<?=$_SESSION['gid'];?>";
+
     document.addEventListener("DOMContentLoaded", async () => {
-        await prepareData();
+        await process();
     });
 
-    async function prepareData() {
+    async function process() {
         showLoading();
         await fetchAll();
-        await createSelect('select-location', locations);
-
+        await filterMeters();
+        loadingChart();
         hideLoading();
     }
 
@@ -22,7 +25,6 @@
         let response = await fetch('../config/fetch-meters.php');
         let json = await response.json();
         meters = json.data;
-        console.log(meters);
 
         let responsetype = await fetch("../config/fetch-data_type.php");
         let jsontype = await responsetype.json();
@@ -36,55 +38,42 @@
         let jsonbuilding = await responsebuilding.json();
         buildings = jsonbuilding.data;
 
-        let responseRoom = await fetch("../config/fetch-rooms.php");
-        let jsonRoom = await responseRoom.json();
-        rooms = jsonRoom.data;
     }
 
-    async function checkLocationAndCreateSelect() {
-        let location = document.getElementById('select-location');
-        if (location.value == 'none') {
-            alertMessages('warning', 'Warning message', 'Location not selected.')
+    function createSelect(id, Values, selectFirst = false) {
+        if (!Values) {
+            alertMessages('error', "No data", "No data for create select please try again.");
             return;
         }
-        let buildingfilter = buildings.filter(rows => {
-            // console.log(rows, "element.value :" , location.value, rows.location_id == location.value);
-            return rows.location_id == location.value;
-        });
-
-        await createSelect('select-building', buildingfilter);
-    }
-
-    function createSelect(id, Values) {
         let select = document.getElementById(id);
+        let first = Values[0];
         select.innerHTML = `<option value = "none">-- Please select --</option>`;
         Values.forEach(value => {
             let option = document.createElement('option');
             option.value = value.id;
             option.textContent = value.name;
+            option.selected = selectFirst ? value.id === first.id ? "selected" : "" : "";
             select.appendChild(option);
         });
     }
 
-    async function CheckDateData() {
-        let location = document.getElementById('select-location');
-        if (location.value == 'none') {
-            alertMessages('warning', 'Warning message', 'Location not selected.')
-            return;
-        }
-        let building = document.getElementById('select-building');
-        filtermeters = rooms.flatMap(room => {
-            return Object.values(meters).filter(meter => {
-                return room.id == meter.room_id && room.building_id == building.value;
-            });
+    async function filterMeters() {
+        filtermeters = Object.values(meters).filter(m => {
+            return m.group_id === groupID && m.meter_type_id === typeMeterID;
         });
+        createSelect('select-meter-show', filtermeters, true);
+        await filterDataInMeters();
+    }
+
+    function filterDataInMeters() {
+
         let from = document.getElementById('datetime-from');
         let to = document.getElementById('datetime-to');
 
         const fromDate = new Date(from.value + " 00:00:00");  // เริ่มต้นวัน
         const toDate = new Date(to.value + " 23:59:59");    // สิ้นสุดวัน
 
-        const filterdatas = Object.values(filtermeters).map(meter => {
+        filterDatas = Object.values(filtermeters).map(meter => {
             const filteredValueColumn = {};
             Object.entries(meter.data).map(([colName, rows]) => {
                 filteredValueColumn[colName] = Object.values(rows).filter(row => {
@@ -101,26 +90,18 @@
                 data: filteredValueColumn
             };
         });
-        return filterdatas;
     }
 
     async function loadingChart() {
         let Data = [];
-        filterDatas = await CheckDateData();
         if (Object.values(filterDatas).length == 0) {
-            console.warn('No meter data found. Please select a new time range.');
-            alertMessages(
-                'warning',
-                'Warning',
-                'No meter data available for the current selection. Please choose a different time range.',
-                3000
-            );
+            alertMessages('warning', 'Warning', 'No meter data available for the current selection. Please choose a different time range.', 3000);
             return;
         }
-        Object.values(filterDatas).forEach(filterData => {
-            Data.push(...prepareLinearData(filterData, 1));
-        });
-        createLinearChart('linear-chart', "Preview data", Data);
+        let selectMeter = parseInt(document.getElementById('select-meter-show').value - 1);
+
+        Data.push(...prepareLinearData(filterDatas[selectMeter], 1));
+        createLinearChart('linear-chart', Data);
 
         ReloadTable();
     }
@@ -137,33 +118,25 @@
 
     function TableData(filterDatas, countShow) {
         let table = document.getElementById('table-data');
-        table.innerHTML = `
-            <thead>
-            </thead>
-            <tbody>
-            </tbody>`;
+        table.innerHTML = ` <thead> </thead> <tbody> </tbody>`;
         let trh = document.createElement('tr');
-        trh.innerHTML = `
-            <th>No.</th>
-            <th>Create Date</th>
-        `;
+        trh.innerHTML = ` <th>No.</th> <th>Create Date</th> `;
+
+        let selectMeter = parseInt(document.getElementById('select-meter-show').value - 1);
+
         types.forEach(type => {
             let th = document.createElement('th');
+            th.className = "text-nowrap";
             th.innerText = type.name;
             trh.appendChild(th);
         });
+
         table.querySelector('thead').appendChild(trh);
-        if (Object.values(filterDatas[0].data)[0].length == 0) {
-            console.warn('No meter data found. Please select a new time range.');
-            alertMessages(
-                'warning',
-                'Warning',
-                'No meter data available for the current selection. Please choose a different time range.',
-                3000
-            );
+        if (Object.values(filterDatas[selectMeter].data)[0].length == 0) {
+            alertMessages('warning', 'Warning', 'No meter data available for the current selection. Please choose a different time range.', 3000);
             return;
         }
-        var Datameter = filterDatas[0].data;
+        var Datameter = filterDatas[selectMeter].data;
         Datameter = Object.values(Datameter);
 
         //for by length of rows in database from meter 
@@ -175,9 +148,9 @@
                 <td>${Datameter[0][i].create_date}</td>
             `;
             for (let j = 0; j < types.length; j++) {
-                const type = types[j];
                 let td = document.createElement('td');
-                td.textContent = Datameter[j][i].value;
+                let val = Datameter[j]?.[i]?.value;
+                td.textContent = (val === undefined || isNaN(val)) ? '-' : val;
                 trd.appendChild(td);
             }
             table.querySelector('tbody').appendChild(trd);
@@ -222,11 +195,10 @@
         return chartData;
     }
 
-    function createLinearChart(idContainer, title, dataPointsLinear) {
+    function createLinearChart(idContainer, dataPointsLinear) {
         const chart = new CanvasJS.Chart(idContainer, {
             theme: 'dark2',
             backgroundColor: "#1B1C1D",
-            title: { text: title },
             axisX: { valueFormatString: "HH:mm:ss" },
             axisY2: {
                 title: "Median List Price",

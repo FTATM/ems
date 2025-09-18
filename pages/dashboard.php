@@ -28,7 +28,13 @@ include '../components/session.php';
                 </select>
                 <label for="select-filter-value">Last time : </label>
                 <select id="select-filter-value" class="form-select bg-secondary border-0 text-white" style="width: 10%;" onchange="filterMeters()">
+                    <option value="5">last 5 mins</option>
+                    <option value="10">last 10 mins</option>
+                    <option value="15">last 15 mins</option>
+                    <option value="30">last 30 mins</option>
                     <option selected value="60">last 1 hour</option>
+                    <option value="120">last 2 hours</option>
+                    <option value="480">last 4 hours</option>
                     <option value="1440">last 1 days</option>
                     <option value="4320">last 3 days</option>
                     <option value="10080">last 1 week</option>
