@@ -20,7 +20,7 @@ checkLogin();
         <div class="w-100 h-100 d-flex flex-column justify-content-center">
             <?php include "../components/header.php"; ?>
             <div class="bg-secondary bg-opacity-25 d-flex flex-column pt-5 align-items-center" style="min-height: 80svh;">
-                <div class="my-5 text-center fs-1 fw-bolder"><?= $lang['groupmnm'] ?></div>
+                <div class="my-5 text-center fs-1 fw-bolder"><?=$lang['choosegroup']?></div>
                 <table id="table-group" class="container table table-bordered table-striped" style="height: 90%;">
                     <thead class="text-center">
                         <tr>

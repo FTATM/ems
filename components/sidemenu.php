@@ -10,11 +10,15 @@
         </div>
         <li class="d-flex align-items-center gap-2">
             <i class="bi bi-receipt"></i>
-            <span><a class="nav-link text" href="../pages/dashboard.php">Dashboard</a></span>
+        <span><a class="nav-link text" href="../pages/dashboard.php"><?=$lang['dashboard']?></a></span>
         </li>
         <li class="d-flex align-items-center gap-2">
             <i class="bi bi-speedometer"></i>
-            <span><a class="nav-link text" href="../pages/allmeter.php">Allmeter</a></span>
+            <span><a class="nav-link text" href="../pages/allmeter.php"><?=$lang['allmeter']?></a></span>
+        </li>
+        <li class="d-flex align-items-center gap-2">
+            <i class="bi bi-speedometer"></i>
+            <span><a class="nav-link text" href="../pages/gauge.php"><?= $lang['gauge'] ?></a></span>
         </li>
         <li class="d-flex align-items-center gap-2">
             <i class="bi bi-house"></i>
@@ -22,7 +26,7 @@
         </li>
         <li class="d-flex align-items-center gap-2">
             <i class="bi bi-file-person"></i>
-            <span><a class="nav-link text" href="../pages/report-meter.php"><?= $lang['reportMeter'] ?></a></span>
+            <span><a class="nav-link text" href="../pages/report-meter.php"><?= $lang['reportsummary'] ?></a></span>
         </li>
         <li class="d-flex align-items-center gap-2">
             <i class="bi bi-receipt"></i>
@@ -30,16 +34,11 @@
         </li>
         <li class="d-flex align-items-center gap-2">
             <i class="bi bi-speedometer"></i>
-            <span><a class="nav-link text" href="../pages/gauge.php"><?= $lang['gauge'] ?></a></span>
+            <span><a class="nav-link text" href="../pages/phasor.php"><?=$lang['phasor']?></a></span>
         </li>
-
         <li class="d-flex align-items-center gap-2">
             <i class="bi bi-house"></i>
-            <span><a class="nav-link text" href="../pages/home.php">home (not priolity)</a></span>
-        </li>
-        <li class="d-flex align-items-center gap-2">
-            <i class="bi bi-speedometer"></i>
-            <span><a class="nav-link text" href="../pages/phasor.php">Phasor (not priolity)</a></span>
+            <span><a class="nav-link text" href="../pages/home.php">diagram</a></span>
         </li>
         <li class="gap-2">
             <button class="btn btn-link nav-link text px-0" data-bs-toggle="collapse" data-bs-target="#systemSubNav" aria-expanded="false">
