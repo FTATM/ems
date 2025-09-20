@@ -1,55 +1,93 @@
 <script>
     const rowsPerPage = 10;
     let currentPage = 1;
+    let meters = [];
+    let filteredDataInMeters = [];
     let locations = [];
-    let lastActiveElement = null;
+    let groups = [];
+    let types = [];
+
+
+    const typeMeterID = "<?=$_SESSION['tid'];?>";
+    const groupID = "<?=$_SESSION['gid'];?>";
     document.addEventListener("DOMContentLoaded", async () => {
         showLoading();
-        let response = await fetch("../config/fetch-locations.php");
-        let json = await response.json();
-        locations = Object.values(json.data);
-        renderTablePage(locations, currentPage);
+        await process();
         hideLoading();
     })
 
-    function renderTablePage(data, page) {
-        const table = document.getElementById("table-location");
-        table.innerHTML = ""; // clear
+    async function process() {
+        await fetchAll();
+        await filterMeters();
 
-        // สร้างหัวตาราง (thead)
-        const thead = document.createElement("thead");
-        const headerRow = document.createElement("tr");
-        headerRow.innerHTML = `
-        <th class="text-white w-25" style="background-color:#001B5E;"><?=$lang['id'];?></th>
-        <th class="text-white w-50" style="background-color:#001B5E;"><?=$lang['name'];?></th>
-        <th class="text-white w-15" style="background-color:#001B5E;"><?=$lang['action'];?></th>
-        `;
+    }
 
+    async function fetchAll() {
 
-        thead.appendChild(headerRow);
-        table.appendChild(thead);
+        let res_location = await fetch("../config/fetch-locations.php");
+        let json_location = await res_location.json();
+        locations = json_location.data;
 
-        // slice ข้อมูลเฉพาะหน้าปัจจุบัน
-        const start = (page - 1) * rowsPerPage;
-        const end = start + rowsPerPage;
-        const pageData = data.slice(start, end);
+        let res_group = await fetch("../config/fetch-groups.php");
+        let json_group = await res_group.json();
+        groups = json_group.data;
 
-        const tbody = document.createElement("tbody");
-        pageData.forEach(meter => {
-            const tr = document.createElement("tr");
+        let response = await fetch("../config/fetch-meters.php");
+        let json = await response.json();
+        meters = json.data;
 
-            tr.innerHTML = `
-            <td>${meter.id}</td>
-            <td>${meter.name}</td>
-            <td class = "d-flex ">
-                <input class="btn btn-sm btn-warning mx-3" value="Rename" onclick="openRenameModal(${meter.id}, '${meter.name}')">
-                <input class="btn btn-sm btn-danger mx-3" value="Delete" onclick="openDeleteModal(${meter.id})">
-            </td>
-            `;
-            tbody.appendChild(tr);
+        let responsetype = await fetch("../config/fetch-data_type.php");
+        let jsontype = await responsetype.json();
+        types = jsontype.data;
+    }
+
+    function filterMeters() {
+        const filteredMeters = Object.values(meters).filter(m => {
+            return m.group_id === groupID && m.meter_type_id === typeMeterID;
         });
 
-        table.appendChild(tbody);
+        filterDataInMeters(filteredMeters);
+    }
+
+    function filterDataInMeters(filteredMeters) {
+        let now = new Date();
+        let selectedDateTime = new Date(now.getTime() - 1.5 * 60000);
+        filteredDataInMeters = Object.values(filteredMeters).map(fm => {
+            let Datafiltered = {};
+            Object.entries(fm.data).map(([key, rows]) => {
+                Datafiltered[key] = Object.values(rows).filter(dy => {
+                    let date = new Date(dy.create_date);
+                    return date >= selectedDateTime;
+                });
+            });
+            return {
+                ...fm,
+                data: Datafiltered,
+            }
+        });
+
+        console.log("Data ready : ",filteredDataInMeters);
+    }
+
+    function setRefreshTime() {
+        const inputRefresh = document.getElementById('input-refresh');
+        const refreshTime = parseInt(inputRefresh.value, 10);
+        if (isNaN(refreshTime) || refreshTime < 1 || refreshTime > 60) {
+            alertMessages('error', 'Error', 'Please enter a valid refresh time between 1 and 30 seconds.');
+            return;
+        }
+        // เคลียร์ interval เก่า
+        clearInterval(refreshIntervalId);
+
+        console.log("Setting refresh time to:", refreshTime);
+
+        // ตั้ง interval ใหม่
+        refreshIntervalId = setInterval(() => {
+            process();
+        }, refreshTime * 1000);
+    }
+
+    function renderTablePage(data, page) {
 
         renderPagination(data.length, page);
     }
@@ -71,92 +109,5 @@
             });
             paginationDiv.appendChild(btn);
         }
-    }
-
-    function updateAction(id, action, value) {
-        let form = new FormData();
-        form.append("id", id);           // เพิ่ม id เข้าไปด้วย (จำเป็นสำหรับการอัปเดต)
-        form.append("action", action);      // เช่น form.append("status", "active")
-        form.append("value", value);
-
-        console.log("id : ", id, " | action : ", action, " |value : ", value);
-
-        fetch('../config/update-location.php', {
-            method: 'POST',
-            body: form
-        })
-            .then(response => response.json())  // แก้การเรียก .json() ให้ถูกต้อง
-            .then(data => {
-                if (data.success) {
-                    console.log("อัปเดตสำเร็จ:", data.message);
-                    window.location.reload(); // รีเฟรชหน้าเพื่อแสดงข้อมูลที่อัปเดต
-                } else {
-                    console.error("เกิดข้อผิดพลาด:", data.message);
-                }
-            })
-            .catch(error => {
-                console.error("ข้อผิดพลาดในการเชื่อมต่อ:", error);
-            });
-    }
-
-    function openRenameModal(id, currentName) {
-        lastActiveElement = document.activeElement;
-        document.getElementById('rename-id').value = id;
-        document.getElementById('new-name').value = currentName;
-        let modal = new bootstrap.Modal(document.getElementById('renameModal'));
-        modal.show();
-    }
-
-    async function submitRename() {
-        let id = document.getElementById('rename-id').value;
-        let newName = document.getElementById('new-name').value;
-
-        await updateAction(id, 'rename', newName);
-        bootstrap.Modal.getInstance(document.getElementById('renameModal')).hide();
-
-        // โฟกัสกลับไปที่ปุ่มที่เปิด modal
-        if (lastActiveElement) {
-            setTimeout(() => lastActiveElement.focus(), 300);
-        }
-        window.location.reload();
-    }
-
-    function openDeleteModal(id) {
-        lastActiveElement = document.activeElement;
-        document.getElementById('delete-id').value = id;
-        let modal = new bootstrap.Modal(document.getElementById('deleteModal'));
-        modal.show();
-    }
-
-    async function submitDelete() {
-        let id = document.getElementById('delete-id').value;
-
-        await updateAction(id, 'delete', 1); // value = 1 หมายถึงลบ
-        bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
-
-        // โฟกัสกลับไปที่ปุ่มที่เปิด modal
-        if (lastActiveElement) {
-            setTimeout(() => lastActiveElement.focus(), 300);
-        }
-        window.location.reload();
-    }
-
-    function openNewLocationModal() {
-        lastActiveElement = document.activeElement;
-        let modal = new bootstrap.Modal(document.getElementById('newLocationModal'));
-        modal.show();
-    }
-
-    async function submitNewLocation() {
-        let newName = document.getElementById('newName').value;
-
-        await updateAction('new', 'new', newName);
-        bootstrap.Modal.getInstance(document.getElementById('newLocationModal')).hide();
-
-        // โฟกัสกลับไปที่ปุ่มที่เปิด modal
-        if (lastActiveElement) {
-            setTimeout(() => lastActiveElement.focus(), 300);
-        }
-        window.location.reload();
     }
 </script>

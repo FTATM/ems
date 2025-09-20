@@ -11,7 +11,7 @@ checkLogin();
 
 <head>
     <meta charset="UTF-8">
-    <title><?= $lang['allmeter'] ?> - EMS</title>
+    <title><?= $lang['home'] ?> - EMS</title>
 </head>
 
 <body style="background-color: <?= $bg ?>; color: <?= $text ?>!important; min-height: 100svh;">
@@ -28,7 +28,7 @@ checkLogin();
         <?= json_encode($_SESSION['theme'], JSON_UNESCAPED_UNICODE); ?>
     </script>
     <?php include "../scripts/scriptjs.html"; ?>
-    <?php include "../scripts/scriptjs-location.html"; ?>
+    <?php include "../scripts/scriptjs-home.html"; ?>
 </body>
 
 </html>

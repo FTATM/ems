@@ -21,11 +21,12 @@ checkLogin();
             <?php include "../components/header.php"; ?>
             <div class="d-flex justify-content-center mt-3">
                 <div class="w-50 border border-end-0">
+                    <div class="my-5 text-center fs-1 fw-bolder"><?=$lang['chooselocate']?></div>
                     <table id="table-location" class="w-100 table-striped table table-borderless bg-light bg-opacity-10 mb-0 w-25">
                         <thead class="text-center">
                             <tr>
-                                <th class="fs-3">ID</th>
-                                <th class="fs-3"><?= $lang['location'] ?></th>
+                                <!-- <th class="fs-3">ID</th> -->
+                                <th class="fs-3"><?= $lang['name'] ?></th>
                             </tr>
                         </thead>
                         <tbody class="text-center">
@@ -33,7 +34,7 @@ checkLogin();
                     </table>
                 </div>
                 <div class="w-25 justify-content-center d-flex border" style="min-height: 70svh;">
-                    <img id="img-showLocation" src="../assets/images/provinces/Thailand.png" width="100%" height="100%" style="max-height: 650px;">
+                    <img id="img-showLocation" src="../assets/images/provinces/Thailand.png" width="100%" height="100%" style="max-height: 750px;">
                 </div>
             </div>
         </div>

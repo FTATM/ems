@@ -23,6 +23,10 @@ checkLogin();
                 <div class="w-90 d-flex flex-column">
                     <div class="px-4 d-flex justify-content-start my-3 gap-2 bg-white bg-opacity-10 py-3">
                         <div class="d-flex align-items-center gap-2" style="width: 15svw;">
+                            <label for="select-meters" class="form-label form-label-sm text-end w-75" style="max-width: 15vw;">Meter : </label>
+                            <select id="select-meters" class="form-select form-select-sm" onchange="checkTimeChange()"></select>
+                        </div>
+                        <div class="d-flex align-items-center gap-2" style="width: 15svw;">
                             <label for="select-time" class="form-label form-label-sm text-end w-50" style="max-width: 15vw;">Data last time :</label>
                             <select id="select-time" class="form-select form-select-sm w-50" onchange="checkTimeChange()">
                                 <option value="-">-- please select --</option>

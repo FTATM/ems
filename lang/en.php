@@ -220,7 +220,7 @@ $lang = [
     "confirmdelete" => "Confirm deleted",
     "textconfirmdelete" => "Are you want this",
 
-    "allmeter" => "All meter",
+    "allmeter" => "Overview meters",
     "typeofvalue" => "Type of value",
 
     "location" => "Location",
@@ -280,7 +280,7 @@ $lang = [
 
     "overview" => "Overview",
 
-    "reportMeter" => "Report Meter",
+    "reportsummary" => "Report Summary",
 
     "phasor"  => "Phasor",
 
@@ -299,6 +299,8 @@ $lang = [
     "preview" => "Preview",
 
     "choosedate" => "Choose date",
+    "chooselocate" => "Choose Location",
+    "choosegroup" => "Choose Group/project",
     "from" => "From",
     "to" => "To",
 ];
