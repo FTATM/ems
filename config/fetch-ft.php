@@ -8,10 +8,10 @@ include "../config/connect.php";
 
 
 
-$sql = "SELECT * FROM ft_rates ORDER BY id asc LIMIT 1";
+$sql = "SELECT * FROM ft_rates ORDER BY id desc LIMIT 1";
 $result = $conn->query($sql);
-
 $rows = [];
+
 
 if ($result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {

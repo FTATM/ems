@@ -19,7 +19,12 @@
             method: 'POST',
             body: formdata
         })
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return res.json();
+            })
             .then(data => {
                 if (data.success) {
                     alertMessages('success', 'เข้าสู่ระบบสำเร็จ', 'ยินดีต้อนรับคุณ ' + username, 2000);
@@ -29,6 +34,9 @@
                 } else {
                     alertMessages('error', 'ผิดพลาด', data.message, 2000);
                 }
+
+                console.log("fetch data complete :", data);
+
                 hideLoading();
             });
     }

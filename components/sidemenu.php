@@ -28,6 +28,12 @@
             <i class="bi bi-file-person"></i>
             <span><a class="nav-link text" href="../pages/report-meter.php"><?= $lang['reportsummary'] ?></a></span>
         </li>
+
+        <li class="d-flex align-items-center gap-2">
+            <i class="bi bi-file-person"></i>
+            <span><a class="nav-link text" href="../pages/report-meter-detail.php"><?= $lang['reportMeterDetail'] ?></a></span>
+        </li>
+
         <li class="d-flex align-items-center gap-2">
             <i class="bi bi-receipt"></i>
             <span><a class="nav-link text" href="../pages/report-electric.php"><?= $lang['reportelec'] ?></a></span>
@@ -40,6 +46,8 @@
             <i class="bi bi-house"></i>
             <span><a class="nav-link text" href="../pages/home.php">diagram</a></span>
         </li>
+
+
         <li class="gap-2">
             <button class="btn btn-link nav-link text px-0" data-bs-toggle="collapse" data-bs-target="#systemSubNav" aria-expanded="false">
                 <i class="bi bi-gear"></i> <?= $lang['system'] ?>
