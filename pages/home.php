@@ -20,6 +20,7 @@ checkLogin();
         <div class="w-100 h-100 d-flex flex-column justify-content-center">
             <?php include "../components/header.php"; ?>
             <div class="bg-secondary bg-opacity-25 d-flex flex-column pt-5 align-items-center" style="min-height: 80svh;">
+                <div id="list-meters" class="d-flex gap-2"></div>
             </div>
         </div>
     </div>

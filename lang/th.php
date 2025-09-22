@@ -284,7 +284,7 @@ $lang = [
 
     "phasor" => "เฟส",
 
-    "alltype" => "ชนิดของข้อมูลทั้งหมด", 
+    "alltype" => "ชนิดของข้อมูลทั้งหมด",
 
     "reportMeterDetail" => "รายงานรายละเอียดมิเตอร์",
 
@@ -305,4 +305,6 @@ $lang = [
     "choosegroup" => "เลือกหมวดหมู่หรือโปรเจค",
     "from" => "จาก",
     "to" => "ถึง",
+
+    "kiloHrMeter" => "KILOWATT - HOUR METER",
 ];
