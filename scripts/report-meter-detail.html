@@ -1,0 +1,1184 @@
+<script>
+  const valueAll = [];
+  let valueKwMorning = {} // value Kw
+  let valueKhwrMorning = {} // value Kwhr
+  let valueKvarMorning = {} // value Kvar 
+  let valuePfMorning = {} // value PF 
+  // ช่วงบาย 
+  let valueKwAfternoon = {};
+  let valuekWhrAfternoon = {};
+  let valueKvarAfternoon = {};
+  let vlauePfAfternoon = {};
+  // ช่วงเย็น 
+  let valueKwEvening = {};
+  let valuekWhrEvening = {};
+  let valueKvarEvening = {};
+  let valuePfEvening = {};
+  // ช่วงดึก
+  let valueKwNight = {};
+  let valuekWhrNight = {};
+  let valueKvarNight = {};
+  let valuePfNight = {};
+
+  meters = null;
+  // console.log('meters : ', meters)
+
+
+
+  document.addEventListener("DOMContentLoaded", async () => {
+    await fetchMeterData();
+    eventChekedMeter(); //  
+
+
+  });
+
+  async function fetchMeterData() {
+    try {
+      const response = await fetch("../config/fetch-meters.php");
+      console.log('Response Fetch Meter ===> :', response);
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      const ft = await fetch("../config/fetch-ft.php");
+      if (!ft.ok) {
+        throw new Error(`HTTP error! Status: ${ft.status}`);
+      }
+
+      ftData = await ft.json();
+      ftData = ftData.data[0]; // global variable
+      ft_value = ftData.ft_value;
+      meters = await response.json();
+      meters = meters.data; // global variable
+      console.log('All Meter Data ===> :', meters);
+      meter = meters["1"];
+
+      let meterLength = 18
+      for (let i = 0; i < meterLength; i++) {
+        valueAll.push(meter.data[i]) || [];
+      }
+      console.log('vlaue ALL Array list  querry type_id 2 ====> ', valueAll[2])
+      console.log('Kvar index of [5]', valueAll[5])
+      console.log('Kvar index of [5]', valueAll[5].length)
+
+      // Debug ก่อน get ข้อมูล 
+      const meterDataAfterN = valueAll[2][0];
+      // console.log('All data AfterN ======>', meterDataAfterN);
+
+      if (!meterDataAfterN || meterDataAfterN.length === 0) {
+        console.warn(' ไม่มีข้อมูลใน valueAll[1]');
+        valueKwAfternoon = { afternoon: [] };
+      } else {
+        // debug ก่อนกรอง
+        meterDataAfterN.forEach((item, idx) => {
+          const d = new Date(item.create_date);
+          // console.log(`index ${idx}: create_date=${item.create_date}, hours=${d.getHours()}, value=${item.value}`);
+        });
+      }
+
+    } catch (error) {
+      console.log('Meter fetched data Faild ===> ');
+    }
+  }
+
+  async function fetchDataTypes() {
+    const response = await fetch("../config/fetch-data_type.php");
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+    const dataTypes = await response.json();
+    meterKw = dataTypes['data'][0];
+    console.log('Meter Kw ===> ', meterKw);
+  }
+
+  function showDate() {
+    const showDeteday = document.getElementById("report-date-day");
+    if (!showDeteday?.value) {
+      console.log("Not selected date");
+      return;
+    }
+
+    const value = showDeteday.value;
+    const [year, month] = value.split("-");
+    const daysInMonth = new Date(year, month, 0).getDate();
+    const hr = 24;
+    const calculatedDays = daysInMonth * hr;
+    // console.log("Total hours in month:", calculatedDays);
+
+    // หลังจากเลือกวันที่แล้ว ให้โหลดตัวเลือก Meter
+    selectMeterDay();
+  }
+
+  function selectMeterDay() {
+    const meterSelect = document.querySelector('#select-meter-day');
+    meterSelect.innerHTML = '<option selected disabled>Select Meter</option>'; // เคลียร์ตัวเลือกเดิม 
+
+    Object.values(meters).forEach(mete => {
+      const option = document.createElement('option');
+      option.setAttribute('data-id', mete.id);
+      option.textContent = mete.name;
+      meterSelect.appendChild(option);
+    });
+  }
+
+  // chekde EventAll 
+  function eventChekedMeter() {
+    const meterSelect = document.querySelector('#select-meter-day');
+    meterSelect.addEventListener('change', function () {
+      const selectedOption = this.options[this.selectedIndex];
+      const meterId = selectedOption.getAttribute('data-id');
+      const meterName = selectedOption.textContent;
+
+      const resultMeter = document.getElementById('result-meter');
+      if (resultMeter) {
+        resultMeter.textContent = `คุณเลือก: ${meterName} ${meterId}`;
+      }
+
+      // console.log('Selected Meter:', meterId, meterName);
+
+      displayValueKw(meterId); // เรียกฟังก์ชันคำนวณหลังเลือก Meter
+
+      const morningData = getMorningValuesFromMeter(valueAll[1], 6, 12);
+      console.log(morningData.values);
+
+      const afternoonData = getAfternoonValuesFromMeter(valueAll[1], 12, 18);
+      console.log(afternoonData.values);
+
+      const eveningData = getEveningValuesFromMeter(valueAll[1], 18, 24);
+      console.log(eveningData.values);
+
+      const nightData = getNightValuesFromMeter(valueAll[1], 0, 6);
+      console.log(nightData.values);
+
+      
+
+ // <=============== check Event Kw ===============>
+
+      //eventKwMorning
+      function eventKwMorning() {
+        const kwMorning = document.getElementById('kw-for-morning');
+        const resultBathDemandKwMorning = document.getElementById('result-bath-kw-demand-for-morning');
+        const rateInput = document.getElementById('input-kw-for-morning'); // bath/DM 
+
+        if (!rateInput) {
+          console.warn('ไม่เจอ #value-input-kwhr-for-morning ใน DOM');
+          return;
+        }
+
+        rateInput.addEventListener('input', () => {
+          const rateValue = parseFloat(rateInput.value) || 0;
+          const kwValue = parseFloat(kwMorning.value) || 0; // ป้องกัน NaN
+          const calKwBathDm = (kwValue * rateValue).toFixed(4); // คูณ kW กับ Bath/DM
+          resultBathDemandKwMorning.value = calKwBathDm;
+        });
+      }
+      eventKwMorning();
+
+
+      //eventKwAfternoon
+      function eventKwAfternoon() {
+        const kwAfternoon = document.getElementById('kw-for-afternoon');
+        const resultBathDemandKwAfternoon = document.getElementById('result-bath-kw-demand-for-afternoon');
+        const rateInput = document.getElementById('input-kw-for-afternoon'); // bath/DM 
+
+        if (!rateInput) {
+          console.warn('ไม่เจอ #value-input-kw-for-afternoon ใน DOM');
+          return;
+        }
+
+        rateInput.addEventListener('input', () => {
+          const rateValue = parseFloat(rateInput.value) || 0;
+          const kwValue = parseFloat(kwAfternoon.value) || 0; // ป้องกัน NaN
+          const calKwBathDm = (kwValue * rateValue).toFixed(4); // คูณ kW กับ Bath/DM
+          resultBathDemandKwAfternoon.value = calKwBathDm;
+        });
+      }
+      eventKwAfternoon();
+
+
+      //eventKwEvening
+      function eventKwEvening() {
+        const kwEvening = document.getElementById('kw-for-evening');
+        const resultBathDemandKwEvening = document.getElementById('result-bath-kw-demand-for-evening');
+        const rateInput = document.getElementById('input-kw-for-evening'); // bath/DM 
+
+        if (!rateInput) {
+          console.warn('ไม่เจอ #value-input-kw-for-Evening ใน DOM');
+          return;
+        }
+
+        rateInput.addEventListener('input', () => {
+          const rateValue = parseFloat(rateInput.value) || 0;
+          const kwValue = parseFloat(kwEvening.value) || 0; // ป้องกัน NaN
+          const calKwBathDm = (kwValue * rateValue).toFixed(4); // คูณ kW กับ Bath/DM
+          resultBathDemandKwEvening.value = calKwBathDm;
+          console.log('resultBathDemandKwEvening ====> ', resultBathDemandKwEvening.value)
+        });
+      }
+      eventKwEvening();
+
+
+      //eventKwNight
+      function eventKwNight() {
+        const kwNight = document.getElementById('kw-for-night');
+        const resultBathDemandKwNight = document.getElementById('result-bath-kw-demand-for-night');
+        const rateInput = document.getElementById('input-kw-for-night'); // bath/DM 
+
+        if (!rateInput) {
+          console.warn('ไม่เจอ #value-input-kw-for-Night ใน DOM');
+          return;
+        }
+
+        rateInput.addEventListener('input', () => {
+          const rateValue = parseFloat(rateInput.value) || 0;
+          const kwValue = parseFloat(kwNight.value) || 0; // ป้องกัน NaN
+          const calKwBathDm = (kwValue * rateValue).toFixed(4); // คูณ kW กับ Bath/DM
+          resultBathDemandKwNight.value = calKwBathDm;
+          console.log('resultBathDemandKwNight ====> ', resultBathDemandKwNight.value)
+        });
+      }
+      eventKwNight();
+
+
+
+      // <=============== endEventKw ===============>
+
+      // event KwhrMorning
+      function eventkWhrMorning() {
+        const kwMorning = document.getElementById('kw-for-morning');
+        // const kwhrForMorning = document.getElementById('value-kWhr-for-morning');
+        const resultBathDemandKwMorning = document.getElementById('result-bath-kw-demand-for-morning');
+        const rateInput = document.getElementById('input-kw-for-morning'); // bath/DM 
+
+        if (!rateInput) {
+          console.warn('ไม่เจอ #value-input-kwhr-for-morning ใน DOM');
+          return;
+        }
+
+        rateInput.addEventListener('input', () => {
+          const rateValue = parseFloat(rateInput.value) || 0;
+          const kwValue = parseFloat(kwMorning.value) || 0; // ป้องกัน NaN
+          const calKwBathDm = (kwValue * rateValue).toFixed(4); // คูณ kW กับ Bath/DM
+          resultBathDemandKwMorning.value = calKwBathDm;
+        });
+
+
+
+        // rateInput.addEventListener('input', () => {
+        //   const rateValue = parseFloat(rateInput.value) || 0;
+        //   const resultDemandMorning = document.getElementById('result-bath-kw-demand-for-morning');
+        //   const resultElement = document.getElementById('result-bath-kWhr-for-morning');
+        //   const loadFactorElement = document.getElementById('value-load-factor-for-morning');
+
+        //   //  ดึง kWh และ Load Factor ช่วงเช้า
+        //   const morningData = getMorningValuesFromMeter(valueAll[2], 6, 12);
+
+        //   // เซ็ตค่า kWh ใน input
+        //   if (kwhrForMorning) kwhrForMorning.value = (morningData.kwhUsed || 0).toFixed(2);
+
+        //   //  คำนวณค่าไฟ   
+        //   const energyCostMorning = (morningData.kwhUsed || 0) * rateValue;
+        //   console.log('energyCostMorning ====> ',energyCostMorning)
+
+        //   //  อัปเดต DOM
+        //   if (resultElement) resultElement.value = energyCostMorning.toFixed(2);
+
+        //   if (loadFactorElement)
+        //     loadFactorElement.value = ((morningData.loadFactor || 0) * 100).toFixed(2);
+
+        //   //  คำนวณ calKwhr ปลอดภัย
+        //   let calKwhr = 0;
+        //   if (
+        //     resultElement && kwhrForMorning &&
+        //     parseFloat(kwhrForMorning.value) !== 0
+        //   ) {
+        //     calKwhr = parseFloat(
+        //       resultElement.value / kwhrForMorning.value
+        //     ).toFixed(4);
+        //   }
+
+        //   if (resultDemandMorning) {
+        //     resultDemandMorning.value = calKwhr;
+        //     console.log('resultDemandMorning ====> ', resultDemandMorning.value);
+        //   }
+
+        //   console.log(
+        //     "kWh:", morningData.kwhUsed,
+        //     "Load Factor:", ((morningData.loadFactor || 0) * 100).toFixed(2),
+        //     "ค่าไฟ:", energyCostMorning.toFixed(2)
+        //   );
+        // });
+      }
+
+      eventkWhrMorning();
+
+
+
+      function eventkWhrAfternoon() {
+        const kwhrForAfternoon = document.getElementById('value-kWhr-for-afternoon');
+        const rateInput = document.getElementById('value-input-kwhr-for-afternoon');
+
+        if (!rateInput) {
+          console.warn('ไม่เจอ #value-input-kwhr-for-afternoon ใน DOM');
+          return;
+        }
+
+        rateInput.addEventListener('input', () => {
+          const rateValue = parseFloat(rateInput.value) || 0;
+          const resultDemandAfternoon = document.getElementById('result-bath-kw-demand-for-afternoon');
+          const resultElement = document.getElementById('result-kwhr-for-afternoon');
+          const loadFactorElement = document.getElementById('value-load-factor-for-afternoon');
+
+          //  เรียกใช้ฟังก์ชันเพื่อดึง kWh และ Load Factor
+          const afternoonData = getAfternoonValuesFromMeter(valueAll[2], 12, 18);
+
+          // set kWh ลงช่อง
+          if (kwhrForAfternoon) kwhrForAfternoon.value = afternoonData.kwhUsed.toFixed(2);
+
+          //  คำนวณค่าไฟ   
+          const energyCostAfternoon = afternoonData.kwhUsed * rateValue;
+
+          //  อัปเดต DOM
+          if (resultElement) resultElement.value = energyCostAfternoon.toFixed(2);
+
+          if (loadFactorElement)
+            loadFactorElement.value = (afternoonData.loadFactor * 100).toFixed(2);
+
+          //  คำนวณ calkWhr อย่างปลอดภัย
+          let calkWhr = 0;
+          if (resultElement && kwhrForAfternoon && parseFloat(kwhrForAfternoon.value) !== 0) {
+            calkWhr = parseFloat(
+              resultElement.value / kwhrForAfternoon.value
+            ).toFixed(4);
+          }
+
+          if (resultDemandAfternoon) {
+            resultDemandAfternoon.value = calkWhr;
+            console.log('resultDemandAfternoon ====> ', resultDemandAfternoon.value);
+          }
+
+          console.log(
+            "kWh:", afternoonData.kwhUsed,
+            "Load Factor:", (afternoonData.loadFactor * 100).toFixed(2),
+            "ค่าไฟ:", energyCostAfternoon.toFixed(2)
+          );
+        });
+      }
+
+      eventkWhrAfternoon();
+
+      // dipslay kWhr Evening
+      function eventkWhrEvening() {
+        const kwhrForEvening = document.getElementById('value-kWhr-for-evening');
+        const rateInput = document.getElementById('value-input-kwhr-for-evening');
+
+        // ดึงค่าตั้งต้นก่อน
+        const eveningData = getEveningValuesFromMeter(valueAll[2], 18, 0) || { kwhUsed: 0, loadFactor: 0 };
+
+        if (kwhrForEvening) kwhrForEvening.value = (eveningData.kwhUsed || 0).toFixed(2);
+        console.log('kwhrForEvening is ? : ', kwhrForEvening);
+
+        rateInput.addEventListener('input', () => {
+          if (!rateInput) {
+            console.warn('ไม่เจอ #value-input-kwhr-for-evening ใน DOM');
+            return;
+          }
+
+          const resultDemandKwEvening = document.getElementById('result-bath-kWhr-everning');
+          const rateValueRaw = parseFloat(rateInput.value);
+          const rateValue = isNaN(rateValueRaw) ? 0 : rateValueRaw;
+
+          const eveningData = getEveningValuesFromMeter(valueAll[2], 18, 0) || { kwhUsed: 0, loadFactor: 0 };
+          const energyCostEvening = (eveningData.kwhUsed || 0) * rateValue; // คำนวณค่าไฟ   
+
+          // อัปเดต DOM
+          const resultElement = document.getElementById('result-bath-kw-demand-for-evening');
+          if (resultElement) resultElement.value = energyCostEvening.toFixed(2);
+
+          const loadFactorElement = document.getElementById('value-load-factor-for-evening');
+          if (loadFactorElement) loadFactorElement.value = ((eveningData.loadFactor || 0) * 100).toFixed(2);
+
+          // parse ก่อนค่อยหาร
+          const energyCost = parseFloat(resultElement?.value) || 0;
+          const kwhrValue = parseFloat(kwhrForEvening?.value) || 0;
+
+          if (kwhrValue > 0) {
+            const calkWhr = (energyCost / kwhrValue).toFixed(4);
+            resultDemandKwEvening.value = calkWhr;
+            console.log('cheked calkwhr is NaN ? ', isNaN(calkWhr));
+          } else {
+            resultDemandKwEvening.value = 0; // กันหาร 0
+          }
+
+          console.log(
+            "kWh:", eveningData.kwhUsed,
+            "Load Factor:", ((eveningData.loadFactor || 0) * 100).toFixed(2),
+            "ค่าไฟ:", energyCostEvening.toFixed(2)
+          );
+        });
+      }
+      eventkWhrEvening();
+
+
+      // dipslay kWhr Night
+
+      function eventkWhrNight() {
+        const rateInput = document.getElementById('value-input-kwhr-for-night');
+        rateInput.addEventListener('input', () => {
+          if (!rateInput) {
+            console.warn('ไม่เจอ #value-input-kwhr-for-night ใน DOM');
+            return;
+          }
+
+          const rateValue = parseFloat(rateInput.value) || 0;
+          const resultkWhrEvening = document.getElementById('result-bath-kWhr-for-night');
+
+          // ดึง kWh และ Load Factor
+          const nightData = getNightValuesFromMeter(valueAll[2], 0, 6);
+          const energyCostNight = nightData.kwhUsed * rateValue; // คำนวณค่าไฟ   
+
+          // อัปเดต DOM
+          const resultElement = document.getElementById('result-bath-kw-demand-for-night'); // display Result kWhr 
+          if (resultElement) resultElement.value = energyCostNight.toFixed(2);
+
+          const kwhrForNight = document.getElementById('value-kWhr-for-night');
+          if (kwhrForNight) kwhrForNight.value = nightData.kwhUsed.toFixed(2);
+
+          const loadFactorElement = document.getElementById('value-load-factor-for-night');
+          if (loadFactorElement) loadFactorElement.value = (nightData.loadFactor * 100).toFixed(2);
+
+          // ✅ คำนวณ calkWhr อย่างถูกต้อง
+          let calkWhr = 0;
+          if (resultElement && kwhrForNight && parseFloat(kwhrForNight.value) !== 0) {
+            calkWhr = parseFloat(resultElement.value / kwhrForNight.value).toFixed(4);
+          }
+
+          if (resultkWhrEvening) {
+            resultkWhrEvening.value = calkWhr;
+            console.log('resultkWhrEvening =====> ', resultkWhrEvening);
+          }
+
+          console.log("kWh:", nightData.kwhUsed,
+            "Load Factor:", (nightData.loadFactor * 100).toFixed(2),
+            "ค่าไฟ:", energyCostNight.toFixed(2));
+        });
+      }
+      eventkWhrNight();
+
+
+      // ดัก serviceInput 
+      const serviceInput = document.getElementById("value-input-service");
+      serviceInput.addEventListener('input', () => {
+        const serviceInputEl = parseFloat(serviceInput.value) || 0;
+        console.log('serviceInputEl : ', serviceInputEl)
+      });
+
+
+      //call Function 
+      services();
+      powerFactor(); // call Function 
+      calErectricTotal();
+
+    });
+
+  }
+
+  function showMeterTimeResult() {
+    const meterId = document.getElementById('select-meter-day').value;
+    const timePeriod = document.getElementById('time-select-for-day').value;
+    if (!meterId || !timePeriod) return;
+    const meterData = meters[meterId];
+    console.log('Meter Data:', meterData);
+  }
+
+  function DemandMorning() {
+    const kwMorning = document.getElementById('kw-for-morning');
+    const bathKwForMorning = document.getElementById('bath-kw-for-morning');
+    const resultKwForMorning = document.getElementById('result-kw-for-morning');
+    const resultKwhrForMorning = document.getElementById('result-kwhr-for-morning');
+
+    if (kwMorning != undefined && bathKwForMorning != undefined) {
+      kwMorning.value = kwMorning.value || 0;
+      bathKwForMorning.value = bathKwForMorning.value || 0;
+    }
+    const findMeter = Object.entries(meters).filter(([key, value]) => key === "1");
+    const MeterRow = findMeter[0][1];
+    console.log('MeterRow ===> :', MeterRow);
+    const meterData = MeterRow.data["1"];
+    const keepMeterData = [];
+    const DateList = [];
+    const DateValues = [];
+    const findCheckedMeter = meterData.forEach(meterItem => {
+      const hour = new Date(meterItem.create_date).getHours();
+      if (hour >= 6 && hour < 12) {
+        keepMeterData.push(meterItem);
+      }
+    });
+    console.log('type keepMeterData =====> ', typeof (keepMeterData));
+    console.log('keepMeterData ===> ', keepMeterData);
+    const getFinaly = keepMeterData.forEach(item => {
+      DateList.push(item.create_date);
+    });
+    const getValues = keepMeterData.forEach(valueDate => {
+      DateValues.push(valueDate.value)
+    });
+    const DateSumMorning = DateValues.reduce((acc, dateValue) => acc + parseFloat(dateValue), 0)
+    const averageDate = DateSumMorning / DateValues.length;
+    const TotalFinaly = averageDate.toFixed(4);
+    console.log('TotalFinal ===> ', TotalFinaly);
+  }
+
+
+  //function select meter '
+  function selectMeterMonth() {
+    const meterSelect = document.getElementById('select-meter-month');
+    meterSelect.innerHTML = '<option selected disabled>Meter List</option>';
+    Object.values(meters).forEach(mete => {
+      const option = document.createElement('option');
+      option.value = mete.id;
+      option.textContent = `${mete.name} ID : ${mete.id}`;
+      meterSelect.appendChild(option);
+    });
+  }
+
+
+  // Kw Morning 
+  function getMorningValues(meterDataFilter, startHour = 6, endHour = 12) {
+    if (!meterDataFilter || meterDataFilter.length === 0) return [0];
+    return meterDataFilter.filter(item => {
+      const hour = new Date(item.create_date.replace(' ', 'T')).getHours();
+      return hour >= startHour && hour < endHour;
+    })
+      .map(item => {
+        return item.value
+      });
+
+    // console.log('hour is =====> ', hour)
+  }
+
+
+  // Kw Afternoon
+  function getAfternoonValues(meterDataFilterAfternoon, startHour = 12, endHour = 18) {
+    return meterDataFilterAfternoon
+      .filter(item => {
+        const hour = new Date(item.create_date).getHours();
+        return hour >= startHour && hour < endHour;
+      })
+      .map(item => item.value);
+  }
+
+
+  // Kw Evening
+  function getEveningValues(meterDataFilterEvening, startHour = 18, endHour = 0) {
+    return meterDataFilterEvening
+      .filter(item => {
+        const hour = new Date(item.create_date).getHours();
+        // ถ้า endHour < startHour แสดงว่าข้ามวัน เช่น 18 → 0
+        if (endHour < startHour) {
+          return hour >= startHour || hour < endHour;
+
+        } else {
+          return hour >= startHour && hour < endHour;
+        }
+      })
+      .map(item => item.value);
+  }
+
+
+  // Kw Night
+  function getNightValues(meterDataFilterNight, startHour = 0, endHour = 6) {
+    if (!meterDataFilterNight) return [];
+    return meterDataFilterNight
+      .filter(item => {
+        const hour = new Date(item.create_date.replace(' ', 'T')).getHours();
+        // ถ้า endHour < startHour แสดงว่าช่วงเวลาข้ามวัน เช่น 18 → 0
+        if (endHour < startHour) {
+          return hour >= startHour || hour < endHour;
+        } else {
+          return hour >= startHour && hour < endHour;
+        }
+      })
+      .map(item => item.value);
+  }
+
+
+  const kwhrValueForMorning = parseFloat(document.getElementById('value-kWhr-for-morning').value || 0);
+  function displayValueKw() {
+    // Kw Morning
+    const valueKwMorning = { morning: getMorningValues(valueAll[1], 6, 12) };
+    const kwForMorning = document.getElementById('kw-for-morning');
+    const inputKwForMorning = document.getElementById('input-kw-for-morning');
+
+    const resultDemandKwMorning = document.getElementById('result-bath-kw-for-morning');
+    const resultBathMorning = document.getElementById('result-bath-kw-for-morning');
+
+    let maxValueKwMorning = 0;
+    if (valueKwMorning.morning.length > 0) {
+      maxValueKwMorning = valueKwMorning.morning.reduce((max, value) =>
+        value > max ? value : max, valueKwMorning.morning[0]);
+    }
+    if (kwForMorning) kwForMorning.value = parseFloat(maxValueKwMorning).toFixed(4) || 0;
+    // cal บาท/kWhr
+    // const calculated_kWhrForMorning = parseFloat(resultBathMorning / kwhrValueForMorning).toFixed(4)
+    // resultDemandKwMorning.value = parseFloat(calculated_kWhrForMorning).toFixed(4)
+    // // console.log(`f result kWhr (บาท)/kWhr : ${calculated_kWhrForMorning}`);
+
+
+    // Kw Afternoon
+    const valueKwAfternoon = { afternoon: getAfternoonValues(valueAll[1], 12, 18) };
+
+    const kwForAfternoon = document.getElementById('kw-for-afternoon');
+    const inputKwForAfternoon = document.getElementById('input-kw-for-afternoon');
+    const resultDemandKwAfternoon = document.getElementById('result-bath-kw-demand-for-afternoon');
+
+    let maxValueKwAfternoon = 0;
+    if (valueKwAfternoon.afternoon.length > 0) {
+      maxValueKwAfternoon = valueKwAfternoon.afternoon.reduce((max, value) =>
+        value > max ? value : max, valueKwAfternoon.afternoon[0]);
+    }
+    if (kwForAfternoon) kwForAfternoon.value = parseFloat(maxValueKwAfternoon).toFixed(4) || 0;
+
+    // Kw Evening
+    const valueKwEvening = { evening: getEveningValues(valueAll[1], 18, 0) };
+
+    const kwForEvening = document.getElementById('kw-for-evening');
+    const inputKwForEvening = document.getElementById('input-kw-for-evening');
+    const resultDemandKwEvening = document.getElementById('result-bath-kw-demand-for-evening');
+
+    let maxValueKwEvening = 0;
+    if (valueKwEvening.evening.length > 0) {
+      maxValueKwEvening = valueKwEvening.evening.reduce((max, value) =>
+        value > max ? value : max, valueKwEvening.evening[0]);
+    }
+    if (kwForEvening) kwForEvening.value = parseFloat(maxValueKwEvening).toFixed(4) || 0;
+
+    // Kw Night
+    const valueKwNight = { night: getNightValues(valueAll[1], 0, 6) };
+
+    const kwForNight = document.getElementById('kw-for-night');
+    const inputKwForNight = document.getElementById('input-kw-for-night');
+    const resultDemandKwNight = document.getElementById('result-bath-kw-demand-for-night');
+
+    let maxValueKwNight = 0;
+    if (valueKwNight.night.length > 0) {
+      maxValueKwNight = valueKwNight.night.reduce((max, value) =>
+        value > max ? value : max, valueKwNight.night[0]);
+    }
+    if (kwForNight) kwForNight.value = parseFloat(maxValueKwNight).toFixed(4) || 0;
+
+
+
+    // ฟังก์ชันคำนวณ Demand Cost
+    function bindDemandCost(inputElement, resultElement, maxValue) {
+      if (!inputElement || !resultElement) return; // ป้องกัน error ถ้า element ไม่มี
+      function calc() {
+        const val = parseFloat(inputElement.value) || 0;
+        resultElement.value = (val * maxValue).toFixed(4);
+      }
+      calc();
+      inputElement.addEventListener('input', calc);
+    }
+
+
+    // นำส่งค่าเข้ามาใช้
+    bindDemandCost(inputKwForMorning, resultDemandKwMorning, maxValueKwMorning);
+    bindDemandCost(inputKwForAfternoon, resultDemandKwAfternoon, maxValueKwAfternoon);
+    bindDemandCost(inputKwForEvening, resultDemandKwEvening, maxValueKwEvening);
+    bindDemandCost(inputKwForNight, resultDemandKwNight, maxValueKwNight);
+  }
+
+
+  //(kWhr) Erecticity Morning
+  // function getMorningValuesFromMeter(valueAll, startHour = 6, endHour = 12) {
+  //   if (!valueAll || valueAll.length === 0) 
+  //   return { kwhUsed: 0, hours: 0, maxKw: 0, loadFactor: 0 };
+
+  //   // กรองข้อมูลเฉพาะช่วงเวลา
+  //   const filtered = valueAll.filter(item => {
+  //     if (!item || !item.create_date) return false;
+  //     const hour = new Date(item.create_date.replace(' ', 'T')).getHours();
+  //     return hour >= startHour && hour < endHour;
+  //   });
+
+  //   // คำนวณ kWh ใช้จริง
+  //   let kwhUsed = 0;
+  //   for (let i = 1; i < filtered.length; i++) {
+  //     kwhUsed += parseFloat(filtered[i].value) - parseFloat(filtered[i - 1].value);
+  //   }
+
+  //   const hours = endHour - startHour;
+  //   const hourForMorning = document.getElementById('hour-for-morning');
+  //   if (hourForMorning) hourForMorning.value = parseFloat(hours).toFixed(2) || 0;
+
+  //   const kwhrForMorning = document.getElementById('value-kWhr-for-morning');
+  //   if (kwhrForMorning) kwhrForMorning.value = kwhUsed.toFixed(2);
+
+
+
+  //   // Max Load จาก DOM
+  //   const kwForMorning = document.getElementById('kw-for-morning');
+  //   const maxKw = kwForMorning ? parseFloat(kwForMorning.value) : 0;
+
+  //   // Load Factor
+  //   let loadFactor = 0;
+  //   if (maxKw > 0 && hours > 0) {
+  //     loadFactor = kwhUsed / (maxKw * hours);
+  //   }
+
+  //   const loadFactorPct = loadFactor * 100
+
+  //   console.log({
+  //     kwhUsed,
+  //     maxKw,
+  //     hours,
+  //     loadFactorRaw: loadFactor,      // เช่น 7.07
+  //     loadFactorPct                   // เช่น 707.10
+  //   });
+
+  //   return { kwhUsed, hours, maxKw, loadFactor, loadFactorPct };
+  // }
+
+  // (kWhr) Erecticity Morning 
+  function getMorningValuesFromMeter(valueAll, startHour = 6, endHour = 12) {
+    if (!valueAll || valueAll.length === 0)
+      return { kwhUsed: 0, hours: 0, maxKw: 0, loadFactor: 0, loadFactorPct: 0 };
+
+    // กรองข้อมูลเฉพาะช่วงเวลา
+    let filtered = valueAll.filter(item => {
+      if (!item || !item.create_date) return false;
+      const hour = new Date(item.create_date.replace(' ', 'T')).getHours();
+      return hour >= startHour && hour < endHour;
+    });
+
+    // เรียงข้อมูลตามเวลา
+    filtered.sort((a, b) => new Date(a.create_date) - new Date(b.create_date));
+
+    // คำนวณ kWh ใช้จริง
+    let kwhUsed = 0;
+    for (let i = 1; i < filtered.length; i++) {
+      const diff = parseFloat(filtered[i].value) - parseFloat(filtered[i - 1].value);
+      if (diff > 0) kwhUsed += diff; // กันค่าติดลบ
+    }
+
+    // คำนวณจำนวนชั่วโมง
+    let hours = endHour - startHour;
+    if (filtered.length > 1) {
+      hours = (new Date(filtered.at(-1).create_date) - new Date(filtered[0].create_date)) / (1000 * 60 * 60);
+    }
+
+    // ส่งค่าไป DOM
+    const hourForMorning = document.getElementById('hour-for-morning');
+    if (hourForMorning) hourForMorning.value = hours.toFixed(2);
+
+    const kwhrForMorning = document.getElementById('value-kWhr-for-morning'); // ✅ แก้ชื่อ
+    if (kwhrForMorning) kwhrForMorning.value = kwhUsed.toFixed(2);
+
+    // Max Load จาก DOM
+    const kwForMorning = document.getElementById('kw-for-morning');
+    const maxKw = kwForMorning ? parseFloat(kwForMorning.value) : 0;
+
+    // Load Factor
+    let loadFactor = 0;
+    if (maxKw > 0 && hours > 0) {
+      loadFactor = kwhUsed / (maxKw * hours);
+    }
+    const loadFactorPct = loadFactor * 100;
+
+    console.log({
+      kwhUsed,
+      maxKw,
+      hours,
+      loadFactorRaw: loadFactor,
+      loadFactorPct
+    });
+
+    return { kwhUsed, hours, maxKw, loadFactor, loadFactorPct };
+  }
+
+
+
+  //(kWhr) Erecticity Afternoon
+  function getAfternoonValuesFromMeter(valueAll, startHour = 12, endHour = 18) {
+    if (!valueAll || valueAll.length === 0)
+      return { kwhUsed: 0, hours: 0, maxKw: 0, loadFactor: 0, loadFactorPct: 0 };
+
+    // กรองข้อมูลตามเวลา
+    const filtered = valueAll.filter(item => {
+      if (!item || !item.create_date) return false;
+      const hour = new Date(item.create_date.replace(' ', 'T')).getHours();
+      return hour >= startHour && hour < endHour;
+    });
+
+    // หาค่า kWh ใช้ไป
+    let kwhUsed = 0;
+    for (let i = 1; i < filtered.length; i++) {
+      const prev = parseFloat(filtered[i - 1].value);
+      const current = parseFloat(filtered[i].value);
+      kwhUsed += (current - prev);
+    }
+    console.log('kwhUsed for afternoon =====> ', kwhUsed)
+
+    // คำนวณชั่วโมง
+    const hours = endHour - startHour;
+    const hourForAfternoon = document.getElementById('hour-for-afternoon');
+    if (hourForAfternoon) hourForAfternoon.value = hours.toFixed(2);
+
+    // อัปเดต DOM kWh
+    const kwhrForAfternoon = document.getElementById('value-kWhr-for-afternoon');
+    if (kwhrForAfternoon) kwhrForAfternoon.value = kwhUsed.toFixed(2);
+
+    // console.log('kwhrForAfternoon =======> ', kwhrForAfternoon ? kwhrForAfternoon.value : kwhUsed.toFixed(2));
+
+    // Max Load จาก DOM
+    const kwForAfternoon = document.getElementById('kw-for-afternoon');
+    const maxKw = kwForAfternoon ? parseFloat(kwForAfternoon.value) || 0 : 0;
+
+    // Load Factor
+    let loadFactor = 0;
+    if (maxKw > 0 && hours > 0) {
+      loadFactor = kwhUsed / (maxKw * hours);
+    }
+    const loadFactorPct = loadFactor * 100;
+
+    console.log({
+      kwhUsed,
+      maxKw,
+      hours,
+      loadFactorRaw: loadFactor,
+      loadFactorPct
+    });
+
+    // return ตัวเต็ม
+    return { kwhUsed, hours, maxKw, loadFactor, loadFactorPct };
+  }
+
+
+  // (kWhr)Erecticity Evening
+  function getEveningValuesFromMeter(valueAll, startHour = 18, endHour = 0) {
+    if (!valueAll || valueAll.length === 0) return { values: [0], hours: 0 };
+
+    const filtered = valueAll.filter(item => {
+      if (!item || !item.create_date) return false;
+      const hour = new Date(item.create_date.replace(' ', 'T')).getHours();
+      return hour >= startHour && hour < endHour;
+    });
+
+
+    // หาค่า kWh ใช้ไป
+    let kwhUsed = 0;
+    for (let i = 1; i < filtered.length; i++) {
+      const prev = parseFloat(filtered[i - 1].value);
+      const current = parseFloat(filtered[i].value);
+      kwhUsed += (current - prev);
+    }
+
+    // const values = filtered.map(item => item.value);
+    const hours = endHour - startHour;
+    console.log('hours is Evening : ', hours)
+
+    const hourForEvening = document.getElementById('hour-for-evening');
+    if (hourForEvening) hourForEvening.value = parseFloat(hours).toFixed(2) || 0;
+
+    // อัปเดต DOM kWh
+    const kwhrForEvening = document.getElementById('value-kWhr-for-evening');
+    if (kwhrForEvening) kwhrForEvening.value = kwhUsed.toFixed(2);
+
+    // Max Load จาก DOM
+    const kwForEvening = document.getElementById('kw-for-evening');
+    const maxKw = kwForEvening ? parseFloat(kwForEvening.value) || 0 : 0;
+
+    // Load Factor
+    let loadFactor = 0;
+    if (maxKw > 0 && hours > 0) {
+      loadFactor = kwhUsed / (maxKw * hours);
+    }
+    const loadFactorPct = loadFactor * 100;
+
+    console.log({
+      kwhUsed,
+      maxKw,
+      hours,
+      loadFactorRaw: loadFactor,
+      loadFactorPct
+    });
+
+    // return ตัวเต็ม
+    return { kwhUsed, hours, maxKw, loadFactor, loadFactorPct };
+  }
+
+
+  //(kWhr) Erecticity Evening
+  function getNightValuesFromMeter(valueAll, startHour = 0, endHour = 6) {
+    if (!valueAll || valueAll.length === 0) return { values: [0], hours: 0 };
+
+    const filtered = valueAll.filter(item => {
+      if (!item || !item.create_date) return false;
+      const hour = new Date(item.create_date.replace(' ', 'T')).getHours();
+      return hour >= startHour && hour < endHour;
+    });
+
+    let kwhUsed = 0;
+    for (let i = 1; i < filtered.length; i++) {
+      const prev = parseFloat(filtered[i - 1].value);
+      const current = parseFloat(filtered[i].value);
+      kwhUsed += (current - prev);
+    }
+
+    // const values = filtered.map(item => item.value);
+    const hours = endHour - startHour;
+    console.log('hours is Night : ', hours)
+
+    const hourForNight = document.getElementById('hour-for-night');
+    if (hourForNight) hourForNight.value = parseFloat(hours).toFixed(2) || 0;
+    // return { values, hours };
+
+
+    // อัปเดต DOM kWh
+    const kwhrForNight = document.getElementById('value-kWhr-for-night');
+    if (kwhrForNight) kwhrForNight.value = kwhUsed.toFixed(2);
+
+    // Max Load จาก DOM
+    const kwForNight = document.getElementById('kw-for-night');
+    const maxKw = kwForNight ? parseFloat(kwForNight.value) || 0 : 0;
+
+    // Load Factor
+    let loadFactor = 0;
+    if (maxKw > 0 && hours > 0) {
+      loadFactor = kwhUsed / (maxKw * hours);
+    }
+    const loadFactorPct = loadFactor * 100;
+
+    console.log({
+      kwhUsed,
+      maxKw,
+      hours,
+      loadFactorRaw: loadFactor,
+      loadFactorPct
+    });
+
+    // return ตัวเต็ม
+    return { kwhUsed, hours, maxKw, loadFactor, loadFactorPct };
+  }
+
+
+
+  ///////// อย่าพึ่งสนใจ
+
+  // 1. Power Factor & kVAR
+  function powerFactor() {
+    const meterData = meters["1"];
+    if (!meterData) {
+      console.error("Meter 1 ไม่มีข้อมูล");
+      return;
+    }
+
+    const lenData = meterData.data["1"] || [];
+    if (lenData.length === 0) return;
+
+    const firstData = lenData[0];
+    const firstDate = new Date(firstData.create_date);
+    const lastestData = lenData[lenData.length - 1];
+    const lastestDate = new Date(lastestData.create_date);
+
+    const diffMs = Math.abs(lastestDate - firstDate);
+    const diffHours = diffMs / (1000 * 60 * 60);
+    const hours = Math.floor(diffHours);
+    const minutes = Math.round((diffHours - hours) * 60);
+
+    // console.log("lastestDate:", lastestData);
+    // console.log("Meter Data:", meterData);
+    // console.log(`ระยะเวลา: ${hours} ชั่วโมง ${minutes} นาที`);
+
+    // --------------------------
+    // kVAR
+    function KvarDay() {
+      const kvarData = meterData.data["5"] || [];
+      if (!kvarData.length) return;
+
+      const listKvar = kvarData.map(item => parseFloat(item.value) || 0);
+      const sumAbs = listKvar.reduce((sum, val) => sum + Math.abs(val), 0);
+      const avgKvar = sumAbs / listKvar.length;
+
+      const valueKvar = document.getElementById('value-kvar');
+      if (valueKvar) valueKvar.value = avgKvar.toFixed(4);
+
+      // console.log('ค่าเฉลี่ย kVAR (ขนาด):', avgKvar);
+      // console.log('listKvar:', listKvar);
+    }
+    KvarDay();
+
+    // ----------------------
+    // Power Factorconst kwMorning = 50;
+    const kwForMorningEl = document.getElementById('kw-for-morning');
+    const kwForAfternoonEl = document.getElementById('kw-for-afternoon');
+    const kwForEveningEl = document.getElementById('kw-for-evening');
+    const kwForNightEl = document.getElementById('kw-for-night');
+    const valueKvarEl = document.getElementById('value-kvar');
+    const valuepfEl = document.getElementById('value-pf');
+
+    // ฟังก์ชันคำนวณ PF
+    function Pf() {
+      const kwMorning = parseFloat(kwForMorningEl?.value) || 0;
+      const kwAfternoon = parseFloat(kwForAfternoonEl?.value) || 0;
+      const kwEvening = parseFloat(kwForEveningEl?.value) || 0;
+      const kwNight = parseFloat(kwForNightEl?.value) || 0;
+      // console.log('kwMorning : ', kwMorning);
+      // console.log('kwAfternoon : ', kwAfternoon);
+      // console.log('kwEvening : ', kwEvening);
+      // console.log('kwNigth : ', kwNight);
+      // // kVAR รวมทั้งวัน
+      const kvar = parseFloat(valueKvarEl?.value) || 0;
+      const totalKW = kwMorning + kwAfternoon + kwEvening + kwNight; // รวม kW
+      const S = Math.sqrt(totalKW * totalKW + kvar * kvar);  // Apparent Power (kVA)
+      const PF = S === 0 ? 0 : totalKW / S; // คำนวณ PF
+
+      if (valuepfEl) valuepfEl.value = PF.toFixed(4);
+      // Debug log
+      // console.log("รวม kW =", totalKW);
+      // console.log("รวม kVAR =", kvar);
+      // console.log("S (kVA) =", S);
+      // console.log("PF =", PF.toFixed(4));
+
+      // checked PF 
+      if (PF < 0.85) {
+        console.log(" PF ต่ำกว่า 0.85! ต้องมีค่าปรับหรือ corrective action");
+      } else {
+        console.log(" PF ปกติ");
+      }
+    }
+    // เรียกใช้งานคำนวณ PF
+    Pf();
+
+  }
+
+
+  // 2. Product Counter (ตัวอย่าง placeholder)
+  function productCounter() {
+    // ตัวอย่าง: นับจำนวนสินค้า
+    const products = document.querySelectorAll(".product-item");
+    const counter = products.length;
+    const counterElement = document.getElementById("product-counter");
+    if (counterElement) counterElement.textContent = counter;
+    // console.log("จำนวนสินค้า:", counter);
+  }
+
+  // 3. Services (ค่าบริการ)
+  function services() {
+    const serviceInput = parseFloat(document.getElementById("value-input-service")?.value) || 0;
+    // console.log('serviceInput : ', serviceInput)
+    const serviceResult = document.getElementById("service-result");
+    if (serviceResult) serviceResult.textContent = serviceInput.toFixed(2);
+    // console.log("ค่าบริการ:", serviceInput);
+  }
+
+  // 4. ค่า FT (Fuel Adjustment Charge)
+  function FT() {
+    const valuekWhr = parseFloat(document.getElementById('value-kWhr')?.value) || 0; // kWh รวม
+    const ftRate = parseFloat(document.getElementById('value-input-ft')?.value) || 0; // Ft Rate (บาท/kWh)
+
+    if (!valuekWhr || !ftRate) {
+      console.warn("กรุณากรอกค่า kWh และ Ft Rate ให้ถูกต้อง");
+    }
+
+    const ftCharge = valuekWhr * ftRate;
+    const resultElement = document.getElementById('ft-result');
+    if (resultElement) resultElement.textContent = `ค่า FT = ${ftCharge.toFixed(2)} บาท`;
+
+    console.log("ค่า FT =", ftCharge.toFixed(2));
+    return ftCharge;
+  }
+
+  // 5. คำนวณค่าไฟฟ้ารวมก่อน VAT
+  function calErectricTotal() {
+    const valueBeforeVat = document.getElementById('value-before-vat');
+    const valueAfterVat = document.getElementById('value-after-vat');
+    const kwh = parseFloat(document.getElementById("value-kWhr")?.value) || 0;
+    const rate = parseFloat(document.getElementById("value-Input-kWhr")?.value) || 0;
+    const ft = parseFloat(document.getElementById("value-input-ft")?.value) || 0;
+    const service = parseFloat(document.getElementById("value-input-service")?.value) || 0;
+
+    const baseCharge = kwh * rate;      // ค่าไฟตามหน่วย
+    const ftCharge = kwh * (ft / 100);  // ค่า FT (หากเป็น %)
+    const serviceCharge = service;      // ค่าบริการ
+
+    const totalBeforeVat = baseCharge + ftCharge + serviceCharge;
+    valueBeforeVat.value = totalBeforeVat.toFixed(2);
+    // document.getElementById("value-total-ft-first").value = totalBeforeVat.toFixed(2);
+
+    const totalAfterVat = totalBeforeVat * 1.07; // รวม VAT 7%
+    valueAfterVat.value = totalAfterVat.toFixed(2);
+    // document.getElementById("value-total-ft-second").value = totalAfterVat.toFixed(2);
+
+    // console.log("ค่าไฟรวมก่อน VAT:", totalBeforeVat.toFixed(2));
+    // console.log("ค่าไฟรวมหลัง VAT:", totalAfterVat.toFixed(2));
+
+    calTotal();
+  }
+
+  // ==============================
+  // 6. คำนวณภาษี
+  // ==============================
+  function calTax() {
+    const taxRate = parseFloat(document.getElementById('value-input-tax')?.value) || 0;
+    const baseAmount = parseFloat(document.getElementById("value-total-ft-first")?.value) || 0;
+
+    const taxAmount = baseAmount * (taxRate / 100);
+    const totalWithTax = baseAmount + taxAmount;
+
+    document.getElementById("value-first-Tax").value = baseAmount.toFixed(4);
+    document.getElementById("value-second-Tax").value = totalWithTax.toFixed(4);
+
+    // console.log("ภาษี:", taxAmount.toFixed(2));
+    // console.log("รวมภาษี:", totalWithTax.toFixed(2));
+
+    calTotal();
+  }
+
+  // ==============================
+  // 7. รวมยอดทั้งหมด
+  // ==============================
+  function calTotal() {
+    const totalAfterVat = parseFloat(document.getElementById("value-total-ft-second")?.value) || 0;
+    const totalAfterTax = parseFloat(document.getElementById("value-second-Tax")?.value) || 0;
+
+    const grandTotal = totalAfterVat + totalAfterTax;
+
+    const valueTotalFirst = document.getElementById("value-total-first");
+    if (valueTotalFirst) valueTotalFirst.value = totalAfterVat.toFixed(4);
+
+    const valueTotal = document.getElementById("value-total-second");
+    if (valueTotal) valueTotal.value = grandTotal.toFixed(4);
+
+    console.log("ยอดรวมหลัง VAT:", totalAfterVat.toFixed(2));
+    console.log("ยอดรวมทั้งสิ้น:", grandTotal.toFixed(2));
+  }
+
+
+
+
+
+  ///
+
+
+
+
+
+
+
+
+
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////
+  // document.getElementById('btn-export')?.addEventListener('click', generatePDFDay);
+
+  // document.getElementById('btn-export-monthly')?.addEventListener('click', () => {
+  //   showMonth(); // อัปเดตค่าทุกช่องก่อน
+  //   generatePDFMonth();
+  // });
+
+  // ฟังก์ชัน export PDF เฉพาะข้อมูล Tab รายวัน
+
+
+
+
+
+</script>

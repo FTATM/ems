@@ -43,7 +43,7 @@ checkLogin();
                             <div class="mb-1">1.ค่าความต้องการ</div>
                             <div class="d-flex justify-content-end">
                                 <div class="me-2">
-                                    <div>
+                                   <div>
                                         <label class="me-2 mb-0">Kw</label>
                                     </div>
                                     <input id="kw-avg" type="text" class="form-control form-control-sm"
