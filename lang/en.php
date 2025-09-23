@@ -305,4 +305,6 @@ $lang = [
     "choosegroup" => "Choose Group/project",
     "from" => "From",
     "to" => "To",
+
+    "kiloHrMeter" => "KILOWATT - HOUR METER",
 ];
