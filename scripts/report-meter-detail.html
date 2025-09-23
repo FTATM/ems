@@ -26,9 +26,10 @@
 
 
   document.addEventListener("DOMContentLoaded", async () => {
+    showLoading();
     await fetchMeterData();
-    eventChekedMeter(); //  
-
+    eventChekedMeter();
+    hideLoading();
 
   });
 
@@ -97,14 +98,12 @@
       return;
     }
 
-    const value = showDeteday.value;
+    const value = showDeteday.value;   //2025-09-22
     const [year, month] = value.split("-");
     const daysInMonth = new Date(year, month, 0).getDate();
     const hr = 24;
     const calculatedDays = daysInMonth * hr;
     // console.log("Total hours in month:", calculatedDays);
-
-    // หลังจากเลือกวันที่แล้ว ให้โหลดตัวเลือก Meter
     selectMeterDay();
   }
 
@@ -149,9 +148,9 @@
       const nightData = getNightValuesFromMeter(valueAll[1], 0, 6);
       console.log(nightData.values);
 
-      
 
- // <=============== check Event Kw ===============>
+
+      // <=============== check Event Kw ===============>
 
       //eventKwMorning
       function eventKwMorning() {
