@@ -22,7 +22,7 @@
 
     function generateTable() {
         let table = document.getElementById('table-location');
-        locations.forEach(row => {
+        Object.values(locations).forEach(row => {
             let trd = document.createElement('tr');
             trd.innerHTML += `
             <td class="clickable py-3" onmouseover="loadHoverImage('${row.name}')" onclick="goToGroups(${row.id})">${row.name}</td>
