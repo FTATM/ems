@@ -5,11 +5,14 @@
     let groups = [];
     let refreshIntervalId; // เก็บ interval id
     const gaugeInstances = {};
+
+    let ftloaded = false;
     document.addEventListener("DOMContentLoaded", async () => {
-        await prepareData();
+        ftloaded = true;
+        await process();
     });
 
-    async function prepareData() {
+    async function process() {
         showLoading();
         await fetchAll();
         await generateSelect('select-meters', Object.values(meters));
@@ -78,6 +81,8 @@
     }
 
     function generateSelect(id, datas) {
+        if (!ftloaded) { return }
+        ftloaded = false;
         let select = document.getElementById(id);
         // select.innerHTML = `<option value="0">-- <?=$lang['select']?> --</option>`;
         datas.forEach(row => {

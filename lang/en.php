@@ -241,7 +241,7 @@ $lang = [
     "nname" => "New name",
 
     "config" => "Config",
-    "mark" => "Mark",
+    "sign" => "Sign",
     "value" => "Value",
 
     "token" => "Token",
@@ -284,6 +284,8 @@ $lang = [
 
     "phasor"  => "Phasor",
 
+    "diagram" => "Diagram",
+
     "alltype" => "All types", 
     
     "reportMeterDetail" => "Report Meter Detail",
@@ -305,6 +307,8 @@ $lang = [
     "choosegroup" => "Choose Group/project",
     "from" => "From",
     "to" => "To",
+
+    "line" => "LINE",
 
     "kiloHrMeter" => "KILOWATT - HOUR METER",
 ];

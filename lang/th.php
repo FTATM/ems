@@ -241,7 +241,7 @@ $lang = [
     "nname" => "สร้างชื่อใหม่",
 
     "config" => "ตั้งค่า",
-    "mark" => "เครื่องหมาย",
+    "sign" => "เครื่องหมาย",
     "value" => "ค่า",
 
     "token" => "โทเค็น",
@@ -284,6 +284,8 @@ $lang = [
 
     "phasor" => "เฟส",
 
+    "diagram" => "Diagram",
+
     "alltype" => "ชนิดของข้อมูลทั้งหมด",
 
     "reportMeterDetail" => "รายงานรายละเอียดมิเตอร์",
@@ -305,6 +307,8 @@ $lang = [
     "choosegroup" => "เลือกหมวดหมู่หรือโปรเจค",
     "from" => "จาก",
     "to" => "ถึง",
+
+    "line" => "LINE",
 
     "kiloHrMeter" => "KILOWATT - HOUR METER",
 ];

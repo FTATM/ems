@@ -9,95 +9,96 @@
             </button>
         </div>
         <li>
-            <a href="../pages/dashboard.php" class="d-flex align-items-center gap-2 nav-link text">
+            <a href="../pages/dashboard.php" class="d-flex align-items-center gap-2 text-menu">
                 <i class="bi bi-receipt"></i>
                 <span><?= $lang['dashboard'] ?></span>
             </a>
         </li>
         <li>
-            <a href="../pages/allmeter.php" class="d-flex align-items-center gap-2 nav-link text">
+            <a href="../pages/allmeter.php" class="d-flex align-items-center gap-2 text-menu">
                 <i class="bi bi-speedometer"></i>
                 <span><?= $lang['allmeter'] ?></span>
             </a>
         </li>
         <li>
-        <a href="../pages/gauge.php" class="d-flex align-items-center gap-2 nav-link text">
-            <i class="bi bi-speedometer"></i>
-            <span><?= $lang['gauge'] ?></span>
-        </a>
+            <a href="../pages/gauge.php" class="d-flex align-items-center gap-2 text-menu">
+                <i class="bi bi-speedometer"></i>
+                <span><?= $lang['gauge'] ?></span>
+            </a>
         </li>
 
         <li>
-            <a href="../pages/map.php" class="d-flex align-items-center gap-2 nav-link text">
+            <a href="../pages/map.php" class="d-flex align-items-center gap-2 text-menu">
                 <i class="bi bi-house"></i>
                 <span><?= $lang['overview'] ?></span>
             </a>
         </li>
 
         <li>
-            <a href="../pages/report-meter.php" class="d-flex align-items-center gap-2 nav-link text">
-                <i class="bi bi-file-person"></i>
-                <span><?= $lang['reportsummary'] ?></span>
-            </a>
-        </li>
-
-        <li>
-            <a href="../pages/report-meter-detail.php" class="d-flex align-items-center gap-2 nav-link text">
-                <i class="bi bi-file-person"></i>
-                <span><?= $lang['reportMeterDetail'] ?></span>
-            </a>
-        </li>
-
-        <li>
-            <a href="../pages/report-electric.php" class="d-flex align-items-center gap-2 nav-link text">
-                <i class="bi bi-receipt"></i>
-                <span><?= $lang['reportelec'] ?></span>
-            </a>
-        </li>
-
-        <li>
-            <a href="../pages/phasor.php" class="d-flex align-items-center gap-2 nav-link text">
+            <a href="../pages/phasor.php" class="d-flex align-items-center gap-2 text-menu">
                 <i class="bi bi-speedometer"></i>
                 <span><?= $lang['phasor'] ?></span>
             </a>
         </li>
 
         <li>
-            <a href="../pages/home.php" class="d-flex align-items-center gap-2 nav-link text">
+            <a href="../pages/home.php" class="d-flex align-items-center gap-2 text-menu">
                 <i class="bi bi-house"></i>
-                <span>diagram</span>
+                <span><?= $lang['diagram'] ?></span>
             </a>
         </li>
 
-        <li class="gap-2">
-            <button class="btn btn-link nav-link text px-0" data-bs-toggle="collapse" data-bs-target="#systemSubNav" aria-expanded="false">
-                <i class="bi bi-gear"></i> <?= $lang['system'] ?>
-            </button>
-            <ul class="collapse nav flex-column gap-2" id="systemSubNav">
+        <li>
+            <a href="../pages/report-meter.php" class="d-flex align-items-center gap-2 text-menu">
+                <i class="bi bi-file-person"></i>
+                <span><?= $lang['reportsummary'] ?></span>
+            </a>
+        </li>
 
+        <li>
+            <a href="../pages/report-meter-detail.php" class="d-flex align-items-center gap-2 text-menu">
+                <i class="bi bi-file-person"></i>
+                <span><?= $lang['reportMeterDetail'] ?></span>
+            </a>
+        </li>
+
+        <li>
+            <a href="../pages/report-electric.php" class="d-flex align-items-center gap-2 text-menu">
+                <i class="bi bi-receipt"></i>
+                <span><?= $lang['reportelec'] ?></span>
+            </a>
+        </li>
+
+
+        <li class="gap-2">
+            <a class="d-flex align-items-center gap-2 text-menu" data-bs-toggle="collapse" data-bs-target="#systemSubNav" aria-expanded="false">
+                <i class="bi bi-gear"></i>
+                <span><?= $lang['system'] ?></span>
+            </a>
+            <ul class="collapse nav flex-column gap-2" id="systemSubNav">
                 <li>
-                    <a href="../pages/management-locations.php" class="d-flex align-items-center gap-2 nav-link text">
+                    <a href="../pages/management-locations.php" class="d-flex align-items-center gap-2 text-menu">
                         <i class="bi bi-house"></i>
                         <span><?= $lang['locationmnm'] ?></span>
                     </a>
                 </li>
 
                 <li>
-                    <a href="../pages/management-groups.php" class="d-flex align-items-center gap-2 nav-link text">
+                    <a href="../pages/management-groups.php" class="d-flex align-items-center gap-2 text-menu">
                         <i class="bi bi-journal-check"></i>
                         <span><?= $lang['groupmnm'] ?></span>
                     </a>
                 </li>
 
                 <li>
-                    <a href="../pages/management-meters.php" class="d-flex align-items-center gap-2 nav-link text">
+                    <a href="../pages/management-meters.php" class="d-flex align-items-center gap-2 text-menu">
                         <i class="bi bi-setting-meter"></i>
                         <span><?= $lang['metermnm'] ?></span>
                     </a>
                 </li>
 
                 <li>
-                    <a href="../pages/management-users.php" class="d-flex align-items-center gap-2 nav-link text">
+                    <a href="../pages/management-users.php" class="d-flex align-items-center gap-2 text-menu">
                         <i class="bi bi-people"></i>
                         <span><?= $lang['usermnm'] ?></span>
                     </a>
