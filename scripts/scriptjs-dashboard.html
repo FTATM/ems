@@ -1,6 +1,5 @@
 <script>
     let meters = [];
-    let filteredMeters = [];
     let locations = [];
     let groups = [];
     let types = [];
@@ -11,10 +10,10 @@
     const typeMeterID = "<?=$_SESSION['tid'];?>";
     const groupID = "<?=$_SESSION['gid'];?>";
 
-    console.log(typeMeterID, typeof (typeMeterID), groupID, typeof (groupID));
-
+    let ftloaded = false;
     document.addEventListener("DOMContentLoaded", async () => {
         showLoading();
+        ftloaded = true;
         await process();
         await setRefreshTime();
         hideLoading();
@@ -22,7 +21,8 @@
 
     async function process() {
         await fetchAll();
-        await filterMeters();
+        generateOption('select-meters', Object.values(meters), true);
+        await filterDataInMeters();
         generateDataList();
     }
 
@@ -35,37 +35,37 @@
         let json_group = await res_group.json();
         groups = json_group.data;
 
-        let response = await fetch("../config/fetch-meters.php");
-        let json = await response.json();
-        meters = json.data;
-
         let responsetype = await fetch("../config/fetch-data_type.php");
         let jsontype = await responsetype.json();
         types = jsontype.data;
+
+        meters = await fetchDataInMeters();
     }
 
-    function filterMeters() {
-        filteredMeters = Object.values(meters).filter(m => {
-            return m.group_id === groupID && m.meter_type_id === typeMeterID;
-        });
-        let select = document.getElementById('select-meters');
-        select.innerHTML = '<option>=== <?=$lang["select"]?> === </option>';
-        filteredMeters.forEach(fm => {
-            let option = document.createElement('option');
-            option.value = fm.id;
-            option.textContent = `[${fm.id}] ${fm.name}`;
-            option.selected = filteredMeters[0].id === fm.id;
-            select.appendChild(option);
-        });
+    async function fetchDataInMeters() {
+        let formfilter = new FormData();
+        formfilter.append("tid", typeMeterID);
+        formfilter.append("gid", groupID);
 
-        filterDataInMeters();
+        try {
+            const res = await fetch("../config/fetch-meters-filter.php", {
+                method: "POST",
+                body: formfilter
+            });
+            const result = await res.json();
+            return result.data;
+        } catch (e) {
+            console.error('error unknown file fetch-meters-filter.php : ', e.message);
+            alertMessages('error', 'พบปัญหา', 'เกิดข้อผิดพลาดในการทำงานของสคริปต์ fetch-meters-filter กรุณาคัดลอกข้อความนี้และส่งต่อให้ผู้ดูแลระบบ', 4000, true);
+            return [];
+        }
     }
 
-    function filterDataInMeters() {
+    async function filterDataInMeters() {
         const time = document.getElementById('select-filter-value');
         let now = new Date();
         let selectedDateTime = new Date(now.getTime() - parseInt(time.value, 10) * 60000);
-        const filteredDataInMeters = Object.values(filteredMeters).map(fm => {
+        const filteredDataInMeters = Object.values(meters).map(fm => {
             let Datafiltered = {};
             Object.entries(fm.data).map(([key, rows]) => {
                 Datafiltered[key] = Object.values(rows).filter(datatype => {
@@ -79,16 +79,34 @@
             }
         });
 
-        updateData(filteredDataInMeters);
+        await updateData(filteredDataInMeters);
 
     }
 
-    function updateData(filteredDataInMeters) {
+    function generateOption(id, data, selectfirst = false) {
+        if (!ftloaded) { return }
+        ftloaded = false;
+        let select = document.getElementById(id);
+        select.innerHTML = '<option>=== <?=$lang["select"]?> === </option>';
+        data.forEach(row => {
+            let option = document.createElement('option');
+            option.value = row.id;
+            option.textContent = `[${row.id}] ${row.name}`;
+            option.selected = selectfirst ? data[0].id === row.id : false;
+            select.appendChild(option);
+        });
+    }
+
+    async function updateData(filteredDataInMeters) {
         const LinearchartData = [];
         const PiechartData = [];
         const LinearchartData2 = [];
         const PiechartData2 = [];
         let select = document.getElementById('select-meters');
+        if (!Number(select.value)) {
+            alertMessages('warning', "No Data Available", "No data was found for the selected period. Please choose a different timeframe.", 5000, true);
+            return
+        }
         const selectedMeter = filteredDataInMeters[parseInt(select.value) - 1];
 
         if (lastSelectValueTime !== select.value && (selectedMeter.data['1']?.length ?? 0) < 1) {
@@ -216,6 +234,8 @@
         }, refreshTime * 1000);
     }
 
+
+
     // ======== prepare Data for Chart and Chart function ========
 
     function prepareLinearData(SelectedFilterMeter, columnIndex) {
@@ -232,7 +252,7 @@
             chartData.push({
                 type: "splineArea",
                 axisYType: "secondary",
-                name: `${SelectedFilterMeter.name} - ${getLabelFromIndex(columnIndex)}`,
+                name: `${getLabelFromIndex(columnIndex)}`,
                 showInLegend: true,
                 markerSize: 0,
                 yValueFormatString: "#,##0.##",
@@ -254,7 +274,7 @@
             chartData.push({
                 type: "splineArea",
                 axisYType: "secondary",
-                name: `${SelectedFilterMeter.name} | ค่าใช้จ่าย ~ ${averageCost} บาท`,
+                name: `price`,
                 showInLegend: true,
                 markerSize: 0,
                 yValueFormatString: "#,##0.##",
@@ -431,13 +451,32 @@
             theme: 'dark2',
             backgroundColor: "#1B1C1D",
             title: { text: title },
-            axisX: { valueFormatString: "HH:mm:ss" },
+            axisX: {
+                valueFormatString: dataPointsLinear[0]?.dataPoints.length > 2880 ? "DD MMM YYYY" : "HH:mm:ss"
+            },
             axisY2: {
-                title: "Median List Price",
+                title: "Value",
                 prefix: "",
                 suffix: ""
             },
-            toolTip: { shared: true },
+            toolTip: {
+                shared: true,
+                contentFormatter: function (e) {
+                    // หาวันที่/เวลา
+                    let date = e.entries[0].dataPoint.x;
+                    let dateStr = CanvasJS.formatDate(date, "DD MMM YYYY HH:mm:ss");
+                    let html = `<div style="margin-bottom:8px;"><strong>${dateStr}</strong></div>`;
+                    // วนแสดง series แต่ละอัน
+                    e.entries.forEach(entry => {
+                        // ใช้สี series มาแสดงจุดสัญลักษณ์
+                        html += `<div style="white-space: nowrap;">`;
+                        html += `<span style="color:${entry.dataSeries.color};">●</span> `;
+                        html += `${entry.dataSeries.name}: <strong>${entry.dataPoint.y}</strong>`;
+                        html += `</div>`;
+                    });
+                    return html;
+                }
+            },
             legend: {
                 cursor: "pointer",
                 verticalAlign: "top",
@@ -459,9 +498,5 @@
         }
         e.chart.render(); // ✅ ใช้ chart จาก even
     }
-
-
-
-
 
 </script>

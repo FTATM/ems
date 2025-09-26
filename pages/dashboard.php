@@ -23,11 +23,11 @@ include '../components/session.php';
                 <h4 class="px-2">Filter</h4>
                 <label id="location" for="locations"> : </label>
                 <label id="group" for="groups">Group : </label>
-                <select id="select-meters" class="form-select bg-secondary border-0 text-white" style="width: 15%;" onchange="filterMeters()">
+                <select id="select-meters" class="form-select bg-secondary border-0 text-white" style="width: 15%;" onchange="filterDataInMeters()">
 
                 </select>
                 <label for="select-filter-value">Last time : </label>
-                <select id="select-filter-value" class="form-select bg-secondary border-0 text-white" style="width: 10%;" onchange="filterMeters()">
+                <select id="select-filter-value" class="form-select bg-secondary border-0 text-white" style="width: 10%;" onchange="filterDataInMeters()">
                     <option value="5">last 5 mins</option>
                     <option value="10">last 10 mins</option>
                     <option value="15">last 15 mins</option>

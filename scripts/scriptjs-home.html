@@ -7,9 +7,9 @@
     let groups = [];
     let types = [];
 
-
     const typeMeterID = "<?=$_SESSION['tid'];?>";
     const groupID = "<?=$_SESSION['gid'];?>";
+
     document.addEventListener("DOMContentLoaded", async () => {
         showLoading();
         await process();
@@ -19,11 +19,10 @@
     async function process() {
         await fetchAll();
         await filterMeters();
-
+        await generateMeters();
     }
 
     async function fetchAll() {
-
         let res_location = await fetch("../config/fetch-locations.php");
         let json_location = await res_location.json();
         locations = json_location.data;
@@ -66,7 +65,68 @@
             }
         });
 
-        console.log("Data ready : ",filteredDataInMeters);
+        console.log("Data ready : ", filteredDataInMeters);
+    }
+
+    function generateMeters() {
+        let list = document.getElementById('list-meters');
+        list.innerHTML = ``;
+        filteredDataInMeters.forEach(m => {
+            let arr = m.data['2'] || [];
+            let lastItem = arr[arr.length - 1];
+            let lastValue = lastItem?.value;
+            let last = isNaN(lastValue) ? 0 : parseFloat(lastValue);
+            let str = last.toFixed(1);   // "64.4"
+            let [intPart, decimalPart] = str.split(".");
+            intPart = intPart.padStart(5, "0");   // "00064"
+            let digits = (intPart + "." + decimalPart).split("");
+
+            let div = document.createElement('div');
+            div.className = "d-flex flex-column p-2 rounded ";
+            div.style.width = "300px";
+            div.style.height = "320px";
+            div.style.backgroundColor = "#EFEFEF";
+            div.innerHTML = `
+                <div class="w-100 h-100 px-3 rounded" style="background-color:#858585;">
+                    <div class="w-100 h-100 px-1 py-3 rounded" style="background-color:#666666;">
+                        <div class="w-100 h-100 p-2 d-flex flex-column rounded" style="background-color:#EFEFEF;">
+                            <div class="w-100 h-25 d-flex justify-content-center align-content-center">
+                                <div class="d-flex justify-content-center align-items-center">
+                                    ${digits.map(d => `<div class="slot-number">${d}</div>`).join("")}
+                                    <div class="text-black ms-1">kW·h</div>
+                                </div>
+                            </div>
+                            <div class="w-100 h-25 text-black text-center">
+                                <?=$lang['kiloHrMeter']?>
+                                <div id="line-active" class="stop-line"></div>
+                            </div>
+                            <div class="w-100 h-25 text-black d-flex justify-content-center">
+                                <table class="table-smaller">
+                                    <tbody>
+                                        <tr>
+                                            <td>360r/kW·h</td>
+                                            <td>220-240V</td>
+                                            <td>10(30)A</td>
+                                            <td>50Hz</td>
+                                        </tr>
+                                        <tr>
+                                            <td>IEC62053-1${m.id}</td>
+                                            <td colspan="3">No. 000${m.id}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>    
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            list.appendChild(div);
+            if (m.is_active === '1') {
+                document.getElementById('line-active').classList.remove('stop-line');
+                document.getElementById('line-active').classList.add('moving-line');
+            }
+
+        });
     }
 
     function setRefreshTime() {

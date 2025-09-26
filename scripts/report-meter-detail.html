@@ -10,6 +10,7 @@
 
   document.addEventListener("DOMContentLoaded", async () => {
     showLoading();
+
     await process();
     hideLoading();
 
@@ -31,9 +32,9 @@
     ftJson = await ft.json();
     ftData = ftJson.data;
 
-    
   }
 
+  
 
   function showDateTime() {
     const showDeteday = document.getElementById("report-date-day");
@@ -125,77 +126,25 @@
   }
 
  
-  // function filterMeterAll (values, startHour, endHour) {
-  //   forEach.values(itemAllMt => {
-  //     console.logg('itemAll Mt : ', itemAllMt)
-  //   })
-  // }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   
-  // filterMeterAll(selectedMeter.data, 6 , 12 )
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  // function selectMeter() {
-  //   let select = document.getElementById('select-meters');
-  //   selectedMeter = filteredMeters.find(m => m.id === select.value);
-  //   const kwMor = flatedAndFilter(selectedMeter.data, 6, 12, dateInput);
-  //   const kwAf = flatedAndFilter(selectedMeter.data, 12, 18, dateInput);
-  //   const kwEv = flatedAndFilter(selectedMeter.data, 18, 24, dateInput);
-  //   const kwNi = flatedAndFilter(selectedMeter.data, 0, 6, dateInput);
-
-  //   //check date user input ? is true || false
-  //   // kwAf.forEach(item => {
-  //   //   const dt = new Date(item.create_date.replace(" ", "T"));
-  //   //   const dateStr = dt.toISOString().split("T")[0];
-  //   //   dateStr === dateInput
-  //   //     ? console.log('Kw value is :', item)
-  //   //     : null; // ถ้าไม่ตรงก็ไม่ทำอะไร
-  //   // });
-
-  //   avgKwMor = kwMor.length
-  //     ? (kwMor.map(i => +i.value).reduce((sum, curr) => sum + curr, 0) / kwMor.length).toFixed(4)
-  //     : "0";
-
-  //   avgKwAf = kwAf.length
-  //     ? (kwAf.map(i => +i.value).reduce((sum, curr) => sum + curr, 0) / kwAf.length).toFixed(4)
-  //     : "0";
-
-  //   avgKwEv = kwEv.length
-  //     ? (kwEv.map(i => +i.value).reduce((sum, curr) => sum + curr, 0) / kwEv.length).toFixed(4)
-  //     : "0";
-
-  //   avgKwNi = kwNi.length
-  //     ? (kwNi.map(i => +i.value).reduce((sum, curr) => sum + curr, 0) / kwNi.length).toFixed(4)
-  //     : "0";
-
-  //   function showKw() {
-  //     let kwM = document.getElementById('kw-M');
-  //     let KwAf = document.getElementById('kw-Af');
-  //     let KwEv = document.getElementById('kw-Ev');
-  //     let KwNi = document.getElementById('kw-Ni');
-  //     showKwM = kwM.value = avgKwMor;
-  //     showKwAf = KwAf.value = avgKwAf;
-  //     showKwEv = KwEv.value = avgKwEv;
-  //     showKwNi = KwNi.value = avgKwNi;
-  //   }
-  //   showKw();
-  // }
-
 
 
 

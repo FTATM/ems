@@ -1,9 +1,6 @@
 <script>
     let meters = [];
     let types = [];
-    let locations = [];
-    let groups = [];
-    let rooms = [];
     let refreshIntervalId; // เก็บ interval id
     let filteredMeters = [];
     let selectedMeterData = [];
@@ -12,59 +9,62 @@
     const typeMeterID = "<?=$_SESSION['tid'];?>";
     const groupID = "<?=$_SESSION['gid'];?>";
 
+    let ftloaded = false;
     document.addEventListener("DOMContentLoaded", async () => {
         showLoading();
+        ftloaded = true;
         await process();
-        await generateGauge();
         setRefreshTime();
         hideLoading();
     });
 
     async function fetchAll() {
-
-        let response = await fetch('../config/fetch-meters.php');
-        let json = await response.json();
-        meters = json.data;
+        meters = await fetchDataInMeters();
 
         let responsetype = await fetch("../config/fetch-data_type.php");
         let jsontype = await responsetype.json();
         types = jsontype.data;
 
-        let responseLocation = await fetch("../config/fetch-locations.php");
-        let jsonLocation = await responseLocation.json();
-        locations = jsonLocation.data;
+    }
 
-        let responsegroup = await fetch("../config/fetch-groups.php");
-        let jsongroup = await responsegroup.json();
-        groups = jsongroup.data;
+    async function fetchDataInMeters() {
+        let formfilter = new FormData();
+        formfilter.append("tid", typeMeterID);
+        formfilter.append("gid", groupID);
 
-        let responseRoom = await fetch("../config/fetch-rooms.php");
-        let jsonRoom = await responseRoom.json();
-        rooms = jsonRoom.data;
+        try {
+            const res = await fetch("../config/fetch-meters-filter.php", {
+                method: "POST",
+                body: formfilter
+            });
+            const result = await res.json();
+            return result.data;
+        } catch (e) {
+            console.error('error unknown file fetch-meters-filter.php : ', e.message);
+            alertMessages('error', 'พบปัญหา', 'เกิดข้อผิดพลาดในการทำงานของสคริปต์ fetch-meters-filter กรุณาคัดลอกข้อความนี้และส่งต่อให้ผู้ดูแลระบบ', 4000, true);
+            return [];
+        }
     }
 
     async function process() {
         await fetchAll();
         await filterMeters();
-        await filterDataAndTime();
     }
 
     async function filterMeters() {
-        filteredMeters = Object.values(meters).filter(m => {
-            return m.group_id === groupID && m.meter_type_id === typeMeterID;
-        });
-        await generateSelect('select-meters', filteredMeters, true);
+        await generateSelect('select-meters',Object.values(meters), true);
+        await generateGauge();
+        await filterDataAndTime();
     }
 
-    function filterDataAndTime() {
+    async function filterDataAndTime() {
         const meter = document.getElementById('select-meters');
-        const meterID = meter && meter.value !== '' ? meter.value : "1";
+        const meterID = meter && meter.value !== '-' ? meter.value : '1';
         const time = document.getElementById('select-time');
         if (time.value === '-') {
             aleartmessages('error', 'Error', 'Time picker element not found.');
             return;
         }
-
         let now = new Date();
         let selectedDateTime;
         if (time.value === "all") {
@@ -76,7 +76,7 @@
         }
 
         const filteredValueColumn = {};
-        const meterSelected = filteredMeters.find(m => { return m.id === meterID });
+        const meterSelected = Object.values(meters).find(m => { return m.id === parseInt(meterID) });
         Object.entries(meterSelected.data).map(([colName, rows]) => {
             filteredValueColumn[colName] = Object.values(rows).filter(row => {
                 let rawDate = row.create_date;
@@ -89,9 +89,11 @@
             ...meterSelected,
             data: filteredValueColumn
         };
+        await checkTimeChange();
     }
 
     function checkTimeChange() {
+        console.log('selected Meter : ', selectedMeterData);
         Object.entries(selectedMeterData.data).forEach(([key, values]) => {
             if (['7', '8', '9'].includes(key)) {  // Voltage A-N, B-N, C-N IDs == 7,8,9
                 let avgcolumn = 0;
@@ -142,6 +144,7 @@
     }
 
     async function generateGauge() {
+        if (!ftloaded) { return }
         const listGauge = document.getElementById('list-gauge');
         listGauge.innerHTML = ''; // Clear previous gauges
         Object.values(types).forEach(type => {
@@ -182,20 +185,21 @@
                 setGaugeMeter('gauge_' + type.id, type.name, type.name, 0, 0, type.maxvaluecolumn, 5, width = 300, height = 300);
             }
         });
-        await checkTimeChange();
+        ftloaded = false;
     }
 
     function generateSelect(id, lists, selectfirst = false) {
+        if (!ftloaded) { return }
         let select = document.getElementById(id);
         if (!select) {
             return;
         }
-        select.innerHTML = `<option>== select meters ==</option>`;
+        select.innerHTML = `<option value="-">== select meters ==</option>`;
         lists.forEach(r => {
             let option = document.createElement('option');
             option.value = r.id;
             option.textContent = r.name;
-            option.selected = selectfirst ? r.id === lists[0].id ? "selected" : "" : "";
+            option.selected = selectfirst ? r.id === lists[0].id : false;
             select.appendChild(option);
         });
     }

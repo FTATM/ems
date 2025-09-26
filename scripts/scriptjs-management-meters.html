@@ -40,6 +40,14 @@
         let id = document.getElementById("meter-id");
         let ip = document.getElementById("ip-meter");
         let port = document.getElementById("port");
+        let serialport = document.getElementById("serialport");
+        let buad_rate = document.getElementById("buad_rate");
+        let data_bits = document.getElementById("data_bits");
+        let parity = document.getElementById("parity");
+        let stop_bits = document.getElementById("stop_bits");
+        let slave_id = document.getElementById("slave_id");
+        let address = document.getElementById("address");
+        let quality = document.getElementById("quality");
         let labelStatusConnect = document.getElementById("label-btn-connect");
         let detailmore = document.getElementById("detailmore");
         detailmore.style.display = "block";
@@ -47,10 +55,22 @@
         labelStatusConnect.style.color = "white";
 
         let form = new FormData();
-        form.append('meter_id', id.value);
-        form.append('ip', ip.value);
-        form.append('port', port.value);
-
+        if (select.value === 'tcp') {
+            form.append('meter_id', id.value);
+            form.append('ip', ip.value);
+            form.append('port', port.value);
+        }
+        else {
+            form.append('meter_id', id.value);
+            form.append('serialport', serialport.value);
+            form.append('buadrate', buad_rate.value);
+            form.append('databits', data_bits.value);
+            form.append('parity', parity.value);
+            form.append('stopbits', stop_bits.value);
+            form.append('slaveid', slave_id.value);
+            form.append('address', address.value);
+            form.append('quality', quality.value);
+        }
         let response = await fetch(`../config/${select.value}.php`, {
             method: "POST",
             body: form
@@ -153,44 +173,44 @@
                 <div class="w-75 d-flex">
                     <div class="">
                         <div class="text-center"><h5>Serial Port</h5></div>
-                        <div class="px-4"><input name="serialport" class="form-control border-opcity-50" value="${meter.serial_port}"></div>
+                        <div class="px-4"><input id="serialport" name="serialport" class="form-control border-opcity-50" value="${meter.serial_port}"></div>
                     </div>
 
                     <div class="">
                         <div class="text-center"><h5>Baud Rate</h5></div>
-                        <div class="px-4"><input name="buad_rate" class="form-control border-opcity-50" value="${meter.buad_rate}"></div>
+                        <div class="px-4"><input id="buad_rate" name="buad_rate" class="form-control border-opcity-50" value="${meter.buad_rate}"></div>
                     </div>
 
                     <div class="">
                         <div class="text-center"><h5>Data Bits</h5></div>
-                        <div class="px-4"><input name="data_bits" type="number" class="form-control border-opcity-50" value="${meter.data_bits}"></div>
+                        <div class="px-4"><input id="data_bits" name="data_bits" type="number" class="form-control border-opcity-50" value="${meter.data_bits}"></div>
                     </div>
 
                     <div class="">
                         <div class="text-center"><h5>parily</h5></div>
-                        <div class="px-4"><input name="parily" class="form-control border-opcity-50" value="${meter.parily}"></div>
+                        <div class="px-4"><input id="parity" name="parily" class="form-control border-opcity-50" value="${meter.parily}"></div>
                     </div>
 
                     <div class="">
                         <div class="text-center"><h5>Stop Bits</h5></div>
-                        <div class="px-4"><input name="stop_bits" type="number" class="form-control border-opcity-50" value="${meter.stop_bits}"></div>
+                        <div class="px-4"><input id="stop_bits" name="stop_bits" type="number" class="form-control border-opcity-50" value="${meter.stop_bits}"></div>
                     </div>
                 </div>
             </div>
 
             <div class="w-100 mt-2 d-flex">
                 <div class="w-25 text-end"><h5>Slave ID :</h5></div>
-                <div class="w-75 px-2"><input name="slave_ID" type="number" class="w-d-50 w-lg-25 form-control border-opcity-50" value="${meter.slave_id}"></div>
+                <div class="w-75 px-2"><input id="slave_id" name="slave_id" type="number" class="w-d-50 w-lg-25 form-control border-opcity-50" value="${meter.slave_id}"></div>
             </div>
 
             <div class="w-100 mt-2 d-flex">
                 <div class="w-25 text-end"><h5>Address :</h5></div>
-                <div class="w-75 px-2"><input name="address" class="w-d-50 w-lg-25 form-control border-opcity-50" value="${meter.address}"></div>
+                <div class="w-75 px-2"><input id="address" name="address" class="w-d-50 w-lg-25 form-control border-opcity-50" value="${meter.address}"></div>
             </div>
 
             <div class="w-100 mt-2 d-flex">
                 <div class="w-25 text-end"><h5>Quality :</h5></div>
-                <div class="w-75 px-2"><input name="quality" type="number" class="w-d-50 w-lg-25 form-control border-opcity-50" value="${meter.quality}"></div>
+                <div class="w-75 px-2"><input id="quality" name="quality" type="number" class="w-d-50 w-lg-25 form-control border-opcity-50" value="${meter.quality}"></div>
             </div>
 
             <div class="w-100 mx-3">
@@ -209,6 +229,7 @@
             else if (document.getElementById("menu-config-2").classList.contains("active")) {
                 config.innerHTML = '';
                 let mother = document.createElement('div');
+                mother.id = "list-notify";
                 mother.className = 'w-100 h-100 d-flex';
                 let notiData = notifies.filter(notify => notify.meter_id == meter.id);
                 notiData.forEach(row => {
@@ -217,28 +238,38 @@
                     div.style.width = '280px';
                     div.style.height = '380px';
                     div.innerHTML = `
-                        <div class="text-center border fs-5 rounded-top fw-bold align-content-center" style="height:13%; background-color: #001B5E;">${row.name}</div>
+                        <div class="text-center border fs-5 rounded-top fw-bold align-content-center bg-blue-reverse" style="height:13%; ">${row.name}</div>
                         <div class="bg-white rounded-bottom shadow w-100 p-1 text-black">
-                            <h6 class="ps-2"for="mark"><?=$lang['mark']?></h6>
-                            <select id="select-mark-${row.id}" class="form-select form-select-sm">
+                            <h6 class="ps-2"for="mark"><?=$lang['sign']?></h6>
+                            <select id="select-mark-${row.id}" class="form-select form-select-sm text-black">
                                 <option ${row.mark == '<' ? 'selected' : ''} value="<"><?=$lang['<']?> (<)</option>
                                 <option ${row.mark == '>' ? 'selected' : ''} value=">"><?=$lang['>']?> (>)</option>
                                 <option ${row.mark == '=' ? 'selected' : ''} value="="><?=$lang['=']?> (=)</option>
                             </select>
                             <h6 class="ps-2"for="value"><?=$lang['value']?></h6>
-                            <input id="value-${row.id}" class="form-control form-control-sm" type="number" value="${row.value}" placeholder="Number value">
-                            <h6 class="ps-2"for="token"><?=$lang['token']?></h6>
-                            <input id="token-${row.id}" class="form-control form-control-sm" type="text" value="${row.token_line}" placeholder="Line token here">
+                            <input id="value-${row.id}" class="form-control form-control-sm text-black" type="number" value="${row.value}" placeholder="Number value">
+                            <h6 class="ps-2"for="token"><?=$lang['token']?> <?=$lang['line']?></h6>
+                            <input id="token-${row.id}" class="form-control form-control-sm text-black" type="text" value="${row.token_line}" placeholder="Line token here">
                             <h6 class="ps-2"for="email"><?=$lang['email']?></h6>
-                            <input id="email-${row.id}" class="form-control form-control-sm" type="text" value="${row.email}" placeholder="paste email here">
+                            <input id="email-${row.id}" class="form-control form-control-sm text-black" type="text" value="${row.email}" placeholder="paste email here">
                             <div class="w-100 py-2 px-3 d-flex justify-content-between">
-                                <input id="active-${row.id}" onclick="UpdateStatusNotify(${meter.id},${row.id},'active')" value="${row.is_active == 0 ? 'Enabled' : 'Disabled'}" class="btn btn-sm ${row.is_active == 0 ? 'btn-success' : 'btn-danger'}" style="width:40%;">
-                                <input id="update-${row.id}" onclick="UpdateStatusNotify(${meter.id},${row.id},'update')" value="Save" class="btn btn-sm btn-primary" style="width:40%;">
+                                <input id="active-${row.id}" onclick="UpdateStatusNotify(${meter.id},${row.id},'active')" value="${row.is_active == 0 ? 'Enabled' : 'Disabled'}" class="btn btn-sm text ${row.is_active == 0 ? 'bg-blue' : 'bg-red'} " style="width:40%;  ">
+                                <input id="update-${row.id}" onclick="UpdateStatusNotify(${meter.id},${row.id},'update')" value="Save" class="btn btn-sm bg-green text text-black" style="width:40%;">
                             </div>
                         </div>
-                `;
+                    `;
                     mother.appendChild(div);
                 });
+                let blankdiv = document.createElement('div');
+                blankdiv.className = "p-2";
+                blankdiv.style.width = "280px";
+                blankdiv.style.height = "380px";
+                blankdiv.innerHTML = `
+                    <div class="p-2 bg-white bg-opacity-10 w-100 rounded d-flex justify-content-center align-items-center" style="height:92%;" onclick="addnotify()">
+                    <i class="bi bi-plus-lg"></i>
+                    </div>
+                `;
+                mother.appendChild(blankdiv);
                 config.appendChild(mother);
             }
         }
@@ -255,7 +286,7 @@
 
         if (status === 'active') {
             let btn_active = document.getElementById('active-' + notify_id);
-            let is_active = btn_active.classList.contains('btn-success') ? 1 : 0;
+            let is_active = btn_active.classList.contains('bg-blue') ? 1 : 0;
             formdata.append('value', is_active);
         } else if (status === 'update') {
             let select = document.getElementById('select-mark-' + notify_id);
@@ -282,7 +313,7 @@
         const data = await response.json();
         if (data.success) {
             console.log(data.message);
-            await fetchAll();
+            notifies = await fetchnotify();
             loadDataMeter(meters[meter_id - 1]);
         } else {
             console.error(`เกิดข้อผิดพลาด: ${data.message || 'ไม่สามารถบันทึกข้อมูลได้'}`);
@@ -326,4 +357,36 @@
                 alertMessages('error', "Save Failed", "An unexpected error occurred. Please check your internet connection and try again.");
             })
     }
+
+    function addNotify() {
+        let listNotify = document.getElementById('list-notify');
+        if (listNotify) { return }
+        let div = document.createElement('div');
+        div.className = 'p-2';
+        div.style.width = '280px';
+        div.style.height = '380px';
+        div.innerHTML = `
+            <div class="text-center border fs-5 rounded-top fw-bold align-content-center bg-blue-reverse" style="height:13%; ">${row.name}</div>
+            <div class="bg-white rounded-bottom shadow w-100 p-1 text-black">
+                <h6 class="ps-2"for="mark"><?=$lang['sign']?></h6>
+                <select id="select-mark-0" class="form-select form-select-sm text-black">
+                    <option value="<"><?=$lang['<']?> (<)</option>
+                    <option value=">"><?=$lang['>']?> (>)</option>
+                    <option value="="><?=$lang['=']?> (=)</option>
+                </select>
+                <h6 class="ps-2"for="value"><?=$lang['value']?></h6>
+                <input id="value-0" class="form-control form-control-sm text-black" type="number" value="${row.value}" placeholder="Number value">
+                <h6 class="ps-2"for="token"><?=$lang['token']?> <?=$lang['line']?></h6>
+                <input id="token-0" class="form-control form-control-sm text-black" type="text" value="${row.token_line}" placeholder="Line token here">
+                <h6 class="ps-2"for="email"><?=$lang['email']?></h6>
+                <input id="email-0" class="form-control form-control-sm text-black" type="text" value="${row.email}" placeholder="paste email here">
+                <div class="w-100 py-2 px-3 d-flex justify-content-between">
+                    <input id="active-0" onclick="UpdateStatusNotify(${meter.id},${row.id},'active')" value="${row.is_active == 0 ? 'Enabled' : 'Disabled'}" class="btn btn-sm text ${row.is_active == 0 ? 'bg-blue' : 'bg-red'} " style="width:40%;  ">
+                    <input id="update-0" onclick="UpdateStatusNotify(${meter.id},${row.id},'update')" value="Save" class="btn btn-sm bg-green text text-black" style="width:40%;">
+                </div>
+            </div>
+        `;
+        listNotify.appendChild(div);
+    }
+
 </script>

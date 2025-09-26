@@ -1,4 +1,28 @@
 <style>
+    .bg-green {
+        background: linear-gradient(0deg, #62CE00, #A9E703);
+    }
+
+    .bg-green-reverse {
+        background: linear-gradient(180deg, #62CE00, #A9E703);
+    }
+
+    .bg-blue {
+        background: linear-gradient(0deg, #00376A, #5E92BD);
+    }
+
+    .bg-blue-reverse {
+        background: linear-gradient(180deg, #00376A, #5E92BD);
+    }
+
+    .bg-red {
+        background: linear-gradient(0deg, #CE0000, #E65656);
+    }
+
+    .bg-red-reverse {
+        background: linear-gradient(180deg, #CE0000, #E65656);
+    }
+
     .active {
         background-color: #001B5E;
         font-size: large;
@@ -53,6 +77,7 @@
         /* text-decoration: underline; */
         /* ตัวเลือก: เพิ่มขีดเส้นใต้ */
     }
+
     .clickable:hover {
         color: #fff;
         font-weight: bolder;
@@ -98,21 +123,6 @@
         stroke-linecap: round;
     }
 
-    .toggle-button {
-        padding: 4px 12px;
-        margin: 5px;
-        border: 1px solid #ccc;
-        background-color: #f0f0f0;
-        cursor: pointer;
-        border-radius: 5px;
-    }
-
-    .toggle-button.active {
-        background-color: #4CAF50;
-        color: white;
-        border-color: #4CAF50;
-    }
-
     input {
         color: #e0e0e0 !important;
         background-color: transparent !important;
@@ -127,6 +137,25 @@
     input[type="date"]::-webkit-calendar-picker-indicator {
         filter: invert(1) brightness(2);
         cursor: pointer;
+    }
+
+    .no-bullet {
+        list-style: none;
+        padding-left: 0;
+        margin: 0;
+
+    }
+
+    .point {
+        position: absolute;
+        background: rgba(7, 7, 7, 0.3);
+        color: white;
+        padding: 5px 10px;
+        border-radius: 8px;
+    }
+
+    .point:hover {
+        background-color: rgba(0, 0, 0, 0.7);
     }
 
     #loading-overlay {
@@ -154,6 +183,56 @@
         animation: spin 1s linear infinite;
     }
 
+    .stop-line {
+        width: 50%;
+        height: 5px;
+        margin: 10px auto;
+        border-radius: 5px;
+
+        background: linear-gradient(90deg,
+                gray 0%,
+                gray 60%,
+                white 60%,
+                white 70%,
+                red 70%,
+                red 80%,
+                white 80%,
+                white 90%,
+                gray 90%,
+                gray 100%);
+        background-size: 200% 100%;
+    }
+
+    .moving-line {
+        width: 50%;
+        height: 5px;
+        margin: 10px auto;
+        border-radius: 5px;
+
+        background: linear-gradient(90deg,
+                gray 0%,
+                gray 60%,
+                white 60%,
+                white 70%,
+                red 70%,
+                red 80%,
+                white 80%,
+                white 90%,
+                gray 90%,
+                gray 100%);
+        background-size: 200% auto;
+        animation: moveColors 2s linear infinite;
+    }
+
+    @keyframes moveColors {
+        0% {
+            background-position: 100% 0%;
+        }
+
+        100% {
+            background-position: -100% 0%;
+        }
+    }
 
     select,
     select option {
@@ -165,6 +244,21 @@
     select option {
         background-color: #666 !important;
     }
+
+    .slot-number {
+        text-align: center;
+        width: 20px;
+        height: 30px;
+        color: #ccc;
+        font-size: 20px;
+        padding: 0px 2px 0px 2px;
+        background-color: #222;
+    }
+
+    .slot-number .decimal {
+        background-color: #d60000;
+    }
+
 
     /* select.form-select {
         --bs-form-select-bg-img: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
@@ -266,6 +360,94 @@
 
     }
 
+
+    @keyframes spinmap {
+        from {
+            transform: rotateX(-20deg) rotateY(0deg);
+        }
+
+        to {
+            transform: rotateX(-20deg) rotateY(360deg);
+        }
+    }
+
+    .text {
+        color: white;
+    }
+
+    .text-menu {
+        color: white;
+        padding: var(--bs-nav-link-padding-y) var(--bs-nav-link-padding-x);
+        text-decoration: none;
+    }
+
+    .text-menu:hover {
+        /* color: #222 !important; */
+        background-color: #b4b4b4;
+    }
+
+    .table-smaller {
+        font-size: 10px;
+        color: #121212;
+    }
+
+    .table-smaller td {
+        white-space: nowrap;
+        color: #000 !important;
+        border: 1px solid #1f1f1f !important;
+        text-align: center;
+        padding-left: 0.25rem;
+        padding-right: 0.25rem;
+    }
+
+
+    .toggle-button {
+        padding: 4px 12px;
+        margin: 5px;
+        border: 1px solid #ccc;
+        background-color: #f0f0f0;
+        cursor: pointer;
+        border-radius: 5px;
+    }
+
+    .toggle-button.active {
+        background-color: #4CAF50;
+        color: white;
+        border-color: #4CAF50;
+    }
+
+    .h-10 {
+        height: 10%;
+    }
+
+    .h-20 {
+        height: 20%;
+    }
+
+    .h-30 {
+        height: 30%;
+    }
+
+    .h-40 {
+        height: 40%;
+    }
+
+    .h-60 {
+        height: 60%;
+    }
+
+    .h-70 {
+        height: 70%;
+    }
+
+    .h-80 {
+        height: 80%;
+    }
+
+    .h-90 {
+        height: 90%;
+    }
+
     .w-10 {
         width: 10%;
     }
@@ -315,7 +497,6 @@
     }
 
 
-
     /* ====================== scene ======================== */
     .scene {
         perspective: 800px;
@@ -338,45 +519,5 @@
         position: absolute;
         background: rgba(0, 150, 255, 0.7);
         border: 1px solid white;
-    }
-
-
-    @keyframes spinmap {
-        from {
-            transform: rotateX(-20deg) rotateY(0deg);
-        }
-
-        to {
-            transform: rotateX(-20deg) rotateY(360deg);
-        }
-    }
-
-    .point {
-        position: absolute;
-        background: rgba(7, 7, 7, 0.3);
-        color: white;
-        padding: 5px 10px;
-        border-radius: 8px;
-    }
-
-    .point:hover {
-        background-color: rgba(0, 0, 0, 0.7);
-    }
-
-    .text {
-        color : white;
-    }
-    
-    .no-bullet {
-        list-style: none;
-        padding-left: 0;
-        margin: 0;
-        
-    }
-
-    li:hover {
-        cursor: pointer;
-        background-color: #fff;
-        
     }
 </style>

@@ -8,67 +8,102 @@
                 <i class="bi bi-arrow-left w-100 h-100"></i>
             </button>
         </div>
-        <li class="d-flex align-items-center gap-2">
-            <i class="bi bi-receipt"></i>
-        <span><a class="nav-link text" href="../pages/dashboard.php"><?=$lang['dashboard']?></a></span>
+        <li>
+            <a href="../pages/dashboard.php" class="d-flex align-items-center gap-2 text-menu">
+                <i class="bi bi-receipt"></i>
+                <span><?= $lang['dashboard'] ?></span>
+            </a>
         </li>
-        <li class="d-flex align-items-center gap-2">
-            <i class="bi bi-speedometer"></i>
-            <span><a class="nav-link text" href="../pages/allmeter.php"><?=$lang['allmeter']?></a></span>
+        <li>
+            <a href="../pages/allmeter.php" class="d-flex align-items-center gap-2 text-menu">
+                <i class="bi bi-speedometer"></i>
+                <span><?= $lang['allmeter'] ?></span>
+            </a>
         </li>
-        <li class="d-flex align-items-center gap-2">
-            <i class="bi bi-speedometer"></i>
-            <span><a class="nav-link text" href="../pages/gauge.php"><?= $lang['gauge'] ?></a></span>
-        </li>
-        <li class="d-flex align-items-center gap-2">
-            <i class="bi bi-house"></i>
-            <span><a class="nav-link text" href="../pages/map.php"><?= $lang['overview'] ?></a></span>
-        </li>
-        <li class="d-flex align-items-center gap-2">
-            <i class="bi bi-file-person"></i>
-            <span><a class="nav-link text" href="../pages/report-meter.php"><?= $lang['reportsummary'] ?></a></span>
+        <li>
+            <a href="../pages/gauge.php" class="d-flex align-items-center gap-2 text-menu">
+                <i class="bi bi-speedometer"></i>
+                <span><?= $lang['gauge'] ?></span>
+            </a>
         </li>
 
-        <li class="d-flex align-items-center gap-2">
-            <i class="bi bi-file-person"></i>
-            <span><a class="nav-link text" href="../pages/report-meter-detail.php"><?= $lang['reportMeterDetail'] ?></a></span>
+        <li>
+            <a href="../pages/map.php" class="d-flex align-items-center gap-2 text-menu">
+                <i class="bi bi-house"></i>
+                <span><?= $lang['overview'] ?></span>
+            </a>
         </li>
 
-        <li class="d-flex align-items-center gap-2">
-            <i class="bi bi-receipt"></i>
-            <span><a class="nav-link text" href="../pages/report-electric.php"><?= $lang['reportelec'] ?></a></span>
+        <li>
+            <a href="../pages/phasor.php" class="d-flex align-items-center gap-2 text-menu">
+                <i class="bi bi-speedometer"></i>
+                <span><?= $lang['phasor'] ?></span>
+            </a>
         </li>
-        <li class="d-flex align-items-center gap-2">
-            <i class="bi bi-speedometer"></i>
-            <span><a class="nav-link text" href="../pages/phasor.php"><?=$lang['phasor']?></a></span>
+
+        <li>
+            <a href="../pages/home.php" class="d-flex align-items-center gap-2 text-menu">
+                <i class="bi bi-house"></i>
+                <span><?= $lang['diagram'] ?></span>
+            </a>
         </li>
-        <li class="d-flex align-items-center gap-2">
-            <i class="bi bi-house"></i>
-            <span><a class="nav-link text" href="../pages/home.php">diagram</a></span>
+
+        <li>
+            <a href="../pages/report-meter.php" class="d-flex align-items-center gap-2 text-menu">
+                <i class="bi bi-file-person"></i>
+                <span><?= $lang['reportsummary'] ?></span>
+            </a>
+        </li>
+
+        <li>
+            <a href="../pages/report-meter-detail.php" class="d-flex align-items-center gap-2 text-menu">
+                <i class="bi bi-file-person"></i>
+                <span><?= $lang['reportMeterDetail'] ?></span>
+            </a>
+        </li>
+
+        <li>
+            <a href="../pages/report-electric.php" class="d-flex align-items-center gap-2 text-menu">
+                <i class="bi bi-receipt"></i>
+                <span><?= $lang['reportelec'] ?></span>
+            </a>
         </li>
 
 
         <li class="gap-2">
-            <button class="btn btn-link nav-link text px-0" data-bs-toggle="collapse" data-bs-target="#systemSubNav" aria-expanded="false">
-                <i class="bi bi-gear"></i> <?= $lang['system'] ?>
-            </button>
+            <a class="d-flex align-items-center gap-2 text-menu" data-bs-toggle="collapse" data-bs-target="#systemSubNav" aria-expanded="false">
+                <i class="bi bi-gear"></i>
+                <span><?= $lang['system'] ?></span>
+            </a>
             <ul class="collapse nav flex-column gap-2" id="systemSubNav">
-                <li class="d-flex align-items-center gap-2">
-                    <i class="bi bi-house"></i>
-                    <span><a class="nav-link text" href="../pages/management-locations.php"><?= $lang['locationmnm'] ?></a></span>
+                <li>
+                    <a href="../pages/management-locations.php" class="d-flex align-items-center gap-2 text-menu">
+                        <i class="bi bi-house"></i>
+                        <span><?= $lang['locationmnm'] ?></span>
+                    </a>
                 </li>
-                <li class="d-flex align-items-center gap-2">
-                    <i class="bi bi-journal-check"></i>
-                    <span><a class="nav-link text" href="../pages/management-groups.php"><?= $lang['groupmnm'] ?></a></span>
+
+                <li>
+                    <a href="../pages/management-groups.php" class="d-flex align-items-center gap-2 text-menu">
+                        <i class="bi bi-journal-check"></i>
+                        <span><?= $lang['groupmnm'] ?></span>
+                    </a>
                 </li>
-                <li class="d-flex align-items-center gap-2">
-                    <i class="bi bi-setting-meter"></i>
-                    <span><a class="nav-link text" href="../pages/management-meters.php"><?= $lang['metermnm'] ?></a></span>
+
+                <li>
+                    <a href="../pages/management-meters.php" class="d-flex align-items-center gap-2 text-menu">
+                        <i class="bi bi-setting-meter"></i>
+                        <span><?= $lang['metermnm'] ?></span>
+                    </a>
                 </li>
-                <li class="d-flex align-items-center gap-2">
-                    <i class="bi bi-people"></i>
-                    <span><a class="nav-link text" href="../pages/management-users.php"><?= $lang['usermnm'] ?></a></span>
+
+                <li>
+                    <a href="../pages/management-users.php" class="d-flex align-items-center gap-2 text-menu">
+                        <i class="bi bi-people"></i>
+                        <span><?= $lang['usermnm'] ?></span>
+                    </a>
                 </li>
+
             </ul>
         </li>
 

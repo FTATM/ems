@@ -9,6 +9,7 @@ $password = "123456";
 $database = "ams";
 
 
+
 // run localhost 
 // $servername = "localhost";
 // $username = "root";
