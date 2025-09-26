@@ -32,7 +32,7 @@ include '../components/session.php';
                             <div class="col-2 d-flex justify-content-center">
                                 <input id="report-date-day" type="date"
                                     class="form-control form-control-sm m-10"
-                                    onchange="showDate()">
+                                    onchange="showDateTime()">
                             </div>
                             <br>
                             <!-- <div id="list-input">
@@ -49,11 +49,12 @@ include '../components/session.php';
                                 </li>
                                 <!-- select Meter -->
                                 <li class="me-2">
-                                    <select id="select-meter-day" class="form-select form-select-sm w-auto mt-2">
-                                        <option selected disabled>Meter List</option>
+                                    <select id="select-meters" 
+                                    onchange="selectMeter()"
+                                    class="form-select form-select-sm w-auto mt-2">
+                                        <option selected disabled >Meter List</option>
                                     </select>
-                                    <div id="result-meter"></div>
-
+                                    
                                 </li>
                             </ul>
                         </div>
@@ -69,28 +70,31 @@ include '../components/session.php';
                                     <div>
                                         <label class="me-2 mb-0">Kw</label>
                                     </div>
-                                    <input id="kw-for-morning" type="text" class="form-control form-control-sm"
+                                    <input id="kw-M" type="text" class="form-control form-control-sm"
                                         style="width:100px;" readonly>
                                 </div>
                                 <div class="me-2">
                                     <div>
                                         <label class="me-2 mb-0">Bath/Dm</label>
                                     </div>
-                                    <input id="input-kw-for-morning" type="text" class="form-control form-control-sm bg-light text-dark"
+                                    <input id="bInput-in-KwM" type="text" 
+                                    oninput="InElementKw('bInput-in-KwM','result-Bath-m','result-bath-kWhr-m','kw-M')" 
+
+                                    class="form-control form-control-sm bg-light text-dark"
                                         style="width:100px;">
                                 </div>
                                 <div class="me-2">
                                     <div>
                                         <label class="me-2 mb-0">บาท</label>
                                     </div>
-                                    <input id="result-bath-kw-demand-for-morning" type="text" class="form-control form-control-sm"
+                                    <input id="result-Bath-m" type="text" class="form-control form-control-sm"
                                         style="width:100px;" readonly>
                                 </div>
                                 <div class="me-2">
                                     <div>
                                         <label class="me-2 mb-0">บาท/kWhr</label>
                                     </div>
-                                    <input id="result-bath-kWhr-for-morning" type="text" class="form-control form-control-sm"
+                                    <input id="result-bath-kWhr-m" type="text" class="form-control form-control-sm"
                                         style="width:100px;" readonly>
                                 </div>
                             </div>
@@ -102,24 +106,26 @@ include '../components/session.php';
                             <div class="d-flex justify-content-end">
                                 <div class="me-2">
 
-                                    <input id="kw-for-afternoon" type="text" class="form-control form-control-sm"
+                                    <input id="kw-Af" type="text" class="form-control form-control-sm"
                                         style="width:100px;" readonly>
                                 </div>
 
 
                                 <div class="me-2">
 
-                                    <input id="input-kw-for-afternoon" type="text" class="form-control form-control-sm bg-light text-dark"
-                                        style="width:100px;" oninput="">
+                                    <input id="bInput-in-KwAf" type="text" class="form-control form-control-sm bg-light text-dark"
+                                        style="width:100px;"    
+                                    oninput="InElementKw('bInput-in-KwAf','result-Bath-af','result-bath-kWhr-af','kw-Af')" 
+>
                                 </div>
                                 <div class="me-2">
 
-                                    <input id="result-bath-kw-demand-for-afternoon" type="text" class="form-control form-control-sm"
+                                    <input id="result-Bath-af" type="text" class="form-control form-control-sm"
                                         style="width:100px;" readonly>
                                 </div>
                                 <div class="me-2">
 
-                                    <input id="result-kwhr-for-afternoon" type="text" class="form-control form-control-sm"
+                                    <input id="result-bath-kWhr-af" type="text" class="form-control form-control-sm"
                                         style="width:100px;" readonly>
                                 </div>
                             </div>
@@ -129,23 +135,26 @@ include '../components/session.php';
                             <div class="d-flex justify-content-end">
                                 <div class="me-2">
 
-                                    <input id="kw-for-evening" type="text" class="form-control form-control-sm"
+                                    <input id="kw-Ev" type="text" class="form-control form-control-sm"
                                         style="width:100px;" readonly>
                                 </div>
 
 
                                 <div class="me-2">
 
-                                    <input id="input-kw-for-evening" type="text" class="form-control form-control-sm bg-light text-dark"
-                                        style="width:100px;">
+                                    <input id="bInput-in-KwEv" type="text" class="form-control form-control-sm bg-light text-dark"
+                                        style="width:100px;"    
+                                    oninput="InElementKw('bInput-in-KwEv','result-Bath-ev','result-bath-kWhr-ev','kw-Ev')" 
+                                        >
+                                        
                                 </div>
                                 <div class="me-2">
-                                    <input id="result-bath-kw-demand-for-evening" type="text" class="form-control form-control-sm"
+                                    <input id="result-Bath-ev" type="text" class="form-control form-control-sm"
                                         style="width:100px;" readonly>
                                 </div>
                                 <div class="me-2">
 
-                                    <input id="result-bath-kWhr-everning" type="text" class="form-control form-control-sm"
+                                    <input id="result-bath-kWhr-ev" type="text" class="form-control form-control-sm"
                                         style="width:100px;" readonly>
                                 </div>
                             </div>
@@ -155,23 +164,26 @@ include '../components/session.php';
                             <div class="d-flex justify-content-end">
                                 <div class="me-2">
 
-                                    <input id="kw-for-night" type="text" class="form-control form-control-sm"
+                                    <input id="kw-Ni" type="text" class="form-control form-control-sm"
                                         style="width:100px;" readonly>
                                 </div>
 
                                 <div class="me-2">
 
-                                    <input id="input-kw-for-night" type="text" class="form-control form-control-sm bg-light text-dark"
-                                        style="width:100px;">
+                                    <input id="bInput-in-KwNi" type="text" class="form-control form-control-sm bg-light text-dark"
+                                        style="width:100px;" 
+                                        
+                                    oninput="InElementKw('bInput-in-KwNi','result-Bath-Ni','result-bath-kWhr-Ni','kw-Ni')" 
+                                        >
                                 </div>
                                 <div class="me-2">
 
-                                    <input id="result-bath-kw-demand-for-night" type="text" class="form-control form-control-sm"
+                                    <input id="result-Bath-Ni" type="text" class="form-control form-control-sm"
                                         style="width:100px;" readonly>
                                 </div>
                                 <div class="me-2">
 
-                                    <input id="result-bath-kWhr-for-night" type="text" class="form-control form-control-sm"
+                                    <input id="result-bath-kWhr-Ni" type="text" class="form-control form-control-sm"
                                         style="width:100px;" readonly>
                                 </div>
                             </div>
