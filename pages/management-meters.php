@@ -22,7 +22,7 @@ checkLogin();
             <div class="bg-secondary bg-opacity-25 d-flex justify-content-center" style="min-height: 80svh;">
                 <div class="d-flex shadow w-100" style="max-width: 1600px;">
                     <div class="w-20">
-                        <h4 class="text py-2 mb-3 text-center bg-white" style="color:#001B5E;">Meter</h4>
+                        <h4 class="text py-2 mb-3 text-center bg-white" style="color:#001B5E;"><?= $lang['meter'] ?></h4>
                         <div id="meter-list" class="h-100 w-100">
                             <div class="text-center text-light"><?= $lang['loading'] ?></div>
                         </div>

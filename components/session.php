@@ -2,7 +2,7 @@
 session_start();
 
 
-$timeout = 900; // 900 วินาที = 15 นาที
+$timeout = 1800; // 1800 วินาที = 30 นาที
 
 // ตรวจสอบว่าเคยมีการบันทึก last_activity ไว้ไหม
 if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity']) > $timeout) {

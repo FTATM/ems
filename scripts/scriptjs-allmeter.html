@@ -21,8 +21,6 @@
     });
 
     async function fetchAll() {
-
-
         let res_location = await fetch("../config/fetch-locations.php");
         let json_location = await res_location.json();
         locations = json_location.data;
