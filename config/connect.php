@@ -10,10 +10,11 @@ $database = "ams";
 
 
 // run localhost 
-$servername = "localhost";
-$username = "root";
-$password = "";
-$database = "ams"; 
+// $servername = "localhost";
+// $username = "root";
+// $password = "";
+// $database = "ams"; 
+
 $conn = new mysqli($servername, $username, $password, $database);
 
 // ตรวจสอบการเชื่อมต่อ
