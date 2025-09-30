@@ -95,6 +95,10 @@
             option.selected = selectfirst ? data[0].id === row.id : false;
             select.appendChild(option);
         });
+        const locate = document.getElementById('location');
+        locate.innerHTML = `<?=$lang['location']?> : ` + getNameLocation(groupID);
+        const group = document.getElementById('group');
+        group.innerHTML = `<?=$lang['group']?> : ` + getNameGroup(groupID);
     }
 
     async function updateData(filteredDataInMeters) {

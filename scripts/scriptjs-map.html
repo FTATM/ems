@@ -46,6 +46,7 @@
     await fetchAll();
     await filterData();
     await generateListGroups();
+    await gaugeJS();
   }
 
   function filterData() {
@@ -156,13 +157,13 @@
   //add meter label to 3D model
 
   function loadMeter(id) {
-    // const modelViewer = document.getElementById("myModel");
-    // modelViewer.src = "../assets/NY.glb";
+    const modelViewer = document.getElementById("myModel");
+    modelViewer.src = "../assets/NY.glb";
 
-    let imageViewer = document.getElementById('3d-viewer');
-    imageViewer.innerHTML = `
-      <img src="../assets/images/map.png" alt="My PNG" style="width: 100%; height: auto;">
-    `;
+    // let imageViewer = document.getElementById('3d-viewer');
+    // imageViewer.innerHTML = `
+    //   <img src="../assets/images/map.png" alt="My PNG" style="width: 100%; height: auto;">
+    // `;
 
     filtermeters.flatMap(m => {
       if (m.id == id) {
@@ -170,10 +171,10 @@
         firstLoading = false;
       }
 
-      // addHotspot(modelViewer, meter, "hotspot-" + meter.id, `${meter.id * 50}m 25m -0m`, "0m 1m 0m", meter.name);
-      let div = document.createElement('div');
-      div.className = "point";
-      imageViewer.innerHTML += `<div class="point" style="Left:${m.x}px; top:${m.z}px;" onclick="loadMeter(${m.id})">${m.id}</div>`;
+      addHotspot(modelViewer, m, "hotspot-" + m.id, `${m.x}m ${m.y}m ${m.z}m`, "0m 1m 0m", m.name);
+      // let div = document.createElement('div');
+      // div.className = "point";
+      // imageViewer.innerHTML += `<div class="point" style="Left:${m.x}px; top:${m.z}px;" onclick="loadMeter(${m.id})">${m.id}</div>`;
       // else {
       //   bm.meters.forEach(meter => {
       //     deleteHotspot(modelViewer, "hotspot-" + meter.id);
@@ -203,6 +204,7 @@
   }
 
   function showValueOnView(id) {
+
     const meter = filtermeters.find(m => m.id === id);
     let lastIndex = meter?.data['7'].length - 1;
     let is_Null = meter?.data['7'][lastIndex]?.value ? true : false;
@@ -223,5 +225,57 @@
       }
     });
 
+  }
+
+  function gaugeJS() {
+    var chart = JSC.chart('gauge-kW', {
+      legend_visible: false,
+      defaultTooltip_enabled: false,
+      xAxis_spacingPercentage: 0.4,
+      yAxis: [
+        {
+          id: 'ax2',
+          scale_range: [0, 850],
+          defaultTick: {
+            padding: 10,
+            enabled: false
+          },
+          customTicks: [0, 300, 600, 700, 800, 850],
+        }
+      ],
+      defaultSeries: {
+        type: 'gauge column roundcaps',
+        shape: {
+          label: {
+            text: '%max',
+            align: 'center',
+            verticalAlign: 'middle',
+            style_fontSize: 28
+          }
+        }
+      },
+      series: [
+        {
+          yAxis: 'ax2',
+          name: 'Temperatures',
+          palette: {
+            id: 'pal2',
+            pointValue: '{%yValue/850}',
+            colors: [
+              '#ffffd9',
+              '#edf8b0',
+              '#c7e9b4',
+              '#7fcdbb',
+              '#41b6c3',
+              '#1d91c0',
+              '#225ea8',
+              '#253494',
+              '#081d58'
+            ]
+          },
+          points: [['x', 320]]
+        }
+      ]
+    });
   }
 </script>
