@@ -72,14 +72,13 @@ checkLogin();
                             </div>
                         </div>
                         <div class="w-50 position-relative">
-                            <!-- <model-viewer id="myModel" alt="3D model" auto-rotate camera-controls ar
+                            <model-viewer id="myModel" alt="3D model" auto-rotate camera-controls ar
                                 style="width: 100%; height: 100%; background-color: transparent;">
-                            </model-viewer> -->
-                            <div id="3d-viewer" style="position: relative; display: inline-block;">
+                            </model-viewer>
+                            <!-- <div id="3d-viewer" style="position: relative; display: inline-block;"> -->
                                 <!-- รูปภาพ -->
-                                <img src="../assets/images/map.png" alt="My PNG" style="width: 100%; height: auto;">
-
-                            </div>
+                                <!-- <img src="../assets/images/map.png" alt="My PNG" style="width: 100%; height: auto;"> -->
+                            <!-- </div> -->
                             <div class="position-absolute w-25 bg-light bg-opacity-10 px-3 py-2 rounded flex-column gap-2" id="infomation-meter" style="top: 10px; right: 10px; display: none;">sadagsd</div>
                         </div>
                         <div class="w-25 px-3 bg-white bg-opacity-10 shadow-sm d-flex flex-column gap-1" id="listgroup">

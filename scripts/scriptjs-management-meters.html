@@ -238,7 +238,12 @@
                     div.style.width = '280px';
                     div.style.height = '380px';
                     div.innerHTML = `
-                        <div class="text-center border fs-5 rounded-top fw-bold align-content-center bg-blue-reverse" style="height:13%; ">${row.name}</div>
+                        <div class="text-center border fs-5 rounded-top fw-bold align-content-center bg-blue-reverse position-relative" style="height:10%; ">
+                            <div class="w-90 ps-2" style=" display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical;  overflow: hidden; "> ${row.name} </div>
+                            <div class="position-absolute" style="top:2px; right:5px;" onclick="deleteNotify(${meter.id},${row.id})">
+                                <i class="bi bi-trash3"></i>
+                            </div>
+                        </div>
                         <div class="bg-white rounded-bottom shadow w-100 p-1 text-black">
                             <h6 class="ps-2"for="mark"><?=$lang['sign']?></h6>
                             <select id="select-mark-${row.id}" class="form-select form-select-sm text-black">
@@ -247,14 +252,14 @@
                                 <option ${row.mark == '=' ? 'selected' : ''} value="="><?=$lang['=']?> (=)</option>
                             </select>
                             <h6 class="ps-2"for="value"><?=$lang['value']?></h6>
-                            <input id="value-${row.id}" class="form-control form-control-sm text-black" type="number" value="${row.value}" placeholder="Number value">
+                            <input id="value-${row.id}" class="form-control form-control-sm text-black" type="number" value="${row.value_condition}" placeholder="Number value">
                             <h6 class="ps-2"for="token"><?=$lang['token']?> <?=$lang['line']?></h6>
-                            <input id="token-${row.id}" class="form-control form-control-sm text-black" type="text" value="${row.token_line}" placeholder="Line token here">
+                            <input id="token-${row.id}" class="form-control form-control-sm text-black" type="text" value="${row.token_line}" placeholder="Line token here.">
                             <h6 class="ps-2"for="email"><?=$lang['email']?></h6>
-                            <input id="email-${row.id}" class="form-control form-control-sm text-black" type="text" value="${row.email}" placeholder="paste email here">
+                            <input id="email-${row.id}" class="form-control form-control-sm text-black" type="text" value="${row.email}" placeholder="Input email here.">
                             <div class="w-100 py-2 px-3 d-flex justify-content-between">
-                                <input id="active-${row.id}" onclick="UpdateStatusNotify(${meter.id},${row.id},'active')" value="${row.is_active == 0 ? 'Enabled' : 'Disabled'}" class="btn btn-sm text ${row.is_active == 0 ? 'bg-blue' : 'bg-red'} " style="width:40%;  ">
-                                <input id="update-${row.id}" onclick="UpdateStatusNotify(${meter.id},${row.id},'update')" value="Save" class="btn btn-sm bg-green text text-black" style="width:40%;">
+                                <input id="active-${row.id}" onclick="UpdateStatusNotify(${meter.id},${row.id},'active')" value="${row.is_active == 1 ? 'Enabled' : 'Disabled'}" class="btn btn-sm text ${row.is_active == 1 ? 'bg-blue' : 'bg-red'} " style="width:40%;  ">
+                                <input id="update-${row.id}" onclick="UpdateStatusNotify(${meter.id},${row.id},'update')" value="Update" class="btn btn-sm bg-green text text-black" style="width:40%;">
                             </div>
                         </div>
                     `;
@@ -262,10 +267,12 @@
                 });
                 let blankdiv = document.createElement('div');
                 blankdiv.className = "p-2";
+                blankdiv.id = "blankdiv";
                 blankdiv.style.width = "280px";
                 blankdiv.style.height = "380px";
                 blankdiv.innerHTML = `
-                    <div class="p-2 bg-white bg-opacity-10 w-100 rounded d-flex justify-content-center align-items-center" style="height:92%;" onclick="addnotify()">
+                    <div class="p-2 bg-white bg-opacity-10 w-100 rounded d-flex justify-content-center align-items-center hover-div" style="height:92%;" onclick="addNotify()">
+                    <input id="meterID" value="${meter.id}" type="hidden" />
                     <i class="bi bi-plus-lg"></i>
                     </div>
                 `;
@@ -288,22 +295,33 @@
             let btn_active = document.getElementById('active-' + notify_id);
             let is_active = btn_active.classList.contains('bg-blue') ? 1 : 0;
             formdata.append('value', is_active);
-        } else if (status === 'update') {
+        } else if (status === 'update' || status === 'create') {
             let select = document.getElementById('select-mark-' + notify_id);
+            let name = document.getElementById('name-' + notify_id);
             let value = document.getElementById('value-' + notify_id);
             let token = document.getElementById('token-' + notify_id);
             let email = document.getElementById('email-' + notify_id);
+            let active = document.getElementById('active-' + notify_id);
+            let meter = document.getElementById('meter-' + notify_id);
+
+            const activeValue = active.classList.contains('bg-blue') ? 1 : 0;
 
             if (select && value && token && email) {
+                formdata.append('meter_id', meter.value);
+                formdata.append('name', name.value);
                 formdata.append('mark', select.value);
                 formdata.append('value', value.value);
                 formdata.append('token', token.value);
                 formdata.append('email', email.value);
+                formdata.append('active', activeValue);
             } else {
                 console.error('One or more input elements not found for ID:', notify_id);
                 return;
             }
+        } else if (status === 'delete') {
+            console.log("กำลังลบแจ้งเตือน...");
         }
+
 
         showLoading(); // แสดง loading
         const response = await fetch('../config/update-notify.php', {
@@ -360,14 +378,19 @@
 
     function addNotify() {
         let listNotify = document.getElementById('list-notify');
-        if (listNotify) { return }
+        if (!listNotify) { return }
+        let blankdiv = document.getElementById('blankdiv');
+        const meterID = blankdiv.querySelector('#meterID').value;
         let div = document.createElement('div');
         div.className = 'p-2';
         div.style.width = '280px';
         div.style.height = '380px';
         div.innerHTML = `
-            <div class="text-center border fs-5 rounded-top fw-bold align-content-center bg-blue-reverse" style="height:13%; ">${row.name}</div>
+            <div class="text-center border fs-5 rounded-top fw-bold align-content-center bg-blue-reverse" style="height:10%;"><?=$lang['nnotify']?></div>
             <div class="bg-white rounded-bottom shadow w-100 p-1 text-black">
+                <input id="meter-0" type="hidden" value="${meterID}"/>
+                <h6 class="ps-2"for="name"><?=$lang['name']?></h6>
+                <input id="name-0" class="form-control form-control-sm text-black" type="text" placeholder="Unknown">
                 <h6 class="ps-2"for="mark"><?=$lang['sign']?></h6>
                 <select id="select-mark-0" class="form-select form-select-sm text-black">
                     <option value="<"><?=$lang['<']?> (<)</option>
@@ -375,18 +398,22 @@
                     <option value="="><?=$lang['=']?> (=)</option>
                 </select>
                 <h6 class="ps-2"for="value"><?=$lang['value']?></h6>
-                <input id="value-0" class="form-control form-control-sm text-black" type="number" value="${row.value}" placeholder="Number value">
+                <input id="value-0" class="form-control form-control-sm text-black" type="number" placeholder="Number value">
                 <h6 class="ps-2"for="token"><?=$lang['token']?> <?=$lang['line']?></h6>
-                <input id="token-0" class="form-control form-control-sm text-black" type="text" value="${row.token_line}" placeholder="Line token here">
+                <input id="token-0" class="form-control form-control-sm text-black" type="text" placeholder="Line token here">
                 <h6 class="ps-2"for="email"><?=$lang['email']?></h6>
-                <input id="email-0" class="form-control form-control-sm text-black" type="text" value="${row.email}" placeholder="paste email here">
+                <input id="email-0" class="form-control form-control-sm text-black" type="text" placeholder="paste email here">
                 <div class="w-100 py-2 px-3 d-flex justify-content-between">
-                    <input id="active-0" onclick="UpdateStatusNotify(${meter.id},${row.id},'active')" value="${row.is_active == 0 ? 'Enabled' : 'Disabled'}" class="btn btn-sm text ${row.is_active == 0 ? 'bg-blue' : 'bg-red'} " style="width:40%;  ">
-                    <input id="update-0" onclick="UpdateStatusNotify(${meter.id},${row.id},'update')" value="Save" class="btn btn-sm bg-green text text-black" style="width:40%;">
+                    <input id="active-0" value="Enabled" class="btn btn-sm text bg-blue" style="width:40%;">
+                    <input id="update-0" value="Save" onclick="UpdateStatusNotify(${meterID},0,'create')" class="btn btn-sm bg-green text text-black" style="width:40%;">
                 </div>
             </div>
         `;
+        blankdiv.remove();
         listNotify.appendChild(div);
     }
 
+    function deleteNotify(mid, id) {
+        UpdateStatusNotify(mid, id, 'delete');
+    }
 </script>

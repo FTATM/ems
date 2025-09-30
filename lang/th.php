@@ -311,4 +311,6 @@ $lang = [
     "line" => "LINE",
 
     "kiloHrMeter" => "KILOWATT - HOUR METER",
+
+    "nnotify" => "สร้างแจ้งเตือนใหม่",
 ];

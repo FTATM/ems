@@ -19,7 +19,11 @@ checkLogin();
         <?php include "../components/sidemenu.php"; ?>
         <div class="w-100 h-100 d-flex flex-column justify-content-center">
             <?php include "../components/header.php"; ?>
-            <div class="bg-secondary bg-opacity-25 d-flex flex-column pt-5 align-items-center" style="min-height: 80svh;">
+            <div class="bg-secondary bg-opacity-25 d-flex flex-wrap mx-3 mt-3 gap-3 align-items-center py-2">
+                <label id="location" class="px-2" for="locations">Location : </label>
+                <label id="group" class="px-2" for="groups">Group : </label>
+            </div>
+            <div class="bg-secondary bg-opacity-25 d-flex flex-column m-3 pt-5 align-items-center" style="min-height: 80svh;">
                 <div id="list-meters" class="d-flex gap-2"></div>
             </div>
         </div>
