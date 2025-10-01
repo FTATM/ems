@@ -20,6 +20,7 @@
         await fetchAll();
         await filterMeters();
         await generateMeters();
+        await setInformation();
     }
 
     async function fetchAll() {
@@ -66,6 +67,28 @@
         });
 
         console.log("Data ready : ", filteredDataInMeters);
+    }
+
+    function getNameLocation(gid) {
+        return locations.find(l => {
+            return groups.filter(g => {
+                return g.id === gid;
+            })
+        }).name;
+    }
+
+    function getNameGroup(id) {
+
+        return groups.find(g => {
+            return g.id === id;
+        }).name;
+    }
+
+    function setInformation() {
+        const locate = document.getElementById('location');
+        locate.innerHTML = `<?=$lang['location']?> : ` + getNameLocation(groupID);
+        const group = document.getElementById('group');
+        group.innerHTML = `<?=$lang['group']?> : ` + getNameGroup(groupID);
     }
 
     function generateMeters() {

@@ -13,7 +13,7 @@ include "../config/connect.php";
 $id = $_POST['id'] ?? null;
 $status = $_POST['status'] ?? '';
 
-if (!$id || !$status ) {
+if (!$status) {
     echo json_encode(['success' => false, 'message' => 'ข้อมูลไม่ครบถ้วน']);
     exit;
 }
@@ -30,8 +30,23 @@ switch ($status) {
         $value = $_POST['value'] ?? 0.00;
         $token = $_POST['token'] ?? '';
         $email = $_POST['email'] ?? '';
-        $stmt = $conn->prepare("UPDATE notify SET mark = ?, value = ?, token_line = ?, email = ? WHERE id = ?");
+        $stmt = $conn->prepare("UPDATE notify SET mark = ?, value_condition = ?, token_line = ?, email = ? WHERE id = ?");
         $stmt->bind_param("sdssi", $mark, $value, $token, $email, $id);
+        break;
+
+    case "create":
+        $meter_id = $_POST['meter_id'] ?? '';
+        $name = $_POST['name'] ?? '';
+        $mark = $_POST['mark'] ?? '';
+        $value = $_POST['value'] ?? 0.00;
+        $token = $_POST['token'] ?? '';
+        $email = $_POST['email'] ?? '';
+        $stmt = $conn->prepare("INSERT INTO notify (meter_id,name, mark, value_condition, token_line, email) VALUES (?,?,?,?,?,?)");
+        $stmt->bind_param("issdss", $meter_id, $name, $mark, $value, $token, $email);
+        break;
+    case "delete":
+        $stmt = $conn->prepare("UPDATE notify SET is_deleted = 1 WHERE id = ?");
+        $stmt->bind_param("i", $id);
         break;
 
     default:

@@ -21,8 +21,9 @@ include '../components/session.php';
             <?php include "../components/header.php"; ?>
             <div class="bg-secondary bg-opacity-25 d-flex flex-wrap m-3 gap-3 align-items-center py-2">
                 <h4 class="px-2">Filter</h4>
-                <label id="location" for="locations"> : </label>
-                <label id="group" for="groups">Group : </label>
+                <label id="location" class="px-2" for="locations">Location : </label>
+                <label id="group" class="px-2" for="groups">Group : </label>
+                <label class="ps-2" for="meters"><?=$lang['meter']?> : </label>
                 <select id="select-meters" class="form-select bg-secondary border-0 text-white" style="width: 15%;" onchange="filterDataInMeters()">
 
                 </select>

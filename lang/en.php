@@ -286,8 +286,8 @@ $lang = [
 
     "diagram" => "Diagram",
 
-    "alltype" => "All types", 
-    
+    "alltype" => "All types",
+
     "reportMeterDetail" => "Report Meter Detail",
 
     "project" => "Project",
@@ -311,4 +311,6 @@ $lang = [
     "line" => "LINE",
 
     "kiloHrMeter" => "KILOWATT - HOUR METER",
+
+    "nnotify" => "New Notify",
 ];
