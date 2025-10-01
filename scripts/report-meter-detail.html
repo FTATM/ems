@@ -1,8 +1,9 @@
 <script>
 
   let meterAll = [];
+  let ftAll = [];
   let filteredMeters = [];
-
+  let filterMeterValue = [];
   let selectedMeter = [];
   let dateInput = ''
   const typeMeterID = "<?=$_SESSION['tid'];?>";
@@ -10,16 +11,17 @@
 
   document.addEventListener("DOMContentLoaded", async () => {
     showLoading();
-
     await process();
     hideLoading();
 
+
   });
+
 
   async function process() {
     await fetchAllMeter();
     await filterMeters();
-    await filterMeterAll();
+    // await filterMeterAll();
   }
 
 
@@ -28,20 +30,19 @@
     const json = await response.json();
     meterAll = json.data
 
+
     const ft = await fetch("../config/fetch-ft.php");
     ftJson = await ft.json();
-    ftData = ftJson.data;
-
+    ftAll = ftJson.data;
   }
 
-  
+
 
   function showDateTime() {
     const showDeteday = document.getElementById("report-date-day");
     dateInput = showDeteday.value;
-    console.log('dateInput : ', dateInput)
+    // console.log('dateInput : ', dateInput)
     genarateOption('select-meters', filteredMeters);
-
   }
 
 
@@ -49,23 +50,11 @@
     filteredMeters = Object.values(meterAll).filter(m => {
       return m.group_id === groupID && m.meter_type_id === typeMeterID;
     });
-    console.log('filteredMeters : ', filteredMeters)
-
-    
+    console.log('filteredMeters ALL : ', filteredMeters)
   }
 
- // ถึงนี้ 
-  let filterMeterValue = [];
-  function filterMeterAll(dtmerter, startHour, endHour) {
-    filterMeterValue = Object.values(meterAll).filter(mAll => {
-      filterMeterValue.forEach(itemAll => {
-      h = new Date(itemAll.create_date.replace(' ', 'T')).getHours();
-      
-      const data = itemAll.data[1][0]
-      console.log('data new :', data)
-      });
-    }); 
-  }
+
+
 
 
   function genarateOption(id, value) {
@@ -75,57 +64,402 @@
       option.value = element.id; option.innerHTML = element.name;
       selectElement.appendChild(option);
     });
-
+    console.log('filteredMeters : ', filteredMeters)
   }
+
+
+
+  function flatedAndFilter(values, startH, endH, filterDate, typeId) {
+    const arr = Array.isArray(values) ? values : Object.values(values);
+    const flattened = arr.flatMap(data => Array.isArray(data) ? data : [data]); // flatten ให้เป็น item เดียว ๆ
+
+    // filter ตามวันที่และชั่วโมง
+    const result = flattened.filter(item => {
+      if (!item || !item.create_date || item.type_value_id != typeId) return false;
+
+      // console.log('check type id : ', item.type_value_id); // log create_date
+
+      const dt = new Date(item.create_date.replace(' ', 'T'));
+      const hour = dt.getHours();
+
+      const dateStr = dt.getFullYear() + '-' +
+        String(dt.getMonth() + 1).padStart(2, '0') + '-' +
+        String(dt.getDate()).padStart(2, '0');
+
+      const inPeriod = hour >= startH && hour <= endH;
+
+      return dateStr === filterDate && inPeriod;
+    });
+
+    return result;
+  }
+
 
 
   function selectMeter() {
     selectedMeter = filteredMeters.find(m => m.id == selectElement.value); // ใช้ == เผื่อ type ต่างกัน
-    console.log('selectedMeter is index : ', selectedMeter)
-    console.log(isNaN(selectedMeter));
-    const periods = [
+    console.log('selectedMeters is onchange function  : ', selectedMeter.data[1])
+
+    // Object Kw 
+    Kwperiods = [
       { key: 'M', start: 6, end: 12 },
       { key: 'Af', start: 12, end: 18 },
       { key: 'Ev', start: 18, end: 24 },
       { key: 'Ni', start: 0, end: 6 }
     ];
 
-    periods.forEach(p => {
-      const kwArray = flatedAndFilter(selectedMeter.data, p.start, p.end, dateInput);
-      const avg = kwArray.length
-        ? (kwArray.map(i => +i.value).reduce((sum, curr) => sum + curr, 0) / kwArray.length).toFixed(4)
-        : "0";
 
-      document.getElementById(`kw-${p.key}`).value = avg;
+    // kWhr 
+    kWhrperiods = [
+      { key: 'M', start: 6, end: 12 },
+      { key: 'Af', start: 12, end: 18 },
+      { key: 'Ev', start: 18, end: 24 },
+      { key: 'Ni', start: 0, end: 6 }
+    ];
+
+
+    // หาเวลา Time kWhr 
+    kWhrperiods.forEach(period => {
+      const duration = period.end - period.start;
+      const input = document.getElementById(`hour-kwhr-${period.key}`);
+      if (input) {
+        input.value = duration;
+      }
     });
+
+
+    function sumAndAvg(data) {
+      const values = Array.isArray(data) ? data : Object.values(data); //เพราะจะใช้งาน reduce 
+      const sum = values.reduce((acc, curr) => acc + +curr, 0);
+      const avg = values.length ? sum / values.length : 0;
+      return { sum, avg };
+    }
+
+
+
+    // const checkTypeId = flatedAndFilter(selectedMeter.data, 6, 12, dateInput, 1);
+    // console.log('ผลลัพธ์เฉพาะ kW (Array ของ Object):', checkTypeId);
+    // // ดู type_value_id ทั้งหมด
+    // console.log('type_value_id ทั้งหมด:', checkTypeId.map(item => item.type_value_id));
+    // // ดูเป็นตาราง
+    // console.table(checkTypeId);
+
+
+    Kwperiods.forEach(period => {
+      const dataArray = flatedAndFilter(selectedMeter.data, period.start, period.end, dateInput, 1);
+
+      if (dataArray.length > 0) {
+        const values = dataArray.map(item => Number(item.value));
+        const result = sumAndAvg(values);
+
+        const el = document.getElementById(`kw-${period.key}`);
+        if (el) el.value = result.avg.toFixed(4);
+
+      } else {
+        console.log(`No data for period ${period.key}`);
+      }
+    });
+
+
+    // kWhr 
+    Kwperiods.forEach(period => {
+      const dataArray = flatedAndFilter(selectedMeter.data, period.start, period.end, dateInput, 2);
+
+      if (dataArray.length > 0) {
+        const values = dataArray.map(item => Number(item.value));
+        const resultkWhr = sumAndAvg(values);
+
+        const el = document.getElementById(`kWhr-${period.key}`);
+        if (el) el.value = resultkWhr.avg.toFixed(4);
+
+        // console.log(`kWhr-${period.key}: sum=${result.sum} avg=${result.avg.toFixed(4)}`);
+      } else {
+        console.log(`No data for period ${period.key}`);
+      }
+    });
+
+
+    // function Multiple 
+    function BindFuc(values, filterDate, typeId) {
+      const arr = Array.isArray(values) ? values : Object.values(values);
+      const flattened = arr.flatMap(data => Array.isArray(data) ? data : [data]); // flatten ให้เป็น item เดียว ๆ
+
+      const result = flattened.filter(item => {
+        if (!item || !item.create_date || item.type_value_id != typeId) return false;
+        const dt = new Date(item.create_date.replace(' ', 'T'));
+        const hour = dt.getHours();
+
+        const dateStr = dt.getFullYear() + '-' +
+          String(dt.getMonth() + 1).padStart(2, '0') + '-' +
+          String(dt.getDate()).padStart(2, '0');
+
+        return dateStr === filterDate;
+      });
+      console.log('result : ', result)
+
+      return result;
+    }
+
+
+
+    // Object use All Multi Function 
+    const periods = {
+      M: {},
+      Af: {},
+      Ev: {},
+      Ni: {}
+    };
+
+
+
+    // cal kwhr(bath )
+    function CalBathKwhr(periods) {
+      const kwhrElement = document.getElementById(`kWhr-${periods}`);
+      const bathkWhrElement = document.getElementById(`result-Bath-kwhr-${periods}`);
+      const bathRateElement = document.getElementById('bInput-in-KwM');
+
+      const kwhr = parseFloat(kwhrElement.value) || 0;
+      const rate = parseFloat(bathRateElement.value) || 0;
+      const total = kwhr * rate;
+      bathkWhrElement.value = total;
+    }
+
+
+    // ตรวจสอบ Event ช่อง (4) BathDm 1
+    const inputBathDmM = document.getElementById('bInput-in-KwM');
+    inputBathDmM.addEventListener('input', function () {
+      CalBathKwhr('M');
+    });
+
+    // Af 
+    const inputBathDmAf = document.getElementById('bInput-in-KwAf')
+    inputBathDmAf.addEventListener('input', function () {
+      CalBathKwhr('Af');
+    });
+
+    // Ev 
+    const inputBathDmEv = document.getElementById('bInput-in-KwEv')
+    inputBathDmEv.addEventListener('input', function () {
+      CalBathKwhr('Ev');
+    });
+
+    //Ni
+    const inputBathDmNi = document.getElementById('bInput-in-KwNi')
+    inputBathDmNi.addEventListener('input', function () {
+      CalBathKwhr('Ni');
+    });
+
+
+    // cal Kvar 
+    const KvarValue = BindFuc(selectedMeter.data, dateInput, 5);
+    const dataKvar = KvarValue.map(kVar => kVar.value);
+    const Kvar = sumAndAvg(dataKvar)
+    const AvgKvar = Kvar.avg.toFixed(4);
+    const elementKvar = document.getElementById('Kvar');
+    elementKvar.value = AvgKvar;
+
+
+    // Pf
+    const PfValue = BindFuc(selectedMeter.data, dateInput, 17);
+    const dataPf = PfValue.map(pf => pf.value);
+    const Pf = sumAndAvg(dataPf)
+    const AvgPf = Pf.avg.toFixed(4);
+
+
+    // calculated LoadFactor 
+    function calkwhr_LF(period) {
+      const kw = document.getElementById(`kw-${period}`);
+      const kwhr = document.getElementById(`kWhr-${period}`);
+      const hours = document.getElementById(`hour-kwhr-${period}`);
+      const LF = document.getElementById(`LF-${period}`);
+
+      if (!kw || !kwhr || !hours || !LF) return;
+
+      const lfValue = (Number(kwhr.value) / Number(kw.value)) * Number(hours.value);
+      LF.value = lfValue.toFixed(4);
+
+      console.log(`LF-${period}:`, LF.value);
+    }
+    calkwhr_LF('M');
+    calkwhr_LF('Af');
+    calkwhr_LF('Ev');
+    calkwhr_LF('Ni');
+
+
+    //  multiple  function
+    function SumALL(periods) {
+      const kwhrValues = periods.map(p => {
+        const kwhr = document.getElementById(`kWhr-${p}`);
+        return Number(kwhr.value) || 0;
+      });
+
+      const kwValues = periods.map(k => {
+        const kw = document.getElementById(`kw-${k}`)
+        return Number(kw.value) || 0;
+      });
+
+      const totalKwhr = kwhrValues.reduce((sum, val) => sum + val, 0); // รวมค่า kWhr
+      const totalKw = kwValues.reduce((sum, val) => sum + val, 0); // รวมค่า kw
+      return { totalKw, totalKwhr }
+
+    }
+    const totalArray = SumALL(['M', 'Af', 'Ev', 'Ni']); //call function ในรูปแบบเก็บไว้เป็น Array ค่ารวม kwhr
+    console.log('total calFt kwhr: ', totalArray.totalKwhr)
+    console.log('total calft kw : ', totalArray.totalKw)
+
+
+
+    // show คำนวณ ค่า FT 
+    const fRate = document.getElementById('Input-Ft');
+    fRate.addEventListener('input', function () {
+      const ftValue = Number(fRate.value) || 0;
+      const ftResult = document.getElementById('ft-result-kWhr');
+      const calFTBath = (totalArray.totalKwhr * ftValue).toFixed(4);
+      ftResult.value = calFTBath
+      // console.log('Result FT BathkWhr : ', calFTBath);
+    });
+
+    // Sum Kvar 
+    
+
+    // ตัวแปรเก็บผลรวมแต่ละช่วง
+    let resultSum = {
+      m: 0,
+      af: 0,
+      ev: 0,
+      ni: 0,
+      total: 0
+    };
+
+    // เลือก input ทั้ง 4 ช่อง
+    const inputs = [
+      'bInput-in-KwM',
+      'bInput-in-KwAf',
+      'bInput-in-KwEv',
+      'bInput-in-KwNi'
+    ];
+
+    inputs.forEach(id => {
+      document.getElementById(id).addEventListener('input', sumResultElement);
+    });
+
+    function sumResultElement() {
+      resultSum.m = parseFloat(document.getElementById('bInput-in-KwM').value) || 0;
+      resultSum.af = parseFloat(document.getElementById('bInput-in-KwAf').value) || 0;
+      resultSum.ev = parseFloat(document.getElementById('bInput-in-KwEv').value) || 0;
+      resultSum.ni = parseFloat(document.getElementById('bInput-in-KwNi').value) || 0;
+
+      // คำนวณผลรวมทั้งหมด
+      resultSum.total = resultSum.m + resultSum.af + resultSum.ev + resultSum.ni;
+      console.log('รวมทั้งหมด:', resultSum.total);
+    }
+
+
+
+
+    // คำนวณ Erectrict 
+    function ErectricTatol() {
+      const kw = totalArray.totalKw;
+      const kwhr = totalArray.totalKwhr;
+      console.log("รวม kW:", kw);
+      console.log("รวม kWhr:", kwhr);
+
+      // สามารถนำไปคำนวณค่าไฟต่อได้
+      const rate = 4.2;
+      const demandRate = 100;
+      const pfRate = 50;
+      const ftRate = 0.86;
+      const serviceCharge = 38.22;
+
+      const totalBeforeVat = kwhr * rate + kw * demandRate + pfRate * 50 + serviceCharge + kwhr * ftRate;
+      const totalAfterVat = totalBeforeVat * 1.07;
+
+      console.log("รวมก่อน VAT:", totalBeforeVat.toFixed(2));
+      console.log("รวมหลัง VAT:", totalAfterVat.toFixed(2));
+    }
+    ErectricTatol();
+
+
+
+
+
+
+
   }
 
+
+  const resultKvar = document.getElementById('Input-Kvar')
+    console.log('resultKvar : ', resultKvar.value);
+    resultKvar.addEventListener('input', function () {
+      const kvar = document.getElementById('result-Kvar');
+      console.log('kvar : ', kvar.value);
+    });
+
+    
+
+  // calculater demand Kw 
   function InElementKw(id, Bath_id, sumKwhr, Kw) {
     const inputElement = document.getElementById(id);
     const BathElement = document.getElementById(Bath_id);
     const sumkWhrElement = document.getElementById(sumKwhr);
     const kwElement = document.getElementById(Kw);
-    BathElement.value = inputElement.value * kwElement.value ; 
-
+    BathElement.value = inputElement.value * kwElement.value;
   }
 
-  function flatedAndFilter(values, startH, endH, filterDate) {
-    const result = Object.values(values).flatMap(item => {
-      if (Array.isArray(item)) {
-        return item.filter(m => {
-          const dt = new Date(m.create_date.replace(' ', 'T'))
-          const hour = dt.getHours()
-          const dateStr = dt.toISOString().split("T")[0];
-          const check_date = dateStr === filterDate && hour >= startH && hour < endH
-          return check_date;
-        });
-      }
-      return [];
-    });
-    return result
+
+  //Calculated kWhr 
+  function InElementKwhr(kwhr, bath_id, result) {
+    const kwhrElement = document.getElementById(kwhr);
+    const BathInputElement = document.getElementById(bath_id);
+    const resultElement = document.getElementById(result);
+    resultElement.value = kwhrElement.value * BathInputElement.value;
   }
 
- 
+
+  function kwShow(kw) {
+    const kwEle = document.getElementById(kw);
+    return kwEle.value
+  }
+
+
+  // calculated KvarResult ---> pf  
+  function FuncOnPf(id, bath_id, result) {
+    const elementBthkvar = document.getElementById(id);
+    const BathElementInput = document.getElementById(bath_id);
+    const resultKvar = document.getElementById(result);
+    resultKvar.value = elementBthkvar.value * BathElementInput.value;
+  }
+
+
+  // service 
+  function service(id) {
+    return Number(document.getElementById(id).value) || 0;
+  }
+
+
+
+
+
+
+
+  // ตัวอย่างการคำนวณ 
+  // function calculate() {
+  //   const sum = service("num1") + service("num2");
+  //   document.getElementById("result").textContent = "ผลลัพธ์: " + sum;
+  // }
+
+
+  //
+
+
+
+
+  // calculated pf
+  // วิธีการหา pf < 0.85 => p(kw) / s (KVA)
+
+  // function FuncOnPf() {
+  //   console.log
+  // }
 
 
 
@@ -144,7 +478,8 @@
 
 
 
-  
+
+
 
 
 
