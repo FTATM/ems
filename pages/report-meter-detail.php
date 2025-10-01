@@ -49,12 +49,12 @@ include '../components/session.php';
                                 </li>
                                 <!-- select Meter -->
                                 <li class="me-2">
-                                    <select id="select-meters" 
-                                    onchange="selectMeter()"
-                                    class="form-select form-select-sm w-auto mt-2">
-                                        <option selected disabled >Meter List</option>
+                                    <select id="select-meters"
+                                        onchange="selectMeter()"
+                                        class="form-select form-select-sm w-auto mt-2">
+                                        <option selected disabled>Meter List</option>
                                     </select>
-                                    
+
                                 </li>
                             </ul>
                         </div>
@@ -71,16 +71,17 @@ include '../components/session.php';
                                         <label class="me-2 mb-0">Kw</label>
                                     </div>
                                     <input id="kw-M" type="text" class="form-control form-control-sm"
+                                        oninput="kwShow('kw-M')"
                                         style="width:100px;" readonly>
                                 </div>
                                 <div class="me-2">
                                     <div>
                                         <label class="me-2 mb-0">Bath/Dm</label>
                                     </div>
-                                    <input id="bInput-in-KwM" type="text" 
-                                    oninput="InElementKw('bInput-in-KwM','result-Bath-m','result-bath-kWhr-m','kw-M')" 
+                                    <input id="bInput-in-KwM" type="text"
+                                        oninput="InElementKw('bInput-in-KwM','result-Bath-m','result-bath-kWhr-m','kw-M')"
 
-                                    class="form-control form-control-sm bg-light text-dark"
+                                        class="form-control form-control-sm bg-light text-dark"
                                         style="width:100px;">
                                 </div>
                                 <div class="me-2">
@@ -94,7 +95,7 @@ include '../components/session.php';
                                     <div>
                                         <label class="me-2 mb-0">บาท/kWhr</label>
                                     </div>
-                                    <input id="result-bath-kWhr-m" type="text" class="form-control form-control-sm"
+                                    <input id="result-Bath-kwhr-M" type="text" class="form-control form-control-sm"
                                         style="width:100px;" readonly>
                                 </div>
                             </div>
@@ -114,9 +115,8 @@ include '../components/session.php';
                                 <div class="me-2">
 
                                     <input id="bInput-in-KwAf" type="text" class="form-control form-control-sm bg-light text-dark"
-                                        style="width:100px;"    
-                                    oninput="InElementKw('bInput-in-KwAf','result-Bath-af','result-bath-kWhr-af','kw-Af')" 
->
+                                        style="width:100px;"
+                                        oninput="InElementKw('bInput-in-KwAf','result-Bath-af','result-bath-kWhr-af','kw-Af')">
                                 </div>
                                 <div class="me-2">
 
@@ -125,10 +125,12 @@ include '../components/session.php';
                                 </div>
                                 <div class="me-2">
 
-                                    <input id="result-bath-kWhr-af" type="text" class="form-control form-control-sm"
+                                    <input id="result-Bath-kwhr-Af" type="text" class="form-control form-control-sm"
                                         style="width:100px;" readonly>
                                 </div>
                             </div>
+
+
 
                             <!-- เย็น -->
 
@@ -143,10 +145,9 @@ include '../components/session.php';
                                 <div class="me-2">
 
                                     <input id="bInput-in-KwEv" type="text" class="form-control form-control-sm bg-light text-dark"
-                                        style="width:100px;"    
-                                    oninput="InElementKw('bInput-in-KwEv','result-Bath-ev','result-bath-kWhr-ev','kw-Ev')" 
-                                        >
-                                        
+                                        style="width:100px;"
+                                        oninput="InElementKw('bInput-in-KwEv','result-Bath-ev','result-bath-kWhr-ev','kw-Ev')">
+
                                 </div>
                                 <div class="me-2">
                                     <input id="result-Bath-ev" type="text" class="form-control form-control-sm"
@@ -154,7 +155,7 @@ include '../components/session.php';
                                 </div>
                                 <div class="me-2">
 
-                                    <input id="result-bath-kWhr-ev" type="text" class="form-control form-control-sm"
+                                    <input id="result-Bath-kwhr-Ev" type="text" class="form-control form-control-sm"
                                         style="width:100px;" readonly>
                                 </div>
                             </div>
@@ -171,10 +172,9 @@ include '../components/session.php';
                                 <div class="me-2">
 
                                     <input id="bInput-in-KwNi" type="text" class="form-control form-control-sm bg-light text-dark"
-                                        style="width:100px;" 
-                                        
-                                    oninput="InElementKw('bInput-in-KwNi','result-Bath-Ni','result-bath-kWhr-Ni','kw-Ni')" 
-                                        >
+                                        style="width:100px;"
+
+                                        oninput="InElementKw('bInput-in-KwNi','result-Bath-Ni','result-bath-kWhr-Ni','kw-Ni')">
                                 </div>
                                 <div class="me-2">
 
@@ -183,7 +183,7 @@ include '../components/session.php';
                                 </div>
                                 <div class="me-2">
 
-                                    <input id="result-bath-kWhr-Ni" type="text" class="form-control form-control-sm"
+                                    <input id="result-Bath-kwhr-Ni" type="text" class="form-control form-control-sm"
                                         style="width:100px;" readonly>
                                 </div>
                             </div>
@@ -216,28 +216,31 @@ include '../components/session.php';
                                     <div>
                                         <label class="me-2 mb-0">ชั่วโมง</label>
                                     </div>
-                                    <input id="hour-for-morning" type="text" class="form-control form-control-sm"
+                                    <input id="hour-kwhr-M" type="text" class="form-control form-control-sm"
                                         style="width:100px;" readonly>
                                 </div>
                                 <div class="me-2">
                                     <div>
                                         <label class="me-2 mb-0">Kwhr</label>
                                     </div>
-                                    <input id="value-kWhr-for-morning" type="text" class="form-control form-control-sm"
+                                    <input id="kWhr-M" type="text" class="form-control form-control-sm"
                                         style="width:100px;" readonly>
                                 </div>
                                 <div class="me-2">
                                     <div>
                                         <label class="me-2 mb-0">บาท/Kwhr</label>
                                     </div>
-                                    <input id="value-input-kwhr-for-morning" type="text" class="form-control form-control-sm bg-light text-dark"
+                                    <input id="input-kWhr-M" type="text"
+                                        oninput="InElementKwhr('kWhr-M','input-kWhr-M','result-kWhr-M')"
+                                        class="form-control form-control-sm bg-light text-dark"
+
                                         style="width:100px;">
                                 </div>
                                 <div class="me-2">
                                     <div>
                                         <label class="me-2 mb-0">บาท</label>
                                     </div>
-                                    <input id="result-bath-kWhr-for-morning" type="text" class="form-control form-control-sm"
+                                    <input id="result-kWhr-M" type="text" class="form-control form-control-sm"
                                         style="width:100px;" readonly>
                                 </div>
                                 <!-- เหลือยังไม่ได้ทำ -->
@@ -245,7 +248,9 @@ include '../components/session.php';
                                     <div>
                                         <label class="me-2 mb-0">LoadFactor</label>
                                     </div>
-                                    <input id="value-load-factor-for-morning" type="text" class="form-control form-control-sm"
+                                    <input id="LF-M" type="text"
+                                        class="form-control form-control-sm"
+
                                         style="width:100px;" readonly>
                                 </div>
                             </div>
@@ -256,28 +261,33 @@ include '../components/session.php';
                                 <div class="me-2">
 
 
-                                    <input id="hour-for-afternoon" type="text" class="form-control form-control-sm"
+                                    <input id="hour-kwhr-Af" type="text" class="form-control form-control-sm"
                                         style="width:100px;" readonly>
                                 </div>
                                 <div class="me-2">
 
-                                    <input id="value-kWhr-for-afternoon" type="text" class="form-control form-control-sm"
+                                    <input id="kWhr-Af" type="text"
+
+                                        class="form-control form-control-sm"
                                         style="width:100px;" readonly>
                                 </div>
                                 <div class="me-2">
 
-                                    <input id="value-input-kwhr-for-afternoon" type="text" class="form-control form-control-sm bg-light text-dark"
+                                    <input id="input-kWhr-Af" type="text"
+
+                                        oninput="InElementKwhr('kWhr-Af','input-kWhr-Af','result-kWhr-Af')"
+                                        class="form-control form-control-sm bg-light text-dark"
                                         style="width:100px;">
                                 </div>
                                 <div class="me-2">
 
-                                    <input id="result-bath-kWhr-for-afternoon" type="text" class="form-control form-control-sm"
+                                    <input id="result-kWhr-Af" type="text" class="form-control form-control-sm"
                                         style="width:100px;" readonly>
                                 </div>
                                 <!-- เหลือยังไม่ได้ทำ -->
                                 <div class="me-2">
 
-                                    <input id="value-load-factor-for-afternoon" type="text" class="form-control form-control-sm"
+                                    <input id="LF-Af" type="text" class="form-control form-control-sm"
                                         style="width:100px;" readonly>
                                 </div>
                             </div>
@@ -288,28 +298,34 @@ include '../components/session.php';
                                 <div class="me-2">
 
 
-                                    <input id="hour-for-evening" type="text" class="form-control form-control-sm"
+                                    <input id="hour-kwhr-Ev" type="text" class="form-control form-control-sm"
                                         style="width:100px;" readonly>
                                 </div>
                                 <div class="me-2">
 
-                                    <input id="value-kWhr-for-evening" type="text" class="form-control form-control-sm"
+                                    <input id="kWhr-Ev" type="text"
+
+                                        class="form-control form-control-sm"
                                         style="width:100px;" readonly>
                                 </div>
                                 <div class="me-2">
 
-                                    <input id="value-input-kwhr-for-evening" type="text" class="form-control form-control-sm bg-light text-dark"
+                                    <input id="input-kWhr-Ev" type="text"
+
+                                        oninput="InElementKwhr('kWhr-Ev','input-kWhr-Ev','result-kWhr-Ev')"
+                                        class="form-control form-control-sm bg-light text-dark"
+
                                         style="width:100px;">
                                 </div>
                                 <div class="me-2">
 
-                                    <input id="result-bath-kWhr-for-evening" type="text" class="form-control form-control-sm"
+                                    <input id="result-kWhr-Ev" type="text" class="form-control form-control-sm"
                                         style="width:100px;" readonly>
                                 </div>
                                 <!-- เหลือยังไม่ได้ทำ -->
                                 <div class="me-2">
 
-                                    <input id="value-load-factor-for-evening" type="text" class="form-control form-control-sm"
+                                    <input id="LF-Ev" type="text" class="form-control form-control-sm"
                                         style="width:100px;" readonly>
                                 </div>
                             </div>
@@ -318,28 +334,31 @@ include '../components/session.php';
                             <!-- ดึก -->
                             <div class="d-flex justify-content-end">
                                 <div class="me-2">
-                                    <input id="hour-for-night" type="text" class="form-control form-control-sm"
+                                    <input id="hour-kwhr-Ni" type="text" class="form-control form-control-sm"
                                         style="width:100px;" readonly>
                                 </div>
                                 <div class="me-2">
 
-                                    <input id="value-kWhr-for-night" type="text" class="form-control form-control-sm"
+                                    <input id="kWhr-Ni" type="text" class="form-control form-control-sm"
                                         style="width:100px;" readonly>
                                 </div>
                                 <div class="me-2">
 
-                                    <input id="value-input-kwhr-for-night" type="text" class="form-control form-control-sm bg-light text-dark"
+                                    <input id="input-kWhr-Ni" type="text"
+
+                                        oninput="InElementKwhr('kWhr-Ni','input-kWhr-Ni','result-kWhr-Ni')"
+                                        class="form-control form-control-sm bg-light text-dark"
                                         style="width:100px;">
                                 </div>
                                 <div class="me-2">
 
-                                    <input id="result-bath-kWhr-for-night" type="text" class="form-control form-control-sm"
+                                    <input id="result-kWhr-Ni" type="text" class="form-control form-control-sm"
                                         style="width:100px;" readonly>
                                 </div>
                                 <!-- เหลือยังไม่ได้ทำ -->
                                 <div class="me-2">
 
-                                    <input id="value-load-factor-for-night" type="text" class="form-control form-control-sm"
+                                    <input id="LF-Ni" type="text" class="form-control form-control-sm"
                                         style="width:100px;" readonly>
                                 </div>
                             </div>
@@ -348,7 +367,7 @@ include '../components/session.php';
 
                             <br>
 
-                            <!--   ค่าเพาเวอร์แฟคเตอร์ -->
+                            <!--   ค่าเพาเวอร์แฟคเตอร์ Kvar -->
                             <div class="mb-1">3.ค่าเพาเวอร์แฟคเตอร์</div>
 
                             <br>
@@ -358,7 +377,7 @@ include '../components/session.php';
                                     <div>
                                         <label class="me-2 mb-0">KVAR</label>
                                     </div>
-                                    <input id="value-kvar" type="text" class="form-control form-control-sm"
+                                    <input id="Kvar" type="text" class="form-control form-control-sm"
                                         style="width:100px;" readonly>
                                 </div>
                                 <div class="me-2">
@@ -372,12 +391,16 @@ include '../components/session.php';
                                     <div>
                                         <label class="me-2 mb-0">บาท/kVar</label>
                                     </div>
-                                    <input id="bath-kvar" type="text" class="form-control form-control-sm bg-light text-dark"
+
+                                    <input id="Input-Kvar" type="text"
+                                        class="form-control form-control-sm bg-light text-dark"
+                                        oninput="FuncOnPf('Kvar','Input-Kvar','result-Kvar')"
+
                                         style="width:100px; ">
                                 </div>
                                 <div class="me-2">
                                     <label class="me-2 mb-0"></label>
-                                    <input id="result-bath-KVar" type="text" class="form-control form-control-sm"
+                                    <input id="result-Kvar" type="text" class="form-control form-control-sm"
                                         style="width:100px;" readonly>
                                 </div>
                             </div>
@@ -425,9 +448,12 @@ include '../components/session.php';
 
 
                                 <div class="ms-2">
-                                    <input id="value-input-service"
-                                        class="form-control form-control-sm bg-light text-dark" type="text"
+                                    <input id="Input-service"
+                                        class="form-control form-control-sm bg-light text-dark"
+                                        oninput="service('Input-service')"
+                                        type="text"
                                         style="width:100px;">
+
                                 </div>
 
 
@@ -438,13 +464,13 @@ include '../components/session.php';
                             <div class="d-flex justify-content-end">
 
                                 <div class="ms-2 ms-auto">
-                                    <input id="value-input-ft" class="form-control form-control-sm bg-light text-dark"
+                                    <input id="Input-Ft" class="form-control form-control-sm bg-light text-dark"
                                         type="text" style="width:100px;">
                                 </div>
 
 
                                 <div class="ms-2">
-                                    <input id="value-ft-result" class="form-control form-control-sm"
+                                    <input id="ft-result-kWhr" class="form-control form-control-sm"
                                         type="text" style="width:100px;" readonly>
                                 </div>
 
@@ -454,6 +480,8 @@ include '../components/session.php';
 
                             </div>
 
+
+                            <!-- ค่าไฟฟ้า -->
                             <div class="mb-1">7.ค่าไฟฟ้ารวม</div>
                             <div class="d-flex justify-content-end">
 
@@ -471,6 +499,7 @@ include '../components/session.php';
                                 </div>
                             </div>
 
+                            <!-- ค่าภาษี -->
                             <div class="mb-1">8.ค่าภาษี</div>
                             <div class="d-flex justify-content-end">
 
@@ -495,6 +524,7 @@ include '../components/session.php';
 
                             </div>
 
+                            <!-- ค่ารวมทั้งสิ้น -->
                             <div class="mb-1">9.ค่ารวมทั้งสิ้น</div>
                             <div class="d-flex justify-content-end">
 
