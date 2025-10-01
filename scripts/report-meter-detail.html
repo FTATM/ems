@@ -1,4 +1,5 @@
 <script>
+
   let meterAll = [];
   let filteredMeters = [];
 
@@ -9,6 +10,7 @@
 
   document.addEventListener("DOMContentLoaded", async () => {
     showLoading();
+
     await process();
     hideLoading();
 
@@ -34,6 +36,7 @@
   }
 
 
+
   function showDateTime() {
     const showDeteday = document.getElementById("report-date-day");
     dateInput = showDeteday.value;
@@ -49,7 +52,6 @@
       return m.group_id === groupID && m.meter_type_id === typeMeterID;
     });
     console.log('filteredMeters : ', filteredMeters)
-
   }
 
   
@@ -59,9 +61,10 @@
       let option = document.createElement('option');
       option.value = element.id; option.innerHTML = element.name;
       selectElement.appendChild(option);
-    });
-  }
 
+    });
+    console.log('filteredMeters : ', filteredMeters)
+  }
 
   // function ใหม่แนวจะทำให้มัน หยืดหยุ่น 
   filterMeterValue = [];
@@ -94,29 +97,48 @@
           }
           return null;
         }).filter(Boolean);
-      });
+      }
+    )}
+  )}
 
-      console.log('filteredData :', filteredData);
-      item.filteredData = filteredData; // เก็บใน item หรือจะรวมเป็น array 
+ // ถึงนี้ 
+  let filterMeterValue = [];
+  function filterMeterAll(dtmerter, startHour, endHour) {
+    filterMeterValue = Object.values(meterAll).filter(mAll => {
+      filterMeterValue.forEach(itemAll => {
+      h = new Date(itemAll.create_date.replace(' ', 'T')).getHours();
+      
+      const data = itemAll.data[1][0]
+      console.log('data new :', data)
+
+      });
+    }); 
+  }
+
+
+
+  function genarateOption(id, value) {
+    selectElement = document.getElementById('select-meters');
+    value.forEach(element => {
+      let option = document.createElement('option');
+      option.value = element.id; option.innerHTML = element.name;
+      selectElement.appendChild(option);
     });
 
     console.log('filterMeterValue : ', filterMeterValue);
   }
 
 
-
   function selectMeter() {
     selectedMeter = filteredMeters.find(m => m.id == selectElement.value); // ใช้ == เผื่อ type ต่างกัน
-    // console.log('selectedMeter is index : ', selectedMeter)
-    // console.log(isNaN(selectedMeter));
-
+    console.log('selectedMeter is index : ', selectedMeter)
+    console.log(isNaN(selectedMeter));
     const periods = [
       { key: 'M', start: 6, end: 12 },
       { key: 'Af', start: 12, end: 18 },
       { key: 'Ev', start: 18, end: 24 },
       { key: 'Ni', start: 0, end: 6 }
     ];
-
 
     periods.forEach(p => {
       const kwArray = flatedAndFilter(selectedMeter.data, p.start, p.end, dateInput);
@@ -134,7 +156,7 @@
     const BathElement = document.getElementById(Bath_id);
     const sumkWhrElement = document.getElementById(sumKwhr);
     const kwElement = document.getElementById(Kw);
-    BathElement.value = inputElement.value * kwElement.value;
+    BathElement.value = inputElement.value * kwElement.value ; 
 
   }
 
@@ -153,6 +175,33 @@
     });
     return result
   }
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
 
 
 
