@@ -24,9 +24,7 @@ include '../components/session.php';
                 <label id="location" class="px-2" for="locations">Location : </label>
                 <label id="group" class="px-2" for="groups">Group : </label>
                 <label class="ps-2" for="meters"><?=$lang['meter']?> : </label>
-                <select id="select-meters" class="form-select bg-secondary border-0 text-white" style="width: 15%;" onchange="filterDataInMeters()">
-
-                </select>
+                <select id="select-meters" class="form-select bg-secondary border-0 text-white" style="width: 15%;" onchange="filterDataInMeters()"> </select>
                 <label for="select-filter-value">Last time : </label>
                 <select id="select-filter-value" class="form-select bg-secondary border-0 text-white" style="width: 10%;" onchange="filterDataInMeters()">
                     <option value="5">last 5 mins</option>

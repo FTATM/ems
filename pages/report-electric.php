@@ -32,11 +32,11 @@ checkLogin();
                             <div class="d-flex my-2">
                                 <div class="w-50 pe-1">
                                     <h4><?= $lang['from'] ?></h4>
-                                    <input id="datetime-from" type="date" class="form-control form-control-sm" value="2025-09-14" onchange="filterMeters()">
+                                    <input id="datetime-from" type="date" class="form-control form-control-sm" value="2025-09-30" onchange="filterMeters()">
                                 </div>
                                 <div class="w-50 ps-1">
                                     <h4><?= $lang['to'] ?></h4>
-                                    <input id="datetime-to" type="date" class="form-control form-control-sm" value="2025-09-14" onchange="filterMeters()">
+                                    <input id="datetime-to" type="date" class="form-control form-control-sm" value="2025-10-30" onchange="filterMeters()">
                                 </div>
                             </div>
                         </div>

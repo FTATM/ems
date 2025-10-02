@@ -1,0 +1,390 @@
+<script>
+  let meters = []
+  let locations = [];
+  let groups = [];
+  let types = [];
+  let ftloaded = false;
+  let dateSelected = "";
+  let refreshIntervalId;
+
+  const typeMeterID = "<?=$_SESSION['tid'];?>";
+  const groupID = "<?=$_SESSION['gid'];?>";
+  document.addEventListener("DOMContentLoaded", async () => {
+    showLoading();
+    ftloaded = true;
+    await process();
+    hideLoading();
+  });
+
+  async function process() {
+    await fetchAll();
+    await generateOption('select-meters', Object.values(meters), true);
+    await toDay();
+    await filterDataInMeters();
+  }
+
+  async function fetchAll() {
+    let res_location = await fetch("../config/fetch-locations.php");
+    let json_location = await res_location.json();
+    locations = json_location.data;
+
+    let res_group = await fetch("../config/fetch-groups.php");
+    let json_group = await res_group.json();
+    groups = json_group.data;
+
+    let responsetype = await fetch("../config/fetch-data_type.php");
+    let jsontype = await responsetype.json();
+    types = jsontype.data;
+
+    meters = await fetchDataInMeters();
+  }
+
+  async function fetchDataInMeters() {
+    let formfilter = new FormData();
+    formfilter.append("tid", typeMeterID);
+    formfilter.append("gid", groupID);
+
+    try {
+      const res = await fetch("../config/fetch-meters-filter.php", {
+        method: "POST",
+        body: formfilter
+      });
+      const result = await res.json();
+      return result.data;
+    } catch (e) {
+      console.error('error unknown file fetch-meters-filter.php : ', e.message);
+      alertMessages('error', 'พบปัญหา', 'เกิดข้อผิดพลาดในการทำงานของสคริปต์ fetch-meters-filter กรุณาคัดลอกข้อความนี้และส่งต่อให้ผู้ดูแลระบบ', 4000, true);
+      return [];
+    }
+  }
+
+  function generateOption(id, data, selectfirst = false) {
+    if (!ftloaded) { return }
+    ftloaded = false;
+    let select = document.getElementById(id);
+    select.innerHTML = '<option>=== <?=$lang["select"]?> === </option>';
+    data.forEach(row => {
+      let option = document.createElement('option');
+      option.value = row.id;
+      option.textContent = `[${row.id}] ${row.name}`;
+      option.selected = selectfirst ? data[0].id === row.id : false;
+      select.appendChild(option);
+    });
+    const locate = document.getElementById('location');
+    locate.innerHTML = getNameLocation(groupID);
+    const group = document.getElementById('group');
+    group.innerHTML = getNameGroup(groupID);
+  }
+
+  function toDay() {
+    let dateDay = document.getElementById('select-filter-value');
+
+    let today = new Date();
+    let yyyy = today.getFullYear();
+    let mm = String(today.getMonth() + 1).padStart(2, '0'); // เดือนต้อง +1
+    let dd = String(today.getDate()).padStart(2, '0');
+
+    dateDay.value = yyyy + "-" + mm + "-" + dd;
+    dateSelected = new Date(`${yyyy}-${mm}-${dd} 00:00:00`);
+  }
+
+  async function filterDataInMeters() {
+    const meterIDSelected = document.getElementById('select-meters');
+    const meterSelected = Object.values(meters).find(m => { return parseInt(m.id) === parseInt(meterIDSelected.value) });
+    const time = document.getElementById('select-filter-value');
+    let startDateDay = new Date(time.value + " 00:00:00");
+    let endDateDay = new Date(time.value + " 23:59:59");
+    const data = Object.entries(meterSelected.data).map(([key, rows]) => {
+      return Object.values(rows).filter(datatype => {
+        let date = new Date(datatype.create_date);
+        return date >= startDateDay && date <= endDateDay;
+      });
+    });
+    const filteredDataInMeters = {
+      ...meterSelected,
+      data: data
+    }
+
+    const dayData = await AvgMinMax(filteredDataInMeters);
+
+    let date = new Date(time.value); // yyyy-mm-dd
+    let year = date.getFullYear();
+    let month = date.getMonth(); // 0 = ม.ค., 11 = ธ.ค.
+
+    let startDate = new Date(year, month, 1, 0, 0, 0);
+    let endDate = new Date(year, month + 1, 0, 23, 59, 59);
+    const dataMonth = Object.entries(meterSelected.data).map(([key, rows]) => {
+      return Object.values(rows).filter(datatype => {
+        let date = new Date(datatype.create_date);
+        return date >= startDate && date <= endDate;
+      });
+    });
+    const filteredDataInMetersMonth = {
+      ...meterSelected,
+      data: dataMonth
+    }
+
+    const monthData = await AvgMinMax(filteredDataInMetersMonth);
+
+    loadValueDay(dayData);
+    loadValuemonth(monthData);
+  }
+
+  function AvgMinMax(meter) {
+    let values = {}
+    const dataAll = Object.entries(meter.data).map(([key, rows]) => {
+      let total = 0;
+      let min = parseFloat(rows[0].value);
+      let max = parseFloat(rows[0].value);
+      const fValue = parseFloat(rows[0].value);
+      const lValue = parseFloat(rows[rows.length - 1].value);
+      const fDate = new Date(rows[0].create_date);
+      const lDate = new Date(rows[rows.length - 1].create_date);
+      let fMinutes = fDate.getHours() * 60 + fDate.getMinutes();
+      let lMinutes = lDate.getHours() * 60 + lDate.getMinutes();
+      let diffMinutes = Math.abs(lMinutes - fMinutes); // ส่วนต่างเป็น "นาที"
+      let tHours = diffMinutes / 60;                   // แปลงเป็นชั่วโมงทศนิยม
+      let hours = Math.floor(diffMinutes / 60);
+      let minutes = diffMinutes % 60;
+      let ttime = hours + ":" + (minutes < 10 ? "0" : "") + minutes; // ใส่ 0 หน้าเลขน้อยกว่า 10
+      Object.values(rows).filter(data => {
+        let val = ['1', '3', '5'].includes(key) ? Math.abs(parseFloat(fValue) - parseFloat(data.value)) : parseFloat(data.value);
+        total += val;
+        min = val < min ? val : min;
+        max = val > max ? val : max;
+      });
+      return values[key] = {
+        total: total.toFixed(2),
+        avg: (total / rows.length).toFixed(2),
+        min: min,
+        max: max,
+        tHours: tHours,
+        ttime: ttime
+      }
+    });
+    return meterSum = {
+      ...meter,
+      data: dataAll
+    }
+  }
+
+  function loadValueDay(m) {
+    let data = m.data;
+    const kw = data[0];
+    const kwh = data[1];
+    const kva = data[2];
+    const kvar = data[4];
+    const pf = data[16];
+
+    setValueInHTML('kw-avg', kw.avg);
+    setValueInHTML('hour-diff', kw.ttime);
+    setValueInHTML('kwhr-avg', kwh.avg);
+    setValueInHTML('hour-value', kw.tHours);
+    setValueInHTML('kvar-avg', kvar.avg);
+    setValueInHTML('pf-avg', pf.avg);
+    setValueInHTML('pf-avg2', (kw.avg / kva.avg).toFixed(2));
+
+    //[1] bath of kW
+    addDetectEventMulti('input-kw', 'result-bath-kw', 'kw-avg', 'input-kw');
+    //[1] bath:kWh
+    addDetectEventDivide('input-kw', 'bath-per-kwhr', 'result-bath-kw', 'kwhr-avg');
+    sumBath('input-kw', 'input-kwhr', 'bath-per-kwhr', '');
+
+    //[2] bath of kWh
+    addDetectEventMulti('input-kwhr', 'result-bath-kwhr', 'kwhr-avg', 'input-kwhr');
+    //[2] load Factor
+    addDetectEventLoadFactor('input-kwhr', 'load-factor', 'kwhr-avg', 'kw-avg', 'hour-value');
+
+    //[3] bath of kvar
+    if (pf.avg < 0.85) {
+      addDetectEventMulti('input-kvar', 'result-bath-kvar', 'kvar-avg', 'input-kvar');
+    } else {
+      setValueInHTML('result-bath-kvar', "0.00");
+    }
+
+    //[5] bath ft
+    addDetectEventMulti('input-ft', 'result-bath-ft', 'input-ft', 'kwhr-avg');
+
+    //[6] bath all
+    sumBath('input-ft', 'result-bath-all', 'result-bath-kw', 'result-bath-kwhr', 'result-bath-kvar', 'input-service', 'result-bath-ft');
+    //[6] bath/kwhr
+    addDetectEventDivide('input-ft', 'result-bath-all-kwhr', 'result-bath-all', 'kwhr-avg');
+
+    //[7] bath tax
+    addDetectEventTax('input-tax', 'result-bath-tax', 'input-tax', 'result-bath-all');
+    //[7] bath/kwhr
+    addDetectEventDivide('input-tax', 'result-bath-tax-kwhr', 'result-bath-tax', 'kwhr-avg');
+
+    //[8] bath total
+    sumBath('input-tax', 'result-bath-total', 'result-bath-all', 'result-bath-tax');
+    //[8] bath total / kwh
+    addDetectEventDivide('input-tax', 'result-bath-total-kwhr', 'result-bath-total', 'kwhr-avg');
+  }
+
+  function loadValuemonth(m) {
+    let data = m.data;
+    const kw = data[0];
+    const kwh = data[1];
+    const kva = data[2];
+    const kvar = data[4];
+    const pf = data[16];
+
+    setValueInHTML('kw-avg-m', kw.avg);
+    setValueInHTML('hour-diff-m', kw.ttime);
+    setValueInHTML('kwhr-avg-m', kwh.avg);
+    setValueInHTML('hour-value-m', kw.tHours);
+    setValueInHTML('kvar-avg-m', kvar.avg);
+    setValueInHTML('pf-avg-m', pf.avg);
+    setValueInHTML('pf-avg2-m', (kw.avg / kva.avg).toFixed(2));
+
+    //[1] bath kw
+    addDetectEventMulti('input-kw', 'result-bath-kw-m', 'kw-avg-m', 'input-kw');
+    //[1] bath/kwhr
+    addDetectEventDivide('input-kw', 'result-bath-per-kwhr-m', 'result-bath-kw-m', 'kwhr-avg-m');
+
+    //[2] bath of kWh
+    addDetectEventMulti('input-kwhr', 'result-bath-kwhr-m', 'kwhr-avg-m', 'input-kwhr');
+    //[2] load Factor
+    addDetectEventLoadFactor('input-kwhr', 'load-factor-m', 'kwhr-avg-m', 'kw-avg-m', 'hour-value-m');
+
+    //[3] bath of kvar
+    if (pf.avg < 0.85) {
+      addDetectEventMulti('input-kvar', 'result-bath-kvar-m', 'kvar-avg-m', 'input-kvar');
+    } else {
+      setValueInHTML('result-bath-kvar-m', "0.00");
+    }
+
+    //[4] service follow day input
+    sumBath('input-service', 'input-service-m', 'input-service', '');
+
+    //[5] bath ft
+    addDetectEventMulti('input-ft', 'result-bath-ft-m', 'input-ft', 'kwhr-avg-m');
+
+    //[6] bath all
+    sumBath('input-ft', 'result-bath-all-m', 'result-bath-kw-m', 'result-bath-kwhr-m', 'result-bath-kvar-m', 'input-service-m', 'result-bath-ft-m');
+    //[6] bath/kwhr
+    addDetectEventDivide('input-ft', 'result-bath-all-kwhr-m', 'result-bath-all-m', 'kwhr-avg-m');
+
+    //[7] bath tax
+    addDetectEventTax('input-tax', 'result-bath-tax-m', 'input-tax', 'result-bath-all-m');
+    //[7] bath/kwhr
+    addDetectEventDivide('input-tax', 'result-bath-tax-kwhr-m', 'result-bath-tax-m', 'kwhr-avg-m');
+
+    //[8] bath total
+    sumBath('input-tax', 'result-bath-total-m', 'result-bath-all-m', 'result-bath-tax-m');
+    //[8] bath total / kwh
+    addDetectEventDivide('input-tax', 'result-bath-total-kwhr-m', 'result-bath-total-m', 'kwhr-avg-m');
+  }
+
+  function sumBath(eid, rid, id1, id2, id3 = "", id4 = "", id5 = "", id6 = "") {
+    const e = document.getElementById(eid);
+    e.addEventListener("input", () => {
+      const result = document.getElementById(rid);
+      if (!result) return;
+
+      let v1 = parseFloat(document.getElementById(id1)?.value) || 0;
+      let v2 = parseFloat(document.getElementById(id2)?.value) || 0;
+
+      let sumbath = v1 + v2;
+
+      [id3, id4, id5, id6].forEach(id => {
+        if (id) {
+          let val = parseFloat(document.getElementById(id)?.value) || 0;
+          sumbath += val;
+        }
+      });
+
+      result.value = sumbath.toFixed(2);
+      result.dispatchEvent(new Event('input'));
+    })
+  }
+
+  function addDetectEventMulti(parentid, resultid, vid1, vid2) {
+    let p = document.getElementById(parentid);
+    let r = document.getElementById(resultid);
+    let v1 = document.getElementById(vid1);
+    let v2 = document.getElementById(vid2);
+    p.addEventListener('input', () => {
+      r.value = (v1.value * v2.value).toFixed(2);
+    });
+  }
+
+  function addDetectEventDivide(parentid, resultid, vid1, vid2) {
+    let p = document.getElementById(parentid);
+    let r = document.getElementById(resultid);
+    let v1 = document.getElementById(vid1);
+    let v2 = document.getElementById(vid2);
+    p.addEventListener('input', () => {
+      r.value = (v1.value / v2.value).toFixed(2);
+    });
+  }
+
+  function addDetectEventLoadFactor(parentid, resultid, vid1, vid2, vid3) {
+    let p = document.getElementById(parentid);
+    let r = document.getElementById(resultid);
+    let v1 = document.getElementById(vid1);
+    let v2 = document.getElementById(vid2);
+    let v3 = document.getElementById(vid3);
+    p.addEventListener('input', () => {
+      r.value = ((v1.value / v2.value) * v3.value).toFixed(2);
+    });
+  }
+
+  function addDetectEventTax(pid, rid, tid, bid) {
+    let p = document.getElementById(pid);
+    let r = document.getElementById(rid);
+    let v1 = document.getElementById(tid);
+    let v2 = document.getElementById(bid);
+    p.addEventListener('input', () => {
+      r.value = (v1.value / 100 * v2.value).toFixed(2);
+    });
+  }
+
+  function setValueInHTML(id, value) {
+    let element = document.getElementById(id);
+    if (!element) { return }
+    element.value = value;
+  }
+
+  function getNameLocation(gid) {
+    return locations.find(l => {
+      return groups.filter(g => {
+        return g.id === gid;
+      })
+    }).name;
+  }
+
+  function getNameGroup(id) {
+    return groups.find(g => {
+      return g.id === id;
+    }).name;
+  }
+
+  function createPDF(id) {
+    const kwh = document.getElementById(id)?.value;
+
+    if (!kwh) {
+      alertMessages('error', 'ข้อมูลไม่ครบถ้วน', 'ไม่พบข้อมูลที่พร้อมสำหรับ export ไปยัง pdf โปรดกรอกข้อมูลให้ครบและลองอีกครั้ง.', 5000, true);
+      return;
+    }
+
+    let formdata = new FormData();
+    formdata.append('kWh', kwh);
+
+    fetch('../config/create-pdf.php', {
+      method: "POST",
+      body: formdata
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status) {
+          window.open(data.url, '_blank'); // เปิดไฟล์ PDF ในแท็บใหม่
+          // หรือ: window.location.href = data.url; // ดาวน์โหลดเลย
+        }
+      })
+      .catch(e => {
+        console.log('error :', e);
+      })
+  }
+
+</script>

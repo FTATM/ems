@@ -1,6 +1,7 @@
 <?php
 
 $lang = [
+    "fta" => "Fieldtech Automation co,ltd",
     "id" => "ID",
     "chooselang" => "Choose language",
     "choosetheme" => "Choose theme",

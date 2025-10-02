@@ -35,5 +35,4 @@ checkLogin();
     <?php include "../scripts/scriptjs.html"; ?>
     <?php include "../scripts/scriptjs-home.html"; ?>
 </body>
-
 </html>
