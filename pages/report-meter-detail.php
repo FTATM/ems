@@ -1,6 +1,6 @@
 <?php
 include '../components/session.php';
-// checkLogin();
+checkLogin();
 ?>
 
 <!DOCTYPE html>
@@ -10,1056 +10,426 @@ include '../components/session.php';
 
 <head>
     <meta charset="UTF-8">
-    <title><?= $lang['allmeter'] ?> - EMS</title>
+    <title><?= $lang['report'] ?> - EMS</title>
 </head>
 
 <body style="background-color: <?= $bg ?>; color: <?= $text ?>!important; min-height: 100svh;">
     <div id="main" class="d-flex">
         <?php include "../components/sidemenu.php"; ?>
         <div class="w-100 h-100 d-flex flex-column justify-content-center">
-            <!-- side bar 1  -->
             <?php include "../components/header.php"; ?>
-            <!-- side bar 2 -->
-            <div class="container-fluid p-3">
-                <!-- Main Content -->
-                <div class="d-flex justify-content-between p-3">
-                    <!-- รายงานประจำวัน -->
-                    <div class="flex-fill me-2" style="background:#333B4A;
-                     border-radius:10px; padding:24px;">
+            <div class="container-fluid px-3">
+                <div class="bg-secondary bg-opacity-25 d-flex flex-wrap justify-content-end gap-3 align-items-center mt-2">
+                    <table class="table table-bordered w-50 m-0">
+                        <tr>
+                            <td colspan="3" class="text-center">
+                                <p class="m-0"><?= $lang['fta'] ?></p>
+                            </td>
+                            <td class="text-center">
+                                <p class="m-0">version</p>
+                            </td>
+                            <td class="text-center">
+                                <p class="m-0">Demo</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-center col-2">
+                                <label class="ps-2 fw-bold" for="locations">Location :</label>
+                            </td>
+                            <td class="text-center col-3 bg-light bg-opacity-75 text-black">
+                                <p id="location" class="px-2 m-0"></p>
+                            </td>
+                            <td class="text-center col-2">
+                                <label class="ps-2" for="meters"><?= $lang['meter'] ?> : </label>
+                            </td>
+                            <td colspan="2">
+                                <select id="select-meters" class="form-select form-select-sm text-white border-hover" onchange="filterDataInMeters()"> </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-center col-2">
+                                <label class="ps-2 fw-bold" for="groups">Group : </label>
+                            </td>
+                            <td class="text-center col-3 bg-light m-1 bg-opacity-75 text-black">
+                                <p id="group" class="px-2 m-0"></p>
+                            </td>
+                            <td class="text-center col-2">
+                                <label class="ps-2" for="meters"><?= $lang['time'] ?> : </label>
+                            </td>
+                            <td colspan="2">
+                                <input id="select-filter-value" type="date" class="form-control form-control-sm border-hover" onchange="filterDataInMeters()">
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="d-flex justify-content-between bg-secondary bg-opacity-25">
+                    <div class="flex-fill me-1 p-4 rounded w-50">
                         <h5 class="text-center text-white mb-2">รายงานประจำวัน</h5>
-                        <!-- ...เนื้อหา... -->
-                        <div class=" d-flex justify-content-center gap-4 px-4 py-2">
-                            <div class="col-2 d-flex justify-content-center">
-                                <input id="report-date-day" type="date"
-                                    class="form-control form-control-sm m-10"
-                                    onchange="showDateTime()">
+                        <div class="boxcell">
+                            <div class="mb-1 align-content-center">1.ค่าความต้องการ</div>
+                            <div class=" d-flex justify-content-end w-60">
+                                <div class="me-2 w-20 opacity-0"> </div>
+                                <div class="me-2 w-20">
+                                    <label class="me-2 mb-0">kW</label>
+                                    <input id="kw-avg-m" type="text" class="form-control form-control-sm" readonly>
+                                    <input id="kw-avg-a" type="text" class="form-control form-control-sm" readonly>
+                                    <input id="kw-avg-e" type="text" class="form-control form-control-sm" readonly>
+                                    <input id="kw-avg-n" type="text" class="form-control form-control-sm" readonly>
+                                    <input id="kw-max-m" type="text" class="form-control form-control-sm d-none" readonly>
+                                    <input id="kw-max-a" type="text" class="form-control form-control-sm d-none" readonly>
+                                    <input id="kw-max-e" type="text" class="form-control form-control-sm d-none" readonly>
+                                    <input id="kw-max-n" type="text" class="form-control form-control-sm d-none" readonly>
+                                </div>
+                                <div class="me-2 w-20">
+                                    <label class="me-2 mb-0">บาท/kW</label>
+                                    <input id="input-kw-m" type="text" class="form-control form-control-sm bg-light text-dark">
+                                    <input id="input-kw-a" type="text" class="form-control form-control-sm bg-light text-dark">
+                                    <input id="input-kw-e" type="text" class="form-control form-control-sm bg-light text-dark">
+                                    <input id="input-kw-n" type="text" class="form-control form-control-sm bg-light text-dark">
+                                </div>
+                                <div class="me-2 w-20">
+                                    <label class="me-2 mb-0">บาท</label>
+                                    <input id="result-bath-kw-m" type="text" value="0.00" class="form-control form-control-sm" readonly>
+                                    <input id="result-bath-kw-a" type="text" value="0.00" class="form-control form-control-sm" readonly>
+                                    <input id="result-bath-kw-e" type="text" value="0.00" class="form-control form-control-sm" readonly>
+                                    <input id="result-bath-kw-n" type="text" value="0.00" class="form-control form-control-sm" readonly>
+                                </div>
+                                <div class="me-2 w-20">
+                                    <label class="me-2 mb-0">บาท/kWh</label>
+                                    <input id="bath-per-kwhr-m" type="text" value="0.00" class="form-control form-control-sm" readonly>
+                                    <input id="bath-per-kwhr-a" type="text" value="0.00" class="form-control form-control-sm" readonly>
+                                    <input id="bath-per-kwhr-e" type="text" value="0.00" class="form-control form-control-sm" readonly>
+                                    <input id="bath-per-kwhr-n" type="text" value="0.00" class="form-control form-control-sm" readonly>
+                                </div>
                             </div>
-                            <br>
-                            <!-- <div id="list-input">
-                            </div> -->
                         </div>
-                        <!-- navBar Menu-->
-                        <div>
-                            <ul class="no-bullet d-flex align-items-center 
-                            justify-content-center   ">
-                                <li class="me-2 ">
-
-                                    <!-- DropDown Day Menu select Time  -->
-
-                                </li>
-                                <!-- select Meter -->
-                                <li class="me-2">
-                                    <select id="select-meters"
-                                        onchange="selectMeter()"
-                                        class="form-select form-select-sm w-auto mt-2">
-                                        <option selected disabled>Meter List</option>
-                                    </select>
-
-                                </li>
-                            </ul>
-                        </div>
-
-                        <br>
-                        <!-- รายงานประจำวัน -->
-                        <!-- สำหรับช่วงเวลาเช้า -->
-                        <div class="mb-3 mt-1">
-                            <div class="mb-1">1.ค่าความต้องการ</div>
-                            <br>
-                            <div class="d-flex justify-content-end">
-                                <div class="me-2">
-                                    <div>
-                                        <label class="me-2 mb-0">Kw</label>
-                                    </div>
-                                    <input id="kw-M" type="text" class="form-control form-control-sm"
-                                        oninput="kwShow('kw-M')"
-                                        style="width:100px;" readonly>
-                                </div>
-                                <div class="me-2">
-                                    <div>
-                                        <label class="me-2 mb-0">Bath/Dm</label>
-                                    </div>
-                                    <input id="bInput-in-KwM" type="text"
-                                        oninput="InElementKw('bInput-in-KwM','result-Bath-m','result-bath-kWhr-m','kw-M')"
-
-                                        class="form-control form-control-sm bg-light text-dark"
-                                        style="width:100px;">
-                                </div>
-                                <div class="me-2">
-                                    <div>
-                                        <label class="me-2 mb-0">บาท</label>
-                                    </div>
-                                    <input id="result-Bath-m" type="text" class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
-                                <div class="me-2">
-                                    <div>
-                                        <label class="me-2 mb-0">บาท/kWhr</label>
-                                    </div>
-                                    <input id="result-Bath-kwhr-M" type="text" class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
-                            </div>
-
-
-
-
-                            <!-- บ่าย -->
-                            <div class="d-flex justify-content-end">
-                                <div class="me-2">
-
-                                    <input id="kw-Af" type="text" class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
-
-
-                                <div class="me-2">
-
-                                    <input id="bInput-in-KwAf" type="text" class="form-control form-control-sm bg-light text-dark"
-                                        style="width:100px;"
-                                        oninput="InElementKw('bInput-in-KwAf','result-Bath-af','result-bath-kWhr-af','kw-Af')">
-                                </div>
-                                <div class="me-2">
-
-                                    <input id="result-Bath-af" type="text" class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
-                                <div class="me-2">
-
-                                    <input id="result-Bath-kwhr-Af" type="text" class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
-                            </div>
-
-
-
-                            <!-- เย็น -->
-
-                            <div class="d-flex justify-content-end">
-                                <div class="me-2">
-
-                                    <input id="kw-Ev" type="text" class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
-
-
-                                <div class="me-2">
-
-                                    <input id="bInput-in-KwEv" type="text" class="form-control form-control-sm bg-light text-dark"
-                                        style="width:100px;"
-                                        oninput="InElementKw('bInput-in-KwEv','result-Bath-ev','result-bath-kWhr-ev','kw-Ev')">
-
-                                </div>
-                                <div class="me-2">
-                                    <input id="result-Bath-ev" type="text" class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
-                                <div class="me-2">
-
-                                    <input id="result-Bath-kwhr-Ev" type="text" class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
-                            </div>
-
-                            <!-- ดึก -->
-
-                            <div class="d-flex justify-content-end">
-                                <div class="me-2">
-
-                                    <input id="kw-Ni" type="text" class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
-
-                                <div class="me-2">
-
-                                    <input id="bInput-in-KwNi" type="text" class="form-control form-control-sm bg-light text-dark"
-                                        style="width:100px;"
-
-                                        oninput="InElementKw('bInput-in-KwNi','result-Bath-Ni','result-bath-kWhr-Ni','kw-Ni')">
-                                </div>
-                                <div class="me-2">
-
-                                    <input id="result-Bath-Ni" type="text" class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
-                                <div class="me-2">
-
-                                    <input id="result-Bath-kwhr-Ni" type="text" class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
-                            </div>
-
-
-                            <!-- select Time -->
-                            <div class="d-flex justify-content-end">
-                                <div class="me-2">
-
-                                    <input id="result-bath-Kw" type="text" class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
-                                <div class="me-2">
-
-                                    <input id="result-bath-kWhr" type="text" class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
-                            </div>
-
-                            <br>
-
+                        <div class="boxcell">
                             <!-- ค่าความต้องการไฟฟ้า -->
-                            <div class="mb-1">2.ค่าความต้องการไฟฟ้า</div>
-                            <br>
-
-                            <!--  เช้า -->
-                            <div class="d-flex justify-content-end">
-                                <div class="me-2">
-
-                                    <div>
-                                        <label class="me-2 mb-0">ชั่วโมง</label>
-                                    </div>
-                                    <input id="hour-kwhr-M" type="text" class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
+                            <div class="mb-1 align-content-center">2.ค่าความต้องการไฟฟ้า</div>
+                            <div class=" d-flex justify-content-end w-60">
+                                <div class="me-2 w-20">
+                                    <label class="me-2 mb-0">ชั่วโมง</label>
+                                    <input id="hour-diff-m" type="text" class="form-control form-control-sm" readonly>
+                                    <input id="hour-value-m" type="text" class="form-control form-control-sm d-none">
+                                    <input id="hour-diff-a" type="text" class="form-control form-control-sm" readonly>
+                                    <input id="hour-value-a" type="text" class="form-control form-control-sm d-none">
+                                    <input id="hour-diff-e" type="text" class="form-control form-control-sm" readonly>
+                                    <input id="hour-value-e" type="text" class="form-control form-control-sm d-none">
+                                    <input id="hour-diff-n" type="text" class="form-control form-control-sm" readonly>
+                                    <input id="hour-value-n" type="text" class="form-control form-control-sm d-none">
                                 </div>
-                                <div class="me-2">
-                                    <div>
-                                        <label class="me-2 mb-0">Kwhr</label>
-                                    </div>
-                                    <input id="kWhr-M" type="text" class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
+                                <div class="me-2 w-20">
+                                    <label class="me-2 mb-0">kWh</label>
+                                    <input id="kwhr-diff-m" type="text" class="form-control form-control-sm" readonly>
+                                    <input id="kwhr-diff-a" type="text" class="form-control form-control-sm" readonly>
+                                    <input id="kwhr-diff-e" type="text" class="form-control form-control-sm" readonly>
+                                    <input id="kwhr-diff-n" type="text" class="form-control form-control-sm" readonly>
+                                    <input id="kwhr-diff-all" type="text" class="form-control form-control-sm d-none" readonly>
                                 </div>
-                                <div class="me-2">
-                                    <div>
-                                        <label class="me-2 mb-0">บาท/Kwhr</label>
-                                    </div>
-                                    <input id="input-kWhr-M" type="text"
-                                        oninput="InElementKwhr('kWhr-M','input-kWhr-M','result-kWhr-M')"
-                                        class="form-control form-control-sm bg-light text-dark"
-
-                                        style="width:100px;">
+                                <div class="me-2 w-20">
+                                    <label class="me-2 mb-0">บาท/kWh</label>
+                                    <input id="input-kwhr-m" type="text" class="form-control form-control-sm bg-light text-dark">
+                                    <input id="input-kwhr-a" type="text" class="form-control form-control-sm bg-light text-dark">
+                                    <input id="input-kwhr-e" type="text" class="form-control form-control-sm bg-light text-dark">
+                                    <input id="input-kwhr-n" type="text" class="form-control form-control-sm bg-light text-dark">
                                 </div>
-                                <div class="me-2">
-                                    <div>
-                                        <label class="me-2 mb-0">บาท</label>
-                                    </div>
-                                    <input id="result-kWhr-M" type="text" class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
+                                <div class="me-2 w-20">
+                                    <label class="me-2 mb-0">บาท</label>
+                                    <input id="result-bath-kwhr-m" type="text" value="0.00" class="form-control form-control-sm" readonly>
+                                    <input id="result-bath-kwhr-a" type="text" value="0.00" class="form-control form-control-sm" readonly>
+                                    <input id="result-bath-kwhr-e" type="text" value="0.00" class="form-control form-control-sm" readonly>
+                                    <input id="result-bath-kwhr-n" type="text" value="0.00" class="form-control form-control-sm" readonly>
+                                    <input id="result-bath-kwhr-all" type="text" value="0.00" class="form-control form-control-sm " readonly>
                                 </div>
-                                <!-- เหลือยังไม่ได้ทำ -->
-                                <div class="me-2">
-                                    <div>
-                                        <label class="me-2 mb-0">LoadFactor</label>
-                                    </div>
-                                    <input id="LF-M" type="text"
-                                        class="form-control form-control-sm"
-
-                                        style="width:100px;" readonly>
+                                <div class="me-2 w-20">
+                                    <label class="me-2 mb-0">LoadFactor</label>
+                                    <input id="load-factor-m" type="text" value="0.00" class="form-control form-control-sm" readonly>
+                                    <input id="load-factor-a" type="text" value="0.00" class="form-control form-control-sm" readonly>
+                                    <input id="load-factor-e" type="text" value="0.00" class="form-control form-control-sm" readonly>
+                                    <input id="load-factor-n" type="text" value="0.00" class="form-control form-control-sm" readonly>
+                                    <input id="load-factor-all" type="text" value="0.00" class="form-control form-control-sm" readonly>
                                 </div>
                             </div>
-
-
-                            <!-- บ่าย -->
-                            <div class="d-flex justify-content-end">
-                                <div class="me-2">
-
-
-                                    <input id="hour-kwhr-Af" type="text" class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
-                                <div class="me-2">
-
-                                    <input id="kWhr-Af" type="text"
-
-                                        class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
-                                <div class="me-2">
-
-                                    <input id="input-kWhr-Af" type="text"
-
-                                        oninput="InElementKwhr('kWhr-Af','input-kWhr-Af','result-kWhr-Af')"
-                                        class="form-control form-control-sm bg-light text-dark"
-                                        style="width:100px;">
-                                </div>
-                                <div class="me-2">
-
-                                    <input id="result-kWhr-Af" type="text" class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
-                                <!-- เหลือยังไม่ได้ทำ -->
-                                <div class="me-2">
-
-                                    <input id="LF-Af" type="text" class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
-                            </div>
-
-
-                            <!-- เย็น -->
-                            <div class="d-flex justify-content-end">
-                                <div class="me-2">
-
-
-                                    <input id="hour-kwhr-Ev" type="text" class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
-                                <div class="me-2">
-
-                                    <input id="kWhr-Ev" type="text"
-
-                                        class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
-                                <div class="me-2">
-
-                                    <input id="input-kWhr-Ev" type="text"
-
-                                        oninput="InElementKwhr('kWhr-Ev','input-kWhr-Ev','result-kWhr-Ev')"
-                                        class="form-control form-control-sm bg-light text-dark"
-
-                                        style="width:100px;">
-                                </div>
-                                <div class="me-2">
-
-                                    <input id="result-kWhr-Ev" type="text" class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
-                                <!-- เหลือยังไม่ได้ทำ -->
-                                <div class="me-2">
-
-                                    <input id="LF-Ev" type="text" class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
-                            </div>
-
-
-                            <!-- ดึก -->
-                            <div class="d-flex justify-content-end">
-                                <div class="me-2">
-                                    <input id="hour-kwhr-Ni" type="text" class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
-                                <div class="me-2">
-
-                                    <input id="kWhr-Ni" type="text" class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
-                                <div class="me-2">
-
-                                    <input id="input-kWhr-Ni" type="text"
-
-                                        oninput="InElementKwhr('kWhr-Ni','input-kWhr-Ni','result-kWhr-Ni')"
-                                        class="form-control form-control-sm bg-light text-dark"
-                                        style="width:100px;">
-                                </div>
-                                <div class="me-2">
-
-                                    <input id="result-kWhr-Ni" type="text" class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
-                                <!-- เหลือยังไม่ได้ทำ -->
-                                <div class="me-2">
-
-                                    <input id="LF-Ni" type="text" class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
-                            </div>
-
-
-
-                            <br>
-
-                            <!--   ค่าเพาเวอร์แฟคเตอร์ Kvar -->
-                            <div class="mb-1">3.ค่าเพาเวอร์แฟคเตอร์</div>
-
-                            <br>
-
-                            <div class="d-flex justify-content-end">
-                                <div class="me-2">
-                                    <div>
-                                        <label class="me-2 mb-0">KVAR</label>
-                                    </div>
-                                    <input id="Kvar" type="text" class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
-                                <div class="me-2">
-                                    <div>
-                                        <label class="me-2 mb-0">pf < 0.85</label>
-                                    </div>
-                                    <input id="value-pf" type="text" class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
-                                <div class="me-2">
-                                    <div>
-                                        <label class="me-2 mb-0">บาท/kVar</label>
-                                    </div>
-
-                                    <input id="Input-Kvar" type="text"
-                                        class="form-control form-control-sm bg-light text-dark"
-                                        oninput="FuncOnPf('Kvar','Input-Kvar','result-Kvar')"
-
-                                        style="width:100px; ">
-                                </div>
-                                <div class="me-2">
-                                    <label class="me-2 mb-0"></label>
-                                    <input id="result-Kvar" type="text" class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
-                            </div>
-
-                            <br>
-                            <!--  Product Counter-->
-                            <div class="mb-1">4.Product Counter</div>
-
-                            <br>
-
-                            <div class="d-flex justify-content-end">
-                                <div class="me-2">
-                                    <div>
-                                        <label class="me-2 mb-0">Count</label>
-                                    </div>
-                                    <input id="value-kvar" type="text" class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
-                                <div class="me-2">
-                                    <div>
-                                        <label class="me-2 mb-0">Bath/Unit</label>
-                                    </div>
-                                    <input id="value-pf" type="text" class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
-                                <div class="me-2">
-                                    <div>
-                                        <label class="me-2 mb-0">Bank</label>
-                                    </div>
-                                    <input id="bath-kvar" type="text" class="form-control form-control-sm bg-light text-dark"
-                                        style="width:100px; ">
-                                </div>
-                                <div class="me-2">
-                                    <label class="me-2 mb-0">kWhr/Count</label>
-                                    <input id="result-bath-KVar" type="text" class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
-                            </div>
-
-                            <br>
-
-
-                            <div class="mb-1">5.ค่าบริการ</div>
-                            <div class="d-flex justify-content-end ms-4 ">
-
-
-                                <div class="ms-2">
-                                    <input id="Input-service"
-                                        class="form-control form-control-sm bg-light text-dark"
-                                        oninput="service('Input-service')"
-                                        type="text"
-                                        style="width:100px;">
-
-                                </div>
-
-
-
-                            </div>
-                            <!-- FT -->
-                            <div class="mb-1">6.ค่า FT</div>
-                            <div class="d-flex justify-content-end">
-
-                                <div class="ms-2 ms-auto">
-                                    <input id="Input-Ft" class="form-control form-control-sm bg-light text-dark"
-                                        type="text" style="width:100px;">
-                                </div>
-
-
-                                <div class="ms-2">
-                                    <input id="ft-result-kWhr" class="form-control form-control-sm"
-                                        type="text" style="width:100px;" readonly>
-                                </div>
-
-                                <div class="ms-2">
-                                    <label class="">บาท/Khwr</label>
-                                </div>
-
-                            </div>
-
-
-                            <!-- ค่าไฟฟ้า -->
-                            <div class="mb-1">7.ค่าไฟฟ้ารวม</div>
-                            <div class="d-flex justify-content-end">
-
-
-                                <div class="ms-2">
-                                    <input id="value-before-vat" class="form-control form-control-sm"
-                                        type="text" style="width:100px;" readonly>
-                                </div>
-
-
-
-                                <div class="ms-2">
-                                    <input id="value-after-vat" class="form-control form-control-sm"
-                                        type="text" style="width:100px;" readonly>
-                                </div>
-                            </div>
-
-                            <!-- ค่าภาษี -->
-                            <div class="mb-1">8.ค่าภาษี</div>
-                            <div class="d-flex justify-content-end">
-
-
-                                <div class="ms-2">
-                                    <input id="value-input-tax" class="form-control form-control-sm bg-light text-dark"
-                                        type="text" style="width:100px;">
-                                </div>
-
-
-
-                                <div class="ms-2">
-                                    <input id="value-first-Tax" class="form-control form-control-sm"
-                                        type="text" style="width:100px;" readonly>
-                                </div>
-
-
-                                <div class="ms-2">
-                                    <input id="value-second-Tax" class="form-control form-control-sm"
-                                        type="text" style="width:100px;" readonly>
-                                </div>
-
-                            </div>
-
-                            <!-- ค่ารวมทั้งสิ้น -->
-                            <div class="mb-1">9.ค่ารวมทั้งสิ้น</div>
-                            <div class="d-flex justify-content-end">
-
-
-                                <div class="ms-2">
-                                    <input id="value-total-first" class="form-control form-control-sm"
-                                        type="text" style="width:100px;" readonly>
-                                </div>
-
-                                <div class="ms-2">
-                                    <input id="value-total-second" class="form-control form-control-sm"
-                                        type="text" style="width:100px;" readonly>
-                                </div>
-                            </div>
-                            <button id="btn-export" class="btn btn-primary mt-3 float-end">Export</button>
                         </div>
+                        <div class="boxcell">
+                            <div class="mb-1 align-content-center">3.ค่าเพาเวอร์แฟคเตอร์</div>
+                            <div class=" d-flex justify-content-end w-60">
+                                <div class="me-2 w-20">
+                                    <label class="me-2 mb-0">KVAR</label>
+                                    <input id="kvar-avg" type="text" class="form-control form-control-sm" readonly>
+                                </div>
+                                <div class="me-2 w-20">
+                                    <label class="me-2 mb-0">pf &lt; 0.85</label>
+                                    <input id="pf-avg" type="text" class="form-control form-control-sm" readonly>
+                                </div>
+                                <div class="me-2 w-20">
+                                    <label class="me-2 mb-0">บาท/kVar</label>
+                                    <input id="input-kvar" type="text" class="form-control form-control-sm bg-light text-dark">
+                                </div>
+                                <div class="me-2 w-20">
+                                    <div class="d-flex">
+                                        <label class="me-2 mb-0">บาท</label>
+                                        <!-- <i class="bi bi-question-circle"></i> -->
+                                    </div>
+                                    <input id="result-bath-kvar" type="text" value="0.00" class="form-control form-control-sm" readonly>
+                                </div>
+                                <div class="me-2 w-20 opacity-0"> </div>
+                            </div>
+                        </div>
+                        <div class="boxcell">
+                            <div class="mb-1 align-content-center">4.ค่าบริการ</div>
+                            <div class=" d-flex justify-content-end w-60">
+                                <div class="me-2 w-20 opacity-0"> </div>
+                                <div class="me-2 w-20 opacity-0"> </div>
+                                <div class="me-2 w-20 opacity-0"> </div>
+                                <div class="me-2 w-20">
+                                    <input id="input-service" class="form-control form-control-sm bg-light text-dark" type="text">
+                                </div>
+                                <div class="me-2 w-20 opacity-0"> </div>
+                            </div>
+                        </div>
+                        <div class="boxcell">
+                            <div class="mb-1 align-content-center">5.ค่า FT</div>
+                            <div class=" d-flex justify-content-end w-60">
+                                <div class="me-2 w-20 opacity-0"></div>
+                                <div class="me-2 w-20 opacity-0"></div>
+                                <div class="me-2 w-20">
+                                    <input id="input-ft" class="form-control form-control-sm bg-light text-dark" type="text">
+                                </div>
+                                <div class="me-2 w-20">
+                                    <input id="result-bath-ft" value="0.00" class="form-control form-control-sm" type="text" readonly>
+                                </div>
+                                <div class="me-2 w-20">
+                                    <label class="px-2">บาท/kWh</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="boxcell">
+                            <div class="mb-1 align-content-center">6.ค่าไฟฟ้ารวม</div>
+                            <div class=" d-flex justify-content-end w-60">
+                                <div class="me-2 w-20 opacity-0"></div>
+                                <div class="me-2 w-20 opacity-0"></div>
+                                <div class="me-2 w-20 opacity-0"></div>
+                                <div class="me-2 w-20">
+                                    <input id="result-bath-all" value="0.00" class="form-control form-control-sm" type="text" readonly>
+                                </div>
+                                <div class="me-2 w-20">
+                                    <input id="result-bath-all-kwhr" value="0.00" class="form-control form-control-sm" type="text" readonly>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="boxcell">
+                            <div class="mb-1 align-content-center">7.ค่าภาษี</div>
+                            <div class=" d-flex justify-content-end w-60">
+                                <div class="me-2 w-20 opacity-0"></div>
+                                <div class="me-2 w-20 opacity-0"></div>
+                                <div class="me-2 w-20">
+                                    <input id="input-tax" class="form-control form-control-sm bg-light text-dark" type="text">
+                                </div>
+                                <div class="me-2 w-20">
+                                    <input id="result-bath-tax" value="0.00" class="form-control form-control-sm" type="text" readonly>
+                                </div>
+                                <div class="me-2 w-20">
+                                    <input id="result-bath-tax-kwhr" value="0.00" class="form-control form-control-sm" type="text" readonly>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="boxcell">
+                            <div class="mb-1 align-content-center">8.ค่ารวมทั้งสิ้น</div>
+                            <div class=" d-flex justify-content-end w-60">
+                                <div class="me-2 w-20 opacity-0"></div>
+                                <div class="me-2 w-20 opacity-0"></div>
+                                <div class="me-2 w-20 opacity-0"></div>
+                                <div class="me-2 w-20">
+                                    <input id="result-bath-total" value="0.00" class="form-control form-control-sm" type="text" readonly>
+                                </div>
+                                <div class="me-2 w-20">
+                                    <input id="result-bath-total-kwhr" value="0.00" class="form-control form-control-sm" type="text" readonly>
+                                </div>
+                            </div>
+                        </div>
+                        <button id="btn-export" class="btn btn-primary mt-3 float-end" onclick="createPDF(false)">Export</button>
                     </div>
                     <!-- รายงานประจำเดือน -->
-                    <div class="flex-fill ms-2" style="background:#333B4A; border-radius:10px; padding:24px;">
+                    <div class="flex-fill ms-1 p-4 rounded w-50">
                         <h5 class="text-center text-white mb-3 ">รายงานประจำเดือน</h5>
-
-                        <div class=" d-flex justify-content-center gap-4 px-4  py-2 ">
-                            <div class="col-2 d-flex justify-content-center">
-                                <input id="report-day-month" type="month"
-                                    class="form-control form-control-sm m-10"
-                                    onchange="showMonth()">
+                        <div class="boxcell">
+                            <div class="mb-1 align-content-center">1.ค่าความต้องการ</div>
+                            <div class=" d-flex justify-content-end w-60">
+                                <div class="me-2 w-20 opacity-0"></div>
+                                <div class="me-2 w-20 opacity-0"></div>
+                                <div class="me-2 w-20">
+                                    <label class="me-2 mb-0">Kw</label>
+                                    <input id="kw-avg-month-m" type="text" class="form-control form-control-sm" readonly>
+                                    <input id="kw-avg-month-a" type="text" class="form-control form-control-sm" readonly>
+                                    <input id="kw-avg-month-e" type="text" class="form-control form-control-sm" readonly>
+                                    <input id="kw-avg-month-n" type="text" class="form-control form-control-sm" readonly>
+                                    <input id="kw-max-month-m" type="text" class="form-control form-control-sm d-none" readonly>
+                                    <input id="kw-max-month-a" type="text" class="form-control form-control-sm d-none" readonly>
+                                    <input id="kw-max-month-e" type="text" class="form-control form-control-sm d-none" readonly>
+                                    <input id="kw-max-month-n" type="text" class="form-control form-control-sm d-none" readonly>
+                                </div>
+                                <div class="me-2 w-20">
+                                    <label class="me-2 mb-0">บาท</label>
+                                    <input id="result-bath-kw-month-m" type="text" value="0.00" class="form-control form-control-sm" readonly>
+                                    <input id="result-bath-kw-month-a" type="text" value="0.00" class="form-control form-control-sm" readonly>
+                                    <input id="result-bath-kw-month-e" type="text" value="0.00" class="form-control form-control-sm" readonly>
+                                    <input id="result-bath-kw-month-n" type="text" value="0.00" class="form-control form-control-sm" readonly>
+                                </div>
+                                <div class="me-2 w-20">
+                                    <label class="me-2 mb-0">บาท/Kwh</label>
+                                    <input id="result-bath-per-kwhr-month-m" type="text" value="0.00" class="form-control form-control-sm" readonly>
+                                    <input id="result-bath-per-kwhr-month-a" type="text" value="0.00" class="form-control form-control-sm" readonly>
+                                    <input id="result-bath-per-kwhr-month-e" type="text" value="0.00" class="form-control form-control-sm" readonly>
+                                    <input id="result-bath-per-kwhr-month-n" type="text" value="0.00" class="form-control form-control-sm" readonly>
+                                </div>
                             </div>
                         </div>
-
-                        <div>
-                            <ul class="no-bullet d-flex align-items-center 
-                            justify-content-center   ">
-                                <li class="me-2 ">
-
-                                    <!-- DropDown Menu select Time  -->
-
-                                </li>
-                                <!-- select Meter -->
-                                <li class="me-2">
-                                    <select id="select-meter-month" class="form-select form-select-sm w-auto mt-2"
-                                        onchange="selectDropdowMonth()">
-                                        <option selected disabled>Meter List</option>
-
-                                    </select>
-                                </li>
-                            </ul>
-                        </div>
-
-
-                        <div class="mb-3 mt-1">
-                            <div class="mb-1">1.ค่าความต้องการ</div>
-                            <br>
-                            <div class="d-flex justify-content-end">
-                                <div class="me-2">
-                                    <div>
-                                        <label class="me-2 mb-0">Kw</label>
-                                    </div>
-                                    <input id="value-kw-for-monthly" type="text" class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
+                        <div class="boxcell">
+                            <div class="mb-1 align-content-center">2.ค่าความต้องการไฟฟ้า</div>
+                            <div class=" d-flex justify-content-end w-60">
+                                <div class="me-2 w-20 opacity-0"></div>
+                                <div class="me-2 w-20">
+                                    <label class="me-2 mb-0">ชั่วโมง</label>
+                                    <input id="hour-diff-month-m" type="text" class="form-control form-control-sm" readonly>
+                                    <input id="hour-value-month-m" type="text" class="form-control form-control-sm d-none">
+                                    <input id="hour-diff-month-a" type="text" class="form-control form-control-sm" readonly>
+                                    <input id="hour-value-month-a" type="text" class="form-control form-control-sm d-none">
+                                    <input id="hour-diff-month-e" type="text" class="form-control form-control-sm" readonly>
+                                    <input id="hour-value-month-e" type="text" class="form-control form-control-sm d-none">
+                                    <input id="hour-diff-month-n" type="text" class="form-control form-control-sm" readonly>
+                                    <input id="hour-value-month-n" type="text" class="form-control form-control-sm d-none">
                                 </div>
-                                <div class="me-2">
-                                    <div>
+                                <div class="me-2 w-20">
+                                    <label class="me-2 mb-0">Kwhr</label>
+                                    <input id="kwhr-diff-month-m" type="text" class="form-control form-control-sm" readonly>
+                                    <input id="kwhr-diff-month-a" type="text" class="form-control form-control-sm" readonly>
+                                    <input id="kwhr-diff-month-e" type="text" class="form-control form-control-sm" readonly>
+                                    <input id="kwhr-diff-month-n" type="text" class="form-control form-control-sm" readonly>
+                                    <input id="kwhr-diff-month-all" type="text" class="form-control form-control-sm d-none" readonly>
+                                </div>
+                                <div class="me-2 w-20">
+                                    <label class="me-2 mb-0">บาท</label>
+                                    <input id="result-bath-kwhr-month-m" type="text" value="0.00" class="form-control form-control-sm" readonly>
+                                    <input id="result-bath-kwhr-month-a" type="text" value="0.00" class="form-control form-control-sm" readonly>
+                                    <input id="result-bath-kwhr-month-e" type="text" value="0.00" class="form-control form-control-sm" readonly>
+                                    <input id="result-bath-kwhr-month-n" type="text" value="0.00" class="form-control form-control-sm" readonly>
+                                    <input id="result-bath-kwhr-month-all" type="text" value="0.00" class="form-control form-control-sm" readonly>
+                                </div>
+                                <div class="me-2 w-20">
+                                    <label class="me-2 mb-0">LoadFactor</label>
+                                    <input id="load-factor-month-m" type="text" value="0.00" class="form-control form-control-sm" readonly>
+                                    <input id="load-factor-month-a" type="text" value="0.00" class="form-control form-control-sm" readonly>
+                                    <input id="load-factor-month-e" type="text" value="0.00" class="form-control form-control-sm" readonly>
+                                    <input id="load-factor-month-n" type="text" value="0.00" class="form-control form-control-sm" readonly>
+                                    <input id="load-factor-month-all" type="text" value="0.00" class="form-control form-control-sm" readonly>
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="boxcell">
+                            <div class="mb-1 align-content-center">3.ค่าความต้องการไฟฟ้า</div>
+                            <div class=" d-flex justify-content-end w-60">
+                                <div class="me-2 w-20 opacity-0"></div>
+                                <div class="me-2 w-20">
+                                    <label class="me-2 mb-0">KVAR</label>
+                                    <input id="kvar-avg-month" type="text" class="form-control form-control-sm" readonly>
+                                </div>
+                                <div class="me-2 w-20">
+                                    <label class="me-2 mb-0">pf &lt; 0.85</label>
+                                    <input id="pf-avg-month" type="text" class="form-control form-control-sm" readonly>
+                                </div>
+                                <div class="me-2 w-20">
+                                    <div class="d-flex">
                                         <label class="me-2 mb-0">บาท</label>
+                                        <!-- <i class="bi bi-question-circle"></i> -->
                                     </div>
-                                    <input id="input-rate-Kw-monthly" type="text" class="form-control form-control-sm bg-light text-dark"
-                                        style="width:100px;">
+                                    <input id="result-bath-kvar-month" type="text" value="0.00" class="form-control form-control-sm ">
                                 </div>
-
-                                <div class="me-2">
-                                    <div>
-                                        <label class="me-2 mb-0">บาท/Kwhr</label>
-                                    </div>
-                                    <input id="result-bath-kW-monthly" type="text" class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
+                                <div class="me-2 w-20 opacity-0"></div>
                             </div>
-
-                            <!-- เช้า For Mothly -->
-                            <div class="d-flex justify-content-end">
-                                <div class="me-2">
-
-                                    <input id="value-kw-for-monthly" type="text" class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
-                                <div class="me-2">
-
-                                    <input id="input-rate-Kw-monthly" type="text" class="form-control form-control-sm bg-light text-dark"
-                                        style="width:100px;">
-                                </div>
-
-                                <div class="me-2">
-
-                                    <input id="result-bath-kW-monthly" type="text" class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
-                            </div>
-
-                            <!-- บ่าย for Monthly-->
-
-                            <div class="d-flex justify-content-end">
-                                <div class="me-2">
-                                    <input id="value-kw-for-monthly" type="text" class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
-                                <div class="me-2">
-
-                                    <input id="input-rate-Kw-monthly" type="text" class="form-control form-control-sm bg-light text-dark"
-                                        style="width:100px;">
-                                </div>
-
-                                <div class="me-2">
-
-                                    <input id="result-bath-kW-monthly" type="text" class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
-                            </div>
-
-                            <!-- เย็น for Monthly -->
-                            <div class="d-flex justify-content-end">
-                                <div class="me-2">
-
-                                    <input id="value-kw-for-monthly" type="text" class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
-                                <div class="me-2">
-
-                                    <input id="input-rate-Kw-monthly" type="text" class="form-control form-control-sm bg-light text-dark"
-                                        style="width:100px;">
-                                </div>
-
-                                <div class="me-2">
-
-                                    <input id="result-bath-kW-monthly" type="text" class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
-                            </div>
-
-                            <!-- ดึก for Monthly -->
-                            <div class="d-flex justify-content-end">
-                                <div class="me-2">
-                                    <input id="value-kw-for-monthly" type="text" class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
-                                <div class="me-2">
-
-                                    <input id="input-rate-Kw-monthly" type="text" class="form-control form-control-sm bg-light text-dark"
-                                        style="width:100px;">
-                                </div>
-
-                                <div class="me-2">
-
-                                    <input id="result-bath-kW-monthly" type="text" class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
-                            </div>
-
-                            <div class="d-flex justify-content-end">
-
-                                <div class="me-2">
-
-                                    <input id="input-rate-Kw-monthly" type="text" class="form-control form-control-sm bg-light text-dark"
-                                        style="width:100px;">
-                                </div>
-
-                                <div class="me-2">
-
-                                    <input id="result-bath-kW-monthly" type="text" class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
-                            </div>
-
-
-
-
-
-                            <br>
-
-
-                            <!-- ค่าความต้องการไฟฟ้า -->
-                            <div class="mb-1">2.ค่าความต้องการไฟฟ้า</div>
-
-                            <br>
-
-                            <div class="d-flex justify-content-end">
-                                <div class="me-2">
-
-                                    <div>
-                                        <label class="me-2 mb-0">ชั่วโมง</label>
-                                    </div>
-                                    <input id="show-hour-diff-monthly" type="text"
-                                        class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
-
-                                <div class="me-2">
-                                    <div>
-                                        <label class="me-2 mb-0">Kwhr</label>
-                                    </div>
-                                    <input id="show-Kwhr-for-monthly" type="text" class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
-
-                                <div class="me-2">
-                                    <div>
-                                        <label class="me-2 mb-0">Kwhr</label>
-                                    </div>
-                                    <input id="input-Kwhr-for-monthly" type="text"
-                                        class="form-control bg-light text-dark form-control-sm "
-                                        style="width:100px;">
-                                </div>
-
-                                <div class="me-2">
-                                    <div>
-                                        <label class="me-2 mb-0">บาท</label>
-                                    </div>
-                                    <input id="show-Kwhr-cal-for-monthly" type="text" class="form-control form-control-sm "
-                                        style="width:100px;">
-                                </div>
-
-
-                                <div class="me-2">
-                                    <div>
-                                        <label class="me-2 mb-0">LoadFactor</label>
-                                    </div>
-                                    <input id="show-load-factor-for-monthly" type="text" class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
-                            </div>
-
-
-                            <!-- เช้า ความต้องการไฟฟ้า -->
-                            <div class="d-flex justify-content-end">
-                                <div class="me-2">
-
-
-                                    <input id="show-hour-diff-monthly" type="text"
-                                        class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
-
-                                <div class="me-2">
-
-                                    <input id="show-Kwhr-for-monthly" type="text" class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
-
-                                <div class="me-2">
-
-                                    <input id="input-Kwhr-for-monthly" type="text"
-                                        class="form-control bg-light text-dark form-control-sm "
-                                        style="width:100px;">
-                                </div>
-
-                                <div class="me-2">
-
-                                    <input id="show-Kwhr-cal-for-monthly" type="text" class="form-control form-control-sm "
-                                        style="width:100px;">
-                                </div>
-
-
-                                <div class="me-2">
-
-                                    <input id="show-load-factor-for-monthly" type="text" class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
-                            </div>
-
-                            <!-- บ่าย ความต้องการไฟฟ้า -->
-                            <div class="d-flex justify-content-end">
-                                <div class="me-2">
-
-
-                                    <input id="show-hour-diff-monthly" type="text"
-                                        class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
-
-                                <div class="me-2">
-
-                                    <input id="show-Kwhr-for-monthly" type="text" class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
-
-                                <div class="me-2">
-
-                                    <input id="input-Kwhr-for-monthly" type="text"
-                                        class="form-control bg-light text-dark form-control-sm "
-                                        style="width:100px;">
-                                </div>
-
-                                <div class="me-2">
-
-                                    <input id="show-Kwhr-cal-for-monthly" type="text" class="form-control form-control-sm "
-                                        style="width:100px;">
-                                </div>
-
-
-                                <div class="me-2">
-                                    <input id="show-load-factor-for-monthly" type="text" class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
-                            </div>
-
-                            <!-- เย็น ความต้องการไฟฟ้า -->
-
-                            <div class="d-flex justify-content-end">
-                                <div class="me-2">
-
-
-                                    <input id="show-hour-diff-monthly" type="text"
-                                        class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
-
-                                <div class="me-2">
-
-                                    <input id="show-Kwhr-for-monthly" type="text" class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
-
-                                <div class="me-2">
-
-                                    <input id="input-Kwhr-for-monthly" type="text"
-                                        class="form-control bg-light text-dark form-control-sm "
-                                        style="width:100px;">
-                                </div>
-
-                                <div class="me-2">
-
-                                    <input id="show-Kwhr-cal-for-monthly" type="text" class="form-control form-control-sm "
-                                        style="width:100px;">
-                                </div>
-
-
-                                <div class="me-2">
-
-                                    <input id="show-load-factor-for-monthly" type="text" class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
-                            </div>
-
-                            <!-- ดึก ความต้องการไฟฟ้า -->
-
-                            <div class="d-flex justify-content-end">
-                                <div class="me-2">
-
-
-                                    <input id="show-hour-diff-monthly" type="text"
-                                        class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
-
-                                <div class="me-2">
-
-                                    <input id="show-Kwhr-for-monthly" type="text" class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
-
-                                <div class="me-2">
-
-                                    <input id="input-Kwhr-for-monthly" type="text"
-                                        class="form-control bg-light text-dark form-control-sm "
-                                        style="width:100px;">
-                                </div>
-
-                                <div class="me-2">
-
-                                    <input id="show-Kwhr-cal-for-monthly" type="text" class="form-control form-control-sm "
-                                        style="width:100px;">
-                                </div>
-
-
-                                <div class="me-2">
-
-                                    <input id="show-load-factor-for-monthly" type="text" class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
-                            </div>
-
-
-
-
-                            <br>
-
-                            <!--   ค่าเพาเวอร์แฟคเตอร์ -->
-                            <div class="mb-1">3.ค่าเพาเวอร์แฟคเตอร์</div>
-
-                            <br>
-
-                            <div class="d-flex justify-content-end">
-                                <div class="me-2">
-                                    <div>
-                                        <label class="me-2 mb-0">KVAR</label>
-                                    </div>
-                                    <input id="power-factor-kva-for-monthly" type="text" class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
-                                <div class="me-2">
-                                    <div>
-                                        <label class="me-2 mb-0">pf < 0.85</label>
-                                    </div>
-                                    <input id="power-factor-pf-monthly" type="text" class="form-control form-control-sm"
-                                        style="width:100px;" readonly>
-                                </div>
-
-                                <!-- Input Kvar for monthly -->
-                                <div class="me-2">
-                                    <div>
-                                        <label class="me-2 mb-0">บาท/kVar</label>
-                                    </div>
-                                    <input id="input-Kvar-for-monthly" type="text"
-                                        class="form-control form-control-sm bg-light text-dark"
-                                        style="width:100px;">
-                                </div>
-
-                                <!-- Result Kvar for monthly -->
-                                <div class="me-2">
-                                    <div>
-                                        <label class="me-2 mb-0">บาท/kVar</label>
-                                    </div>
-                                    <input id="result-Kvar-for-monthly" type="text" class="form-control form-control-sm "
-                                        style="width:100px;">
-                                </div>
-
-                            </div>
-
-                            <br>
-
-
-                            <div class="mb-1">4.ค่าบริการ</div>
-                            <div class="d-flex justify-content-end ms-4 ">
-
-
-                                <div class="ms-2">
-                                    <input id="service-for-monthly" class="form-control form-control-sm bg-light text-dark" type="text" style="width:100px;">
-                                </div>
-
-
-                            </div>
-
-                            <!-- เริ่มมีปัญหา -->
-
-                            <div class="mb-1">5.ค่า FT</div>
-                            <div class="d-flex justify-content-end">
-                                <!-- input FT  -->
-
-                                <div class="d-flex justify-content-end">
-
-                                    <div class="ms-2 ms-auto">
-                                        <input id="input-ft-for-monthly" class="form-control form-control-sm bg-light text-dark"
-                                            type="text" style="width:100px;">
-                                    </div>
-
-                                    <div class="ms-2">
-                                        <input id="result-ft-for-monthly" class="form-control
-                                    form-control-sm"
-                                            type="text" style="width:100px;" readonly>
-                                    </div>
-
-                                    <div class="ms-2">
-                                        <label class="">บาท/Khwr</label>
-                                    </div>
-                                </div>
-
-                            </div>
-
-                            <div class="mb-1">6.ค่าไฟฟ้ารวม</div>
-                            <div class="d-flex justify-content-end">
-
-                                <div class="ms-2">
-                                    <input id="value-Electricity-total-first-monthly"
-                                        class="form-control form-control-sm" type="text" style="width:100px;" readonly>
-                                </div>
-
-                                <div class="ms-2">
-                                    <input id="value-Electricity-total-second-monthly"
-                                        class="form-control form-control-sm" type="text" style="width:100px;" readonly>
-                                </div>
-
-                            </div>
-
-                            <div class="mb-1">7.ค่าภาษี</div>
-                            <div class="d-flex justify-content-end">
-
-                                <div class="ms-2">
-                                    <input id="input-value-tax-for-monthly"
-                                        class="form-control form-control-sm bg-light text-dark"
-                                        type="text" style="width:100px;">
-                                </div>
-
-                                <div class="ms-2">
-                                    <input id="result-first-value-tax-for-monthly"
-                                        class="form-control form-control-sm" type="text" style="width:100px;" readonly>
-                                </div>
-
-                                <div class="ms-2">
-                                    <input id="result-second-value-tax-for-monthly"
-                                        class="form-control form-control-sm" type="text" style="width:100px;" readonly>
-                                </div>
-                            </div>
-
-                            <div class="mb-1">8.ค่ารวมทั้งสิ้น</div>
-                            <div class="d-flex justify-content-end">
-
-
-                                <div class="ms-2">
-                                    <input id="value-total-before-sum--for-monthly"
-                                        class="form-control form-control-sm" type="text" style="width:100px;" readonly>
-                                </div>
-
-
-                                <div class="ms-2">
-                                    <input id="value-total-after-sum-for-monthly" class="form-control form-control-sm" type="text" style="width:100px;" readonly>
-                                </div>
-                            </div>
-                            <br>
-
-                            <button id="btn-export-monthly" class="btn btn-primary mt-3 float-end">Export</button>
                         </div>
-                        <!-- ...เนื้อหา... 
-                        
-                    </div>
-
-
-                </div>
-                -->
-                        <div class="mt-2 p-2">
-                            หมายเหตุ : ไม่มีการกำหนดราคาค่าไฟฟ้าที่เปลี่ยนแปลงในแต่ละช่วงเวลา...
+                        <div class="boxcell">
+                            <div class="mb-1 align-content-center">4.ค่าบริการ</div>
+                            <div class=" d-flex justify-content-end w-60">
+                                <div class="me-2 w-20 opacity-0"></div>
+                                <div class="me-2 w-20 opacity-0"></div>
+                                <div class="me-2 w-20 opacity-0"></div>
+                                <div class="me-2 w-20">
+                                    <input id="input-service-month" class="form-control form-control-sm bg-light text-dark" type="text">
+                                </div>
+                                <div class="me-2 w-20 opacity-0"></div>
+                            </div>
                         </div>
+                        <div class="boxcell">
+                            <div class="mb-1 align-content-center">5.ค่า FT</div>
+                            <div class=" d-flex justify-content-end w-60">
+                                <div class="me-2 w-20 opacity-0"></div>
+                                <div class="me-2 w-20 opacity-0"></div>
+                                <div class="me-2 w-20 opacity-0"></div>
+                                <div class="me-2 w-20">
+                                    <input id="result-bath-ft-month" value="0.00" class="form-control form-control-sm" type="text" readonly>
+                                </div>
+                                <div class="me-2 w-20">
+                                    <label class="px-2">บาท/Khwr</label>
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="boxcell">
+                            <div class="mb-1 align-content-center">6.ค่าไฟฟ้ารวม</div>
+                            <div class=" d-flex justify-content-end w-60">
+                                <div class="me-2 w-20 opacity-0"></div>
+                                <div class="me-2 w-20 opacity-0"></div>
+                                <div class="me-2 w-20 opacity-0"></div>
+                                <div class="me-2 w-20">
+                                    <input id="result-bath-all-month" value="0.00" class="form-control form-control-sm" type="text" readonly>
+                                </div>
+                                <div class="me-2 w-20">
+                                    <input id="result-bath-all-kwhr-month" value="0.00" class="form-control form-control-sm" type="text" readonly>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="boxcell">
+                            <div class="mb-1 align-content-center">7.ค่าภาษี</div>
+                            <div class=" d-flex justify-content-end w-60">
+                                <div class="me-2 w-20 opacity-0"></div>
+                                <div class="me-2 w-20 opacity-0"></div>
+                                <div class="me-2 w-20 opacity-0"></div>
+                                <div class="me-2 w-20">
+                                    <input id="result-bath-tax-month" value="0.00" class="form-control form-control-sm" type="text" readonly>
+                                </div>
+                                <div class="me-2 w-20">
+                                    <input id="result-bath-tax-kwhr-month" value="0.00" class="form-control form-control-sm" type="text" readonly>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="boxcell">
+                            <div class="mb-1 align-content-center">8.ค่ารวมทั้งสิ้น</div>
+                            <div class=" d-flex justify-content-end w-60">
+                                <div class="me-2 w-20 opacity-0"></div>
+                                <div class="me-2 w-20 opacity-0"></div>
+                                <div class="me-2 w-20 opacity-0"></div>
+                                <div class="me-2 w-20">
+                                    <input id="result-bath-total-month" value="0.00" class="form-control form-control-sm" type="text" readonly>
+                                </div>
+                                <div class="me-2 w-20">
+                                    <input id="result-bath-total-kwhr-month" value="0.00" class="form-control form-control-sm" type="text" readonly>
+                                </div>
+                            </div>
+                        </div>
+                        <button id="btn-export-month" class="btn btn-primary mt-3 float-end" onclick="createPDF(true)">Export</button>
                     </div>
                 </div>
+                <div class="mt-2 p-2">
+                    หมายเหตุ : ไม่มีการกำหนดราคาค่าไฟฟ้าที่เปลี่ยนแปลงในแต่ละช่วงเวลา...
+                </div>
+            </div>
+        </div>
 
 
-                <?php include "../scripts/scriptjs.html"; ?>
-                <?php include '../scripts/report-meter-detail.html'; ?>
+        <?php include "../scripts/scriptjs.html"; ?>
+        <?php include '../scripts/scriptjs-report-meter-detail.html'; ?>
 
 </body>
 

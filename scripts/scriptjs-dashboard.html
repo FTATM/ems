@@ -123,7 +123,7 @@
         result.forEach(index => {
             LinearchartData.push(...prepareLinearData(selectedMeter, index));
         });
-        createLinearChart('chart-linear', "Linear Date & Data", LinearchartData);
+        createLinearChart('chart-linear', "Date & Data", LinearchartData);
 
         result.forEach(index => {
             PiechartData.push(...preparePieData(selectedMeter, index));
@@ -131,7 +131,7 @@
         createPieChart('chart-Pie', "Ratio of Data", PiechartData);
 
         LinearchartData2.push(...prepareLinearPrice(selectedMeter));
-        createLinearChart('chart-linear-price', 'Price of month', LinearchartData2);
+        createLinearChart('chart-linear-price', 'Price of time', LinearchartData2);
 
     }
 
@@ -494,6 +494,7 @@
 
         window.myChart = chart; // ✅ เก็บไว้ใช้ภายนอก
     }
+
     function toggleDataSeries(e) {
         if (typeof (e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
             e.dataSeries.visible = false;

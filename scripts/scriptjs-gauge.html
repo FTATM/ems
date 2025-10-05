@@ -48,7 +48,7 @@
             let gaugediv = document.createElement('canvas');
             gaugediv.id = 'gauge_' + type.id;
             listGauge.appendChild(gaugediv);
-            gaugeGenerate('gauge_' + type.id, type.name, type.name, 0, 0, type.maxvaluecolumn, 5);
+            gaugeGenerate('gauge_' + type.id, type.name, type.name, 0, 0, type.maxvaluecolumn * 1.2, 5);
         });
         generateDataList();
     }
@@ -130,6 +130,7 @@
                 minvalue = val < minvalue ? val : minvalue;
             });
             document.getElementById('type-' + key).value = lastValue;
+            console.log("lastValue :", lastValue);
             gaugeGenerate('gauge_' + key, types[key - 1].name, types[key - 1].name, lastValue);
         });
     }

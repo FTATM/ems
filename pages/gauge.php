@@ -1,5 +1,6 @@
 <?php
 include '../components/session.php';
+checkLogin();
 ?>
 
 <!DOCTYPE html>
@@ -37,12 +38,18 @@ include '../components/session.php';
                                 <option value="60">1 hour</option>
                                 <option value="120">2 hours</option>
                                 <option value="240">4 hours</option>
+                                <option value="1440">last 1 days</option>
+                                <option value="4320">last 3 days</option>
+                                <option value="10080">last 1 week</option>
+                                <option value="43200">last 1 month</option>
+                                <option value="259200">last 6 month</option>
+                                <option value="518400">last 1 year</option>
                                 <option value="0">All Time</option>
                             </select>
                         </div>
                         <div class="d-flex align-items-center gap-2" style="width: 15svw;">
                             <label for="input-refresh" class="form-label form-label-sm text-end w-50" style="max-width: 15vw;">Refresh every :</label>
-                            <input type="number" id="input-refresh" class="form-control form-control-sm ms-2 w-25" style="max-width: 15vw;" placeholder="Refresh every (seconds)" value="3" min="1" max="30" onchange="setRefreshTime()">
+                            <input type="number" id="input-refresh" class="form-control form-control-sm ms-2 w-25" style="max-width: 15vw;" placeholder="Refresh every (seconds)" value="5" min="1" max="30" onchange="setRefreshTime()">
                             <label for="input-refresh" class="form-label form-label-sm " style="max-width: 15vw;">Secondary</label>
                         </div>
                     </div>

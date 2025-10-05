@@ -126,6 +126,7 @@
 
     const monthData = await AvgMinMax(filteredDataInMetersMonth);
 
+    // console.log(filteredDataInMeters);
     loadValueDay(dayData);
     loadValuemonth(monthData);
   }
@@ -159,7 +160,9 @@
         min: min,
         max: max,
         tHours: tHours,
-        ttime: ttime
+        ttime: ttime,
+        fv: fValue,
+        lv: lValue
       }
     });
     return meterSum = {
@@ -179,6 +182,9 @@
     setValueInHTML('kw-avg', kw.avg);
     setValueInHTML('hour-diff', kw.ttime);
     setValueInHTML('kwhr-avg', kwh.avg);
+    setValueInHTML('kwhr-diff', Math.abs(kwh.lv - kwh.fv).toFixed(2));
+    setValueInHTML('kwhr-min', kwh.fv);
+    setValueInHTML('kwhr-max', kwh.lv);
     setValueInHTML('hour-value', kw.tHours);
     setValueInHTML('kvar-avg', kvar.avg);
     setValueInHTML('pf-avg', pf.avg);
@@ -187,11 +193,11 @@
     //[1] bath of kW
     addDetectEventMulti('input-kw', 'result-bath-kw', 'kw-avg', 'input-kw');
     //[1] bath:kWh
-    addDetectEventDivide('input-kw', 'bath-per-kwhr', 'result-bath-kw', 'kwhr-avg');
+    addDetectEventDivide('input-kw', 'bath-per-kwhr', 'result-bath-kw', 'kwhr-diff');
     sumBath('input-kw', 'input-kwhr', 'bath-per-kwhr', '');
 
     //[2] bath of kWh
-    addDetectEventMulti('input-kwhr', 'result-bath-kwhr', 'kwhr-avg', 'input-kwhr');
+    addDetectEventMulti('input-kwhr', 'result-bath-kwhr', 'kwhr-diff', 'input-kwhr');
     //[2] load Factor
     addDetectEventLoadFactor('input-kwhr', 'load-factor', 'kwhr-avg', 'kw-avg', 'hour-value');
 
@@ -203,22 +209,22 @@
     }
 
     //[5] bath ft
-    addDetectEventMulti('input-ft', 'result-bath-ft', 'input-ft', 'kwhr-avg');
+    addDetectEventMulti('input-ft', 'result-bath-ft', 'input-ft', 'kwhr-diff');
 
     //[6] bath all
-    sumBath('input-ft', 'result-bath-all', 'result-bath-kw', 'result-bath-kwhr', 'result-bath-kvar', 'input-service', 'result-bath-ft');
+    sumBath('input-ft', 'result-bath-all', 'result-bath-kwhr', 'result-bath-kvar', 'input-service', 'result-bath-ft');
     //[6] bath/kwhr
-    addDetectEventDivide('input-ft', 'result-bath-all-kwhr', 'result-bath-all', 'kwhr-avg');
+    addDetectEventDivide('input-ft', 'result-bath-all-kwhr', 'result-bath-all', 'kwhr-diff');
 
     //[7] bath tax
     addDetectEventTax('input-tax', 'result-bath-tax', 'input-tax', 'result-bath-all');
     //[7] bath/kwhr
-    addDetectEventDivide('input-tax', 'result-bath-tax-kwhr', 'result-bath-tax', 'kwhr-avg');
+    addDetectEventDivide('input-tax', 'result-bath-tax-kwhr', 'result-bath-tax', 'kwhr-diff');
 
     //[8] bath total
     sumBath('input-tax', 'result-bath-total', 'result-bath-all', 'result-bath-tax');
     //[8] bath total / kwh
-    addDetectEventDivide('input-tax', 'result-bath-total-kwhr', 'result-bath-total', 'kwhr-avg');
+    addDetectEventDivide('input-tax', 'result-bath-total-kwhr', 'result-bath-total', 'kwhr-diff');
   }
 
   function loadValuemonth(m) {
@@ -299,9 +305,9 @@
     })
   }
 
-  function addDetectEventMulti(parentid, resultid, vid1, vid2) {
-    let p = document.getElementById(parentid);
-    let r = document.getElementById(resultid);
+  function addDetectEventMulti(pid, rid, vid1, vid2) {
+    let p = document.getElementById(pid);
+    let r = document.getElementById(rid);
     let v1 = document.getElementById(vid1);
     let v2 = document.getElementById(vid2);
     p.addEventListener('input', () => {
@@ -360,8 +366,16 @@
     }).name;
   }
 
-  function createPDF(id) {
-    const kwh = document.getElementById(id)?.value;
+  function createPDF(ismonth) {
+
+    if (ismonth) {
+      const kwh = document.getElementById('kwhr-avg-m')?.value;
+    } else {
+      const kwh_diff = document.getElementById('kwhr-diff')?.value;
+      const kwh_min = document.getElementById('kwhr-min')?.value;
+      const kwh_max = document.getElementById('kwhr-max')?.value;
+      const service = document.getElementById('input-service')?.value;
+    }
 
     if (!kwh) {
       alertMessages('error', 'ข้อมูลไม่ครบถ้วน', 'ไม่พบข้อมูลที่พร้อมสำหรับ export ไปยัง pdf โปรดกรอกข้อมูลให้ครบและลองอีกครั้ง.', 5000, true);

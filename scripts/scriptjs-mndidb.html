@@ -1,0 +1,136 @@
+<script>
+    let selectedColumns = [];
+    let fullData = []; // จะเก็บข้อมูลเต็มจาก fetch-realtime.php
+    document.addEventListener("DOMContentLoaded", async () => {
+    });
+
+    async function updatedatetime() {
+        let p = document.getElementById('status-update-date');
+        let btn = document.getElementById('btn-update-all');
+        p.style.color = 'white';
+        p.textContent = "loading...";
+        p.classList.add('blink');
+        btn.setAttribute('disabled', true);
+        btn.classList.replace('btn-primary', 'btn-secondary');
+        let response = await fetch('../config/update-datedata.php');
+        let json = await response.json();
+        let data = json;
+        p.classList.remove('blink');
+        p.style.color = 'green';
+        p.textContent = data.message + " - " + data.duration + " seconds";
+        btn.removeAttribute('disabled');
+        btn.classList.replace('btn-secondary', 'btn-primary');
+    }
+
+    async function excuteStringSQL() {
+        let sql = document.getElementById('sqltext').textContent;
+        sql = sql.replace(/\u00A0/g, ' '); // &nbsp;
+        sql = sql.replace(/\u200B/g, ''); // zero-width space
+        sql = sql.trim();
+        console.log(sql);
+        const btn = document.getElementById('btn-run');
+        const output = document.getElementById('output');
+
+        try {
+            let response = await fetch('../config/excuteSQLCustomize.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: 'text=' + encodeURIComponent(sql)
+            });
+
+            let data = await response.json();
+
+            if (data.success) {
+                let text = `Message: ${data.message}\nDuration: ${data.duration_seconds} sec <br>`;
+                if (data.rows && data.rows.length > 0) {
+                    text += "Rows:<br>";
+                    data.rows.forEach(row => {
+                        // แปลง row เป็น key:value
+                        let rowStr = Object.entries(row)
+                            .map(([key, value]) => `${key}: ${value}`)
+                            .join(", "); // ถ้าอยากคั่นด้วย comma
+                        text += rowStr + "<br>";
+                    });
+                } else {
+                    text += "Affected rows: " + data.affected_rows;
+                }
+                output.innerHTML = text;
+            } else {
+                output.innerHTML = "Error: " + data.message + "\nDuration: " + data.duration_seconds + " sec";
+            }
+        } catch (err) {
+            output.innerHTML = "Fetch error: " + err;
+        } finally {
+            btn.disabled = false;
+        }
+    }
+
+    function cleartext() {
+        let text = document.getElementById('sqltext');
+        text.innerHTML = "";
+    }
+
+    function highlightSQL() {
+        let areatext = document.getElementById('sqltext');
+        let text = areatext.textContent;
+
+        // 1. บันทึกตำแหน่ง caret
+        let pos = saveCaret(areatext);
+
+        // highlight keywords ตัวอย่าง
+        const keywords = /\b(SELECT|FROM|WHERE|INSERT|UPDATE|DELETE|INTO|VALUES|SET|ORDER|BY)\b/gi;
+        text = text.replace(keywords, '<span class="keyword">$1</span>');
+
+        // highlight strings
+        text = text.replace(/'([^']*)'/g, '<span class="string">\'$1\'</span>');
+
+        // highlight numbers
+        text = text.replace(/\b(\d+)\b/g, '<span class="number">$1</span>');
+
+        areatext.innerHTML = text;
+
+        // 2. คืนตำแหน่ง caret
+        restoreCaret(areatext, pos);
+    }
+
+    function saveCaret(el) {
+        let sel = window.getSelection();
+        let range = sel.getRangeAt(0);
+        let preSelectionRange = range.cloneRange();
+        preSelectionRange.selectNodeContents(el);
+        preSelectionRange.setEnd(range.startContainer, range.startOffset);
+        let start = preSelectionRange.toString().length;
+        return start;
+    }
+
+    function restoreCaret(el, pos) {
+        let sel = window.getSelection();
+        let range = document.createRange();
+        let nodeStack = [el], node, charIndex = 0, found = false;
+
+        while (nodeStack.length > 0 && !found) {
+            node = nodeStack.pop();
+            if (node.nodeType === 3) { // text node
+                let nextCharIndex = charIndex + node.length;
+                if (pos >= charIndex && pos <= nextCharIndex) {
+                    range.setStart(node, pos - charIndex);
+                    range.collapse(true);
+                    found = true;
+                }
+                charIndex = nextCharIndex;
+            } else {
+                let i = node.childNodes.length;
+                while (i--) {
+                    nodeStack.push(node.childNodes[i]);
+                }
+            }
+        }
+
+        if (found) {
+            sel.removeAllRanges();
+            sel.addRange(range);
+        }
+    }
+</script>
