@@ -314,4 +314,6 @@ $lang = [
     "kiloHrMeter" => "KILOWATT - HOUR METER",
 
     "nnotify" => "New Notify",
+    "mdidb" => "Manage Data In Database",
+    "simulate" => "Simulate",
 ];

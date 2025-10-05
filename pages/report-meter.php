@@ -10,7 +10,7 @@ checkLogin();
 
 <head>
     <meta charset="UTF-8">
-    <title><?= $lang['allmeter'] ?> - EMS</title>
+    <title><?= $lang['report'] ?> - EMS</title>
 </head>
 
 <body style="background-color: <?= $bg ?>; color: <?= $text ?>!important; min-height: 100svh;">
@@ -98,7 +98,10 @@ checkLogin();
                                 </div>
                                 <div class="me-2 w-20">
                                     <label class="me-2 mb-0">kWh</label>
-                                    <input id="kwhr-avg" type="text" class="form-control form-control-sm" readonly>
+                                    <input id="kwhr-diff" type="text" class="form-control form-control-sm" readonly>
+                                    <input id="kwhr-avg" type="text" class="form-control form-control-sm d-none" readonly>
+                                    <input id="kwhr-min" type="text" class="form-control form-control-sm " readonly>
+                                    <input id="kwhr-max" type="text" class="form-control form-control-sm " readonly>
                                 </div>
                                 <div class="me-2 w-20">
                                     <label class="me-2 mb-0">บาท/kWh</label>
@@ -122,7 +125,7 @@ checkLogin();
                                     <input id="kvar-avg" type="text" class="form-control form-control-sm" readonly>
                                 </div>
                                 <div class="me-2 w-20">
-                                    <label class="me-2 mb-0">pf &#8805; 0.85</label>
+                                    <label class="me-2 mb-0">pf &lt; 0.85</label>
                                     <input id="pf-avg" type="text" class="form-control form-control-sm" readonly>
                                     <input id="pf-avg2" type="text" class="form-control form-control-sm" readonly>
                                 </div>
@@ -212,7 +215,7 @@ checkLogin();
                                 </div>
                             </div>
                         </div>
-                        <button id="btn-export" class="btn btn-primary mt-3 float-end" onclick="createPDF('kwhr-avg')">Export</button>
+                        <button id="btn-export" class="btn btn-primary mt-3 float-end" onclick="createPDF(false)">Export</button>
                     </div>
                     <!-- รายงานประจำเดือน -->
                     <div class="flex-fill ms-1 p-4 rounded w-50">
@@ -352,7 +355,7 @@ checkLogin();
                                 </div>
                             </div>
                         </div>
-                        <button id="btn-export-monthly" class="btn btn-primary mt-3 float-end" onclick="createPDF('kwhr-avg-m')">Export</button>
+                        <button id="btn-export-monthly" class="btn btn-primary mt-3 float-end" onclick="createPDF(true)">Export</button>
                     </div>
                 </div>
                 <div class="mt-2 p-2">

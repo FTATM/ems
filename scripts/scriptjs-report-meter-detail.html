@@ -1,0 +1,565 @@
+<script>
+  let meters = []
+  let locations = [];
+  let groups = [];
+  let types = [];
+  let ftloaded = false;
+  let dateSelected = "";
+  let refreshIntervalId;
+
+  const typeMeterID = "<?=$_SESSION['tid'];?>";
+  const groupID = "<?=$_SESSION['gid'];?>";
+
+  document.addEventListener("DOMContentLoaded", async () => {
+    showLoading();
+    ftloaded = true;
+    await process();
+    hideLoading();
+  });
+
+  async function process() {
+    await fetchAll();
+    await generateOption('select-meters', Object.values(meters), true);
+    await toDay();
+    await filterDataInMeters();
+  }
+
+  async function fetchAll() {
+    let res_location = await fetch("../config/fetch-locations.php");
+    let json_location = await res_location.json();
+    locations = json_location.data;
+
+    let res_group = await fetch("../config/fetch-groups.php");
+    let json_group = await res_group.json();
+    groups = json_group.data;
+
+    let responsetype = await fetch("../config/fetch-data_type.php");
+    let jsontype = await responsetype.json();
+    types = jsontype.data;
+
+    meters = await fetchDataInMeters();
+  }
+
+  async function fetchDataInMeters() {
+    let formfilter = new FormData();
+    formfilter.append("tid", typeMeterID);
+    formfilter.append("gid", groupID);
+
+    try {
+      const res = await fetch("../config/fetch-meters-filter.php", {
+        method: "POST",
+        body: formfilter
+      });
+      const result = await res.json();
+      return result.data;
+    } catch (e) {
+      console.error('error unknown file fetch-meters-filter.php : ', e.message);
+      alertMessages('error', 'พบปัญหา', 'เกิดข้อผิดพลาดในการทำงานของสคริปต์ fetch-meters-filter กรุณาคัดลอกข้อความนี้และส่งต่อให้ผู้ดูแลระบบ', 4000, true);
+      return [];
+    }
+  }
+
+  function generateOption(id, data, selectfirst = false) {
+    if (!ftloaded) { return }
+    ftloaded = false;
+    let select = document.getElementById(id);
+    select.innerHTML = '<option>=== <?=$lang["select"]?> === </option>';
+    data.forEach(row => {
+      let option = document.createElement('option');
+      option.value = row.id;
+      option.textContent = `[${row.id}] ${row.name}`;
+      option.selected = selectfirst ? data[0].id === row.id : false;
+      select.appendChild(option);
+    });
+    const locate = document.getElementById('location');
+    locate.innerHTML = getNameLocation(groupID);
+    const group = document.getElementById('group');
+    group.innerHTML = getNameGroup(groupID);
+  }
+
+  function toDay() {
+    let dateDay = document.getElementById('select-filter-value');
+
+    let today = new Date();
+    let yyyy = today.getFullYear();
+    let mm = String(today.getMonth() + 1).padStart(2, '0'); // เดือนต้อง +1
+    let dd = String(today.getDate()).padStart(2, '0');
+
+    dateDay.value = yyyy + "-" + mm + "-" + dd;
+    dateSelected = new Date(`${yyyy}-${mm}-${dd} 00:00:00`);
+  }
+
+  async function filterDataInMeters() {
+    const meterIDSelected = document.getElementById('select-meters');
+    const meterSelected = Object.values(meters).find(m => { return parseInt(m.id) === parseInt(meterIDSelected.value) });
+    const time = document.getElementById('select-filter-value');
+    let startDateDay = new Date(time.value + " 00:00:00");
+    let endDateDay = new Date(time.value + " 23:59:59");
+    const data = Object.entries(meterSelected.data).map(([key, rows]) => {
+      return Object.values(rows).filter(datatype => {
+        let date = new Date(datatype.create_date);
+        return date >= startDateDay && date <= endDateDay;
+      });
+    });
+    const filteredDataInMetersDay = {
+      ...meterSelected,
+      data: data
+    }
+    console.log("before AvgMinMax func :", filteredDataInMetersDay);
+    const dayData = await AvgMinMax(filteredDataInMetersDay);
+    console.log(dayData.data);
+
+    let date = new Date(time.value); // yyyy-mm-dd
+    let year = date.getFullYear();
+    let month = date.getMonth(); // 0 = ม.ค., 11 = ธ.ค.
+
+    let startDate = new Date(year, month, 1, 0, 0, 0);
+    let endDate = new Date(year, month + 1, 0, 23, 59, 59);
+    const dataMonth = Object.entries(meterSelected.data).map(([key, rows]) => {
+      return Object.values(rows).filter(datatype => {
+        let date = new Date(datatype.create_date);
+        return date >= startDate && date <= endDate;
+      });
+    });
+    const filteredDataInMetersMonth = {
+      ...meterSelected,
+      data: dataMonth
+    }
+
+    console.log("before AvgMinMax func :", filteredDataInMetersMonth);
+    const monthData = await AvgMinMax(filteredDataInMetersMonth);
+    console.log(monthData.data);
+
+
+    loadValueDay(dayData);
+    loadValuemonth(monthData);
+  }
+
+  function templateOfDay() {
+    return { 'morning': 0, "after": 0, 'even': 0, 'night': 0 };
+  }
+
+  function AvgMinMax(meter) {
+    let values = {}
+    const dataAll = Object.entries(meter.data).map(([key, rows]) => {
+      const fValue = parseFloat(rows[0].value);
+      const lValue = parseFloat(rows[rows.length - 1].value);
+      let list = {
+        avg: templateOfDay(),
+        total: templateOfDay(),
+        min: templateOfDay(),
+        max: templateOfDay(),
+        thours: templateOfDay(),
+        ttime: templateOfDay(),
+        count: templateOfDay(),
+        fv_date: templateOfDay(),
+        lv_date: templateOfDay(),
+        fv: templateOfDay(),
+        lv: templateOfDay()
+      }
+
+      let lastPeriod = '';
+      let lastData = {};
+      Object.values(rows).filter(data => {
+        lastData = data;
+        let date = new Date(data.create_date);
+        let period = checkPeriod(date);
+        let val = ['1', '3', '5'].includes(key) ? Math.abs(parseFloat(fValue) - parseFloat(data.value)) : parseFloat(data.value);
+        if (period !== lastPeriod) {
+          list.fv[period] = val;
+          list.min[period] = val;
+          list.fv_date[period] = data.create_date;
+          if (lastPeriod !== '') {
+            const diff = diffTime(list.fv_date[lastPeriod], lastData.create_date);
+            list.thours[lastPeriod] += diff.thours;
+          }
+          lastPeriod = period;
+        }
+        else if (data.id === rows[rows.length - 1].id) {
+          const diff = diffTime(list.fv_date[period], data.create_date);
+          list.thours[period] += diff.thours;
+        }
+        list.total[period] += val;
+        list.count[period] += 1;
+        list.lv[period] = val;
+        list.lv_date[period] = data.create_date;
+        list.min[period] = val < list.min[period] ? val : list.min[period];
+        list.max[period] = val > list.max[period] ? val : list.max[period];
+
+      });
+      return values[key] = {
+        ...list,
+        avg: {
+          'morning': list.total['morning'] / (list.count['morning'] || 1),
+          'after': list.total['after'] / (list.count['after'] || 1),
+          'even': list.total['even'] / (list.count['even'] || 1),
+          'night': list.total['night'] / (list.count['night'] || 1),
+        },
+        ttime: {
+          'morning': changeValueToTime(list.thours['morning']),
+          'after': changeValueToTime(list.thours['after']),
+          'even': changeValueToTime(list.thours['even']),
+          'night': changeValueToTime(list.thours['night'])
+        }
+      };
+    });
+    return meterSum = {
+      ...meter,
+      data: dataAll
+    }
+  }
+
+  function changeValueToTime(value) {
+    if (isNaN(value)) return "00:00";
+
+    // แยกชั่วโมงและนาที
+    const hours = Math.floor(value);
+    const minutes = Math.round((value - hours) * 60);
+
+    // จัดรูปแบบให้มีเลข 0 นำหน้า
+    const hStr = String(hours).padStart(2, '0');
+    const mStr = String(minutes).padStart(2, '0');
+
+    return `${hStr}:${mStr}`;
+  }
+
+  function diffTime(start, end) {
+    const s = new Date(start);
+    const e = new Date(end);
+    let diffMs = e - s;
+    if (diffMs < 0) diffMs += 24 * 3600 * 1000; // ข้ามวัน
+    let thours = +(diffMs / 3600000).toFixed(2);
+    thours = thours >= 5.98 && thours < 6.02 ? 6 : +thours.toFixed(2);
+    const hh = Math.floor(diffMs / 3600000);
+    const mm = Math.floor((diffMs % 3600000) / 60000);
+    return { thours, ttime: `${hh}:${mm.toString().padStart(2, '0')}` };
+  }
+
+  function checkPeriod(datetime) {
+    const date = new Date(datetime);
+    const hour = date.getHours();
+
+    if (hour >= 0 && hour < 6) return 'night';
+    if (hour >= 6 && hour < 12) return 'morning';
+    if (hour >= 12 && hour < 18) return 'after';
+    return 'even';
+  }
+
+  function sumValue(object) {
+    let result = 0;
+    Object.entries(object).map(([key, value]) => {
+      result += parseFloat(value);
+    });
+    return result;
+  }
+
+  function loadValueDay(m) {
+    let data = m.data;
+    const kw = data[0];
+    const kwh = data[1];
+    const kva = data[2];
+    const kvar = data[4];
+    const pf = data[16];
+
+    setValueInHTML('kw-avg', kw.avg);
+    setValueInHTML('kw-max', kw.max);
+    setValueInHTML('hour-diff', kw.ttime);
+    setValueInHTML('kwhr-diff', kwh.avg);
+    setValueInHTML('hour-value', kw.thours);
+    setValueInHTML('kvar-avg', sumValue(kvar.avg));
+    setValueInHTML('pf-avg', sumValue(pf.avg));
+
+    //[1] bath of kW
+    addDetectEventMulti('input-kw-m', 'result-bath-kw-m', 'kw-avg-m', 'input-kw-m');
+    addDetectEventMulti('input-kw-a', 'result-bath-kw-a', 'kw-avg-a', 'input-kw-a');
+    addDetectEventMulti('input-kw-e', 'result-bath-kw-e', 'kw-avg-e', 'input-kw-e');
+    addDetectEventMulti('input-kw-n', 'result-bath-kw-n', 'kw-avg-n', 'input-kw-n');
+    //[1] bath:kWh
+    addDetectEventDivide('input-kw-m', 'bath-per-kwhr-m', 'result-bath-kw-m', 'kwhr-diff-m');
+    addDetectEventDivide('input-kw-a', 'bath-per-kwhr-a', 'result-bath-kw-a', 'kwhr-diff-a');
+    addDetectEventDivide('input-kw-e', 'bath-per-kwhr-e', 'result-bath-kw-e', 'kwhr-diff-e');
+    addDetectEventDivide('input-kw-n', 'bath-per-kwhr-n', 'result-bath-kw-n', 'kwhr-diff-n');
+    // sumBath('input-kw', 'input-kwhr', 'bath-per-kwhr', '');
+
+    //[2] bath of kWh
+    addDetectEventMulti('input-kwhr-m', 'result-bath-kwhr-m', 'kwhr-diff-m', 'input-kwhr-m');
+    addDetectEventMulti('input-kwhr-a', 'result-bath-kwhr-a', 'kwhr-diff-a', 'input-kwhr-a');
+    addDetectEventMulti('input-kwhr-e', 'result-bath-kwhr-e', 'kwhr-diff-e', 'input-kwhr-e');
+    addDetectEventMulti('input-kwhr-n', 'result-bath-kwhr-n', 'kwhr-diff-n', 'input-kwhr-n');
+    //[2] load Factor
+    addDetectEventLoadFactor('input-kwhr-m', 'load-factor-m', 'kwhr-diff-m', 'kw-max-m', 'hour-value-m');
+    addDetectEventLoadFactor('input-kwhr-a', 'load-factor-a', 'kwhr-diff-a', 'kw-max-a', 'hour-value-a');
+    addDetectEventLoadFactor('input-kwhr-e', 'load-factor-e', 'kwhr-diff-e', 'kw-max-e', 'hour-value-e');
+    addDetectEventLoadFactor('input-kwhr-n', 'load-factor-n', 'kwhr-diff-n', 'kw-max-n', 'hour-value-n');
+
+    sumBath('input-kwhr-m', 'result-bath-kwhr-all', 'result-bath-kwhr-m', 'result-bath-kwhr-a', 'result-bath-kwhr-e', 'result-bath-kwhr-n');
+    sumBath('input-kwhr-a', 'result-bath-kwhr-all', 'result-bath-kwhr-m', 'result-bath-kwhr-a', 'result-bath-kwhr-e', 'result-bath-kwhr-n');
+    sumBath('input-kwhr-e', 'result-bath-kwhr-all', 'result-bath-kwhr-m', 'result-bath-kwhr-a', 'result-bath-kwhr-e', 'result-bath-kwhr-n');
+    sumBath('input-kwhr-n', 'result-bath-kwhr-all', 'result-bath-kwhr-m', 'result-bath-kwhr-a', 'result-bath-kwhr-e', 'result-bath-kwhr-n');
+
+    sumBath('input-kwhr-m', 'load-factor-all', 'load-factor-m', 'load-factor-a', 'load-factor-e', 'load-factor-n');
+    sumBath('input-kwhr-a', 'load-factor-all', 'load-factor-m', 'load-factor-a', 'load-factor-e', 'load-factor-n');
+    sumBath('input-kwhr-e', 'load-factor-all', 'load-factor-m', 'load-factor-a', 'load-factor-e', 'load-factor-n');
+    sumBath('input-kwhr-n', 'load-factor-all', 'load-factor-m', 'load-factor-a', 'load-factor-e', 'load-factor-n');
+
+    //[3] bath of kvar
+    if (sumValue(pf.avg) < 0.85) {
+      addDetectEventMulti('input-kvar', 'result-bath-kvar', 'kvar-avg', 'input-kvar');
+    } else {
+      setValueInHTML('result-bath-kvar', 0);
+    }
+
+    //[5] bath ft
+    addDetectEventMulti('input-ft', 'result-bath-ft', 'input-ft', 'kwhr-diff-all');
+
+    //[6] bath all
+    sumBath('input-ft', 'result-bath-all', 'result-bath-kwhr-all', 'result-bath-kvar', 'input-service', 'result-bath-ft');
+    //[6] bath/kwhr
+    addDetectEventDivide('input-ft', 'result-bath-all-kwhr', 'result-bath-all', 'kwhr-diff-all');
+
+    //[7] bath tax
+    addDetectEventTax('input-tax', 'result-bath-tax', 'input-tax', 'result-bath-all');
+    //[7] bath/kwhr
+    addDetectEventDivide('input-tax', 'result-bath-tax-kwhr', 'result-bath-tax', 'kwhr-diff-all');
+
+    //[8] bath total
+    sumBath('input-tax', 'result-bath-total', 'result-bath-all', 'result-bath-tax');
+    //[8] bath total / kwh
+    addDetectEventDivide('input-tax', 'result-bath-total-kwhr', 'result-bath-total', 'kwhr-diff-all');
+  }
+
+  function loadValuemonth(m) {
+    let data = m.data;
+    console.log("month Data :", data);
+    const kw = data[0];
+    const kwh = data[1];
+    const kva = data[2];
+    const kvar = data[4];
+    const pf = data[16];
+
+    setValueInHTML('kw-avg-month', kw.avg);
+    setValueInHTML('kw-max-month', kw.avg);
+    setValueInHTML('hour-diff-month', kw.ttime);
+    setValueInHTML('kwhr-diff-month', kwh.avg);
+    setValueInHTML('hour-value-month', kw.thours);
+    setValueInHTML('kvar-avg-month', sumValue(kvar.avg));
+    setValueInHTML('pf-avg-month', sumValue(pf.avg));
+
+    //[1] bath kw
+    addDetectEventMulti('input-kw-m', 'result-bath-kw-month-m', 'kw-avg-month-m', 'input-kw-m');
+    addDetectEventMulti('input-kw-a', 'result-bath-kw-month-a', 'kw-avg-month-a', 'input-kw-a');
+    addDetectEventMulti('input-kw-e', 'result-bath-kw-month-e', 'kw-avg-month-e', 'input-kw-e');
+    addDetectEventMulti('input-kw-n', 'result-bath-kw-month-n', 'kw-avg-month-n', 'input-kw-n');
+    //[1] bath/kwhr
+    addDetectEventDivide('input-kw-m', 'result-bath-per-kwhr-month-m', 'result-bath-kw-month-m', 'kwhr-diff-month-m');
+    addDetectEventDivide('input-kw-a', 'result-bath-per-kwhr-month-a', 'result-bath-kw-month-a', 'kwhr-diff-month-a');
+    addDetectEventDivide('input-kw-e', 'result-bath-per-kwhr-month-e', 'result-bath-kw-month-e', 'kwhr-diff-month-e');
+    addDetectEventDivide('input-kw-n', 'result-bath-per-kwhr-month-n', 'result-bath-kw-month-n', 'kwhr-diff-month-n');
+
+    //[2] bath of kWh
+    addDetectEventMulti('input-kwhr-m', 'result-bath-kwhr-month-m', 'kwhr-diff-month-m', 'input-kwhr-m');
+    addDetectEventMulti('input-kwhr-a', 'result-bath-kwhr-month-a', 'kwhr-diff-month-a', 'input-kwhr-a');
+    addDetectEventMulti('input-kwhr-e', 'result-bath-kwhr-month-e', 'kwhr-diff-month-e', 'input-kwhr-e');
+    addDetectEventMulti('input-kwhr-n', 'result-bath-kwhr-month-n', 'kwhr-diff-month-n', 'input-kwhr-n');
+    //[2] load Factor
+    addDetectEventLoadFactor('input-kwhr-m', 'load-factor-month-m', 'kwhr-diff-month-m', 'kw-max-month-m', 'hour-value-month-m');
+    addDetectEventLoadFactor('input-kwhr-a', 'load-factor-month-a', 'kwhr-diff-month-a', 'kw-max-month-a', 'hour-value-month-a');
+    addDetectEventLoadFactor('input-kwhr-e', 'load-factor-month-e', 'kwhr-diff-month-e', 'kw-max-month-e', 'hour-value-month-e');
+    addDetectEventLoadFactor('input-kwhr-n', 'load-factor-month-n', 'kwhr-diff-month-n', 'kw-max-month-n', 'hour-value-month-n');
+
+    sumBath('input-kwhr-m', 'result-bath-kwhr-month-all', 'result-bath-kwhr-month-m', 'result-bath-kwhr-month-a', 'result-bath-kwhr-month-e', 'result-bath-kwhr-month-n');
+    sumBath('input-kwhr-a', 'result-bath-kwhr-month-all', 'result-bath-kwhr-month-m', 'result-bath-kwhr-month-a', 'result-bath-kwhr-month-e', 'result-bath-kwhr-month-n');
+    sumBath('input-kwhr-e', 'result-bath-kwhr-month-all', 'result-bath-kwhr-month-m', 'result-bath-kwhr-month-a', 'result-bath-kwhr-month-e', 'result-bath-kwhr-month-n');
+    sumBath('input-kwhr-n', 'result-bath-kwhr-month-all', 'result-bath-kwhr-month-m', 'result-bath-kwhr-month-a', 'result-bath-kwhr-month-e', 'result-bath-kwhr-month-n');
+
+    sumBath('input-kwhr-m', 'load-factor-month-all', 'load-factor-month-m', 'load-factor-month-a', 'load-factor-month-e', 'load-factor-month-n');
+    sumBath('input-kwhr-a', 'load-factor-month-all', 'load-factor-month-m', 'load-factor-month-a', 'load-factor-month-e', 'load-factor-month-n');
+    sumBath('input-kwhr-e', 'load-factor-month-all', 'load-factor-month-m', 'load-factor-month-a', 'load-factor-month-e', 'load-factor-month-n');
+    sumBath('input-kwhr-n', 'load-factor-month-all', 'load-factor-month-m', 'load-factor-month-a', 'load-factor-month-e', 'load-factor-month-n');
+
+    //[3] bath of kvar
+    if (pf.avg < 0.85) {
+      addDetectEventMulti('input-kvar', 'result-bath-kvar-month', 'kvar-avg-month', 'input-kvar');
+    } else {
+      setValueInHTML('result-bath-kvar-month', 0);
+    }
+
+    //[4] service follow day input
+    sumBath('input-service', 'input-service-month', 'input-service', '');
+
+    //[5] bath ft
+    addDetectEventMulti('input-ft', 'result-bath-ft-month', 'input-ft', 'kwhr-diff-month-all');
+
+    //[6] bath all
+    sumBath('input-ft', 'result-bath-all-month', 'result-bath-kwhr-month-all', 'result-bath-kvar-month', 'input-service-month', 'result-bath-ft-month');
+    //[6] bath/kwhr
+    addDetectEventDivide('input-ft', 'result-bath-all-kwhr-month', 'result-bath-all-month', 'kwhr-diff-month-all');
+
+    //[7] bath tax
+    addDetectEventTax('input-tax', 'result-bath-tax-month', 'input-tax', 'result-bath-all-month');
+    //[7] bath/kwhr
+    addDetectEventDivide('input-tax', 'result-bath-tax-kwhr-month', 'result-bath-tax-month', 'kwhr-diff-month-all');
+
+    //[8] bath total
+    sumBath('input-tax', 'result-bath-total-month', 'result-bath-all-month', 'result-bath-tax-month');
+    //[8] bath total / kwh
+    addDetectEventDivide('input-tax', 'result-bath-total-kwhr-month', 'result-bath-total-month', 'kwhr-diff-month-all');
+  }
+
+  function sumBath(eid, rid, id1, id2, id3 = "", id4 = "", id5 = "", id6 = "") {
+    const e = document.getElementById(eid);
+    if (!e) {
+      console.log("Event นี้ ส่ง id มาผิด", eid);
+      return
+    }
+    e.addEventListener("input", () => {
+      const result = document.getElementById(rid);
+      if (!result) return;
+
+      let v1 = parseFloat(document.getElementById(id1)?.value) || 0;
+      let v2 = parseFloat(document.getElementById(id2)?.value) || 0;
+
+      let sumbath = v1 + v2;
+
+      [id3, id4, id5, id6].forEach(id => {
+        if (id) {
+          let val = parseFloat(document.getElementById(id)?.value) || 0;
+          sumbath += val;
+        }
+      });
+
+      result.value = sumbath.toFixed(2);
+      result.dispatchEvent(new Event('input'));
+    });
+  }
+
+  function addDetectEventMulti(pid, rid, vid1, vid2) {
+    let p = document.getElementById(pid);
+    let r = document.getElementById(rid);
+    let v1 = document.getElementById(vid1);
+    let v2 = document.getElementById(vid2);
+    if (!p || !r || !v1 || !v2) {
+      console.log("Event นี้ ส่ง id มาผิด", pid, rid, vid1, vid2);
+      return
+    }
+    p.addEventListener('input', () => {
+      r.value = (v1.value * v2.value).toFixed(2);
+    });
+  }
+
+  function addDetectEventDivide(pid, rid, vid1, vid2) {
+    let p = document.getElementById(pid);
+    let r = document.getElementById(rid);
+    let v1e = document.getElementById(vid1);
+    let v2e = document.getElementById(vid2);
+    if (!p || !r || !v1e || !v2e) {
+      console.log("Event นี้ ส่ง id มาผิด", pid, rid, vid1, vid2);
+      return
+    }
+    p.addEventListener('input', () => {
+      if (v1e.value === '0' || v2e.value === '0') {
+        r.value = (0).toFixed(2);
+      }
+      else {
+        r.value = (v1e.value / v2e.value).toFixed(2);
+      }
+    });
+  }
+
+  function addDetectEventLoadFactor(pid, rid, vid1, vid2, vid3) {
+    let p = document.getElementById(pid);
+    let r = document.getElementById(rid);
+    let v1 = document.getElementById(vid1);
+    let v2 = document.getElementById(vid2);
+    let v3 = document.getElementById(vid3);
+    if (!p || !r || !v1 || !v2 || !v3) {
+      console.log("Event นี้ ส่ง id มาผิด", pid, rid, vid1, vid2, vid3);
+      return
+    }
+    p.addEventListener('input', () => {
+      if (v1.value === '0' || v2.value === '0' || v3.value === '0') {
+        r.value = (0).toFixed(2);
+      } else {
+        r.value = ((v1.value / v2.value) * v3.value).toFixed(2);
+      }
+    });
+  }
+
+  function addDetectEventTax(pid, rid, tid, bid) {
+    let p = document.getElementById(pid);
+    let r = document.getElementById(rid);
+    let v1 = document.getElementById(tid);
+    let v2 = document.getElementById(bid);
+    p.addEventListener('input', () => {
+      r.value = (v1.value / 100 * v2.value).toFixed(2);
+    });
+  }
+
+  function setValueInHTML(id, value) {
+    let element = document.getElementById(id);
+    if (element) {
+      element.value = value.toFixed(2);
+    } else {
+      ['-m', '-a', '-e', '-n', '-all'].forEach(subfix => {
+        let elementlist = document.getElementById(id + subfix);
+        if (!elementlist) { return }
+        if (subfix === '-m') { val = value['morning'] }
+        else if (subfix === '-a') { val = value['after'] }
+        else if (subfix === '-e') { val = value['even'] }
+        else if (subfix === '-n') { val = value['night'] }
+        else if (subfix === '-all') { val = sumValue(value) };
+        elementlist.value = Number(val) ? val.toFixed(2) : val;
+      })
+    }
+  }
+
+  function getNameLocation(gid) {
+    return locations.find(l => {
+      return groups.filter(g => {
+        return g.id === gid;
+      })
+    }).name;
+  }
+
+  function getNameGroup(id) {
+    return groups.find(g => {
+      return g.id === id;
+    }).name;
+  }
+
+  function createPDF(ismonth) {
+
+    if (ismonth) {
+      const kwh = document.getElementById('kwhr-diff-month')?.value;
+    } else {
+      const kwh_diff = document.getElementById('kwhr-diff')?.value;
+      const kwh_min = document.getElementById('kwhr-min')?.value;
+      const kwh_max = document.getElementById('kwhr-max')?.value;
+      const service = document.getElementById('input-service')?.value;
+    }
+
+    if (!kwh) {
+      alertMessages('error', 'ข้อมูลไม่ครบถ้วน', 'ไม่พบข้อมูลที่พร้อมสำหรับ export ไปยัง pdf โปรดกรอกข้อมูลให้ครบและลองอีกครั้ง.', 5000, true);
+      return;
+    }
+
+    let formdata = new FormData();
+    formdata.append('kWh', kwh);
+
+    fetch('../config/create-pdf.php', {
+      method: "POST",
+      body: formdata
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status) {
+          window.open(data.url, '_blank'); // เปิดไฟล์ PDF ในแท็บใหม่
+          // หรือ: window.location.href = data.url; // ดาวน์โหลดเลย
+        }
+      })
+      .catch(e => {
+        console.log('error :', e);
+      })
+  }
+
+</script>

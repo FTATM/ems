@@ -23,6 +23,24 @@
         background: linear-gradient(180deg, #CE0000, #E65656);
     }
 
+    @keyframes blink {
+        0% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0;
+        }
+
+        100% {
+            opacity: 1;
+        }
+    }
+
+    .blink {
+        animation: blink 1s infinite;
+    }
+
     .active {
         background-color: #001B5E;
         font-size: large;
@@ -81,6 +99,19 @@
         margin-top: 0.25rem;
         display: flex;
         justify-content: space-between;
+    }
+
+    .keyword {
+        color: blue;
+        font-weight: bold;
+    }
+
+    .string {
+        color: green;
+    }
+
+    .number {
+        color: red;
     }
 
 

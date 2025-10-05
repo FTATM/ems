@@ -104,6 +104,12 @@
                     </a>
                 </li>
 
+                <li>
+                    <a href="../pages/mndidb.php" class="d-flex align-items-center gap-2 text-menu">
+                        <i class="bi bi-people"></i>
+                        <span>MNDIDB</span>
+                    </a>
+                </li>
             </ul>
         </li>
 
