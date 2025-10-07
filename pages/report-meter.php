@@ -72,6 +72,7 @@ checkLogin();
                                 <div class="me-2 w-20">
                                     <label class="me-2 mb-0">kW</label>
                                     <input id="kw-avg" type="text" class="form-control form-control-sm" readonly>
+                                    <input id="kw-max" type="text" class="form-control form-control-sm d-none" readonly>
                                 </div>
                                 <div class="me-2 w-20">
                                     <label class="me-2 mb-0">บาท/kW</label>
@@ -99,9 +100,8 @@ checkLogin();
                                 <div class="me-2 w-20">
                                     <label class="me-2 mb-0">kWh</label>
                                     <input id="kwhr-diff" type="text" class="form-control form-control-sm" readonly>
-                                    <input id="kwhr-avg" type="text" class="form-control form-control-sm d-none" readonly>
-                                    <input id="kwhr-min" type="text" class="form-control form-control-sm " readonly>
-                                    <input id="kwhr-max" type="text" class="form-control form-control-sm " readonly>
+                                    <input id="kwhr-fv" type="text" class="form-control form-control-sm" readonly>
+                                    <input id="kwhr-lv" type="text" class="form-control form-control-sm" readonly>
                                 </div>
                                 <div class="me-2 w-20">
                                     <label class="me-2 mb-0">บาท/kWh</label>
@@ -228,6 +228,7 @@ checkLogin();
                                 <div class="me-2 w-20">
                                     <label class="me-2 mb-0">Kw</label>
                                     <input id="kw-avg-m" type="text" class="form-control form-control-sm" readonly>
+                                    <input id="kw-max-m" type="text" class="form-control form-control-sm d-none" readonly>
                                 </div>
                                 <div class="me-2 w-20">
                                     <label class="me-2 mb-0">บาท</label>
@@ -250,7 +251,10 @@ checkLogin();
                                 </div>
                                 <div class="me-2 w-20">
                                     <label class="me-2 mb-0">Kwhr</label>
-                                    <input id="kwhr-avg-m" type="text" class="form-control form-control-sm" readonly>
+                                    <!-- <input id="kwhr-avg-m" type="text" class="form-control form-control-sm" readonly> -->
+                                    <input id="kwhr-diff-m" type="text" class="form-control form-control-sm" readonly>
+                                    <input id="kwhr-fv-m" type="text" class="form-control form-control-sm" readonly>
+                                    <input id="kwhr-lv-m" type="text" class="form-control form-control-sm" readonly>
                                 </div>
                                 <div class="me-2 w-20">
                                     <label class="me-2 mb-0">บาท</label>

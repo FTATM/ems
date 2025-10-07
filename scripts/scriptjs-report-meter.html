@@ -9,6 +9,7 @@
 
   const typeMeterID = "<?=$_SESSION['tid'];?>";
   const groupID = "<?=$_SESSION['gid'];?>";
+  const username = "<?=$_SESSION['username'];?>";
   document.addEventListener("DOMContentLoaded", async () => {
     showLoading();
     ftloaded = true;
@@ -173,6 +174,7 @@
 
   function loadValueDay(m) {
     let data = m.data;
+    console.log(data);
     const kw = data[0];
     const kwh = data[1];
     const kva = data[2];
@@ -180,11 +182,11 @@
     const pf = data[16];
 
     setValueInHTML('kw-avg', kw.avg);
+    setValueInHTML('kw-max', kw.max);
     setValueInHTML('hour-diff', kw.ttime);
-    setValueInHTML('kwhr-avg', kwh.avg);
+    setValueInHTML('kwhr-fv', kwh.fv);
+    setValueInHTML('kwhr-lv', kwh.lv);
     setValueInHTML('kwhr-diff', Math.abs(kwh.lv - kwh.fv).toFixed(2));
-    setValueInHTML('kwhr-min', kwh.fv);
-    setValueInHTML('kwhr-max', kwh.lv);
     setValueInHTML('hour-value', kw.tHours);
     setValueInHTML('kvar-avg', kvar.avg);
     setValueInHTML('pf-avg', pf.avg);
@@ -199,7 +201,7 @@
     //[2] bath of kWh
     addDetectEventMulti('input-kwhr', 'result-bath-kwhr', 'kwhr-diff', 'input-kwhr');
     //[2] load Factor
-    addDetectEventLoadFactor('input-kwhr', 'load-factor', 'kwhr-avg', 'kw-avg', 'hour-value');
+    addDetectEventLoadFactor('input-kwhr', 'load-factor', 'kwhr-diff', 'kw-max', 'hour-value');
 
     //[3] bath of kvar
     if (pf.avg < 0.85) {
@@ -236,8 +238,11 @@
     const pf = data[16];
 
     setValueInHTML('kw-avg-m', kw.avg);
+    setValueInHTML('kw-max-m', kw.max);
     setValueInHTML('hour-diff-m', kw.ttime);
-    setValueInHTML('kwhr-avg-m', kwh.avg);
+    setValueInHTML('kwhr-fv-m', kwh.fv);
+    setValueInHTML('kwhr-lv-m', kwh.lv);
+    setValueInHTML('kwhr-diff-m', Math.abs(kwh.lv - kwh.fv).toFixed(2));
     setValueInHTML('hour-value-m', kw.tHours);
     setValueInHTML('kvar-avg-m', kvar.avg);
     setValueInHTML('pf-avg-m', pf.avg);
@@ -246,12 +251,12 @@
     //[1] bath kw
     addDetectEventMulti('input-kw', 'result-bath-kw-m', 'kw-avg-m', 'input-kw');
     //[1] bath/kwhr
-    addDetectEventDivide('input-kw', 'result-bath-per-kwhr-m', 'result-bath-kw-m', 'kwhr-avg-m');
+    addDetectEventDivide('input-kw', 'result-bath-per-kwhr-m', 'result-bath-kw-m', 'kwhr-diff-m');
 
     //[2] bath of kWh
-    addDetectEventMulti('input-kwhr', 'result-bath-kwhr-m', 'kwhr-avg-m', 'input-kwhr');
+    addDetectEventMulti('input-kwhr', 'result-bath-kwhr-m', 'kwhr-diff-m', 'input-kwhr');
     //[2] load Factor
-    addDetectEventLoadFactor('input-kwhr', 'load-factor-m', 'kwhr-avg-m', 'kw-avg-m', 'hour-value-m');
+    addDetectEventLoadFactor('input-kwhr', 'load-factor-m', 'kwhr-diff-m', 'kw-avg-m', 'hour-value-m');
 
     //[3] bath of kvar
     if (pf.avg < 0.85) {
@@ -264,22 +269,22 @@
     sumBath('input-service', 'input-service-m', 'input-service', '');
 
     //[5] bath ft
-    addDetectEventMulti('input-ft', 'result-bath-ft-m', 'input-ft', 'kwhr-avg-m');
+    addDetectEventMulti('input-ft', 'result-bath-ft-m', 'input-ft', 'kwhr-diff-m');
 
     //[6] bath all
     sumBath('input-ft', 'result-bath-all-m', 'result-bath-kw-m', 'result-bath-kwhr-m', 'result-bath-kvar-m', 'input-service-m', 'result-bath-ft-m');
     //[6] bath/kwhr
-    addDetectEventDivide('input-ft', 'result-bath-all-kwhr-m', 'result-bath-all-m', 'kwhr-avg-m');
+    addDetectEventDivide('input-ft', 'result-bath-all-kwhr-m', 'result-bath-all-m', 'kwhr-diff-m');
 
     //[7] bath tax
     addDetectEventTax('input-tax', 'result-bath-tax-m', 'input-tax', 'result-bath-all-m');
     //[7] bath/kwhr
-    addDetectEventDivide('input-tax', 'result-bath-tax-kwhr-m', 'result-bath-tax-m', 'kwhr-avg-m');
+    addDetectEventDivide('input-tax', 'result-bath-tax-kwhr-m', 'result-bath-tax-m', 'kwhr-diff-m');
 
     //[8] bath total
     sumBath('input-tax', 'result-bath-total-m', 'result-bath-all-m', 'result-bath-tax-m');
     //[8] bath total / kwh
-    addDetectEventDivide('input-tax', 'result-bath-total-kwhr-m', 'result-bath-total-m', 'kwhr-avg-m');
+    addDetectEventDivide('input-tax', 'result-bath-total-kwhr-m', 'result-bath-total-m', 'kwhr-diff-m');
   }
 
   function sumBath(eid, rid, id1, id2, id3 = "", id4 = "", id5 = "", id6 = "") {
@@ -367,23 +372,54 @@
   }
 
   function createPDF(ismonth) {
-
+    let id = document.getElementById('select-meters').value;
+    let date = document.getElementById('select-filter-value').value;
+    let kwh_diff = document.getElementById('kwhr-diff')?.value;
+    let kwh_fv = document.getElementById('kwhr-fv')?.value;
+    let kwh_lv = document.getElementById('kwhr-lv')?.value;
+    let rkwhr = document.getElementById('result-bath-kwhr')?.value;
+    let service = document.getElementById('input-service')?.value;
+    let ft = document.getElementById('input-ft')?.value;
+    let rft = document.getElementById('result-bath-ft')?.value;
+    let sum = document.getElementById('result-bath-all')?.value;
+    let tax = document.getElementById('input-tax')?.value;
+    let rtax = document.getElementById('result-bath-tax')?.value;
+    let total = document.getElementById('result-bath-total')?.value;
     if (ismonth) {
-      const kwh = document.getElementById('kwhr-avg-m')?.value;
-    } else {
-      const kwh_diff = document.getElementById('kwhr-diff')?.value;
-      const kwh_min = document.getElementById('kwhr-min')?.value;
-      const kwh_max = document.getElementById('kwhr-max')?.value;
-      const service = document.getElementById('input-service')?.value;
+      kwh_diff = document.getElementById('kwhr-diff-m')?.value;
+      kwh_fv = document.getElementById('kwhr-fv-m')?.value;
+      kwh_lv = document.getElementById('kwhr-lv-m')?.value;
+      rkwhr = document.getElementById('result-bath-kwhr-m')?.value;
+      service = document.getElementById('input-service-m')?.value;
+      ft = document.getElementById('input-ft')?.value;
+      rft = document.getElementById('result-bath-ft-m')?.value;
+      sum = document.getElementById('result-bath-all-m')?.value;
+      tax = document.getElementById('input-tax')?.value;
+      rtax = document.getElementById('result-bath-tax-m')?.value;
+      total = document.getElementById('result-bath-total-m')?.value;
     }
 
-    if (!kwh) {
+
+    if (!kwh_diff || !kwh_fv || !kwh_lv || !service || !ft || !rft || !sum || !tax || !rtax) {
       alertMessages('error', 'ข้อมูลไม่ครบถ้วน', 'ไม่พบข้อมูลที่พร้อมสำหรับ export ไปยัง pdf โปรดกรอกข้อมูลให้ครบและลองอีกครั้ง.', 5000, true);
       return;
     }
 
     let formdata = new FormData();
-    formdata.append('kWh', kwh);
+    formdata.append('id', id);
+    formdata.append('user', username);
+    formdata.append('date', date);
+    formdata.append('kwh', kwh_diff);
+    formdata.append('fv', kwh_fv);
+    formdata.append('lv', kwh_lv);
+    formdata.append('rkwhr', rkwhr);
+    formdata.append('service', service);
+    formdata.append('ft', ft);
+    formdata.append('rft', rft);
+    formdata.append('sum', sum);
+    formdata.append('tax', tax);
+    formdata.append('rtax', rtax);
+    formdata.append('total', total);
 
     fetch('../config/create-pdf.php', {
       method: "POST",

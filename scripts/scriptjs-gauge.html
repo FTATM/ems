@@ -6,6 +6,9 @@
     let refreshIntervalId; // เก็บ interval id
     const gaugeInstances = {};
 
+    const typeMeterID = "<?=$_SESSION['tid'];?>";
+    const groupID = "<?=$_SESSION['gid'];?>";
+
     let ftloaded = false;
     document.addEventListener("DOMContentLoaded", async () => {
         ftloaded = true;
@@ -22,10 +25,7 @@
     }
 
     async function fetchAll() {
-
-        let response = await fetch('../config/fetch-meters.php');
-        let json = await response.json();
-        meters = json.data;
+        meters = await fetchDataInMeters();
 
         let responsetype = await fetch("../config/fetch-data_type.php");
         let jsontype = await responsetype.json();
@@ -41,14 +41,40 @@
 
     }
 
+    async function fetchDataInMeters() {
+        let formfilter = new FormData();
+        formfilter.append("tid", typeMeterID);
+        formfilter.append("gid", groupID);
+
+        try {
+            const res = await fetch("../config/fetch-meters-filter.php", {
+                method: "POST",
+                body: formfilter
+            });
+            const result = await res.json();
+            return result.data;
+        } catch (e) {
+            console.error('error unknown file fetch-meters-filter.php : ', e.message);
+            alertMessages('error', 'พบปัญหา', 'เกิดข้อผิดพลาดในการทำงานของสคริปต์ fetch-meters-filter กรุณาคัดลอกข้อความนี้และส่งต่อให้ผู้ดูแลระบบ', 4000, true);
+            return [];
+        }
+    }
+
     async function generateGauge() {
         const listGauge = document.getElementById('list-gauge');
         listGauge.innerHTML = ''; // Clear previous gauges
-        Object.values(types).forEach(type => {
+        meterID = document.getElementById('select-meters').value;
+        let selectedMeter = Object.values(meters).find(m => m.id === parseInt(meterID));
+        Object.entries(selectedMeter.data).forEach(([key, value]) => {
+            let typeSelect = types.find(t => t.id === key);
+            let max = 0;
+            value.forEach(row => {
+                max = parseFloat(row.value) > max ? parseFloat(row.value) : max;
+            })
             let gaugediv = document.createElement('canvas');
-            gaugediv.id = 'gauge_' + type.id;
+            gaugediv.id = 'gauge_' + typeSelect.id;
             listGauge.appendChild(gaugediv);
-            gaugeGenerate('gauge_' + type.id, type.name, type.name, 0, 0, type.maxvaluecolumn * 1.2, 5);
+            gaugeGenerate('gauge_' + typeSelect.id, typeSelect.name, typeSelect.name, 0, 0, max * 1.2, 5);
         });
         generateDataList();
     }
@@ -59,8 +85,7 @@
         listdata.innerHTML = `
         <div class="w-100 p-2 text-center">
             <h4><?=$lang['alltype']?></h4>
-        </div>`; // เคลียร์ข้อมูลเดิมก่อนสร้างใหม่
-        console.log(meterID);
+        </div>`;
 
         types.forEach($row => {
             let div = document.createElement('div');
@@ -95,9 +120,7 @@
     }
 
     async function checkTimeChange() {
-        let response = await fetch('../config/fetch-meters.php');
-        let json = await response.json();
-        meters = json.data;
+        meters = await fetchDataInMeters();
 
         const listGauge = document.getElementById('list-gauge');
         const time = document.getElementById('select-time');
@@ -130,14 +153,13 @@
                 minvalue = val < minvalue ? val : minvalue;
             });
             document.getElementById('type-' + key).value = lastValue;
-            console.log("lastValue :", lastValue);
             gaugeGenerate('gauge_' + key, types[key - 1].name, types[key - 1].name, lastValue);
         });
     }
 
     function filterData(id, selectedDateTime) {
         const filteredValueColumn = {};
-        let meterSelected = Object.values(meters).find(m => { return m.id === id });
+        let meterSelected = Object.values(meters).find(m => { return m.id === parseInt(id) });
         Object.entries(meterSelected.data).map(([colName, rows]) => {
             filteredValueColumn[colName] = Object.values(rows).filter(row => {
                 let rawDate = row.create_date;
@@ -177,7 +199,7 @@
                     { from: maxValue - (maxValue / 3), to: maxValue, color: "rgba(200, 50, 50, .75)" }
                 ],
                 value: value,
-                animationDuration: 500,
+                animationDuration: 1000,
                 animationRule: "linear",
                 colorPlate: "rgba(0,0,0,.1)",
                 colorMajorTicks: "#fff",
