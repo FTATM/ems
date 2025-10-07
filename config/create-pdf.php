@@ -2,13 +2,25 @@
 require_once('../vendor/autoload.php');
 require_once('../config/fpdf.php');
 
-// ตัวอย่าง
-$consumption = $_POST['kwh'] ?? 3000;
+$id = $_POST['id'];
+$username = $_POST['user'];
+$date = $_POST['date'];
+$kwh = $_POST['kwh'];
+$fv = $_POST['fv'];
+$lv = $_POST['lv'];
+$rkwh = $_POST['rkwhr'];
+$service = $_POST['service'];
+$ft = $_POST['ft'];
+$rft = $_POST['rft'];
+$sum = $_POST['sum'];
+$tax = $_POST['tax'];
+$rtax = $_POST['rtax'];
+$total = $_POST['total'];
 // if ($consumption) {
 //     echo json_encode(['status' => false, 'message' => 'Failed: Required parameter not found. Please verify your request.']);
 // }
 
-$data = calculateBill($consumption);
+$data = calculateBill($kwh);
 
 $thaiMonth = [
     1 => 'ม.ค.',
@@ -24,11 +36,17 @@ $thaiMonth = [
     11 => 'พ.ย.',
     12 => 'ธ.ค.'
 ];
-$yearBE = date('Y') + 543; // ปี พ.ศ.
-$monthThai = $thaiMonth[date('n')];
+// แปลงวันที่เป็น timestamp
+$timestamp = strtotime($date);
+
+// แปลงปี ค.ศ. เป็น พ.ศ.
+$yearBE = date('Y', $timestamp) + 543;
+$yearShort = substr($yearBE, -2);
+
+$monthThai = $thaiMonth[date('n', $timestamp)];
 // สร้าง PDF
 
-$pdf = new tFPDF('P', 'mm', [120, 200]);
+$pdf = new tFPDF('P', 'mm', [120, 180]);
 $pdf->AddPage();
 
 $pdf->AddFont('THSarabunNew', '', 'THSarabunNew.ttf', true);
@@ -55,7 +73,7 @@ $pdf->SetFont('THSarabunNew', '', 12);
 $pdf->SetTextColor(0, 0, 0);
 $pdf->Cell(30, 6, 'G0' . rand(0, 9) . rand(0, 9) . rand(0, 9), 1, 0);
 $pdf->Cell(20, 6, 'I00' . rand(0, 9), 1, 0);
-$pdf->Cell(30, 6, date('Y-M-d'), 1, 0);
+$pdf->Cell(30, 6, $date, 1, 0);
 $pdf->Cell(20, 6, $monthThai . ' ' . $yearBE, 1, 1);
 
 $pdf->SetFont('THSarabunNew', '', 12);
@@ -65,12 +83,14 @@ $pdf->Cell(20, 6, "Create By", 1, 0);
 $pdf->Cell(30, 6, "Due Date", 1, 0);
 $pdf->Cell(30, 6, "Last Date", 1, 1);
 
+
+$idtext = str_pad($id, 3, '0', STR_PAD_LEFT);
 $pdf->SetFont('THSarabunNew', '', 12);
 $pdf->SetTextColor(0, 0, 0);
-$pdf->Cell(20, 6, 'M00' . rand(0, 9) . rand(0, 9), 1, 0);
-$pdf->Cell(20, 6, 'U00' . rand(0, 9), 1, 0);
-$pdf->Cell(30, 6, date('Y-M-d'), 1, 0);
-$pdf->Cell(30, 6, date('Y-M-d'), 1, 1);
+$pdf->Cell(20, 6, 'M' . $yearShort . $idtext, 1, 0);
+$pdf->Cell(20, 6, $username, 1, 0);
+$pdf->Cell(30, 6, $date, 1, 0);
+$pdf->Cell(30, 6, $date, 1, 1);
 
 $pdf->SetFont('THSarabunNew', '', 12);
 $pdf->SetTextColor(116, 4, 95);
@@ -79,14 +99,12 @@ $pdf->Cell(30, 6, "Recent Reading", 1, 0);
 $pdf->Cell(30, 6, "Consumption", 1, 0);
 $pdf->Cell(10, 6, "Unit", 1, 1);
 
-$r = 6342;
-$p = 5422;
 $pdf->SetFont('THSarabunNew', '', 12);
 $pdf->SetTextColor(0, 0, 0);
-$pdf->Cell(30, 12, $r, 1, 0);
-$pdf->Cell(30, 12, $p, 1, 0);
-$pdf->Cell(30, 12, $r - $p, 1, 0);
-$pdf->Cell(10, 12, "-", 1, 0, 'C');
+$pdf->Cell(30, 12, $fv, 1, 0);
+$pdf->Cell(30, 12, $lv, 1, 0);
+$pdf->Cell(30, 12, $kwh, 1, 0);
+$pdf->Cell(10, 12, "unit", 1, 0, 'C');
 
 $pdf->Ln(36);
 
@@ -95,36 +113,28 @@ $pdf->SetTextColor(0, 0, 0);
 $pdf->Cell(35, 6, "WM Version 0." . rand(0, 9) . '.' . rand(0, 9) . '.', 1, 0);
 $pdf->Cell(25, 6, "จำนวนเงิน (บาท)", 1, 1);
 
-$bath = rand(20000, 99900) / 100;
 $pdf->Cell(35, 6, "ค่าพลังงานไฟฟ้า", 0, 0);
-$pdf->Cell(25, 6, $bath, 0, 1, 'R');
+$pdf->Cell(25, 6, $rkwh, 0, 1, 'R');
 
-$service = rand(200, 990) / 100;
 $pdf->Cell(35, 6, "ค่าบริการรายเดือน", 0, 0);
 $pdf->Cell(25, 6, $service, 0, 1, 'R');
 
-$ft = rand(0, 9) / 1000;
-$bathft = rand(1000, 9000) / 100;
 
 $pdf->Cell(35, 6, "ค่า Ft " . $ft . " บาท/หน่วย", 0, 0);
-$pdf->Cell(25, 6, $bathft, 0, 1, 'R');
+$pdf->Cell(25, 6, $rft, 0, 1, 'R');
 
-$bathall = $bath + $service + $bathft;
 $pdf->Cell(35, 6, "รวมเงินค่าไฟฟ้า", 0, 0);
-$pdf->Cell(25, 6, $bathall, 0, 1, 'R');
+$pdf->Cell(25, 6, $sum, 0, 1, 'R');
 
-$vat = 7;
-$bathvat = round(($vat / 100) * $bathall, 2);
-$pdf->Cell(35, 6, "ภาษีมูลค่าเพิ่ม " . $vat . "%", 0, 0);
-$pdf->Cell(25, 6, $bathvat, 0, 0, 'R');
+$pdf->Cell(35, 6, "ภาษีมูลค่าเพิ่ม " . $tax . "%", 0, 0);
+$pdf->Cell(25, 6, $rtax, 0, 0, 'R');
 $pdf->Cell(10, 6, "", 0, 0);
 $pdf->Cell(30, 6, "แสกนจ่าย ณ บัญชี ", 0, 1);
 
-$total = round($bathall + $bathvat, 2);
 $pdf->Cell(35, 6, "รวมเงินค่าไฟฟ้าเดือนปัจจุบัน", 0, 0);
 $pdf->Cell(25, 6, $total, 0, 0, 'R');
 $pdf->Cell(3, 6, "", 0, 0);
-$pdf->Cell(30, 6,"Fieldtech Automation co,ltd ", 0, 1);
+$pdf->Cell(30, 6, "Fieldtech Automation co,ltd ", 0, 1);
 
 $pdf->SetFont('THSarabunNew', '', 14);
 $pdf->SetTextColor(177, 34, 38);
