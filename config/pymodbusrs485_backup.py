@@ -1,17 +1,11 @@
-import json
+from pymodbus.client.sync import ModbusSerialClient
 import struct
 import tkinter as tk
 import requests
 import threading
 import time
 from datetime import datetime
-from pymodbus.client.sync import ModbusTcpClient
-import logging
-
-# === DEBUG LOGGING ===
-logging.basicConfig()
-log = logging.getLogger()
-log.setLevel(logging.ERROR)  # เปลี่ยนเป็น DEBUG ถ้าต้องการดูทุกอย่าง
+import json  # 🔹 เพิ่ม json สำหรับ debug print
 
 # === API Setup ===
 session = requests.Session()
@@ -21,39 +15,29 @@ session.headers.update({'Connection': 'keep-alive'})
 def hex_to_float(hex_val):
     return struct.unpack('<f', struct.pack('<I', hex_val))[0]
 
-def read_float_register(start_address):
-    try:
-        if not client.connect():
-            print(f"❌ Connection failed at address {start_address}")
-            return None
-
-        result = client.read_holding_registers(address=start_address, count=2, unit=1)
-        if result.isError():
-            print(f"⚠️ Modbus error at {start_address}: {result}")
-            return None
-
-        regs = result.registers
-        return round(hex_to_float((regs[0] << 16) + regs[1]), 2)
-    except Exception as e:
-        print(f"❌ Error reading register {start_address}:", e)
+def read_all_registers(start_address=2999, count=124):
+    result = client.read_holding_registers(address=start_address, count=count, unit=1)
+    if result.isError():
         return None
+    return result.registers
 
 def read_time_component(address):
-    try:
-        result = client.read_holding_registers(address=address, count=1, unit=1)
-        if result.isError():
-            print(f"⚠️ Time read error at {address}: {result}")
-            return None
-        return result.registers[0]
-    except Exception as e:
-        print(f"❌ Exception reading time register {address}:", e)
+    result = client.read_holding_registers(address=address, count=1, unit=1)
+    if result.isError():
         return None
+    return result.registers[0]
 
 def send_data_to_api(payload):
     url = "http://49.0.69.152/ams/config/meter-data.php"
-    response = session.post(url, json=payload, timeout=5)
-    print("✅ API Response:", response.status_code, response.text)
-    return response
+    try:
+        print("📤 Sending payload JSON:")
+        print(json.dumps(payload, indent=4))  # 🔹 พิมพ์ payload ออก
+        response = session.post(url, json=payload, timeout=5)
+        print("✅ API Response:", response.status_code, response.text)
+        return response
+    except requests.exceptions.RequestException as e:
+        print("❌ API Error:", e)
+        raise
 
 # === GUI Setup ===
 root = tk.Tk()
@@ -71,13 +55,11 @@ fields = [
     'Frequency', 'kWh', 'Power Factor', 'kVARh', 'kVAh'
 ]
 
-temp = []
-
 for field in fields:
     labels[field] = tk.Label(root, text=f"{field}: --", font=('Arial', 14))
     labels[field].pack(pady=2)
 
-# === Register Mapping ===
+# === Modbus Register Mapping ===
 float_registers = {
     'Current A': 2999,
     'Current B': 3001,
@@ -105,59 +87,98 @@ float_registers = {
     'kWh': 2679,
     'Power Factor': 3191,
     'kVARh': 2687,
-    'kVAh' : 2695
+    'kVAh': 2695
 }
 
-# === Global State ===
+batch_start = 2999
+batch_count = 124
+small_addresses = [2679, 2687, 2695]
+
 read_interval = 5
-send_interval = 60
+send_interval = 30
 latest_data = {}
 timestamp = None
 last_sent_timestamp = None
+temp = []
 
-# === Update GUI and Read Data ===
 def update_gui_and_data():
     global latest_data, timestamp
-    try:
-        if not client.connect():
-            for label in labels.values():
-                label.config(text="Disconnected")
-            root.after(read_interval * 1000, update_gui_and_data)
-            return
 
-        # Read time
-        year = read_time_component(1836)
-        month = read_time_component(1837)
-        day = read_time_component(1838)
-        hour = read_time_component(1839)
-        minute = read_time_component(1840)
-        second = read_time_component(1841)
+    if not client.connect():
+        for label in labels.values():
+            label.config(text="Disconnected")
+        root.after(read_interval * 1000, update_gui_and_data)
+        return
 
-        if None not in (year, month, day, hour, minute, second):
-            labels['time'].config(text=f"Time: {year}-{month:02d}-{day:02d} {hour:02d}:{minute:02d}:{second:02d}")
-            timestamp_dt = datetime(year, month, day, hour, minute, second)
-            timestamp = timestamp_dt.isoformat()
-        else:
-            labels['time'].config(text="Time: Read Error")
-            timestamp = None
+    regs = read_all_registers(batch_start, batch_count)
+    batch_values = {}
 
-        # Read float registers
+    if regs is None or len(regs) < batch_count:
+        print(f"⚠️ Error reading registers from {batch_start}, got {len(regs) if regs else 0} words.")
+        for label in float_registers.keys():
+            labels[label].config(text=f"{label}: Read Error")
+            batch_values[label] = None
+    else:
         for label, addr in float_registers.items():
-            value = read_float_register(addr)
-            if value is not None:
-                labels[label].config(text=f"{label}: {value}")
-                latest_data[label] = value
+            if addr < batch_start:
+                continue
+            idx = addr - batch_start
+            if 0 <= idx < len(regs) - 1:
+                try:
+                    combined = (regs[idx] << 16) + regs[idx + 1]
+                    val = round(hex_to_float(combined), 2)
+                    batch_values[label] = val
+                except Exception as e:
+                    print(f"⚠️ Error converting {label} at idx {idx}: {e}")
+                    batch_values[label] = None
             else:
-                labels[label].config(text=f"{label}: Read Error")
+                print(f"⚠️ Index out of range for {label} at address {addr}")
+                batch_values[label] = None
 
-    except Exception as e:
-        print("❌ Exception in update_gui_and_data:", e)
+    for addr in small_addresses:
+        try:
+            result = client.read_holding_registers(address=addr, count=2, unit=1)
+            if not result.isError() and len(result.registers) == 2:
+                regs_small = result.registers
+                combined = (regs_small[0] << 16) + regs_small[1]
+                val = round(hex_to_float(combined), 2)
+            else:
+                val = None
+        except Exception as e:
+            print(f"⚠️ Exception reading address {addr}: {e}")
+            val = None
+
+        if addr == 2679:
+            batch_values['kWh'] = val
+        elif addr == 2687:
+            batch_values['kVARh'] = val
+        elif addr == 2695:
+            batch_values['kVAh'] = val
+
+    for label in float_registers.keys():
+        val = batch_values.get(label)
+        if val is not None:
+            labels[label].config(text=f"{label}: {val}")
+            latest_data[label] = val
+        else:
+            labels[label].config(text=f"{label}: Read Error")
+
+    for field in ['kWh', 'kVARh', 'kVAh']:
+        val = batch_values.get(field)
+        if val is not None:
+            labels[field].config(text=f"{field}: {val}")
+            latest_data[field] = val
+        else:
+            labels[field].config(text=f"{field}: Read Error")
 
     root.after(read_interval * 1000, update_gui_and_data)
-
-# === API Sender Thread ===
+    
+# === Add timestamp ===
+timestamp = datetime.now().isoformat()
 def api_sender_loop():
     global last_sent_timestamp
+    print("🟢 API thread started")  # 🔹 debug
+
     while True:
         payload = None
         try:
@@ -196,7 +217,8 @@ def api_sender_loop():
                             "Frequency": latest_data.get('Frequency', 0),
                         }
                     }
-                    print("📤 Sending to API:", payload)
+
+                    print("📤 Preparing to send to API...")
                     response = send_data_to_api(payload)
                     last_sent_timestamp = timestamp
 
@@ -206,27 +228,39 @@ def api_sender_loop():
                 temp.append(payload)
                 print("📦 Saved to temp for retry.")
 
+        print(f"🧊 Temp retry queue size: {len(temp)}")
         time.sleep(send_interval)
 
-# === On Close ===
+# === On Closing ===
 def on_closing():
     if client.is_socket_open():
         client.close()
     root.destroy()
 
-# === Start Modbus Client ===
-client = ModbusTcpClient('192.168.0.7', port=8800, timeout=3)
+# === Connect to Modbus RTU via RS485 ===
+client = ModbusSerialClient(
+    method='rtu',
+    port='COM4',        # ✅ ตรวจสอบว่า COM4 ถูกต้อง (เปลี่ยนตามเครื่องคุณ)
+    baudrate=9600,
+    bytesize=8,
+    parity='N',
+    stopbits=1,
+    timeout=1
+)
 
 if not client.connect():
-    print("❌ Initial connection failed.")
     for label in labels.values():
         label.config(text="Connection Failed")
+    print("❌ Failed to connect to Modbus.")
 
-# === Start Reading and Sending ===
+# === Start Main GUI Loop ===
 update_gui_and_data()
 
+# === Start API Sender Thread ===
 api_thread = threading.Thread(target=api_sender_loop, daemon=True)
 api_thread.start()
 
+# === Handle GUI Close ===
 root.protocol("WM_DELETE_WINDOW", on_closing)
 root.mainloop()
+

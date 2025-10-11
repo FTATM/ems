@@ -23,9 +23,9 @@ checkLogin();
                 <label id="location" class="px-2" for="locations">Location : </label>
                 <label id="group" class="px-2" for="groups">Group : </label>
             </div>
-            <div class="bg-secondary bg-opacity-25 d-flex flex-column m-3 pt-5 align-items-center" style="min-height: 80svh;">
-                <div id="list-meters" class="d-flex gap-2"></div>
+            <div class="mx-3 bg-diagram-head" style="height: 480px;">
             </div>
+            <div id="list-meters"> </div>
         </div>
     </div>
 
@@ -33,6 +33,7 @@ checkLogin();
         <?= json_encode($_SESSION['theme'], JSON_UNESCAPED_UNICODE); ?>
     </script>
     <?php include "../scripts/scriptjs.html"; ?>
-    <?php include "../scripts/scriptjs-home.html"; ?>
+    <?php include "../scripts/scriptjs-diagram.html"; ?>
 </body>
+
 </html>

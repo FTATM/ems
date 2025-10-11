@@ -1,0 +1,331 @@
+<script>
+    const rowsPerPage = 10;
+    let currentPage = 1;
+    let meters = [];
+    let filteredDataInMeters = [];
+    let locations = [];
+    let groups = [];
+    let types = [];
+
+    const typeMeterID = "<?=$_SESSION['tid'];?>";
+    const groupID = "<?=$_SESSION['gid'];?>";
+
+    document.addEventListener("DOMContentLoaded", async () => {
+        showLoading();
+        await process();
+        hideLoading();
+    })
+
+    async function process() {
+        await fetchAll();
+        await filterMeters();
+        await generateMeters();
+        await setInformation();
+    }
+
+    async function fetchAll() {
+        let res_location = await fetch("../config/fetch-locations.php");
+        let json_location = await res_location.json();
+        locations = json_location.data;
+
+        let res_group = await fetch("../config/fetch-groups.php");
+        let json_group = await res_group.json();
+        groups = json_group.data;
+
+        let response = await fetch("../config/fetch-meters.php");
+        let json = await response.json();
+        meters = json.data;
+
+        let responsetype = await fetch("../config/fetch-data_type.php");
+        let jsontype = await responsetype.json();
+        types = jsontype.data;
+    }
+
+    function filterMeters() {
+        const filteredMeters = Object.values(meters).filter(m => {
+            return m.group_id === groupID && m.meter_type_id === typeMeterID;
+        });
+
+        filterDataInMeters(filteredMeters);
+    }
+
+    function filterDataInMeters(filteredMeters) {
+        let now = new Date();
+        let selectedDateTime = new Date(now.getTime() - 1.5 * 60000);
+        filteredDataInMeters = Object.values(filteredMeters).map(fm => {
+            let Datafiltered = {};
+            Object.entries(fm.data).map(([key, rows]) => {
+                Datafiltered[key] = Object.values(rows).filter(dy => {
+                    let date = new Date(dy.create_date);
+                    return date >= selectedDateTime;
+                });
+            });
+            return {
+                ...fm,
+                data: Datafiltered,
+            }
+        });
+
+        console.log("Data ready : ", filteredDataInMeters);
+    }
+
+    function getNameLocation(gid) {
+        return locations.find(l => {
+            return groups.filter(g => {
+                return g.id === gid;
+            })
+        }).name;
+    }
+
+    function getNameGroup(id) {
+
+        return groups.find(g => {
+            return g.id === id;
+        }).name;
+    }
+
+    function setInformation() {
+        const locate = document.getElementById('location');
+        locate.innerHTML = `<?=$lang['location']?> : ` + getNameLocation(groupID);
+        const group = document.getElementById('group');
+        group.innerHTML = `<?=$lang['group']?> : ` + getNameGroup(groupID);
+    }
+
+    function generateMeters() {
+        let list = document.getElementById('list-meters');
+        list.innerHTML = ``;
+
+        // แบ่งเป็นแถวละ 8 ตัว
+        const itemsPerRow = 8;
+
+        filteredDataInMeters.forEach((m, index) => {
+            // ถ้าเป็นตัวแรกของแถวใหม่
+            if (index % itemsPerRow === 0) {
+                let row = document.createElement('div');
+                row.className = "mx-3 bg-diagram-body d-flex align-items-end justify-content-end"; // จัดเรียง meter ในแถว
+                row.style.minHeight = "280px";
+                row.innerHTML = `
+                    <div id="row-${Math.floor(index / itemsPerRow)}" class="d-flex flex-wrap justify-content-between align-items-end me-3" style="width:93%;">
+                    </div>
+                `;
+                list.appendChild(row);
+            }
+
+            let strkw = (parseFloat(m.data['1']?.at(-1)?.value) || 0).toFixed(1);
+            let strkwh = (parseFloat(m.data['2']?.at(-1)?.value) || 0).toFixed(1);
+            let [intPartkw, decimalPartkw] = strkw.split(".");
+            let [intPartkwh, decimalPartkwh] = strkwh.split(".");
+
+            let digitskw = (intPartkw.padStart(5, "0") + "." + decimalPartkw).split("");
+            let digitskwh = (intPartkwh.padStart(5, "0") + "." + decimalPartkwh).split("");
+
+            let wrapper = document.createElement('div');
+            wrapper.style.width = "150px";
+            wrapper.style.height = "170px";
+            wrapper.style.marginRight = index === (Math.floor(index / itemsPerRow) * 8) + 3 ? "120px" : "0px";
+            wrapper.style.overflow = "hidden";
+            wrapper.style.display = "inline-block";
+
+            let div = document.createElement('div');
+            div.className = "d-flex flex-column p-2 rounded";
+            div.style.width = "300px";
+            div.style.height = "320px";
+            div.style.backgroundColor = "#EFEFEF";
+            div.style.transform = "scale(0.5)";
+            div.style.transformOrigin = "top left";
+
+            div.innerHTML = `
+                <div class="w-100 h-100 px-3 rounded" onclick="showModalMeter(${m.id})" style="background-color:#858585;">
+                    <div class="w-100 h-100 px-1 py-3 rounded position-relative" style="background-color:#666666;">
+                        <div id="status-${index}" class="position-absolute rounded-circle bg-danger p-2" style="top:20px; right:10px;">
+                        </div>
+                        <div class="w-100 h-100 p-2 d-flex flex-column rounded" style="background-color:#EFEFEF;">
+                            <div class="w-100 mb-2 d-flex justify-content-center align-content-center">
+                                <div class="d-flex justify-content-center align-items-center">
+                                    ${digitskw.map(d => `<div class="slot-number">${d}</div>`).join("")}
+                                    <div class="text-black ms-1">kW</div>
+                                </div>
+                            </div>
+                            <div class="w-100 mb-2 d-flex justify-content-center align-content-center">
+                                <div class="d-flex justify-content-center align-items-center">
+                                    ${digitskwh.map(d => `<div class="slot-number">${d}</div>`).join("")}
+                                    <div class="text-black ms-1">kW·h</div>
+                                </div>
+                            </div>
+                            <div class="w-100 h-25 text-black text-center">
+                                <?=$lang['kiloHrMeter']?>
+                                <div id="line-active-${m.id}" class="stop-line"></div>
+                            </div>
+                            <div class="w-100 h-25 text-black d-flex justify-content-center">
+                                <table class="table-smaller">
+                                    <tbody>
+                                        <tr>
+                                            <td>360r/kW·h</td>
+                                            <td>220-240V</td>
+                                            <td>10(30)A</td>
+                                            <td>50Hz</td>
+                                        </tr>
+                                        <tr>
+                                            <td>IEC62053-1${m.id}</td>
+                                            <td colspan="3">No. 000${m.id}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>    
+                            </div>
+                            <div class="text-black text-center">
+                                ${m.name} and No ${index} row ${index % itemsPerRow}   
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            wrapper.appendChild(div);
+
+            // หา row ล่าสุด แล้วเพิ่ม meter เข้าไป
+            let currentRow = document.getElementById(`row-${Math.floor(index / itemsPerRow)}`);
+            currentRow.appendChild(wrapper);
+
+            // ถ้า meter นี้ active ให้แสดง animation
+            if (m.is_active === '1') {
+                document.getElementById(`line-active-${m.id}`).classList.remove('stop-line');
+                document.getElementById(`line-active-${m.id}`).classList.add('moving-line');
+            }
+            let status = document.getElementById('status-' + index);
+            status.classList.replace("bg-danger", strkw === "0.0" ? "bg-danger" : "bg-success");
+        });
+    }
+
+    function setRefreshTime() {
+        const inputRefresh = document.getElementById('input-refresh');
+        const refreshTime = parseInt(inputRefresh.value, 10);
+        if (isNaN(refreshTime) || refreshTime < 1 || refreshTime > 60) {
+            alertMessages('error', 'Error', 'Please enter a valid refresh time between 1 and 30 seconds.');
+            return;
+        }
+        // เคลียร์ interval เก่า
+        clearInterval(refreshIntervalId);
+
+        console.log("Setting refresh time to:", refreshTime);
+
+        // ตั้ง interval ใหม่
+        refreshIntervalId = setInterval(() => {
+            process();
+        }, refreshTime * 1000);
+    }
+
+    function renderTablePage(data, page) {
+
+        renderPagination(data.length, page);
+    }
+
+    function renderPagination(totalRows, currentPage) {
+        const paginationDiv = document.getElementById("pagination");
+        paginationDiv.innerHTML = "";
+
+        const totalPages = Math.ceil(totalRows / rowsPerPage);
+
+        for (let i = 1; i <= totalPages; i++) {
+            const btn = document.createElement("button");
+            btn.className = `btn btn-sm text-white`;
+            btn.style.backgroundColor = `${i === currentPage ? '#001B5E' : '#555555'}`;
+
+            btn.textContent = i;
+            btn.addEventListener("click", () => {
+                renderTablePage(locations, i);
+            });
+            paginationDiv.appendChild(btn);
+        }
+    }
+
+    function showModalMeter(id) {
+        if (document.getElementById('showModal')) {
+            console.log("already Modal in screen.");
+            return;
+        }
+        let m = filteredDataInMeters.find(m => { return parseInt(m.id) === parseInt(id) });
+
+        let strkw = (parseFloat(m.data['1']?.at(-1)?.value) || 0).toFixed(1);
+        let strkwh = (parseFloat(m.data['2']?.at(-1)?.value) || 0).toFixed(1);
+        let [intPartkw, decimalPartkw] = strkw.split(".");
+        let [intPartkwh, decimalPartkwh] = strkwh.split(".");
+
+        let digitskw = (intPartkw.padStart(5, "0") + "." + decimalPartkw).split("");
+        let digitskwh = (intPartkwh.padStart(5, "0") + "." + decimalPartkwh).split("");
+
+        let div = document.createElement('div');
+        div.className = "d-flex flex-column p-2 rounded";
+        div.style.width = "300px";
+        div.style.height = "320px";
+        div.style.backgroundColor = "#EFEFEF";
+        div.style.transformOrigin = "center center";
+        div.innerHTML = `
+                <div class="w-100 h-100 px-3 rounded" onclick="showModalMeter(${m.id})" style="background-color:#858585;">
+                    <div class="w-100 h-100 px-1 py-3 rounded position-relative" style="background-color:#666666;">
+                        <div id="status-x" class="position-absolute rounded-circle bg-danger p-2" style="top:20px; right:10px;">
+                        </div>
+                        <div class="w-100 h-100 p-2 d-flex flex-column rounded" style="background-color:#EFEFEF;">
+                            <div class="w-100 mb-2 d-flex justify-content-center align-content-center">
+                                <div class="d-flex justify-content-center align-items-center">
+                                    ${digitskw.map(d => `<div class="slot-number">${d}</div>`).join("")}
+                                    <div class="text-black ms-1">kW</div>
+                                </div>
+                            </div>
+                            <div class="w-100 mb-2 d-flex justify-content-center align-content-center">
+                                <div class="d-flex justify-content-center align-items-center">
+                                    ${digitskwh.map(d => `<div class="slot-number">${d}</div>`).join("")}
+                                    <div class="text-black ms-1">kW·h</div>
+                                </div>
+                            </div>
+                            <div class="w-100 h-25 text-black text-center">
+                                <?=$lang['kiloHrMeter']?>
+                                <div id="line-active-${m.id}" class="stop-line"></div>
+                            </div>
+                            <div class="w-100 h-25 text-black d-flex justify-content-center">
+                                <table class="table-smaller">
+                                    <tbody>
+                                        <tr>
+                                            <td>360r/kW·h</td>
+                                            <td>220-240V</td>
+                                            <td>10(30)A</td>
+                                            <td>50Hz</td>
+                                        </tr>
+                                        <tr>
+                                            <td>IEC62053-1${m.id}</td>
+                                            <td colspan="3">No. 000${m.id}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>    
+                            </div>
+                            <div class="text-black text-center">
+                                ${m.name}   
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+        let modal = document.createElement('div');
+        modal.id = "showModal";
+        modal.className = "position-fixed d-flex flex-column justify-content-center align-items-center";
+        modal.style.top = "0px";
+        modal.style.left = "0px";
+        modal.style.backgroundColor = "rgba(0,0,0,0.7)";
+        modal.style.width = "100vw";
+        modal.style.height = "100vh";
+        modal.style.zIndex = 9999;
+        modal.onclick = () => { modal.remove() }
+
+        modal.appendChild(div);
+        modal.innerHTML += `<div class="mt-4">click any on screen to close.</div>`;
+        document.body.appendChild(modal);
+
+        // ถ้า meter นี้ active ให้แสดง animation
+        if (m.is_active === '1') {
+            document.getElementById(`line-active-${m.id}`).classList.remove('stop-line');
+            document.getElementById(`line-active-${m.id}`).classList.add('moving-line');
+        }
+        let status = document.getElementById('status-x');
+        status.classList.replace("bg-danger", strkw === "0.0" ? "bg-danger" : "bg-success");
+
+    }
+</script>

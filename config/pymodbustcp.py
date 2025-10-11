@@ -52,7 +52,7 @@ try:
         'Voltage A_B': 3019,
         'Voltage B_C': 3021,
         'Voltage C_A': 3023,
-        'Pf': 3083,
+        'Pf': 3191,
         'Frequency': 3109,
     }
 

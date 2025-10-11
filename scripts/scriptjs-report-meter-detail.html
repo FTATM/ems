@@ -9,7 +9,7 @@
 
   const typeMeterID = "<?=$_SESSION['tid'];?>";
   const groupID = "<?=$_SESSION['gid'];?>";
-
+  const username = "<?=$_SESSION['username'];?>";
   document.addEventListener("DOMContentLoaded", async () => {
     showLoading();
     ftloaded = true;
@@ -105,7 +105,7 @@
       ...meterSelected,
       data: data
     }
-    console.log("before AvgMinMax func :", filteredDataInMetersDay);
+    console.log("before AvgMinMax func :", filteredDataInMetersDay.data);
     const dayData = await AvgMinMax(filteredDataInMetersDay);
     console.log(dayData.data);
 
@@ -126,7 +126,7 @@
       data: dataMonth
     }
 
-    console.log("before AvgMinMax func :", filteredDataInMetersMonth);
+    console.log("before AvgMinMax func :", filteredDataInMetersMonth.data);
     const monthData = await AvgMinMax(filteredDataInMetersMonth);
     console.log(monthData.data);
 
@@ -165,9 +165,10 @@
         let date = new Date(data.create_date);
         let period = checkPeriod(date);
         let val = ['1', '3', '5'].includes(key) ? Math.abs(parseFloat(fValue) - parseFloat(data.value)) : parseFloat(data.value);
+        let value = parseFloat(data.value);
         if (period !== lastPeriod) {
-          list.fv[period] = val;
-          list.min[period] = val;
+          list.fv[period] = value;
+          list.min[period] = value;
           list.fv_date[period] = data.create_date;
           if (lastPeriod !== '') {
             const diff = diffTime(list.fv_date[lastPeriod], lastData.create_date);
@@ -181,10 +182,10 @@
         }
         list.total[period] += val;
         list.count[period] += 1;
-        list.lv[period] = val;
+        list.lv[period] = value;
         list.lv_date[period] = data.create_date;
-        list.min[period] = val < list.min[period] ? val : list.min[period];
-        list.max[period] = val > list.max[period] ? val : list.max[period];
+        list.min[period] = value < list.min[period] ? value : list.min[period];
+        list.max[period] = value > list.max[period] ? value : list.max[period];
 
       });
       return values[key] = {
@@ -253,6 +254,23 @@
     return result;
   }
 
+  function diffValue(value1, value2) {
+    let result = {};
+    ['morning', 'after', 'even', 'night'].forEach(period => {
+      result[period] = parseFloat(Math.abs(value1[period] - value2[period]).toFixed(2));
+    });
+    console.log("result : ", result);
+    return result;
+  }
+
+  function avgValue(array) {
+    let result = 0;
+    Object.values(array).forEach(value => {
+      result += value;
+    })
+    return (result / array.length).toFixed(2);
+  }
+
   function loadValueDay(m) {
     let data = m.data;
     const kw = data[0];
@@ -264,10 +282,12 @@
     setValueInHTML('kw-avg', kw.avg);
     setValueInHTML('kw-max', kw.max);
     setValueInHTML('hour-diff', kw.ttime);
-    setValueInHTML('kwhr-diff', kwh.avg);
+    setValueInHTML('kwhr-diff', diffValue(kwh.fv, kwh.lv));
+    setValueInHTML('kwhr-fv-all', kwh.fv['morning']);
+    setValueInHTML('kwhr-lv-all', kwh.lv['night']);
     setValueInHTML('hour-value', kw.thours);
     setValueInHTML('kvar-avg', sumValue(kvar.avg));
-    setValueInHTML('pf-avg', sumValue(pf.avg));
+    setValueInHTML('pf-avg', avgValue(pf.avg));
 
     //[1] bath of kW
     addDetectEventMulti('input-kw-m', 'result-bath-kw-m', 'kw-avg-m', 'input-kw-m');
@@ -340,7 +360,9 @@
     setValueInHTML('kw-avg-month', kw.avg);
     setValueInHTML('kw-max-month', kw.avg);
     setValueInHTML('hour-diff-month', kw.ttime);
-    setValueInHTML('kwhr-diff-month', kwh.avg);
+    setValueInHTML('kwhr-diff-month', kwh.avg); // ต้องเป็น fv - lv
+    setValueInHTML('kwhr-fv-all-month', kwh.fv['morning']);
+    setValueInHTML('kwhr-lv-all-month', kwh.lv['night']);
     setValueInHTML('hour-value-month', kw.thours);
     setValueInHTML('kvar-avg-month', sumValue(kvar.avg));
     setValueInHTML('pf-avg-month', sumValue(pf.avg));
@@ -528,23 +550,55 @@
   }
 
   function createPDF(ismonth) {
-
+    let id = document.getElementById('select-meters').value;
+    let date = document.getElementById('select-filter-value').value;
+    let kwh_diff = document.getElementById('kwhr-diff-all')?.value;
+    let kwh_fv = document.getElementById('kwhr-fv-all')?.value;
+    let kwh_lv = document.getElementById('kwhr-lv-all')?.value;
+    let rkwhr = document.getElementById('result-bath-kwhr-all')?.value;
+    let service = document.getElementById('input-service')?.value;
+    let ft = document.getElementById('input-ft')?.value;
+    let rft = document.getElementById('result-bath-ft')?.value;
+    let sum = document.getElementById('result-bath-all')?.value;
+    let tax = document.getElementById('input-tax')?.value;
+    let rtax = document.getElementById('result-bath-tax')?.value;
+    let total = document.getElementById('result-bath-total')?.value;
     if (ismonth) {
-      const kwh = document.getElementById('kwhr-diff-month')?.value;
-    } else {
-      const kwh_diff = document.getElementById('kwhr-diff')?.value;
-      const kwh_min = document.getElementById('kwhr-min')?.value;
-      const kwh_max = document.getElementById('kwhr-max')?.value;
-      const service = document.getElementById('input-service')?.value;
+      kwh_diff = document.getElementById('kwhr-diff-month-all')?.value;
+      kwh_fv = document.getElementById('kwhr-fv-month-all')?.value;
+      kwh_lv = document.getElementById('kwhr-lv-month-all')?.value;
+      rkwhr = document.getElementById('result-bath-kwhr-month-all')?.value;
+      service = document.getElementById('input-service-month')?.value;
+      ft = document.getElementById('input-ft')?.value;
+      rft = document.getElementById('result-bath-ft-month')?.value;
+      sum = document.getElementById('result-bath-all-month')?.value;
+      tax = document.getElementById('input-tax')?.value;
+      rtax = document.getElementById('result-bath-tax-month')?.value;
+      total = document.getElementById('result-bath-total-month')?.value;
     }
 
-    if (!kwh) {
+
+    if (!kwh_diff || !kwh_fv || !kwh_lv || !rkwhr || !service || !ft || !rft || !sum || !tax || !rtax || !total) {
+      // console.log("kwh ", kwh_diff, " fv ", kwh_fv, " lv ", kwh_lv, " rkwhr ", rkwhr, " service ", service, " ft ", ft, " rft ", rft, " sum ", sum, " tax ", tax, " rtax ", rtax, " total ", total);
       alertMessages('error', 'ข้อมูลไม่ครบถ้วน', 'ไม่พบข้อมูลที่พร้อมสำหรับ export ไปยัง pdf โปรดกรอกข้อมูลให้ครบและลองอีกครั้ง.', 5000, true);
       return;
     }
 
     let formdata = new FormData();
-    formdata.append('kWh', kwh);
+    formdata.append('id', id);
+    formdata.append('user', username);
+    formdata.append('date', date);
+    formdata.append('kwh', kwh_diff);
+    formdata.append('fv', kwh_fv);
+    formdata.append('lv', kwh_lv);
+    formdata.append('rkwhr', rkwhr);
+    formdata.append('service', service);
+    formdata.append('ft', ft);
+    formdata.append('rft', rft);
+    formdata.append('sum', sum);
+    formdata.append('tax', tax);
+    formdata.append('rtax', rtax);
+    formdata.append('total', total);
 
     fetch('../config/create-pdf.php', {
       method: "POST",
