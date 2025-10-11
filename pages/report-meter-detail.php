@@ -124,7 +124,9 @@ checkLogin();
                                     <input id="kwhr-diff-a" type="text" class="form-control form-control-sm" readonly>
                                     <input id="kwhr-diff-e" type="text" class="form-control form-control-sm" readonly>
                                     <input id="kwhr-diff-n" type="text" class="form-control form-control-sm" readonly>
-                                    <input id="kwhr-diff-all" type="text" class="form-control form-control-sm d-none" readonly>
+                                    <input id="kwhr-diff-all" type="text" class="form-control form-control-sm" readonly>
+                                    <input id="kwhr-fv-all" type="text" class="form-control form-control-sm d-none" readonly>
+                                    <input id="kwhr-lv-all" type="text" class="form-control form-control-sm d-none" readonly>
                                 </div>
                                 <div class="me-2 w-20">
                                     <label class="me-2 mb-0">บาท/kWh</label>
@@ -307,6 +309,8 @@ checkLogin();
                                     <input id="kwhr-diff-month-e" type="text" class="form-control form-control-sm" readonly>
                                     <input id="kwhr-diff-month-n" type="text" class="form-control form-control-sm" readonly>
                                     <input id="kwhr-diff-month-all" type="text" class="form-control form-control-sm d-none" readonly>
+                                    <input id="kwhr-fv-month-all" type="text" class="form-control form-control-sm d-none" readonly>
+                                    <input id="kwhr-lv-month-all" type="text" class="form-control form-control-sm d-none" readonly>
                                 </div>
                                 <div class="me-2 w-20">
                                     <label class="me-2 mb-0">บาท</label>

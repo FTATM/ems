@@ -1,7 +1,7 @@
 <div class="sidebar collapsed" id="sidebar" style="border-right: 1px solid #aaa; transition: width 0.3s ease, padding 0.3s ease; background-color: <?= $bgsec ?>;">
     <ul class="navbar-nav gap-2">
-        <div class="d-flex position-relative">
-            <img src="../assets/images/logo.png" width="100%">
+        <div class="d-flex position-relative p-3">
+            <img src="../assets/images/logo_FT_white.png" width="100%">
             <button id="sidebar_close"
                 class="btn px-1 text-white position-absolute rounded-circle border"
                 style="padding: 0; top:0px; right:-25px; background-color: <?= $bg; ?>;">
@@ -42,7 +42,7 @@
         </li>
 
         <li>
-            <a href="../pages/home.php" class="d-flex align-items-center gap-2 text-menu">
+            <a href="../pages/diagram.php" class="d-flex align-items-center gap-2 text-menu">
                 <i class="bi bi-house"></i>
                 <span><?= $lang['diagram'] ?></span>
             </a>

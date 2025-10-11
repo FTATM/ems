@@ -1,6 +1,7 @@
 import struct
 import requests
 import sys
+import json  # 🔹 เพิ่ม json สำหรับ debug print
 from datetime import datetime
 from pymodbus.client.sync import ModbusSerialClient
 try:
@@ -16,7 +17,7 @@ try:
     parity = sys.argv[5]
     stopbits = int(sys.argv[6])
     slaveid = int(sys.argv[7])
-    address = sys.argv[8]
+    address = int(sys.argv[8])
     quality = int(sys.argv[9])
 
     # === Modbus Functions ===
@@ -24,7 +25,7 @@ try:
         return struct.unpack('<f', struct.pack('<I', hex_val))[0]
 
     def read_float_register(client, start_address):
-        result = client.read_holding_registers(address=start_address, count=2, unit=1)
+        result = client.read_holding_registers(address=start_address, count=quality, unit=slaveid)
         if result.isError():
             return None
         regs = result.registers
@@ -47,29 +48,29 @@ try:
     # === Read Sample Data ===
     data = {}
     float_registers = {
-        'kW': 3059,
-        'kWh': 2679,
-        'kVA': 3075,
-        'kVAh' : 2695,
-        'kVAR': 3067,
-        'kVARh': 2687,
-        'Voltage A-N': 3027,
-        'Voltage B-N': 3029,
-        'Voltage C-N': 3031,
-        'Current A': 2999,
-        'Current B': 3001,
-        'Current C': 3003,
-        'Current avg': 3005,
-        'Voltage A_B': 3019,
-        'Voltage B_C': 3021,
-        'Voltage C_A': 3023,
-        'Pf': 3083,
-        'Frequency': 3109,
+        'kW':address + 3059,
+        'kWh':address +  2679,
+        'kVA':address +  3075,
+        'kVAh' :address +  2695,
+        'kVAR':address +  3067,
+        'kVARh':address +  2687,
+        'Voltage A-N':address +  3027,
+        'Voltage B-N':address +  3029,
+        'Voltage C-N':address +  3031,
+        'Current A':address +  2999,
+        'Current B':address +  3001,
+        'Current C':address +  3003,
+        'Current avg':address +  3005,
+        'Voltage A_B':address +  3019,
+        'Voltage B_C':address +  3021,
+        'Voltage C_A':address +  3023,
+        'Pf':address +  3191,
+        'Frequency':address +  3109,
     }
 
     for label, addr in float_registers.items():
         value = read_float_register(client, addr)
-        data[label] = value if value is not None else "Error"
+        data[label] = value if value is not None else "-"
 
 
     # === Add timestamp ===
