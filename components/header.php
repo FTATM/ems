@@ -8,7 +8,7 @@
         <div>
             <button id="sidebar_open" class="btn ms-2 text-white" style="padding: 0;"><i class="bi bi-list fs-3 w-100 h-100"></i> </button>
             <a class="navbar-brand ms-2" href="../pages/dashboard.php">
-                <img src="../assets/images/headLogo.jpg" alt="Logo" width="200">
+                <img src="../assets/images/Logo_EMS.png" alt="Logo" width="200">
             </a>
         </div>
 
