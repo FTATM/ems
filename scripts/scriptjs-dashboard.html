@@ -254,7 +254,7 @@
             }));
 
             chartData.push({
-                type: "splineArea",
+                type: "spline",
                 axisYType: "secondary",
                 name: `${getLabelFromIndex(columnIndex)}`,
                 showInLegend: true,
@@ -276,7 +276,7 @@
             const { powerData, averageCost } = calculateElectricCost(rawData, 4);
 
             chartData.push({
-                type: "splineArea",
+                type: "spline",
                 axisYType: "secondary",
                 name: `price`,
                 showInLegend: true,
