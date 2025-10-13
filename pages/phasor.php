@@ -52,7 +52,7 @@ checkLogin();
                             <label for="input-refresh" class="form-label form-label-sm " style="max-width: 15vw;">Secondary</label>
                         </div>
                     </div>
-                    <div id="list-gauge" class="d-flex flex-wrap justify-content-center gap-5">
+                    <div id="list-gauge" class="d-flex flex-wrap justify-content-center">
 
                     </div>
                 </div>

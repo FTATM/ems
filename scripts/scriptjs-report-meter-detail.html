@@ -268,7 +268,7 @@
     Object.values(array).forEach(value => {
       result += value;
     })
-    return (result / array.length).toFixed(2);
+    return parseFloat((result / array.length).toFixed(2));
   }
 
   function loadValueDay(m) {

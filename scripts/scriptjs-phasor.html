@@ -52,7 +52,7 @@
     }
 
     async function filterMeters() {
-        await generateSelect('select-meters',Object.values(meters), true);
+        await generateSelect('select-meters', Object.values(meters), true);
         await generateGauge();
         await filterDataAndTime();
     }
@@ -95,7 +95,7 @@
     function checkTimeChange() {
         console.log('selected Meter : ', selectedMeterData);
         Object.entries(selectedMeterData.data).forEach(([key, values]) => {
-            if (['7', '8', '9'].includes(key)) {  // Voltage A-N, B-N, C-N IDs == 7,8,9
+            if (['7', '8', '9', '14', '15', '16'].includes(key)) {  // Voltage A-N, B-N, C-N IDs == 7,8,9
                 let avgcolumn = 0;
                 let maxvalue = !isNaN(values[0]) ? parseFloat(values[0].value) : 0;
                 let minvalue = !isNaN(values[0]) ? parseFloat(values[0].value) : 0;
@@ -147,16 +147,18 @@
         if (!ftloaded) { return }
         const listGauge = document.getElementById('list-gauge');
         listGauge.innerHTML = ''; // Clear previous gauges
+        console.log(types);
+
         Object.values(types).forEach(type => {
-            if (["Voltage A-N", "Voltage B-N", "Voltage C-N"].includes(type.name)) {
+            if (["Voltage A-N", "Voltage A_B", "Voltage B-N", "Voltage B_C", "Voltage C-N", "Voltage C_A"].includes(type.name)) {
                 let divHeader = document.createElement('div');
                 let gaugediv = document.createElement('canvas');
-                divHeader.className = 'text-center';
+                divHeader.className = 'text-center col-2';
                 gaugediv.className = 'mb-2';
                 gaugediv.id = 'gauge_' + type.id;
                 divHeader.appendChild(gaugediv);
                 divHeader.innerHTML += `
-                <div class="d-grid bg-white bg-opacity-10 p-3" style="text-align: center; color: #f0f0f0; margin-bottom: 20px;">
+                <div class="d-grid bg-white bg-opacity-10 p-3 mx-1" style="text-align: center; color: #f0f0f0;">
                     <strong class="my-2 fs-3">${type.name}</strong>
                     <div class="d-flex justify-content-center align-items-center" style="margin-top: 10px;">
                         <label class="w-50" for="input-Voltage-${type.id}">Voltage</label>
@@ -182,7 +184,7 @@
                 `;
 
                 listGauge.appendChild(divHeader);
-                setGaugeMeter('gauge_' + type.id, type.name, type.name, 0, 0, type.maxvaluecolumn, 5, width = 300, height = 300);
+                setGaugeMeter('gauge_' + type.id, type.name, type.name, 0, 0, type.maxvaluecolumn, 5, width = 275, height = 275);
             }
         });
         ftloaded = false;
