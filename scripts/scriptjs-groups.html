@@ -40,7 +40,6 @@
             if (row.location_id === locationID) {
                 const tr = document.createElement("tr");
                 tr.innerHTML = `
-                    <td>${row.id}</td>
                     <td>${getNameLocation(locationID).name}</td>
                     <td>${row.name}</td>
                     <td class = "d-flex w-100 text-white justify-content-center gap-2">

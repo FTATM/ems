@@ -8,7 +8,7 @@ include "../config/connect.php";
 
 
 
-$sql = "SELECT * FROM locations";
+$sql = "SELECT * FROM locations WHERE is_deleted = 0";
 $result = $conn->query($sql);
 
 $rows = [];

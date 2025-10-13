@@ -8,7 +8,7 @@ include "../config/connect.php";
 
 
 
-$sql = "SELECT * FROM groups";
+$sql = "SELECT * FROM groups WHERE is_deleted = 0";
 $result = $conn->query($sql);
 
 $rows = [];

@@ -8,8 +8,8 @@
   let refreshIntervalId; // เก็บ interval id
   let firstLoading = true;
 
-  const typeMeterID = "<?=$_SESSION['tid'];?>";
-  const groupID = "<?=$_SESSION['gid'];?>";
+  const typeMeterID = "<?=$_SESSION['tid'] ?? 0;?>";
+  const groupID = "<?=$_SESSION['gid'] ?? 0;?>";
 
   document.addEventListener("DOMContentLoaded", async () => {
     await processData();

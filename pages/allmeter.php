@@ -1,6 +1,7 @@
 <?php
 include '../components/session.php';
 checkLogin();
+checkSession();
 ?>
 
 <!DOCTYPE html>
@@ -19,12 +20,12 @@ checkLogin();
         <?php include "../components/sidemenu.php"; ?>
         <div class="w-100 h-100 d-flex flex-column justify-content-center">
             <?php include "../components/header.php"; ?>
-            <div class="w-100 py-2" style="background-color: #001B5E;">
+            <div class="w-100 py-2 d-flex justify-content-center position-relative" style="background-color: #001B5E;">
                 <h4 class="text-center text-white"><?= $lang['allmeter'] ?></h4>
-                <div class="d-flex gap-2">
-                    <label for="input-refresh" class="form-label form-label-sm text-end w-10" style="max-width: 15vw;">Refresh every :</label>
+                <div class="d-flex gap-2 position-absolute end-0 px-3" style="top:0.5rem;">
+                    <label class="form-label form-label-sm text-end text-nowrap " style="max-width: 15vw;">Refresh every :</label>
                     <input type="number" id="input-refresh" class="form-control form-control-sm ms-2" style="width: 100px;" placeholder="Refresh every (seconds)" value="15" min="1" max="30" onchange="setRefreshTime()">
-                    <label for="input-refresh" class="form-label form-label-sm " style="max-width: 15vw;">Seconds</label>
+                    <label class="form-label form-label-sm " style="max-width: 15vw;">Seconds</label>
                 </div>
             </div>
             <div class="bg-secondary bg-opacity-25" style="min-height: 80svh;">

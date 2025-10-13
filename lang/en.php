@@ -304,8 +304,8 @@ $lang = [
     "preview" => "Preview",
 
     "choosedate" => "Choose date",
-    "chooselocate" => "Choose Location",
-    "choosegroup" => "Choose Group/project",
+    "chooselocate" => "Choose Location/project",
+    "choosegroup" => "Choose Faculty",
     "from" => "From",
     "to" => "To",
 

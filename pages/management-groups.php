@@ -1,6 +1,7 @@
 <?php
 include '../components/session.php';
 checkLogin();
+checkSession();
 ?>
 
 <!DOCTYPE html>
@@ -21,6 +22,9 @@ checkLogin();
             <?php include "../components/header.php"; ?>
             <div class="bg-secondary bg-opacity-25 d-flex flex-column pt-5 align-items-center" style="min-height: 80svh;">
                 <div class="my-5 text-center fs-1 fw-bolder"><?= $lang['group'] ?>/<?= $lang['project'] ?></div>
+                <div class="container mb-2 text-end">
+                    <input class=" btn btn-primary bg-primary w-10" value="create" onclick="openGroupModal()">
+                </div>
                 <table id="table-group" class="container table table-bordered table-striped" style="height: 90%;">
                     <thead class="text-center">
                         <tr>

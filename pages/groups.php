@@ -23,8 +23,7 @@ checkLogin();
                 <table id="table-group" class="container table table-bordered table-striped" style="height: 90%;">
                     <thead class="text-center">
                         <tr>
-                            <th class="text-white w-25" style="background-color:#001B5E;"><?= $lang['id']; ?></th>
-                            <th class="text-white w-25" style="background-color:#001B5E;"><?= $lang['location']; ?></th>
+                            <th class="text-white w-30" style="background-color:#001B5E;"><?= $lang['location']; ?></th>
                             <th class="text-white w-25" style="background-color:#001B5E;"><?= $lang['name']; ?></th>
                             <th class="text-white w-25" style="background-color:#001B5E;"><?= $lang['action']; ?></th>
                         </tr>

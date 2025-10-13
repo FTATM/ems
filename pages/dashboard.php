@@ -1,6 +1,7 @@
 <?php
 include '../components/session.php';
 checkLogin();
+checkSession();
 ?>
 
 

@@ -2,14 +2,12 @@
 session_start();
 
 
-$timeout = 1800; // 1800 วินาที = 30 นาที
+$timeout = 1800;
 
-// ตรวจสอบว่าเคยมีการบันทึก last_activity ไว้ไหม
 if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity']) > $timeout) {
-    // ถ้าเวลาที่ไม่ใช้งานเกินกำหนด -> logout
-    session_unset();     // ลบ session variables
-    session_destroy();   // ทำลาย session
-    header("Location: login.php?timeout=1"); // redirect ไปหน้า login พร้อมแจ้งหมดเวลา
+    session_unset();
+    session_destroy();
+    header("Location: login.php?timeout=1");
     exit;
 }
 
@@ -24,10 +22,22 @@ function checkLogin()
         exit();
     }
 }
+function checkSession()
+{
+    if (!isset($_SESSION['lid'])) {
+        header("Location: ../pages/locations.php");
+        exit();
+    } else if (!isset($_SESSION['gid'])) {
+        header("Location: ../pages/groups.php");
+        exit();
+    } else if (!isset($_SESSION['tid'])) {
+        header("Location: ../pages/groups.php");
+        exit();
+    }
+}
 
 function logout()
 {
-    // Logging logout
     if (isset($_SESSION['user_id']) && isset($_SESSION['username'])) {
         // include "../config/connect.php";
         // $user_id = $_SESSION['user_id'];
@@ -76,32 +86,28 @@ function buildLangSwitchLink($targetLang)
     return '?' . http_build_query($query);
 }
 
-// ตรวจสอบการเปลี่ยนภาษาจาก URL
 if (isset($_GET['theme'])) {
     $_SESSION['theme'] = $_GET['theme'];
 }
 
-// ตั้งค่าเริ่มต้นถ้ายังไม่มี session
 if (!isset($_SESSION['theme'])) {
     $_SESSION['theme'] = 'dark';
 }
 
 if ($_SESSION['theme'] === 'dark') {
-    // Dark Mode Colors
-    $bg = '#121212';     // Primary background
-    $bgsec = '#1e1e1e';  // Secondary background (cards, modals)
-    $secon = '#9e9e9e';  // Secondary text, icons, borders
-    $text = '#e0e0e0';   // Primary text
-    $btnColor = '#424242'; // Button background/border
-    $accentColor = '#81D4FA'; // Accent color for links, CTA buttons
+    $bg = '#121212';
+    $bgsec = '#1e1e1e';
+    $secon = '#9e9e9e';
+    $text = '#e0e0e0';
+    $btnColor = '#424242';
+    $accentColor = '#81D4FA';
 } else {
-    // Light Mode Colors (default)
-    $bg = '#f9f9f9';     // Primary background
-    $bgsec = '#383838ff';  // Secondary background (cards, modals)
-    $secon = '#616161';  // Secondary text, icons, borders
-    $text = '#ffffffff';   // Primary text
-    $btnColor = '#303030ff'; // Button background/border
-    $accentColor = '#03A9F4'; // Accent color for links, CTA buttons
+    $bg = '#f9f9f9';
+    $bgsec = '#383838ff';
+    $secon = '#616161';
+    $text = '#ffffffff';
+    $btnColor = '#303030ff';
+    $accentColor = '#03A9F4';
 }
 
 function buildthemeSwitchLink($targetheme)

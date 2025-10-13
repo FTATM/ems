@@ -29,7 +29,7 @@ $address  = htmlspecialchars($_SESSION['address']);
         <a class="nav-link dropdown-toggle d-flex align-items-center"
            href="#" id="navbarDropdownMenuLink"
            role="button" data-bs-toggle="dropdown" aria-expanded="false">
-          <img src="<?php echo $avatar; ?>" 
+          <img src="<?php echo $admin; ?>" 
                class="rounded-circle"
                height="32"
                width="32"
@@ -41,12 +41,9 @@ $address  = htmlspecialchars($_SESSION['address']);
           <li class="px-3 py-2 ">
             <strong><?php echo $fullName; ?></strong><br>
             <small>@<?php echo $username; ?></small><br>
-            <small><?php echo $address; ?></small>
           </li>
           <li><hr class="dropdown-divider"></li>
-          <li><a class="dropdown-item" href="profile.php">👤 My Profile</a></li>
-          <li><a class="dropdown-item" href="settings.php">⚙️ Settings</a></li>
-          <li><a class="dropdown-item" href="logout.php">🚪 Logout</a></li>
+          <li><a class="dropdown-item" href="logout.php">Logout</a></li>
         </ul>
       </li>
     </ul>

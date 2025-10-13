@@ -75,8 +75,8 @@
 
     function updateAction(id, action, value) {
         let form = new FormData();
-        form.append("id", id);           // เพิ่ม id เข้าไปด้วย (จำเป็นสำหรับการอัปเดต)
-        form.append("action", action);      // เช่น form.append("status", "active")
+        form.append("id", id);
+        form.append("action", action);
         form.append("value", value);
 
         console.log("id : ", id, " | action : ", action, " |value : ", value);
@@ -85,11 +85,13 @@
             method: 'POST',
             body: form
         })
-            .then(response => response.json())  // แก้การเรียก .json() ให้ถูกต้อง
+            .then(response => response.json())
             .then(data => {
                 if (data.success) {
                     console.log("อัปเดตสำเร็จ:", data.message);
-                    window.location.reload(); // รีเฟรชหน้าเพื่อแสดงข้อมูลที่อัปเดต
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
                 } else {
                     console.error("เกิดข้อผิดพลาด:", data.message);
                 }

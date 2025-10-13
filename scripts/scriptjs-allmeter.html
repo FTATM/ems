@@ -5,18 +5,17 @@
     let types = [];
     let locations = [];
     let groups = [];
-    const rowsPerPage = 10;
+    const rowsPerPage = 12;
     let currentPage = 1;
     let refreshIntervalId;
 
     const typeMeterID = "<?=$_SESSION['tid'];?>";
     const groupID = "<?=$_SESSION['gid'];?>";
 
-    console.log("type : ", typeMeterID, "group : ", groupID);
     document.addEventListener("DOMContentLoaded", async () => {
         showLoading();
         await process();
-        setRefreshTime();
+        await setRefreshTime();
         hideLoading();
     });
 
@@ -29,35 +28,43 @@
         let json_group = await res_group.json();
         groups = json_group.data;
 
-        let response = await fetch("../config/fetch-meters.php");
-        let json = await response.json();
-        meters = Object.values(json.data);
+        meters = await fetchDataInMeters();
 
         let responsetype = await fetch("../config/fetch-data_type.php");
         let jsontype = await responsetype.json();
         types = jsontype.data;
     }
 
+    async function fetchDataInMeters() {
+        let formfilter = new FormData();
+        formfilter.append("tid", typeMeterID);
+        formfilter.append("gid", groupID);
+
+        try {
+            const res = await fetch("../config/fetch-meters-filter.php", {
+                method: "POST",
+                body: formfilter
+            });
+            const result = await res.json();
+            return result.data;
+        } catch (e) {
+            console.error('error unknown file fetch-meters-filter.php : ', e.message);
+            alertMessages('error', 'พบปัญหา', 'เกิดข้อผิดพลาดในการทำงานของสคริปต์ fetch-meters-filter กรุณาคัดลอกข้อความนี้และส่งต่อให้ผู้ดูแลระบบ', 4000, true);
+            return [];
+        }
+    }
+
     async function process() {
         await fetchAll();
         await createTable();
-        await filterMeters();
+        await filterDataInMeters();
     }
 
-    function filterMeters() {
-        filteredMeters = Object.values(meters).filter(m => {
-            return m.group_id === groupID && m.meter_type_id === typeMeterID;
-        });
-        filteredMeters = groupID === 0 ? meters : filteredMeters;
-
-        filterDataInMeters();
-    }
-
-    function filterDataInMeters() {
+    async function filterDataInMeters() {
         const time = document.getElementById('select-filter-value');
         let now = new Date();
         let selectedDateTime = new Date(now.getTime() - parseInt(10, 10) * 60000);
-        filteredDataInMeters = Object.values(filteredMeters).map(fm => {
+        filteredDataInMeters = Object.values(meters).map(fm => {
             let Datafiltered = {};
             Object.entries(fm.data).map(([key, rows]) => {
                 Datafiltered[key] = Object.values(rows).filter(datatype => {
@@ -70,7 +77,8 @@
                 data: Datafiltered,
             }
         });
-        updateData(currentPage);
+
+        await updateData(currentPage);
     }
 
     function createTable() {
@@ -79,12 +87,12 @@
 
         const headerRow = document.createElement("tr");
         headerRow.innerHTML = `
-            <th class="text-white" style="min-width:180px; background-color:#001B5E;"><?=$lang['nmeters']?></th>
-            <th class="text-white" style="background-color:#001B5E;"><?=$lang['location']?></th>
-            <th class="text-white" style="background-color:#001B5E;"><?=$lang['group']?>/<?=$lang['project']?></th>
-            <th class="text-white text-center" style="background-color:#001B5E;"><?=$lang['ip']?></th>
-            <th class="text-white text-center" style="background-color:#001B5E;"><?=$lang['port']?></th>
-            <th class="text-white text-center" style="background-color:#001B5E;"><?=$lang['protocol']?></th>
+            <th class="text-white text-nowrap" style="min-width:180px; background-color:#001B5E;"><?=$lang['nmeters']?></th>
+            <th class="text-white text-nowrap" style="background-color:#001B5E;"><?=$lang['location']?></th>
+            <th class="text-white text-nowrap" style="background-color:#001B5E;"><?=$lang['group']?>/<?=$lang['project']?></th>
+            <th class="text-white text-nowrap text-center" style="background-color:#001B5E;"><?=$lang['ip']?></th>
+            <th class="text-white text-nowrap text-center" style="background-color:#001B5E;"><?=$lang['port']?></th>
+            <th class="text-white text-nowrap text-center" style="background-color:#001B5E;"><?=$lang['protocol']?></th>
         `;
 
         types.forEach(col => {
@@ -100,7 +108,7 @@
         table.querySelector('thead').appendChild(headerRow);
     }
 
-    function updateData(page) {
+    async function updateData(page) {
         const table = document.getElementById("table-meter");
         table.querySelector('tbody').innerHTML = ""; // clear
 
@@ -114,9 +122,9 @@
             const tr = document.createElement("tr");
             tr.innerHTML = `
             <td>${meter.name}</td>
-            <td class="text-center">${getNameLocation(meter.group_id)}</td>
-            <td class="text-center">${getNameGroup(meter.group_id)}</td>
-            <td class="text-center">${meter.ip_address}</td>
+            <td class="text-center text-nowrap">${getNameLocation(meter.group_id)}</td>
+            <td class="text-center text-nowrap">${getNameGroup(meter.group_id)}</td>
+            <td class="text-center text-nowrap">${meter.ip_address}</td>
             <td class="text-center">${meter.port}</td>
             <td class="text-center">${meter.protocol}</td>
             `;
@@ -159,14 +167,14 @@
     function getNameLocation(gid) {
         return locations.find(l => {
             return groups.filter(g => {
-                return g.id === gid;
+                return parseInt(g.id) === gid;
             })
         }).name;
     }
 
     function getNameGroup(id) {
         return groups.find(g => {
-            return g.id === id;
+            return parseInt(g.id) === id;
         }).name;
     }
 
@@ -183,8 +191,8 @@
         console.log("Setting refresh time to:", refreshTime);
 
         // ตั้ง interval ใหม่
-        refreshIntervalId = setInterval(() => {
-            process();
+        refreshIntervalId = setInterval(async () => {
+            await process();
         }, refreshTime * 1000);
     }
 </script>

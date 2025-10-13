@@ -20,7 +20,7 @@ checkLogin();
         <div class="w-100 h-100 d-flex flex-column justify-content-center">
             <?php include "../components/header.php"; ?>
             <div class="d-flex justify-content-center mt-3">
-                <div class="w-50 border">
+                <div class="w-50">
                     <div class="my-5 text-center fs-1 fw-bolder"><?=$lang['chooselocate']?></div>
                     <table id="table-location" class="w-100 table-striped table table-borderless bg-light bg-opacity-10 mb-0 w-25">
                         <thead class="text-center">

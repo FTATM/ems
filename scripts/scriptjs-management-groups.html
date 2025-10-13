@@ -90,19 +90,22 @@
 
     function updateAction(id, action, value, location_id = 0) {
         let form = new FormData();
-        form.append("id", id);           // เพิ่ม id เข้าไปด้วย (จำเป็นสำหรับการอัปเดต)
-        form.append("action", action);      // เช่น form.append("status", "active")
-        form.append("value", value);      // เช่น form.append("status", "active")
+        form.append("id", id);
+        form.append("action", action);
+        form.append("value", value);
         form.append('location_id', location_id);
 
         fetch('../config/update-group.php', {
             method: 'POST',
             body: form
         })
-            .then(response => response.json())  // แก้การเรียก .json() ให้ถูกต้อง
+            .then(response => response.json())
             .then(data => {
                 if (data.success) {
                     console.log("อัปเดตสำเร็จ:", data.message);
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
                 } else {
                     console.error("เกิดข้อผิดพลาด:", data.message);
                 }
@@ -146,6 +149,7 @@
 
     function openGroupModal(id, currentName) {
         let select = document.getElementById('select-Location');
+        select.innerHTML = '';
         locations.forEach(location => {
             let option = document.createElement('option');
             option.value = location.id;
