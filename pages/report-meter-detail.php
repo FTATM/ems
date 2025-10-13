@@ -71,35 +71,35 @@ checkLogin();
                                 <div class="me-2 w-20 opacity-0"> </div>
                                 <div class="me-2 w-20">
                                     <label class="me-2 mb-0">kW</label>
+                                    <input id="kw-avg-n" type="text" class="form-control form-control-sm" readonly>
                                     <input id="kw-avg-m" type="text" class="form-control form-control-sm" readonly>
                                     <input id="kw-avg-a" type="text" class="form-control form-control-sm" readonly>
                                     <input id="kw-avg-e" type="text" class="form-control form-control-sm" readonly>
-                                    <input id="kw-avg-n" type="text" class="form-control form-control-sm" readonly>
+                                    <input id="kw-max-n" type="text" class="form-control form-control-sm d-none" readonly>
                                     <input id="kw-max-m" type="text" class="form-control form-control-sm d-none" readonly>
                                     <input id="kw-max-a" type="text" class="form-control form-control-sm d-none" readonly>
                                     <input id="kw-max-e" type="text" class="form-control form-control-sm d-none" readonly>
-                                    <input id="kw-max-n" type="text" class="form-control form-control-sm d-none" readonly>
                                 </div>
                                 <div class="me-2 w-20">
                                     <label class="me-2 mb-0">บาท/kW</label>
+                                    <input id="input-kw-n" type="text" class="form-control form-control-sm bg-light text-dark">
                                     <input id="input-kw-m" type="text" class="form-control form-control-sm bg-light text-dark">
                                     <input id="input-kw-a" type="text" class="form-control form-control-sm bg-light text-dark">
                                     <input id="input-kw-e" type="text" class="form-control form-control-sm bg-light text-dark">
-                                    <input id="input-kw-n" type="text" class="form-control form-control-sm bg-light text-dark">
                                 </div>
                                 <div class="me-2 w-20">
                                     <label class="me-2 mb-0">บาท</label>
+                                    <input id="result-bath-kw-n" type="text" value="0.00" class="form-control form-control-sm" readonly>
                                     <input id="result-bath-kw-m" type="text" value="0.00" class="form-control form-control-sm" readonly>
                                     <input id="result-bath-kw-a" type="text" value="0.00" class="form-control form-control-sm" readonly>
                                     <input id="result-bath-kw-e" type="text" value="0.00" class="form-control form-control-sm" readonly>
-                                    <input id="result-bath-kw-n" type="text" value="0.00" class="form-control form-control-sm" readonly>
                                 </div>
                                 <div class="me-2 w-20">
                                     <label class="me-2 mb-0">บาท/kWh</label>
+                                    <input id="bath-per-kwhr-n" type="text" value="0.00" class="form-control form-control-sm" readonly>
                                     <input id="bath-per-kwhr-m" type="text" value="0.00" class="form-control form-control-sm" readonly>
                                     <input id="bath-per-kwhr-a" type="text" value="0.00" class="form-control form-control-sm" readonly>
                                     <input id="bath-per-kwhr-e" type="text" value="0.00" class="form-control form-control-sm" readonly>
-                                    <input id="bath-per-kwhr-n" type="text" value="0.00" class="form-control form-control-sm" readonly>
                                 </div>
                             </div>
                         </div>
@@ -109,46 +109,46 @@ checkLogin();
                             <div class=" d-flex justify-content-end w-60">
                                 <div class="me-2 w-20">
                                     <label class="me-2 mb-0">ชั่วโมง</label>
+                                    <input id="hour-diff-n" type="text" class="form-control form-control-sm" readonly>
+                                    <input id="hour-value-n" type="text" class="form-control form-control-sm d-none">
                                     <input id="hour-diff-m" type="text" class="form-control form-control-sm" readonly>
                                     <input id="hour-value-m" type="text" class="form-control form-control-sm d-none">
                                     <input id="hour-diff-a" type="text" class="form-control form-control-sm" readonly>
                                     <input id="hour-value-a" type="text" class="form-control form-control-sm d-none">
                                     <input id="hour-diff-e" type="text" class="form-control form-control-sm" readonly>
                                     <input id="hour-value-e" type="text" class="form-control form-control-sm d-none">
-                                    <input id="hour-diff-n" type="text" class="form-control form-control-sm" readonly>
-                                    <input id="hour-value-n" type="text" class="form-control form-control-sm d-none">
                                 </div>
                                 <div class="me-2 w-20">
                                     <label class="me-2 mb-0">kWh</label>
+                                    <input id="kwhr-diff-n" type="text" class="form-control form-control-sm" readonly>
                                     <input id="kwhr-diff-m" type="text" class="form-control form-control-sm" readonly>
                                     <input id="kwhr-diff-a" type="text" class="form-control form-control-sm" readonly>
                                     <input id="kwhr-diff-e" type="text" class="form-control form-control-sm" readonly>
-                                    <input id="kwhr-diff-n" type="text" class="form-control form-control-sm" readonly>
                                     <input id="kwhr-diff-all" type="text" class="form-control form-control-sm" readonly>
                                     <input id="kwhr-fv-all" type="text" class="form-control form-control-sm d-none" readonly>
                                     <input id="kwhr-lv-all" type="text" class="form-control form-control-sm d-none" readonly>
                                 </div>
                                 <div class="me-2 w-20">
                                     <label class="me-2 mb-0">บาท/kWh</label>
+                                    <input id="input-kwhr-n" type="text" class="form-control form-control-sm bg-light text-dark">
                                     <input id="input-kwhr-m" type="text" class="form-control form-control-sm bg-light text-dark">
                                     <input id="input-kwhr-a" type="text" class="form-control form-control-sm bg-light text-dark">
                                     <input id="input-kwhr-e" type="text" class="form-control form-control-sm bg-light text-dark">
-                                    <input id="input-kwhr-n" type="text" class="form-control form-control-sm bg-light text-dark">
                                 </div>
                                 <div class="me-2 w-20">
                                     <label class="me-2 mb-0">บาท</label>
+                                    <input id="result-bath-kwhr-n" type="text" value="0.00" class="form-control form-control-sm" readonly>
                                     <input id="result-bath-kwhr-m" type="text" value="0.00" class="form-control form-control-sm" readonly>
                                     <input id="result-bath-kwhr-a" type="text" value="0.00" class="form-control form-control-sm" readonly>
                                     <input id="result-bath-kwhr-e" type="text" value="0.00" class="form-control form-control-sm" readonly>
-                                    <input id="result-bath-kwhr-n" type="text" value="0.00" class="form-control form-control-sm" readonly>
                                     <input id="result-bath-kwhr-all" type="text" value="0.00" class="form-control form-control-sm " readonly>
                                 </div>
                                 <div class="me-2 w-20">
                                     <label class="me-2 mb-0">LoadFactor</label>
+                                    <input id="load-factor-n" type="text" value="0.00" class="form-control form-control-sm" readonly>
                                     <input id="load-factor-m" type="text" value="0.00" class="form-control form-control-sm" readonly>
                                     <input id="load-factor-a" type="text" value="0.00" class="form-control form-control-sm" readonly>
                                     <input id="load-factor-e" type="text" value="0.00" class="form-control form-control-sm" readonly>
-                                    <input id="load-factor-n" type="text" value="0.00" class="form-control form-control-sm" readonly>
                                     <input id="load-factor-all" type="text" value="0.00" class="form-control form-control-sm" readonly>
                                 </div>
                             </div>

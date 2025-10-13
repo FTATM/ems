@@ -25,12 +25,13 @@
         Object.values(locations).forEach(row => {
             let trd = document.createElement('tr');
             trd.innerHTML += `
-            <td class="clickable py-3" onmouseover="loadHoverImage('${row.name}')" onclick="goToGroups(${row.id})">${row.name}</td>
+            <td class="clickable py-3" onclick="goToGroups(${row.id})">${row.name}</td>
             `;
             table.querySelector('tbody').appendChild(trd);
         });
 
             // <td class="py-2">${row.id}</td>
+            // <td class="clickable py-3" onmouseover="loadHoverImage('${row.name}')" onclick="goToGroups(${row.id})">${row.name}</td>
     }
 
     function loadHoverImage(name) {
