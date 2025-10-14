@@ -1,5 +1,7 @@
 import requests
 import json
+import mysql.connector
+import time
 
 def send_line_oa(token: str, user_id: str, message: str):
     url = "https://api.line.me/v2/bot/message/push"
