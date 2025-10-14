@@ -64,7 +64,8 @@
     btn.setAttribute("data-position", position);
     btn.setAttribute("data-normal", normal);
     btn.textContent = label;
-    onClickTemplate(btn, meter);
+    btn.onclick = () => showValueOnView(meter.id);
+    // onClickTemplate(btn, meter);
     modelViewer.appendChild(btn);
   }
 
@@ -132,29 +133,26 @@
     const hotspot = modelViewer.querySelector(`[slot="${slot}"]`);
     if (hotspot) {
       modelViewer.removeChild(hotspot);
-      console.log("ลบ hotspot:", slot);
     }
   }
 
   function generateListGroups() {
     let list = document.getElementById("listgroup");
     list.innerHTML = `
-      <h3 class="text-center my-4">Meters</h3>
+      <h3 class="text-center my-3">Meters</h3>
     `;
     Object.values(filtermeters).forEach((m) => {
       let div = document.createElement("div");
-      div.className = "p-2 mx-2 d-flex justify-content-between clickable";
+      div.className = "p-1 mx-2 d-flex justify-content-between clickable";
       div.style.backgroundColor = m.is_active === "1" ? "rgba(64, 160, 64)" : "rgba(255, 255, 255, 0.2)";
       div.innerHTML = `
         <h4 class="text-center">${m.name}</h4>
         <p class="text-center mb-0">${m.is_active === "1" ? "Active" : "Inactive"}</p>
       `;
-      div.onclick = () => loadMeter(m.id);
+      div.onclick = () => showValueOnView(m.id);
       list.appendChild(div);
     });
   }
-
-  //add meter label to 3D model
 
   function loadMeter(id) {
     const modelViewer = document.getElementById("myModel");
@@ -166,20 +164,15 @@
     // `;
 
     filtermeters.flatMap(m => {
-      if (m.id == id) {
-        document.getElementById('name-meter').textContent = m.name;
-        firstLoading = false;
-      }
-
+      deleteHotspot(modelViewer, "hotspot-" + m.id);
+      firstLoading = false;
+      console.log(m.x, m.y, m.z);
       addHotspot(modelViewer, m, "hotspot-" + m.id, `${m.x}m ${m.y}m ${m.z}m`, "0m 1m 0m", m.name);
       // let div = document.createElement('div');
       // div.className = "point";
       // imageViewer.innerHTML += `<div class="point" style="Left:${m.x}px; top:${m.z}px;" onclick="loadMeter(${m.id})">${m.id}</div>`;
-      // else {
-      //   bm.meters.forEach(meter => {
-      //     deleteHotspot(modelViewer, "hotspot-" + meter.id);
-      //   });
-      // }
+      // Object.values(meters).forEach(meter => {
+      // });
 
     });
     showValueOnView(id);
@@ -204,8 +197,8 @@
   }
 
   function showValueOnView(id) {
-
     const meter = filtermeters.find(m => m.id === id);
+    document.getElementById('name-meter').textContent = meter.name;
     let lastIndex = meter?.data['7'].length - 1;
     let is_Null = meter?.data['7'][lastIndex]?.value ? true : false;
     let idsAndValues = {

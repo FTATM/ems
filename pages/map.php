@@ -31,7 +31,7 @@ checkSession();
                             <label for="input-refresh" class="form-label form-label-sm">Seconds</label>
                         </div>
                     </div>
-                    <div class="d-flex w-100 justify-content-center" style="height: 80svh;">
+                    <div class="d-flex w-100 justify-content-center" style="min-height: 80svh;">
                         <div class="w-25 px-5 bg-light bg-opacity-10 shadow-sm d-flex flex-column gap-2">
                             <h3 class="w-100 text-center my-4" id="name-meter">-</h3>
                             <div class="w-100 border mb-3" id="gauge-kW" style="min-height: 20%;"></div>

@@ -8,7 +8,7 @@
         <div class="d-flex align-items-center">
             <button id="sidebar_open" class="btn ms-2 text-white" style="padding: 0;"><i class="bi bi-list fs-3 w-100 h-100"></i> </button>
             <a class="navbar-brand ms-2" href="../pages/dashboard.php">
-                <img src="../assets/images/Logo_First.jpg" alt="Logo" width="180">
+                <img src="../assets/images/Logo_First.png" alt="Logo" width="180">
             </a>
             <div class="d-flex gap-2">
                 <img src="../assets/images/Logo 01_0.jpg" class="rounded" alt="logo01" width="40px" height="35px">
