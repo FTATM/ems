@@ -39,7 +39,7 @@ while True:
 
     # ใช้ for loop อ่านทีละแถว
     for meter in cursor:
-        channel_token = "U7a1981400e9940fe37957b8aa27007e1"
+        channel_token = "K/6Bhwmk7rWnncchwC7QKoibeei28mY1Zk7iAgPi+WYJ2Gp662CIWdUbRkg6UMn8lBqrWbLAike4kP2TGTQo5aguktJ9YE/EOddoZ35NK0gWgka8xvQAcKZ3pVoI2W42VrK8goPB/YgH2LqXH1fpugdB04t89/1O/w1cDnyilFU="
         user_id = meter['token_line']
         message = "สวัสดี! นี่คือข้อความจาก LINE OA"
         
