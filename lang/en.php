@@ -272,7 +272,7 @@ $lang = [
     "member" => "Member",
     "membermnm" => "Member management",
 
-    "gauge" => "Gauge",
+    "gauge" => "Gauge All Values",
     "gaugemnm" => "Gauge management",
 
     "phasorovv" => "Phasor Overview",
@@ -316,4 +316,6 @@ $lang = [
     "nnotify" => "New Notify",
     "mdidb" => "Manage Data In Database",
     "simulate" => "Simulate",
+
+    "egraph" => "Enegy Graph",
 ];

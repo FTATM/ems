@@ -272,7 +272,7 @@ $lang = [
     "member" => "สมาชิก",
     "membermnm" => "การจัดการสมาชิก",
 
-    "gauge" => "เกจ/เครื่องวัด",
+    "gauge" => "Gauge All Values",
     "gaugemnm" => "การจัดการเกจ/เครื่องวัด",
 
     "phasorovv" => "ภาพรวม Phase meter",
@@ -316,4 +316,6 @@ $lang = [
     "nnotify" => "สร้างแจ้งเตือนใหม่",
     "mdidb" => "Manage Data In Database",
     "simulate" => "จำลองการส่งข้อมูล",
+
+    "egraph" => "Enegy Graph",
 ];

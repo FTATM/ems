@@ -11,7 +11,7 @@
         <li>
             <a href="../pages/dashboard.php" class="d-flex align-items-center gap-2 text-menu">
                 <i class="bi bi-receipt"></i>
-                <span><?= $lang['dashboard'] ?></span>
+                <span><?= $lang['egraph'] ?></span>
             </a>
         </li>
         <li>
