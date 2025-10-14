@@ -281,7 +281,7 @@ $lang = [
 
     "overview" => "Overview",
 
-    "reportsummary" => "Report Summary",
+    "reporttotal" => "Report Total",
 
     "phasor"  => "Phasor",
 
@@ -289,7 +289,7 @@ $lang = [
 
     "alltype" => "All types",
 
-    "reportMeterDetail" => "Report Meter Detail",
+    "reportdetail" => "Report Detail",
 
     "project" => "Project",
     "electrical" => "Electical",
@@ -318,4 +318,6 @@ $lang = [
     "simulate" => "Simulate",
 
     "egraph" => "Enegy Graph",
+    "mapp" => "Map Preview",
+    "gvoltage" => "Gauge Voltage",
 ];

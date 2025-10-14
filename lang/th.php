@@ -281,7 +281,7 @@ $lang = [
 
     "overview" => "ภาพรวม",
 
-    "reportsummary" => "รายงานผลรวม",
+    "reporttotal" => "รายงานผลรวม",
 
     "phasor" => "เฟส",
 
@@ -289,7 +289,7 @@ $lang = [
 
     "alltype" => "ชนิดของข้อมูลทั้งหมด",
 
-    "reportMeterDetail" => "รายงานรายละเอียดมิเตอร์",
+    "reportdetail" => "รายงานรายละเอียดมิเตอร์",
 
     "project" => "โปรเจค",
     "electrical" => "ค่าไฟฟ้า",
@@ -318,4 +318,6 @@ $lang = [
     "simulate" => "จำลองการส่งข้อมูล",
 
     "egraph" => "Enegy Graph",
+    "mapp" => "Map Preview",
+    "gvoltage" => "Gauge Voltage",
 ];

@@ -9,6 +9,24 @@
             </button>
         </div>
         <li>
+            <a href="../pages/diagram.php" class="d-flex align-items-center gap-2 text-menu">
+                <i class="bi bi-house"></i>
+                <span><?= $lang['diagram'] ?></span>
+            </a>
+        </li>
+        <li>
+            <a href="../pages/gauge.php" class="d-flex align-items-center gap-2 text-menu">
+                <i class="bi bi-speedometer"></i>
+                <span><?= $lang['gauge'] ?></span>
+            </a>
+        </li>
+        <li>
+            <a href="../pages/phasor.php" class="d-flex align-items-center gap-2 text-menu">
+                <i class="bi bi-speedometer"></i>
+                <span><?= $lang['gvoltage'] ?></span>
+            </a>
+        </li>
+        <li>
             <a href="../pages/dashboard.php" class="d-flex align-items-center gap-2 text-menu">
                 <i class="bi bi-receipt"></i>
                 <span><?= $lang['egraph'] ?></span>
@@ -20,10 +38,25 @@
                 <span><?= $lang['allmeter'] ?></span>
             </a>
         </li>
+
         <li>
-            <a href="../pages/gauge.php" class="d-flex align-items-center gap-2 text-menu">
-                <i class="bi bi-speedometer"></i>
-                <span><?= $lang['gauge'] ?></span>
+            <a href="../pages/report-meter.php" class="d-flex align-items-center gap-2 text-menu">
+                <i class="bi bi-file-person"></i>
+                <span><?= $lang['reporttotal'] ?></span>
+            </a>
+        </li>
+
+        <li>
+            <a href="../pages/report-meter-detail.php" class="d-flex align-items-center gap-2 text-menu">
+                <i class="bi bi-file-person"></i>
+                <span><?= $lang['reportdetail'] ?></span>
+            </a>
+        </li>
+
+        <li>
+            <a href="../pages/report-electric.php" class="d-flex align-items-center gap-2 text-menu">
+                <i class="bi bi-receipt"></i>
+                <span><?= $lang['reportelec'] ?></span>
             </a>
         </li>
 
@@ -34,40 +67,7 @@
             </a>
         </li>
 
-        <li>
-            <a href="../pages/phasor.php" class="d-flex align-items-center gap-2 text-menu">
-                <i class="bi bi-speedometer"></i>
-                <span><?= $lang['phasor'] ?></span>
-            </a>
-        </li>
 
-        <li>
-            <a href="../pages/diagram.php" class="d-flex align-items-center gap-2 text-menu">
-                <i class="bi bi-house"></i>
-                <span><?= $lang['diagram'] ?></span>
-            </a>
-        </li>
-
-        <li>
-            <a href="../pages/report-meter.php" class="d-flex align-items-center gap-2 text-menu">
-                <i class="bi bi-file-person"></i>
-                <span><?= $lang['reportsummary'] ?></span>
-            </a>
-        </li>
-
-        <li>
-            <a href="../pages/report-meter-detail.php" class="d-flex align-items-center gap-2 text-menu">
-                <i class="bi bi-file-person"></i>
-                <span><?= $lang['reportMeterDetail'] ?></span>
-            </a>
-        </li>
-
-        <li>
-            <a href="../pages/report-electric.php" class="d-flex align-items-center gap-2 text-menu">
-                <i class="bi bi-receipt"></i>
-                <span><?= $lang['reportelec'] ?></span>
-            </a>
-        </li>
 
 
         <li class="gap-2">
