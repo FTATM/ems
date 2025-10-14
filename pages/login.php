@@ -19,7 +19,7 @@ if (isset($_SESSION['user_id'])) {
 
 <body>
     <?php include "../components/header.php"; ?>
-    <div class="d-flex justify-content-center align-items-center flex-column" style="width: 100vw; height: 90vh;">
+    <div class="d-flex justify-content-center align-items-center flex-column bg-black bg-opacity-75" style="width: 100vw; height: 90vh;">
         <div class="bg-white shadow rounded-2 p-4 w-100" style="max-width: 300px;">
             <h2 class="text-center mb-lg-5 mb-3"><?= $lang['login'] ?></h2>
             <?php if (!empty($error)) echo "<p style='color:red;'>$error</p>"; ?>
