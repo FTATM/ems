@@ -3,7 +3,8 @@ import requests
 import sys
 import mysql.connector
 import json
-from datetime import datetime, time
+from datetime import datetime
+import time
 from pymodbus.client.sync import ModbusTcpClient
 
 def hex_to_float(hex_val):
