@@ -318,4 +318,77 @@
         XLSX.writeFile(wb, "Excel_All_Meters_" + timestamp + ".xlsx");
     }
 
+    async function sendExportToEmail(type = "excel") {
+        if (!filterDatas || filterDatas.length === 0) {
+            alert("ไม่มีข้อมูลสำหรับส่งอีเมล");
+            return;
+        }
+
+        let element = document.getElementById(type);
+        element.disabled = true;
+        alertMessages('info', 'Export Process', 'กำลังส่งไฟล์ โปรดรอซักครู่...', 3000, true);
+
+        let content, fileName, mimeType;
+        const form = new FormData();
+        form.append("email", document.getElementById("email").value);
+
+        if (type === "csv") {
+            let csvContent = 'ID,meter,create_date,' + types.map(t => t.name).join(",") + "\n";
+            filterDatas.forEach(meter => {
+                const Datameter = Object.values(meter.data);
+                for (let i = 0; i < Datameter[0].length; i++) {
+                    csvContent += (i + 1) + "," + meter.name + "," + Datameter[0][i].create_date + ",";
+                    for (let j = 0; j < types.length; j++) {
+                        csvContent += Datameter[j][i].value + (j === types.length - 1 ? "" : ",");
+                    }
+                    csvContent += "\n";
+                }
+            });
+            content = "\uFEFF" + csvContent;
+            fileName = "Export_All_Meters.csv";
+            mimeType = "text/csv";
+            form.append("file", new Blob([content], { type: mimeType }), fileName);
+
+        } else {
+            // Excel
+            let headers = ["ID", "meter", "create_date", ...types.map(t => t.name)];
+            let rows = [];
+            filterDatas.forEach(meter => {
+                const Datameter = Object.values(meter.data);
+                for (let i = 0; i < Datameter[0].length; i++) {
+                    let row = [i + 1, meter.name, Datameter[0][i].create_date];
+                    for (let j = 0; j < types.length; j++) {
+                        row.push(Datameter[j][i].value);
+                    }
+                    rows.push(row);
+                }
+            });
+
+            let ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+            let wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Data");
+
+            let wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+            let blob = new Blob([wbout], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+            fileName = "Export_All_Meters.xlsx";
+            form.append("file", blob, fileName);
+        }
+
+
+        try {
+            const res = await fetch("../config/sendToEmail.php", {
+                method: "POST",
+                body: form
+            });
+            const text = await res.text();
+            console.log(text);
+        } catch (err) {
+            console.error(err);
+            alert("เกิดข้อผิดพลาดในการส่งไฟล์ไปอีเมล");
+        }
+        element.disabled = false;
+        alertMessages('success', 'Export Process', 'ส่งไฟล์ไปยัง '+ document.getElementById('email').value + ' สำเร็จ', 3000, true);
+    }
+
+
 </script>

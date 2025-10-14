@@ -50,9 +50,13 @@ checkSession();
                         <div class="d-flex justify-content-between align-items-center px-2">
                             <h3>Table</h3>
                             <div class="d-flex justify-content-end gap-2">
-                                <div>Export : </div>
-                                <input class="btn btn-sm border-1 bg-primary" style="width: 30%;" value="CSV" onclick="ExportCSV()">
-                                <input class="btn btn-sm border-1 bg-primary" style="width: 30%;" value="Excel" onclick="ExportExcel()">
+                                <div class="text-nowrap">Email : </div>
+                                <input class="form-control form-control-sm" id="email">
+                                <div class="text-nowrap">Export : </div>
+                                <!-- <input class="btn btn-sm border-1 bg-primary" style="width: 30%;" value="CSV" onclick="ExportCSV()">
+                                <input class="btn btn-sm border-1 bg-primary" style="width: 30%;" value="Excel" onclick="ExportExcel()"> -->
+                                <input id="csv" class="btn btn-sm border-1 bg-primary" style="width: 30%;" value="CSV" onclick="sendExportToEmail('csv')">
+                                <input id="excel" class="btn btn-sm border-1 bg-primary" style="width: 30%;" value="Excel" onclick="sendExportToEmail('excel')">
                             </div>
                         </div>
                         <div class="d-flex w-100 align-items-center justify-content-between p-2 rounded shadow-sm">
