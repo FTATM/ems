@@ -200,7 +200,9 @@
         const chart = new CanvasJS.Chart(idContainer, {
             theme: 'dark2',
             backgroundColor: "#1B1C1D",
-            axisX: { valueFormatString: "HH:mm:ss" },
+            axisX: {
+                valueFormatString: dataPointsLinear[0]?.dataPoints.length > 2880 ? "DD MMM YYYY" : "HH:mm:ss"
+            },
             axisY2: {
                 title: "Median List Price",
                 prefix: "",

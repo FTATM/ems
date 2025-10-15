@@ -37,12 +37,6 @@ while True:
         if not client.connect():
             print(f"ID : {meter['id']} can't connect, Will try again next round.")
             continue
-
-        print(f"ID: {meter['id']} {type(meter['id'])}")
-        print(f"ip_add: {meter['ip_address']} {type(meter['ip_address'])}")
-        print(f"port: {meter['port']} {type(meter['port'])}")
-        print(f"quality: {meter['quality']} {type(meter['quality'])}")
-        print(f"slave : {meter['slave_id']} {type(meter['slave_id'])}")
         data = {}
         float_registers = {
             'kW': 3059,

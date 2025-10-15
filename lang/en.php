@@ -317,7 +317,7 @@ $lang = [
     "mdidb" => "Manage Data In Database",
     "simulate" => "Simulate",
 
-    "egraph" => "Enegy Graph",
+    "egraph" => "Energy Graph",
     "mapp" => "Map Preview",
     "gvoltage" => "Gauge Voltage",
 ];

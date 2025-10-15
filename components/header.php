@@ -27,10 +27,6 @@
                         <a class="nav-link text" style="color: <?= $text ?>;"
                             href="../pages/login.php"><?= $lang['login'] ?></a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link text" style="color: <?= $text ?>;"
-                            href="../pages/register.php"><?= $lang['register'] ?></a>
-                    </li>
                 </ul>
             <?php else: ?>
                 <?php include "../components/avatar.php"; ?>
