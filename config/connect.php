@@ -7,13 +7,6 @@ if (!checktoken()) {
     header("../pages/notallow.php");
 }
 
-// ข้อมูลการเชื่อมต่อฐานข้อมูล server 
-// $servername = "49.0.69.152";
-// $username = "php_user";
-// $password = "123456";
-// $database = "ams";
-
-
 // run localhost 
 $servername = "localhost";
 $username = "root";
