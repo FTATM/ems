@@ -101,8 +101,8 @@ checkSession();
                                 <div class="me-2 w-20">
                                     <label class="me-2 mb-0">kWh</label>
                                     <input id="kwhr-diff" type="text" class="form-control form-control-sm" readonly>
-                                    <input id="kwhr-fv" type="text" class="form-control form-control-sm" readonly>
-                                    <input id="kwhr-lv" type="text" class="form-control form-control-sm" readonly>
+                                    <input id="kwhr-fv" type="text" class="form-control form-control-sm d-none" readonly>
+                                    <input id="kwhr-lv" type="text" class="form-control form-control-sm d-none" readonly>
                                 </div>
                                 <div class="me-2 w-20">
                                     <label class="me-2 mb-0">บาท/kWh</label>
@@ -254,8 +254,8 @@ checkSession();
                                     <label class="me-2 mb-0">Kwhr</label>
                                     <!-- <input id="kwhr-avg-m" type="text" class="form-control form-control-sm" readonly> -->
                                     <input id="kwhr-diff-m" type="text" class="form-control form-control-sm" readonly>
-                                    <input id="kwhr-fv-m" type="text" class="form-control form-control-sm" readonly>
-                                    <input id="kwhr-lv-m" type="text" class="form-control form-control-sm" readonly>
+                                    <input id="kwhr-fv-m" type="text" class="form-control form-control-sm d-none" readonly>
+                                    <input id="kwhr-lv-m" type="text" class="form-control form-control-sm d-none" readonly>
                                 </div>
                                 <div class="me-2 w-20">
                                     <label class="me-2 mb-0">บาท</label>

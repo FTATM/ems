@@ -111,9 +111,8 @@
             alertMessages('warning', "No Data Available", "No data was found for the selected period. Please choose a different timeframe.", 5000, true);
             return
         }
-        const selectedMeter = filteredDataInMeters[parseInt(select.value) - 1];
-
-        if (lastSelectValueTime !== select.value && (selectedMeter.data['1']?.length ?? 0) < 1) {
+        const selectedMeter = filteredDataInMeters.find(m => { return parseInt(m.id) === parseInt(select.value) })
+        if (lastSelectValueTime !== select.value && (selectedMeter?.data['1']?.length ?? 0) < 1) {
             alertMessages('warning', "No Data Available", "No data was found for the selected period. Please choose a different timeframe.", 5000, true);
             lastSelectValueTime = select.value;
         }
