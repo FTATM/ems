@@ -245,6 +245,8 @@
                             </div>
                         </div>
                         <div class="bg-white rounded-bottom shadow w-100 p-1 text-black">
+                            <input id="meter-${row.id}" type="hidden" value="${row.meter_id}"/>
+                            <input id="name-${row.id}" type="hidden" value="${row.name}"/>
                             <h6 class="ps-2"for="mark"><?=$lang['sign']?></h6>
                             <select id="select-mark-${row.id}" class="form-select form-select-sm text-black">
                                 <option ${row.mark == '<' ? 'selected' : ''} value="<"><?=$lang['<']?> (<)</option>
