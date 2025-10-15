@@ -24,7 +24,8 @@ checkSession();
                 <label id="location" class="px-2" for="locations">Location : </label>
                 <label id="group" class="px-2" for="groups">Group : </label>
             </div>
-            <div class="mx-3 bg-diagram-head" style="height: 480px;">
+            <div class="mx-3 bg-diagram-head d-flex justify-content-center align-items-end" style="height: 480px;">
+                <div id="main-meter" class="d-flex justify-content-center" style="margin-left: 240px;"></div>
             </div>
             <div id="list-meters"> </div>
         </div>
