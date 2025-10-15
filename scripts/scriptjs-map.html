@@ -144,10 +144,10 @@
     Object.values(filtermeters).forEach((m) => {
       let div = document.createElement("div");
       div.className = "p-1 mx-2 d-flex justify-content-between clickable";
-      div.style.backgroundColor = m.is_active === "1" ? "rgba(64, 160, 64)" : "rgba(255, 255, 255, 0.2)";
+      div.style.backgroundColor = isNaN(parseFloat(m.data['7'][m.data['7'].length - 1]?.value)) ? "rgba(255, 255, 255, 0.2)" : "rgba(64, 160, 64)";
       div.innerHTML = `
         <h4 class="text-center">${m.name}</h4>
-        <p class="text-center mb-0">${m.is_active === "1" ? "Active" : "Inactive"}</p>
+        <p class="text-center mb-0">${isNaN(parseFloat(m.data['7'][m.data['7'].length - 1]?.value)) ? "Inactive" : "Active"}</p>
       `;
       div.onclick = () => showValueOnView(m.id);
       list.appendChild(div);
