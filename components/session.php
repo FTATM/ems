@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/serial.php';
 session_start();
 
 
@@ -21,6 +22,17 @@ function checkLogin()
         header("Location: ../pages/login.php");
         exit();
     }
+    if (!checktoken()) {
+        header("Location: ../pages/notallow.php");
+        exit();
+    }
+}
+function check()
+{
+    if (!checktoken()) {
+        header("Location: ../pages/notallow.php");
+        exit();
+    }
 }
 function checkSession()
 {
@@ -38,19 +50,6 @@ function checkSession()
 
 function logout()
 {
-    if (isset($_SESSION['user_id']) && isset($_SESSION['username'])) {
-        // include "../config/connect.php";
-        // $user_id = $_SESSION['user_id'];
-        // $username = $_SESSION['username'];
-        // $ip_address = $_SERVER['REMOTE_ADDR'];
-        // $user_agent = $_SERVER['HTTP_USER_AGENT'];
-
-        // $log_sql = "INSERT INTO log_login (user_id, username, action, ip_address, user_agent) 
-        //             VALUES ('$user_id', '$username', 'logout', '$ip_address', '$user_agent')";
-
-        // $conzn->query($log_sql);
-    }
-
     session_unset();
     session_destroy();
     header("Location: ../pages/login.php");

@@ -1,5 +1,6 @@
 <?php
 include '../components/session.php';
+check();
 if (isset($_SESSION['user_id'])) {
     header("Location: ../pages/locations.php");
 }

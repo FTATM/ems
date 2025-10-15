@@ -320,4 +320,6 @@ $lang = [
     "egraph" => "Energy Graph",
     "mapp" => "Map Preview",
     "gvoltage" => "Gauge Voltage",
+
+    "errortoken" => "Error Token",
 ];
