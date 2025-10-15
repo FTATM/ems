@@ -1,8 +1,8 @@
 <?php
 require_once __DIR__ . '/openssl.php';
 
-$key = 'dZVwhLkkd5SsPEh5z_Y6TAnS5fVdaAVm';
-$token = '9CjYDECU45VpJJ0fp/se/qtEBB0O49KdtlNxM7bgDwFBoHGSl4y0/fVfOK5Zky/GRhUK0O4AJsxhLuZg8npeoA==';  //key encode here USB\VID_0BDA&PID_8179\00E04C0001
+$key = '__Key__'; //enter key here
+$token = '__Token__Here___'; // enter token here
 
 function checktoken()
 {
