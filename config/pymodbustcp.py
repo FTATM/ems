@@ -38,7 +38,7 @@ try:
     data = {}
     float_registers = {
         'kW': 3059,
-        'kWh': 2679,
+        'kWh': 2699,
         'kVA': 3075,
         'kVAh' : 2695,
         'kVAR': 3067,

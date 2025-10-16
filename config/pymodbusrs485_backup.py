@@ -80,7 +80,7 @@ float_registers = {
     'Apparent Power C': 3073,
     'Apparent Power Total': 3075,
     'Frequency': 3109,
-    'kWh': 2679,
+    'kWh': 2699,
     'Power Factor': 3083,
     'kVARh': 2687,
     'kVAh' : 2695

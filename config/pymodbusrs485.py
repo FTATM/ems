@@ -49,7 +49,7 @@ try:
     data = {}
     float_registers = {
         'kW':address + 3059,
-        'kWh':address +  2679,
+        'kWh':address +  2699,
         'kVA':address +  3075,
         'kVAh' :address +  2695,
         'kVAR':address +  3067,
