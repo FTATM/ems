@@ -68,8 +68,9 @@ checkSession();
                         <h5 class="text-center text-white mb-2">รายงานประจำวัน</h5>
                         <div class="boxcell">
                             <div class="mb-1 align-content-center">1.ค่าความต้องการ</div>
-                            <div class=" d-flex justify-content-end w-60">
-                                <div class="me-2 w-20 opacity-0"> </div>
+                            <div class=" d-flex justify-content-end w-70">
+                                <div class="me-2 w-20 opacity-0"></div>
+                                <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20">
                                     <label class="me-2 mb-0">kW</label>
                                     <input id="kw-avg-n" type="text" class="form-control form-control-sm" readonly>
@@ -107,7 +108,14 @@ checkSession();
                         <div class="boxcell">
                             <!-- ค่าความต้องการไฟฟ้า -->
                             <div class="mb-1 align-content-center">2.ค่าความต้องการไฟฟ้า</div>
-                            <div class=" d-flex justify-content-end w-60">
+                            <div class=" d-flex justify-content-end w-70">
+                                <div class="me-2 w-20">
+                                    <label class="me-2 mb-0">ช่วงเวลา</label>
+                                    <label class="my-1">00.00 - 05.59</label>
+                                    <label class="my-1">06.00 - 11.59</label>
+                                    <label class="my-1">12.00 - 17.59</label>
+                                    <label class="my-1">18.00 - 23.59</label>
+                                </div>
                                 <div class="me-2 w-20">
                                     <label class="me-2 mb-0">ชั่วโมง</label>
                                     <input id="hour-diff-n" type="text" class="form-control form-control-sm" readonly>
@@ -156,7 +164,8 @@ checkSession();
                         </div>
                         <div class="boxcell">
                             <div class="mb-1 align-content-center">3.ค่าเพาเวอร์แฟคเตอร์</div>
-                            <div class=" d-flex justify-content-end w-60">
+                            <div class=" d-flex justify-content-end w-70">
+                                <div class="me-2 w-20 opacity-0"> </div>
                                 <div class="me-2 w-20">
                                     <label class="me-2 mb-0">KVAR</label>
                                     <input id="kvar-avg" type="text" class="form-control form-control-sm" readonly>
@@ -181,10 +190,11 @@ checkSession();
                         </div>
                         <div class="boxcell">
                             <div class="mb-1 align-content-center">4.ค่าบริการ</div>
-                            <div class=" d-flex justify-content-end w-60">
-                                <div class="me-2 w-20 opacity-0"> </div>
-                                <div class="me-2 w-20 opacity-0"> </div>
-                                <div class="me-2 w-20 opacity-0"> </div>
+                            <div class=" d-flex justify-content-end w-70">
+                                <div class="me-2 w-20 opacity-0"></div>
+                                <div class="me-2 w-20 opacity-0"></div>
+                                <div class="me-2 w-20 opacity-0"></div>
+                                <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20">
                                     <input id="input-service" class="form-control form-control-sm bg-light text-dark" type="text">
                                 </div>
@@ -193,7 +203,8 @@ checkSession();
                         </div>
                         <div class="boxcell">
                             <div class="mb-1 align-content-center">5.ค่า FT</div>
-                            <div class=" d-flex justify-content-end w-60">
+                            <div class=" d-flex justify-content-end w-70">
+                                <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20">
@@ -209,7 +220,8 @@ checkSession();
                         </div>
                         <div class="boxcell">
                             <div class="mb-1 align-content-center">6.ค่าไฟฟ้ารวม</div>
-                            <div class=" d-flex justify-content-end w-60">
+                            <div class=" d-flex justify-content-end w-70">
+                                <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"></div>
@@ -223,7 +235,8 @@ checkSession();
                         </div>
                         <div class="boxcell">
                             <div class="mb-1 align-content-center">7.ค่าภาษี</div>
-                            <div class=" d-flex justify-content-end w-60">
+                            <div class=" d-flex justify-content-end w-70">
+                                <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20">
@@ -239,7 +252,8 @@ checkSession();
                         </div>
                         <div class="boxcell">
                             <div class="mb-1 align-content-center">8.ค่ารวมทั้งสิ้น</div>
-                            <div class=" d-flex justify-content-end w-60">
+                            <div class=" d-flex justify-content-end w-70">
+                                <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"></div>
@@ -258,75 +272,83 @@ checkSession();
                         <h5 class="text-center text-white mb-3 ">รายงานประจำเดือน</h5>
                         <div class="boxcell">
                             <div class="mb-1 align-content-center">1.ค่าความต้องการ</div>
-                            <div class=" d-flex justify-content-end w-60">
+                            <div class=" d-flex justify-content-end w-70">
+                                <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20">
                                     <label class="me-2 mb-0">Kw</label>
+                                    <input id="kw-avg-month-n" type="text" class="form-control form-control-sm" readonly>
                                     <input id="kw-avg-month-m" type="text" class="form-control form-control-sm" readonly>
                                     <input id="kw-avg-month-a" type="text" class="form-control form-control-sm" readonly>
                                     <input id="kw-avg-month-e" type="text" class="form-control form-control-sm" readonly>
-                                    <input id="kw-avg-month-n" type="text" class="form-control form-control-sm" readonly>
+                                    <input id="kw-max-month-n" type="text" class="form-control form-control-sm d-none" readonly>
                                     <input id="kw-max-month-m" type="text" class="form-control form-control-sm d-none" readonly>
                                     <input id="kw-max-month-a" type="text" class="form-control form-control-sm d-none" readonly>
                                     <input id="kw-max-month-e" type="text" class="form-control form-control-sm d-none" readonly>
-                                    <input id="kw-max-month-n" type="text" class="form-control form-control-sm d-none" readonly>
                                 </div>
                                 <div class="me-2 w-20">
                                     <label class="me-2 mb-0">บาท</label>
+                                    <input id="result-bath-kw-month-n" type="text" value="0.00" class="form-control form-control-sm" readonly>
                                     <input id="result-bath-kw-month-m" type="text" value="0.00" class="form-control form-control-sm" readonly>
                                     <input id="result-bath-kw-month-a" type="text" value="0.00" class="form-control form-control-sm" readonly>
                                     <input id="result-bath-kw-month-e" type="text" value="0.00" class="form-control form-control-sm" readonly>
-                                    <input id="result-bath-kw-month-n" type="text" value="0.00" class="form-control form-control-sm" readonly>
                                 </div>
                                 <div class="me-2 w-20">
                                     <label class="me-2 mb-0">บาท/Kwh</label>
+                                    <input id="result-bath-per-kwhr-month-n" type="text" value="0.00" class="form-control form-control-sm" readonly>
                                     <input id="result-bath-per-kwhr-month-m" type="text" value="0.00" class="form-control form-control-sm" readonly>
                                     <input id="result-bath-per-kwhr-month-a" type="text" value="0.00" class="form-control form-control-sm" readonly>
                                     <input id="result-bath-per-kwhr-month-e" type="text" value="0.00" class="form-control form-control-sm" readonly>
-                                    <input id="result-bath-per-kwhr-month-n" type="text" value="0.00" class="form-control form-control-sm" readonly>
                                 </div>
                             </div>
                         </div>
                         <div class="boxcell">
                             <div class="mb-1 align-content-center">2.ค่าความต้องการไฟฟ้า</div>
-                            <div class=" d-flex justify-content-end w-60">
+                            <div class=" d-flex justify-content-end w-70">
                                 <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20">
+                                    <label class="me-2 mb-0">ช่วงเวลา</label>
+                                    <label class="my-1">00.00 - 05.59</label>
+                                    <label class="my-1">06.00 - 11.59</label>
+                                    <label class="my-1">12.00 - 17.59</label>
+                                    <label class="my-1">18.00 - 23.59</label>
+                                </div>
+                                <div class="me-2 w-20">
                                     <label class="me-2 mb-0">ชั่วโมง</label>
+                                    <input id="hour-diff-month-n" type="text" class="form-control form-control-sm" readonly>
+                                    <input id="hour-value-month-n" type="text" class="form-control form-control-sm d-none">
                                     <input id="hour-diff-month-m" type="text" class="form-control form-control-sm" readonly>
                                     <input id="hour-value-month-m" type="text" class="form-control form-control-sm d-none">
                                     <input id="hour-diff-month-a" type="text" class="form-control form-control-sm" readonly>
                                     <input id="hour-value-month-a" type="text" class="form-control form-control-sm d-none">
                                     <input id="hour-diff-month-e" type="text" class="form-control form-control-sm" readonly>
                                     <input id="hour-value-month-e" type="text" class="form-control form-control-sm d-none">
-                                    <input id="hour-diff-month-n" type="text" class="form-control form-control-sm" readonly>
-                                    <input id="hour-value-month-n" type="text" class="form-control form-control-sm d-none">
                                 </div>
                                 <div class="me-2 w-20">
                                     <label class="me-2 mb-0">Kwhr</label>
+                                    <input id="kwhr-diff-month-n" type="text" class="form-control form-control-sm" readonly>
                                     <input id="kwhr-diff-month-m" type="text" class="form-control form-control-sm" readonly>
                                     <input id="kwhr-diff-month-a" type="text" class="form-control form-control-sm" readonly>
                                     <input id="kwhr-diff-month-e" type="text" class="form-control form-control-sm" readonly>
-                                    <input id="kwhr-diff-month-n" type="text" class="form-control form-control-sm" readonly>
                                     <input id="kwhr-diff-month-all" type="text" class="form-control form-control-sm d-none" readonly>
                                     <input id="kwhr-fv-month-all" type="text" class="form-control form-control-sm d-none" readonly>
                                     <input id="kwhr-lv-month-all" type="text" class="form-control form-control-sm d-none" readonly>
                                 </div>
                                 <div class="me-2 w-20">
                                     <label class="me-2 mb-0">บาท</label>
+                                    <input id="result-bath-kwhr-month-n" type="text" value="0.00" class="form-control form-control-sm" readonly>
                                     <input id="result-bath-kwhr-month-m" type="text" value="0.00" class="form-control form-control-sm" readonly>
                                     <input id="result-bath-kwhr-month-a" type="text" value="0.00" class="form-control form-control-sm" readonly>
                                     <input id="result-bath-kwhr-month-e" type="text" value="0.00" class="form-control form-control-sm" readonly>
-                                    <input id="result-bath-kwhr-month-n" type="text" value="0.00" class="form-control form-control-sm" readonly>
                                     <input id="result-bath-kwhr-month-all" type="text" value="0.00" class="form-control form-control-sm" readonly>
                                 </div>
                                 <div class="me-2 w-20">
                                     <label class="me-2 mb-0">LoadFactor</label>
+                                    <input id="load-factor-month-n" type="text" value="0.00" class="form-control form-control-sm" readonly>
                                     <input id="load-factor-month-m" type="text" value="0.00" class="form-control form-control-sm" readonly>
                                     <input id="load-factor-month-a" type="text" value="0.00" class="form-control form-control-sm" readonly>
                                     <input id="load-factor-month-e" type="text" value="0.00" class="form-control form-control-sm" readonly>
-                                    <input id="load-factor-month-n" type="text" value="0.00" class="form-control form-control-sm" readonly>
                                     <input id="load-factor-month-all" type="text" value="0.00" class="form-control form-control-sm" readonly>
                                 </div>
                             </div>
@@ -334,7 +356,8 @@ checkSession();
                         </div>
                         <div class="boxcell">
                             <div class="mb-1 align-content-center">3.ค่าความต้องการไฟฟ้า</div>
-                            <div class=" d-flex justify-content-end w-60">
+                            <div class=" d-flex justify-content-end w-70">
+                                <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20">
                                     <label class="me-2 mb-0">KVAR</label>
@@ -356,7 +379,8 @@ checkSession();
                         </div>
                         <div class="boxcell">
                             <div class="mb-1 align-content-center">4.ค่าบริการ</div>
-                            <div class=" d-flex justify-content-end w-60">
+                            <div class=" d-flex justify-content-end w-70">
+                                <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"></div>
@@ -368,7 +392,8 @@ checkSession();
                         </div>
                         <div class="boxcell">
                             <div class="mb-1 align-content-center">5.ค่า FT</div>
-                            <div class=" d-flex justify-content-end w-60">
+                            <div class=" d-flex justify-content-end w-70">
+                                <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"></div>
@@ -383,7 +408,8 @@ checkSession();
                         </div>
                         <div class="boxcell">
                             <div class="mb-1 align-content-center">6.ค่าไฟฟ้ารวม</div>
-                            <div class=" d-flex justify-content-end w-60">
+                            <div class=" d-flex justify-content-end w-70">
+                                <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"></div>
@@ -397,7 +423,8 @@ checkSession();
                         </div>
                         <div class="boxcell">
                             <div class="mb-1 align-content-center">7.ค่าภาษี</div>
-                            <div class=" d-flex justify-content-end w-60">
+                            <div class=" d-flex justify-content-end w-70">
+                                <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"></div>
@@ -411,7 +438,8 @@ checkSession();
                         </div>
                         <div class="boxcell">
                             <div class="mb-1 align-content-center">8.ค่ารวมทั้งสิ้น</div>
-                            <div class=" d-flex justify-content-end w-60">
+                            <div class=" d-flex justify-content-end w-70">
+                                <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"></div>

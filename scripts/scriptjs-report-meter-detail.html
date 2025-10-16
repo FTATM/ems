@@ -142,8 +142,8 @@
   function AvgMinMax(meter) {
     let values = {}
     const dataAll = Object.entries(meter.data).map(([key, rows]) => {
-      const fValue = parseFloat(rows[0].value);
-      const lValue = parseFloat(rows[rows.length - 1].value);
+      const fValue = rows[0] ? parseFloat(rows[0].value) : 0;
+      const lValue = rows[0] ? parseFloat(rows[rows.length - 1].value) : 0;
       let list = {
         avg: templateOfDay(),
         total: templateOfDay(),
@@ -263,11 +263,12 @@
   }
 
   function avgValue(array) {
+    console.log(array);
     let result = 0;
     Object.values(array).forEach(value => {
       result += value;
     })
-    return parseFloat((result / array.length).toFixed(2));
+    return parseFloat((result / array.length ?? 1).toFixed(2));
   }
 
   function loadValueDay(m) {
@@ -286,7 +287,8 @@
     setValueInHTML('kwhr-lv-all', kwh.lv['night']);
     setValueInHTML('hour-value', kw.thours);
     setValueInHTML('kvar-avg', sumValue(kvar.avg));
-    setValueInHTML('pf-avg', avgValue(pf.avg));
+    let pfv = sumValue(pf.total) / (sumValue(pf.count) === 0 ? 1 : sumValue(pf.count));
+    setValueInHTML('pf-avg', pfv);
 
     //[1] bath of kW
     addDetectEventMulti('input-kw-m', 'result-bath-kw-m', 'kw-avg-m', 'input-kw-m');
@@ -364,7 +366,8 @@
     setValueInHTML('kwhr-lv-all-month', kwh.lv['night']);
     setValueInHTML('hour-value-month', kw.thours);
     setValueInHTML('kvar-avg-month', sumValue(kvar.avg));
-    setValueInHTML('pf-avg-month', sumValue(pf.avg));
+    let pfv = sumValue(pf.total) / (sumValue(pf.count) === 0 ? 1 : sumValue(pf.count));
+    setValueInHTML('pf-avg-month', pfv);
 
     //[1] bath kw
     addDetectEventMulti('input-kw-m', 'result-bath-kw-month-m', 'kw-avg-month-m', 'input-kw-m');

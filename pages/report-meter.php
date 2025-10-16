@@ -68,7 +68,8 @@ checkSession();
                         <h5 class="text-center text-white mb-2">รายงานประจำวัน</h5>
                         <div class="boxcell">
                             <div class="mb-1 align-content-center">1.ค่าความต้องการ</div>
-                            <div class=" d-flex justify-content-end w-60">
+                            <div class=" d-flex justify-content-end w-70">
+                                <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"> </div>
                                 <div class="me-2 w-20">
                                     <label class="me-2 mb-0">kW</label>
@@ -92,7 +93,8 @@ checkSession();
                         <div class="boxcell">
                             <!-- ค่าความต้องการไฟฟ้า -->
                             <div class="mb-1 align-content-center">2.ค่าความต้องการไฟฟ้า</div>
-                            <div class=" d-flex justify-content-end w-60">
+                            <div class=" d-flex justify-content-end w-70">
+                                <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20">
                                     <label class="me-2 mb-0">ชั่วโมง</label>
                                     <input id="hour-diff" type="text" class="form-control form-control-sm" readonly>
@@ -120,7 +122,8 @@ checkSession();
                         </div>
                         <div class="boxcell">
                             <div class="mb-1 align-content-center">3.ค่าเพาเวอร์แฟคเตอร์</div>
-                            <div class=" d-flex justify-content-end w-60">
+                            <div class=" d-flex justify-content-end w-70">
+                                <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20">
                                     <label class="me-2 mb-0">KVAR</label>
                                     <input id="kvar-avg" type="text" class="form-control form-control-sm" readonly>
@@ -146,7 +149,8 @@ checkSession();
                         </div>
                         <div class="boxcell">
                             <div class="mb-1 align-content-center">4.ค่าบริการ</div>
-                            <div class=" d-flex justify-content-end w-60">
+                            <div class=" d-flex justify-content-end w-70">
+                                <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"> </div>
                                 <div class="me-2 w-20 opacity-0"> </div>
                                 <div class="me-2 w-20 opacity-0"> </div>
@@ -158,7 +162,8 @@ checkSession();
                         </div>
                         <div class="boxcell">
                             <div class="mb-1 align-content-center">5.ค่า FT</div>
-                            <div class=" d-flex justify-content-end w-60">
+                            <div class=" d-flex justify-content-end w-70">
+                                <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20">
@@ -174,7 +179,8 @@ checkSession();
                         </div>
                         <div class="boxcell">
                             <div class="mb-1 align-content-center">6.ค่าไฟฟ้ารวม</div>
-                            <div class=" d-flex justify-content-end w-60">
+                            <div class=" d-flex justify-content-end w-70">
+                                <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"></div>
@@ -188,7 +194,8 @@ checkSession();
                         </div>
                         <div class="boxcell">
                             <div class="mb-1 align-content-center">7.ค่าภาษี</div>
-                            <div class=" d-flex justify-content-end w-60">
+                            <div class=" d-flex justify-content-end w-70">
+                                <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20">
@@ -204,7 +211,8 @@ checkSession();
                         </div>
                         <div class="boxcell">
                             <div class="mb-1 align-content-center">8.ค่ารวมทั้งสิ้น</div>
-                            <div class=" d-flex justify-content-end w-60">
+                            <div class=" d-flex justify-content-end w-70">
+                                <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"></div>
@@ -223,7 +231,8 @@ checkSession();
                         <h5 class="text-center text-white mb-3 ">รายงานประจำเดือน</h5>
                         <div class="boxcell">
                             <div class="mb-1 align-content-center">1.ค่าความต้องการ</div>
-                            <div class=" d-flex justify-content-end w-60">
+                            <div class=" d-flex justify-content-end w-70">
+                                <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20">
@@ -243,7 +252,8 @@ checkSession();
                         </div>
                         <div class="boxcell">
                             <div class="mb-1 align-content-center">2.ค่าความต้องการไฟฟ้า</div>
-                            <div class=" d-flex justify-content-end w-60">
+                            <div class=" d-flex justify-content-end w-70">
+                                <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20">
                                     <label class="me-2 mb-0">ชั่วโมง</label>
@@ -270,7 +280,8 @@ checkSession();
                         </div>
                         <div class="boxcell">
                             <div class="mb-1 align-content-center">3.ค่าความต้องการไฟฟ้า</div>
-                            <div class=" d-flex justify-content-end w-60">
+                            <div class=" d-flex justify-content-end w-70">
+                                <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20">
                                     <label class="me-2 mb-0">KVAR</label>
@@ -293,7 +304,8 @@ checkSession();
                         </div>
                         <div class="boxcell">
                             <div class="mb-1 align-content-center">4.ค่าบริการ</div>
-                            <div class=" d-flex justify-content-end w-60">
+                            <div class=" d-flex justify-content-end w-70">
+                                <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"></div>
@@ -305,7 +317,8 @@ checkSession();
                         </div>
                         <div class="boxcell">
                             <div class="mb-1 align-content-center">5.ค่า FT</div>
-                            <div class=" d-flex justify-content-end w-60">
+                            <div class=" d-flex justify-content-end w-70">
+                                <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"></div>
@@ -320,7 +333,8 @@ checkSession();
                         </div>
                         <div class="boxcell">
                             <div class="mb-1 align-content-center">6.ค่าไฟฟ้ารวม</div>
-                            <div class=" d-flex justify-content-end w-60">
+                            <div class=" d-flex justify-content-end w-70">
+                                <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"></div>
@@ -334,7 +348,8 @@ checkSession();
                         </div>
                         <div class="boxcell">
                             <div class="mb-1 align-content-center">7.ค่าภาษี</div>
-                            <div class=" d-flex justify-content-end w-60">
+                            <div class=" d-flex justify-content-end w-70">
+                                <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"></div>
@@ -348,7 +363,8 @@ checkSession();
                         </div>
                         <div class="boxcell">
                             <div class="mb-1 align-content-center">8.ค่ารวมทั้งสิ้น</div>
-                            <div class=" d-flex justify-content-end w-60">
+                            <div class=" d-flex justify-content-end w-70">
+                                <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"></div>
                                 <div class="me-2 w-20 opacity-0"></div>

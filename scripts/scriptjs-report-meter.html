@@ -136,12 +136,12 @@
     let values = {}
     const dataAll = Object.entries(meter.data).map(([key, rows]) => {
       let total = 0;
-      let min = parseFloat(rows[0].value);
-      let max = parseFloat(rows[0].value);
-      const fValue = parseFloat(rows[0].value);
-      const lValue = parseFloat(rows[rows.length - 1].value);
-      const fDate = new Date(rows[0].create_date);
-      const lDate = new Date(rows[rows.length - 1].create_date);
+      const fValue = rows[0] ? parseFloat(rows[0].value) : 0;
+      const lValue = rows[0] ? parseFloat(rows[rows.length - 1].value) : 0;
+      let min = rows[0]? parseFloat(rows[0].value) : 0;
+      let max = rows[0]? parseFloat(rows[0].value) : 0;
+      const fDate = new Date(rows[0]?.create_date ?? 0);
+      const lDate = new Date(rows[rows.length - 1]?.create_date ?? 0);
       let fMinutes = fDate.getHours() * 60 + fDate.getMinutes();
       let lMinutes = lDate.getHours() * 60 + lDate.getMinutes();
       let diffMinutes = Math.abs(lMinutes - fMinutes); // ส่วนต่างเป็น "นาที"
@@ -189,8 +189,8 @@
     setValueInHTML('kwhr-diff', Math.abs(kwh.lv - kwh.fv).toFixed(2));
     setValueInHTML('hour-value', kw.tHours);
     setValueInHTML('kvar-avg', kvar.avg);
-    setValueInHTML('pf-avg', pf.avg);
-    setValueInHTML('pf-avg2', (kw.avg / kva.avg).toFixed(2));
+    let pfv = pf.total / (pf.count === 0 ? 1 : pf.count);
+    setValueInHTML('pf-avg', pfv);
 
     //[1] bath of kW
     addDetectEventMulti('input-kw', 'result-bath-kw', 'kw-avg', 'input-kw');
