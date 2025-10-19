@@ -3,8 +3,6 @@ require_once __DIR__ . '/openssl.php';
 
 $key = '__Key__'; //enter key here
 $token = '__Token__Here___'; // enter token here
-$key = 'uddEEoz744uGrHB6a6irRZiUBoq8j_ju'; //enter key here
-$token = 'KGxtXRuRgJcWDM7RdLcJzKI5I0Xz/B8/jRIVkqpPEydm+eRzZwIYVdLynRisGVWEkDWVnnpJ7fSiGzsO28w15yEg'; // enter token here
 
 function checktoken()
 {
