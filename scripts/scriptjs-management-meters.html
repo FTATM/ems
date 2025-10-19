@@ -18,6 +18,9 @@
         meters = await fetchMetersData();
         types = await fetchTypes();
         notifies = await fetchnotify();
+
+        console.log(meters);
+        
     }
     async function fetchMetersData() {
         let response = await fetch("../config/fetch-meters.php");

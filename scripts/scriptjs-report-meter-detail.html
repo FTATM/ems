@@ -105,7 +105,6 @@
       ...meterSelected,
       data: data
     }
-    console.log("before AvgMinMax func :", filteredDataInMetersDay.data);
     const dayData = await AvgMinMax(filteredDataInMetersDay);
     console.log(dayData.data);
 
@@ -126,7 +125,6 @@
       data: dataMonth
     }
 
-    console.log("before AvgMinMax func :", filteredDataInMetersMonth.data);
     const monthData = await AvgMinMax(filteredDataInMetersMonth);
     console.log(monthData.data);
 
@@ -136,7 +134,7 @@
   }
 
   function templateOfDay() {
-    return { 'morning': 0, "after": 0, 'even': 0, 'night': 0 };
+    return { 'onpeak': 0, "offpeak": 0, 'holiday': 0 };
   }
 
   function AvgMinMax(meter) {
@@ -155,21 +153,27 @@
         fv_date: templateOfDay(),
         lv_date: templateOfDay(),
         fv: templateOfDay(),
-        lv: templateOfDay()
+        lv: templateOfDay(),
+        mpeak: { value: 0, ttime: "", ltime: "" }
       }
 
       let lastPeriod = '';
       let lastData = {};
-      Object.values(rows).filter(data => {
+      let fv_date = "";
+
+      Object.values(rows).filter((data, r) => {
+        let peak = 0;
         lastData = data;
         let date = new Date(data.create_date);
         let period = checkPeriod(date);
         let val = ['1', '3', '5'].includes(key) ? Math.abs(parseFloat(fValue) - parseFloat(data.value)) : parseFloat(data.value);
         let value = parseFloat(data.value);
         if (period !== lastPeriod) {
-          list.fv[period] = value;
+
+          list.fv[period] = list.fv[period] === 0 ? value : list.fv[period];
           list.min[period] = value;
-          list.fv_date[period] = data.create_date;
+          list.fv_date[period] = list.fv_date[period] === 0 ? data.create_date : list.fv_date[period];
+          fv_date = data.create_date;
           if (lastPeriod !== '') {
             const diff = diffTime(list.fv_date[lastPeriod], lastData.create_date);
             list.thours[lastPeriod] += diff.thours;
@@ -177,7 +181,7 @@
           lastPeriod = period;
         }
         else if (data.id === rows[rows.length - 1].id) {
-          const diff = diffTime(list.fv_date[period], data.create_date);
+          const diff = diffTime(fv_date, data.create_date);
           list.thours[period] += diff.thours;
         }
         list.total[period] += val;
@@ -187,20 +191,42 @@
         list.min[period] = value < list.min[period] ? value : list.min[period];
         list.max[period] = value > list.max[period] ? value : list.max[period];
 
+        if (period !== 'offpeak') {
+          for (let i = 14; i >= 0; i--) {
+            let a = parseFloat(rows[r - i]?.value);
+            if (a) {
+              peak += a;
+            }
+          }
+          if ((peak / 15) > list.mpeak['value']) {
+            list.mpeak['value'] = peak / 15;
+            list.mpeak['ttime'] = date.toLocaleTimeString('th-TH', {
+              hour12: false,    // ปิด AM/PM
+              hour: '2-digit',
+              minute: '2-digit',
+              second: '2-digit'
+            });
+            let rdate = new Date(rows[r - 15]?.create_date ?? 0);
+            list.mpeak['ltime'] = rdate.toLocaleTimeString('th-TH', {
+              hour12: false,    // ปิด AM/PM
+              hour: '2-digit',
+              minute: '2-digit',
+              second: '2-digit'
+            });
+          }
+        }
       });
       return values[key] = {
         ...list,
         avg: {
-          'morning': list.total['morning'] / (list.count['morning'] || 1),
-          'after': list.total['after'] / (list.count['after'] || 1),
-          'even': list.total['even'] / (list.count['even'] || 1),
-          'night': list.total['night'] / (list.count['night'] || 1),
+          'onpeak': list.total['onpeak'] / (list.count['onpeak'] || 1),
+          'offpeak': list.total['offpeak'] / (list.count['offpeak'] || 1),
+          'holiday': list.total['holiday'] / (list.count['holiday'] || 1),
         },
         ttime: {
-          'morning': changeValueToTime(list.thours['morning']),
-          'after': changeValueToTime(list.thours['after']),
-          'even': changeValueToTime(list.thours['even']),
-          'night': changeValueToTime(list.thours['night'])
+          'onpeak': changeValueToTime(list.thours['onpeak']),
+          'offpeak': changeValueToTime(list.thours['offpeak']),
+          'holiday': changeValueToTime(list.thours['holiday']),
         }
       };
     });
@@ -239,11 +265,15 @@
   function checkPeriod(datetime) {
     const date = new Date(datetime);
     const hour = date.getHours();
+    const day = date.getDay();
+    let period;
 
-    if (hour >= 0 && hour < 6) return 'night';
-    if (hour >= 6 && hour < 12) return 'morning';
-    if (hour >= 12 && hour < 18) return 'after';
-    return 'even';
+    if (hour >= 9 && hour < 22) period = 'onpeak';
+    if (hour >= 22 && hour < 24) period = 'offpeak';
+    if (hour >= 0 && hour < 9) period = 'offpeak';
+    if (day == 6 || day == 0) period = 'holiday';
+
+    return period;
   }
 
   function sumValue(object) {
@@ -256,7 +286,7 @@
 
   function diffValue(value1, value2) {
     let result = {};
-    ['morning', 'after', 'even', 'night'].forEach(period => {
+    ['onpeak', 'offpeak', 'holiday'].forEach(period => {
       result[period] = parseFloat(Math.abs(value1[period] - value2[period]).toFixed(2));
     });
     return result;
@@ -277,55 +307,61 @@
     const kwh = data[1];
     const kva = data[2];
     const kvar = data[4];
+    const kvarh = data[5];
     const pf = data[16];
 
     setValueInHTML('kw-avg', kw.avg);
     setValueInHTML('kw-max', kw.max);
-    setValueInHTML('hour-diff', kw.ttime);
-    setValueInHTML('kwhr-diff', diffValue(kwh.fv, kwh.lv));
-    setValueInHTML('kwhr-fv-all', kwh.fv['morning']);
-    setValueInHTML('kwhr-lv-all', kwh.lv['night']);
+    setTextValueInHTML('hour-diff', kw.ttime);
+    setValueInHTML('kwhr-diff-n', (diffValue(kwh.fv, kwh.lv)).onpeak);
+    setValueInHTML('kwhr-diff-f', Math.abs(kwh.fv.onpeak - kwh.fv.offpeak) + Math.abs(kwh.lv.onpeak - kwh.lv.offpeak));
+    setValueInHTML('kwhr-diff-h', Math.abs(kwh.fv.holiday - kwh.lv.holiday));
+    setValueInHTML('kwhr-diff-all', Math.abs(kwh.fv.offpeak - kwh.lv.offpeak));
+    setValueInHTML('kwhr-diff-kwmax', kw.mpeak.value);
     setValueInHTML('hour-value', kw.thours);
-    setValueInHTML('kvar-avg', sumValue(kvar.avg));
-    let pfv = sumValue(pf.total) / (sumValue(pf.count) === 0 ? 1 : sumValue(pf.count));
-    setValueInHTML('pf-avg', pfv);
+    setTextValueInHTML('kwhr-diff-ttime', kw.mpeak['ttime']);
+    setTextValueInHTML('kwhr-diff-ltime', kw.mpeak['ltime']);
+    setValueInHTML('kwhr-fv-all', kwh.fv['offpeak']);
+    setValueInHTML('kwhr-lv-all', kwh.lv['offpeak']);
+    setValueInHTML('kvar-diff', diffValue(kvarh.fv, kvarh.lv));
+    setValueInHTML('pf-avg', pf.avg);
 
     //[1] bath of kW
-    addDetectEventMulti('input-kw-m', 'result-bath-kw-m', 'kw-avg-m', 'input-kw-m');
-    addDetectEventMulti('input-kw-a', 'result-bath-kw-a', 'kw-avg-a', 'input-kw-a');
-    addDetectEventMulti('input-kw-e', 'result-bath-kw-e', 'kw-avg-e', 'input-kw-e');
+    // addDetectEventMulti('input-kw-m', 'result-bath-kw-m', 'kw-avg-m', 'input-kw-m');
+    addDetectEventMulti('input-kw-f', 'result-bath-kw-f', 'kw-avg-f', 'input-kw-f');
+    addDetectEventMulti('input-kw-h', 'result-bath-kw-h', 'kw-avg-h', 'input-kw-h');
     addDetectEventMulti('input-kw-n', 'result-bath-kw-n', 'kw-avg-n', 'input-kw-n');
     //[1] bath:kWh
-    addDetectEventDivide('input-kw-m', 'bath-per-kwhr-m', 'result-bath-kw-m', 'kwhr-diff-m');
-    addDetectEventDivide('input-kw-a', 'bath-per-kwhr-a', 'result-bath-kw-a', 'kwhr-diff-a');
-    addDetectEventDivide('input-kw-e', 'bath-per-kwhr-e', 'result-bath-kw-e', 'kwhr-diff-e');
+    // addDetectEventDivide('input-kw-m', 'bath-per-kwhr-m', 'result-bath-kw-m', 'kwhr-diff-m');
+    addDetectEventDivide('input-kw-f', 'bath-per-kwhr-f', 'result-bath-kw-f', 'kwhr-diff-f');
+    addDetectEventDivide('input-kw-h', 'bath-per-kwhr-h', 'result-bath-kw-h', 'kwhr-diff-h');
     addDetectEventDivide('input-kw-n', 'bath-per-kwhr-n', 'result-bath-kw-n', 'kwhr-diff-n');
     // sumBath('input-kw', 'input-kwhr', 'bath-per-kwhr', '');
 
     //[2] bath of kWh
-    addDetectEventMulti('input-kwhr-m', 'result-bath-kwhr-m', 'kwhr-diff-m', 'input-kwhr-m');
-    addDetectEventMulti('input-kwhr-a', 'result-bath-kwhr-a', 'kwhr-diff-a', 'input-kwhr-a');
-    addDetectEventMulti('input-kwhr-e', 'result-bath-kwhr-e', 'kwhr-diff-e', 'input-kwhr-e');
+    // addDetectEventMulti('input-kwhr-m', 'result-bath-kwhr-m', 'kwhr-diff-m', 'input-kwhr-m');
+    addDetectEventMulti('input-kwhr-f', 'result-bath-kwhr-f', 'kwhr-diff-f', 'input-kwhr-f');
+    addDetectEventMulti('input-kwhr-h', 'result-bath-kwhr-h', 'kwhr-diff-h', 'input-kwhr-h');
     addDetectEventMulti('input-kwhr-n', 'result-bath-kwhr-n', 'kwhr-diff-n', 'input-kwhr-n');
     //[2] load Factor
-    addDetectEventLoadFactor('input-kwhr-m', 'load-factor-m', 'kwhr-diff-m', 'kw-max-m', 'hour-value-m');
-    addDetectEventLoadFactor('input-kwhr-a', 'load-factor-a', 'kwhr-diff-a', 'kw-max-a', 'hour-value-a');
-    addDetectEventLoadFactor('input-kwhr-e', 'load-factor-e', 'kwhr-diff-e', 'kw-max-e', 'hour-value-e');
+    // addDetectEventLoadFactor('input-kwhr-m', 'load-factor-m', 'kwhr-diff-m', 'kw-max-m', 'hour-value-m');
+    addDetectEventLoadFactor('input-kwhr-f', 'load-factor-f', 'kwhr-diff-f', 'kw-max-f', 'hour-value-f');
+    addDetectEventLoadFactor('input-kwhr-h', 'load-factor-h', 'kwhr-diff-h', 'kw-max-h', 'hour-value-h');
     addDetectEventLoadFactor('input-kwhr-n', 'load-factor-n', 'kwhr-diff-n', 'kw-max-n', 'hour-value-n');
 
-    sumBath('input-kwhr-m', 'result-bath-kwhr-all', 'result-bath-kwhr-m', 'result-bath-kwhr-a', 'result-bath-kwhr-e', 'result-bath-kwhr-n');
-    sumBath('input-kwhr-a', 'result-bath-kwhr-all', 'result-bath-kwhr-m', 'result-bath-kwhr-a', 'result-bath-kwhr-e', 'result-bath-kwhr-n');
-    sumBath('input-kwhr-e', 'result-bath-kwhr-all', 'result-bath-kwhr-m', 'result-bath-kwhr-a', 'result-bath-kwhr-e', 'result-bath-kwhr-n');
-    sumBath('input-kwhr-n', 'result-bath-kwhr-all', 'result-bath-kwhr-m', 'result-bath-kwhr-a', 'result-bath-kwhr-e', 'result-bath-kwhr-n');
+    // sumBath('input-kwhr-m', 'result-bath-kwhr-all', 'result-bath-kwhr-m', 'result-bath-kwhr-f', 'result-bath-kwhr-h', 'result-bath-kwhr-n');
+    sumBath('input-kwhr-f', 'result-bath-kwhr-all', 'result-bath-kwhr-f', 'result-bath-kwhr-h', 'result-bath-kwhr-n');
+    sumBath('input-kwhr-h', 'result-bath-kwhr-all', 'result-bath-kwhr-f', 'result-bath-kwhr-h', 'result-bath-kwhr-n');
+    sumBath('input-kwhr-n', 'result-bath-kwhr-all', 'result-bath-kwhr-f', 'result-bath-kwhr-h', 'result-bath-kwhr-n');
 
-    sumBath('input-kwhr-m', 'load-factor-all', 'load-factor-m', 'load-factor-a', 'load-factor-e', 'load-factor-n');
-    sumBath('input-kwhr-a', 'load-factor-all', 'load-factor-m', 'load-factor-a', 'load-factor-e', 'load-factor-n');
-    sumBath('input-kwhr-e', 'load-factor-all', 'load-factor-m', 'load-factor-a', 'load-factor-e', 'load-factor-n');
-    sumBath('input-kwhr-n', 'load-factor-all', 'load-factor-m', 'load-factor-a', 'load-factor-e', 'load-factor-n');
+    // sumBath('input-kwhr-m', 'load-factor-all', 'load-factor-m', 'load-factor-f', 'load-factor-h', 'load-factor-n');
+    sumBath('input-kwhr-f', 'load-factor-all', 'load-factor-f', 'load-factor-h', 'load-factor-n');
+    sumBath('input-kwhr-h', 'load-factor-all', 'load-factor-f', 'load-factor-h', 'load-factor-n');
+    sumBath('input-kwhr-n', 'load-factor-all', 'load-factor-f', 'load-factor-h', 'load-factor-n');
 
     //[3] bath of kvar
-    if (sumValue(pf.avg) < 0.85) {
-      addDetectEventMulti('input-kvar', 'result-bath-kvar', 'kvar-avg', 'input-kvar');
+    if (((pf.avg.offpeak + pf.avg.onpeak) / 2) < 0.85) {
+      addDetectEventMulti('input-kvar', 'result-bath-kvar', 'kvar-diff-all', 'input-kvar');
     } else {
       setValueInHTML('result-bath-kvar', 0);
     }
@@ -334,7 +370,7 @@
     addDetectEventMulti('input-ft', 'result-bath-ft', 'input-ft', 'kwhr-diff-all');
 
     //[6] bath all
-    sumBath('input-ft', 'result-bath-all', 'result-bath-kwhr-all', 'result-bath-kvar', 'input-service', 'result-bath-ft');
+    sumBath('input-ft', 'result-bath-all', 'result-bath-kwhr-all', 'result-bath-kvar', 'input-service', 'resu lt-bath-ft');
     //[6] bath/kwhr
     addDetectEventDivide('input-ft', 'result-bath-all-kwhr', 'result-bath-all', 'kwhr-diff-all');
 
@@ -351,55 +387,63 @@
 
   function loadValuemonth(m) {
     let data = m.data;
-    console.log("month Data :", data);
     const kw = data[0];
     const kwh = data[1];
     const kva = data[2];
     const kvar = data[4];
+    const kvarh = data[5];
     const pf = data[16];
 
     setValueInHTML('kw-avg-month', kw.avg);
-    setValueInHTML('kw-max-month', kw.avg);
-    setValueInHTML('hour-diff-month', kw.ttime);
-    setValueInHTML('kwhr-diff-month', kwh.avg); // ต้องเป็น fv - lv
-    setValueInHTML('kwhr-fv-all-month', kwh.fv['morning']);
-    setValueInHTML('kwhr-lv-all-month', kwh.lv['night']);
+    setValueInHTML('kw-max-month', kw.max);
+    console.log(kw.ttime);
+    console.log(kw.thours);
+
+    setTextValueInHTML('hour-diff-month', kw.ttime);
     setValueInHTML('hour-value-month', kw.thours);
-    setValueInHTML('kvar-avg-month', sumValue(kvar.avg));
-    let pfv = sumValue(pf.total) / (sumValue(pf.count) === 0 ? 1 : sumValue(pf.count));
-    setValueInHTML('pf-avg-month', pfv);
+    setValueInHTML('kwhr-diff-month-n', (diffValue(kwh.fv, kwh.lv)).onpeak);
+    setValueInHTML('kwhr-diff-month-f', Math.abs(kwh.fv.onpeak - kwh.fv.offpeak) + Math.abs(kwh.lv.onpeak - kwh.lv.offpeak));
+    setValueInHTML('kwhr-diff-month-h', Math.abs(kwh.fv.holiday - kwh.lv.holiday));
+    setValueInHTML('kwhr-diff-month-all', Math.abs(kwh.fv.offpeak - kwh.lv.offpeak));
+    setValueInHTML('kwhr-diff-month-kwmax', kw.mpeak.value);
+    setTextValueInHTML('kwhr-diff-month-ttime', kw.mpeak['ttime']);
+    setTextValueInHTML('kwhr-diff-month-ltime', kw.mpeak['ltime']);
+    setValueInHTML('kwhr-fv-month-all', kwh.fv['offpeak']);
+    setValueInHTML('kwhr-lv-month-all', kwh.lv['offpeak']);
+    setValueInHTML('kvar-diff-month', diffValue(kvarh.fv, kvarh.lv));
+    setValueInHTML('pf-avg-month', pf.avg);
 
     //[1] bath kw
-    addDetectEventMulti('input-kw-m', 'result-bath-kw-month-m', 'kw-avg-month-m', 'input-kw-m');
-    addDetectEventMulti('input-kw-a', 'result-bath-kw-month-a', 'kw-avg-month-a', 'input-kw-a');
-    addDetectEventMulti('input-kw-e', 'result-bath-kw-month-e', 'kw-avg-month-e', 'input-kw-e');
+    // addDetectEventMulti('input-kw-m', 'result-bath-kw-month-m', 'kw-avg-month-m', 'input-kw-m');
+    addDetectEventMulti('input-kw-f', 'result-bath-kw-month-f', 'kw-avg-month-f', 'input-kw-f');
+    addDetectEventMulti('input-kw-h', 'result-bath-kw-month-h', 'kw-avg-month-h', 'input-kw-h');
     addDetectEventMulti('input-kw-n', 'result-bath-kw-month-n', 'kw-avg-month-n', 'input-kw-n');
     //[1] bath/kwhr
-    addDetectEventDivide('input-kw-m', 'result-bath-per-kwhr-month-m', 'result-bath-kw-month-m', 'kwhr-diff-month-m');
-    addDetectEventDivide('input-kw-a', 'result-bath-per-kwhr-month-a', 'result-bath-kw-month-a', 'kwhr-diff-month-a');
-    addDetectEventDivide('input-kw-e', 'result-bath-per-kwhr-month-e', 'result-bath-kw-month-e', 'kwhr-diff-month-e');
+    // addDetectEventDivide('input-kw-m', 'result-bath-per-kwhr-month-m', 'result-bath-kw-month-m', 'kwhr-diff-month-m');
+    addDetectEventDivide('input-kw-f', 'result-bath-per-kwhr-month-f', 'result-bath-kw-month-f', 'kwhr-diff-month-f');
+    addDetectEventDivide('input-kw-h', 'result-bath-per-kwhr-month-h', 'result-bath-kw-month-h', 'kwhr-diff-month-h');
     addDetectEventDivide('input-kw-n', 'result-bath-per-kwhr-month-n', 'result-bath-kw-month-n', 'kwhr-diff-month-n');
 
     //[2] bath of kWh
-    addDetectEventMulti('input-kwhr-m', 'result-bath-kwhr-month-m', 'kwhr-diff-month-m', 'input-kwhr-m');
-    addDetectEventMulti('input-kwhr-a', 'result-bath-kwhr-month-a', 'kwhr-diff-month-a', 'input-kwhr-a');
-    addDetectEventMulti('input-kwhr-e', 'result-bath-kwhr-month-e', 'kwhr-diff-month-e', 'input-kwhr-e');
+    // addDetectEventMulti('input-kwhr-m', 'result-bath-kwhr-month-m', 'kwhr-diff-month-m', 'input-kwhr-m');
+    addDetectEventMulti('input-kwhr-f', 'result-bath-kwhr-month-f', 'kwhr-diff-month-f', 'input-kwhr-f');
+    addDetectEventMulti('input-kwhr-h', 'result-bath-kwhr-month-h', 'kwhr-diff-month-h', 'input-kwhr-h');
     addDetectEventMulti('input-kwhr-n', 'result-bath-kwhr-month-n', 'kwhr-diff-month-n', 'input-kwhr-n');
     //[2] load Factor
-    addDetectEventLoadFactor('input-kwhr-m', 'load-factor-month-m', 'kwhr-diff-month-m', 'kw-max-month-m', 'hour-value-month-m');
-    addDetectEventLoadFactor('input-kwhr-a', 'load-factor-month-a', 'kwhr-diff-month-a', 'kw-max-month-a', 'hour-value-month-a');
-    addDetectEventLoadFactor('input-kwhr-e', 'load-factor-month-e', 'kwhr-diff-month-e', 'kw-max-month-e', 'hour-value-month-e');
+    // addDetectEventLoadFactor('input-kwhr-m', 'load-factor-month-m', 'kwhr-diff-month-m', 'kw-max-month-m', 'hour-value-month-m');
+    addDetectEventLoadFactor('input-kwhr-f', 'load-factor-month-f', 'kwhr-diff-month-f', 'kw-max-month-f', 'hour-value-month-f');
+    addDetectEventLoadFactor('input-kwhr-h', 'load-factor-month-h', 'kwhr-diff-month-h', 'kw-max-month-h', 'hour-value-month-h');
     addDetectEventLoadFactor('input-kwhr-n', 'load-factor-month-n', 'kwhr-diff-month-n', 'kw-max-month-n', 'hour-value-month-n');
 
-    sumBath('input-kwhr-m', 'result-bath-kwhr-month-all', 'result-bath-kwhr-month-m', 'result-bath-kwhr-month-a', 'result-bath-kwhr-month-e', 'result-bath-kwhr-month-n');
-    sumBath('input-kwhr-a', 'result-bath-kwhr-month-all', 'result-bath-kwhr-month-m', 'result-bath-kwhr-month-a', 'result-bath-kwhr-month-e', 'result-bath-kwhr-month-n');
-    sumBath('input-kwhr-e', 'result-bath-kwhr-month-all', 'result-bath-kwhr-month-m', 'result-bath-kwhr-month-a', 'result-bath-kwhr-month-e', 'result-bath-kwhr-month-n');
-    sumBath('input-kwhr-n', 'result-bath-kwhr-month-all', 'result-bath-kwhr-month-m', 'result-bath-kwhr-month-a', 'result-bath-kwhr-month-e', 'result-bath-kwhr-month-n');
+    // sumBath('input-kwhr-m', 'result-bath-kwhr-month-all', 'result-bath-kwhr-month-m', 'result-bath-kwhr-month-f', 'result-bath-kwhr-month-h', 'result-bath-kwhr-month-n');
+    sumBath('input-kwhr-f', 'result-bath-kwhr-month-all', 'result-bath-kwhr-month-m', 'result-bath-kwhr-month-f', 'result-bath-kwhr-month-h', 'result-bath-kwhr-month-n');
+    sumBath('input-kwhr-h', 'result-bath-kwhr-month-all', 'result-bath-kwhr-month-m', 'result-bath-kwhr-month-f', 'result-bath-kwhr-month-h', 'result-bath-kwhr-month-n');
+    sumBath('input-kwhr-n', 'result-bath-kwhr-month-all', 'result-bath-kwhr-month-m', 'result-bath-kwhr-month-f', 'result-bath-kwhr-month-h', 'result-bath-kwhr-month-n');
 
-    sumBath('input-kwhr-m', 'load-factor-month-all', 'load-factor-month-m', 'load-factor-month-a', 'load-factor-month-e', 'load-factor-month-n');
-    sumBath('input-kwhr-a', 'load-factor-month-all', 'load-factor-month-m', 'load-factor-month-a', 'load-factor-month-e', 'load-factor-month-n');
-    sumBath('input-kwhr-e', 'load-factor-month-all', 'load-factor-month-m', 'load-factor-month-a', 'load-factor-month-e', 'load-factor-month-n');
-    sumBath('input-kwhr-n', 'load-factor-month-all', 'load-factor-month-m', 'load-factor-month-a', 'load-factor-month-e', 'load-factor-month-n');
+    // sumBath('input-kwhr-m', 'load-factor-month-all', 'load-factor-month-m', 'load-factor-month-f', 'load-factor-month-h', 'load-factor-month-n');
+    sumBath('input-kwhr-f', 'load-factor-month-all', 'load-factor-month-m', 'load-factor-month-f', 'load-factor-month-h', 'load-factor-month-n');
+    sumBath('input-kwhr-h', 'load-factor-month-all', 'load-factor-month-m', 'load-factor-month-f', 'load-factor-month-h', 'load-factor-month-n');
+    sumBath('input-kwhr-n', 'load-factor-month-all', 'load-factor-month-m', 'load-factor-month-f', 'load-factor-month-h', 'load-factor-month-n');
 
     //[3] bath of kvar
     if (pf.avg < 0.85) {
@@ -524,15 +568,39 @@
     if (element) {
       element.value = value.toFixed(2);
     } else {
-      ['-m', '-a', '-e', '-n', '-all'].forEach(subfix => {
-        let elementlist = document.getElementById(id + subfix);
-        if (!elementlist) { return }
-        if (subfix === '-m') { val = value['morning'] }
-        else if (subfix === '-a') { val = value['after'] }
-        else if (subfix === '-e') { val = value['even'] }
-        else if (subfix === '-n') { val = value['night'] }
-        else if (subfix === '-all') { val = sumValue(value) };
-        elementlist.value = Number(val) ? val.toFixed(2) : val;
+      ['-f', '-h', '-n', '-all'].forEach(sf => {
+        let el = document.getElementById(id + sf);
+        if (!el) { return }
+        if (sf === '-n') { val = value['onpeak'] }
+        else if (sf === '-f') { val = value['offpeak'] }
+        else if (sf === '-h') { val = value['holiday'] }
+        else if (sf === '-all') {
+          const on = value['onpeak'] ?? 0;
+          const off = value['offpeak'] ?? 0;
+          val = (on === 0 && off === 0) ? value['holiday'] : (on + off) / 2;
+        }
+        el.value = Number(val) ? parseFloat(val.toFixed(2)) : parseFloat(val);
+      })
+    }
+  }
+
+  function setTextValueInHTML(id, value) {
+    let element = document.getElementById(id);
+    if (element) {
+      element.value = value;
+    } else {
+      ['-f', '-h', '-n', '-all'].forEach(sf => {
+        let el = document.getElementById(id + sf);
+        if (!el) { return }
+        if (sf === '-n') { val = value['onpeak'] }
+        else if (sf === '-f') { val = value['offpeak'] }
+        else if (sf === '-h') { val = value['holiday'] }
+        else if (sf === '-all') {
+          const on = value['onpeak'] ?? 0;
+          const off = value['offpeak'] ?? 0;
+          val = (on === 0 && off === 0) ? value['holiday'] : (on + off) / 2;
+        }
+        el.value = Number(val) ? val.toFixed(2) : val;
       })
     }
   }
