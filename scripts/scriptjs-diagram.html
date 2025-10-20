@@ -21,7 +21,6 @@
         await filterMeters();
         await generateMeters();
         await setInformation();
-        await mainMeter(20);
     }
 
     async function fetchAll() {
@@ -437,131 +436,131 @@
     }
 
 
-    function mainMeter(id) {
-        let parent = document.getElementById('main-meter');
-        let m = filteredDataInMeters.find(m => { return parseInt(m.id) === parseInt(id) });
+    // function mainMeter(id) {
+    //     let parent = document.getElementById('main-meter');
+    //     let m = filteredDataInMeters.find(m => { return parseInt(m.id) === parseInt(id) });
 
-        let strkw = (parseFloat(m.data['1']?.at(-1)?.value) || 0).toFixed(2);
-        let strkwh = (parseFloat(m.data['2']?.at(-1)?.value) || 0).toFixed(2);
-        let stran = (parseFloat(m.data['7']?.at(-1)?.value) || 0).toFixed(2);
-        let strab = (parseFloat(m.data['14']?.at(-1)?.value) || 0).toFixed(2);
-        let strfq = (parseFloat(m.data['18']?.at(-1)?.value) || 0).toFixed(2);
-        let strca = (parseFloat(m.data['10']?.at(-1)?.value) || 0).toFixed(2);
-        let strpf = (parseFloat(m.data['17']?.at(-1)?.value) || 0).toFixed(2);
-        let [intPartkw, decimalPartkw] = strkw.split(".");
-        let [intPartkwh, decimalPartkwh] = strkwh.split(".");
-        let [intPartan, decimalPartan] = stran.split(".");
-        let [intPartab, decimalPartab] = strab.split(".");
-        let [intPartfq, decimalPartfq] = strfq.split(".");
-        let [intPartca, decimalPartca] = strca.split(".");
-        let [intPartpf, decimalPartpf] = strpf.split(".");
+    //     let strkw = (parseFloat(m.data['1']?.at(-1)?.value) || 0).toFixed(2);
+    //     let strkwh = (parseFloat(m.data['2']?.at(-1)?.value) || 0).toFixed(2);
+    //     let stran = (parseFloat(m.data['7']?.at(-1)?.value) || 0).toFixed(2);
+    //     let strab = (parseFloat(m.data['14']?.at(-1)?.value) || 0).toFixed(2);
+    //     let strfq = (parseFloat(m.data['18']?.at(-1)?.value) || 0).toFixed(2);
+    //     let strca = (parseFloat(m.data['10']?.at(-1)?.value) || 0).toFixed(2);
+    //     let strpf = (parseFloat(m.data['17']?.at(-1)?.value) || 0).toFixed(2);
+    //     let [intPartkw, decimalPartkw] = strkw.split(".");
+    //     let [intPartkwh, decimalPartkwh] = strkwh.split(".");
+    //     let [intPartan, decimalPartan] = stran.split(".");
+    //     let [intPartab, decimalPartab] = strab.split(".");
+    //     let [intPartfq, decimalPartfq] = strfq.split(".");
+    //     let [intPartca, decimalPartca] = strca.split(".");
+    //     let [intPartpf, decimalPartpf] = strpf.split(".");
 
-        let digitskw = (intPartkw.padStart(5, "0") + "." + decimalPartkw).split("");
-        let digitskwh = (intPartkwh.padStart(5, "0") + "." + decimalPartkwh).split("");
-        let digitsan = (intPartan.padStart(3, "0") + "." + decimalPartan).split("");
-        let digitsab = (intPartab.padStart(3, "0") + "." + decimalPartab).split("");
-        let digitsfq = (intPartfq.padStart(3, "0") + "." + decimalPartfq).split("");
-        let digitsca = (intPartca.padStart(3, "0") + "." + decimalPartca).split("");
-        let digitspf = (intPartpf.padStart(3, "0") + "." + decimalPartpf).split("");
+    //     let digitskw = (intPartkw.padStart(5, "0") + "." + decimalPartkw).split("");
+    //     let digitskwh = (intPartkwh.padStart(5, "0") + "." + decimalPartkwh).split("");
+    //     let digitsan = (intPartan.padStart(3, "0") + "." + decimalPartan).split("");
+    //     let digitsab = (intPartab.padStart(3, "0") + "." + decimalPartab).split("");
+    //     let digitsfq = (intPartfq.padStart(3, "0") + "." + decimalPartfq).split("");
+    //     let digitsca = (intPartca.padStart(3, "0") + "." + decimalPartca).split("");
+    //     let digitspf = (intPartpf.padStart(3, "0") + "." + decimalPartpf).split("");
 
-        let wrapper = document.createElement('div');
-        wrapper.style.width = "150px";
-        wrapper.style.height = "170px";
-        wrapper.style.marginRight = "0px";
-        wrapper.style.overflow = "hidden";
-        wrapper.style.display = "inline-block";
+    //     let wrapper = document.createElement('div');
+    //     wrapper.style.width = "150px";
+    //     wrapper.style.height = "170px";
+    //     wrapper.style.marginRight = "0px";
+    //     wrapper.style.overflow = "hidden";
+    //     wrapper.style.display = "inline-block";
 
-        let div = document.createElement('div');
-        div.className = "d-flex flex-column p-2 rounded";
-        div.style.width = "320px";
-        div.style.height = "360px";
-        div.style.backgroundColor = "#EFEFEF";
-        div.style.transform = "scale(0.45)";
-        div.style.transformOrigin = "top left";
+    //     let div = document.createElement('div');
+    //     div.className = "d-flex flex-column p-2 rounded";
+    //     div.style.width = "320px";
+    //     div.style.height = "360px";
+    //     div.style.backgroundColor = "#EFEFEF";
+    //     div.style.transform = "scale(0.45)";
+    //     div.style.transformOrigin = "top left";
 
-        div.innerHTML = `
-                <div class="w-100 h-100 px-3 rounded" onclick="showModalMeter(${m.id})" style="background-color:#858585;">
-                    <div class="w-100 h-100 px-1 py-3 rounded position-relative" style="background-color:#666666;">
-                        <div id="status-${m.id}" class="position-absolute rounded-circle bg-danger p-2" style="top:20px; right:10px;">
-                        </div>
-                        <div class="w-100 h-100 p-2 d-flex flex-column rounded" style="background-color:#EFEFEF;">
-                            <div class="w-100 mb-1 d-flex justify-content-center align-content-center">
-                                <div class="w-100 d-flex justify-content-center align-items-center">
-                                    <div class="w-75 d-flex justify-content-end">
-                                        ${digitskw.map(d => `<div class="slot-number">${d}</div>`).join("")}
-                                    </div>
-                                    <div class="text-black ms-2 w-25">kW</div>
-                                </div>
-                            </div>
-                            <div class="w-100 mb-1 d-flex justify-content-center align-content-center">
-                                <div class="w-100 d-flex justify-content-center align-items-center">
-                                    <div class="w-75 d-flex justify-content-end">
-                                        ${digitskwh.map(d => `<div class="slot-number">${d}</div>`).join("")}
-                                    </div>
-                                    <div class="text-black ms-2 w-25">kW·h</div>
-                                </div>
-                            </div>
-                            <div class="w-100 h-25 text-black text-center">
-                                <div id="line-active-${m.id}" class="stop-line"></div>
-                            </div>
-                            <div class="w-100 mb-3 d-flex justify-content-center align-content-center">
-                                <div class="w-50 d-flex flex-column justify-content-center align-items-center">
-                                    <div class="text-black w-25">A-N</div>
-                                    <div class="w-75 d-flex justify-content-end">
-                                        ${digitsan.map(d => `<div class="slot-number">${d}</div>`).join("")}
-                                        <div class="text-black ms-1 w-25">V</div>
-                                    </div>
-                                </div>
-                                <div class="w-50 d-flex flex-column justify-content-center align-items-center">
-                                    <div class="text-black w-25">A-B</div>
-                                    <div class="w-75 d-flex justify-content-end">
-                                        ${digitsab.map(d => `<div class="slot-number">${d}</div>`).join("")}
-                                        <div class="text-black ms-1 w-25">V</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="w-100 mb-1 d-flex justify-content-center align-content-center">
-                                <div class="w-100 d-flex justify-content-center align-items-center">
-                                    <div class="w-75 d-flex justify-content-end">
-                                        <div class="text-black w-25">Cur-A</div>
-                                        ${digitsca.map(d => `<div class="slot-number">${d}</div>`).join("")}
-                                    </div>
-                                    <div class="text-black ms-1 w-25">A</div>
-                                </div>
-                            </div>
-                            <div class="w-100 mb-1 d-flex justify-content-center align-content-center">
-                                <div class="w-100 d-flex justify-content-center align-items-center">
-                                    <div class="w-75 d-flex justify-content-end">
-                                    <div class="text-black w-25">PF</div>
-                                    ${digitspf.map(d => `<div class="slot-number">${d}</div>`).join("")}
-                                    </div>
-                                    <div class="text-black ms-1 w-25"></div>
-                                </div>
-                            </div>
-                            <div class="w-100 mb-1 d-flex justify-content-center align-content-center">
-                                <div class="w-100 d-flex justify-content-center align-items-center">
-                                    <div class="w-75 d-flex justify-content-end">
-                                    <div class="text-black w-25">Fq</div>
-                                    ${digitsfq.map(d => `<div class="slot-number">${d}</div>`).join("")}
-                                    </div>
-                                    <div class="text-black ms-1 w-25">Hz</div>
-                                </div>
-                            </div>
-                            <div class="text-black text-center fw-bold fs-5">
-                                ${m.name}   
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-        wrapper.appendChild(div);
-        parent.appendChild(wrapper);
-        if (m.is_active === '1') {
-            document.getElementById(`line-active-x-${m.id}`).classList.remove('stop-line');
-            document.getElementById(`line-active-x-${m.id}`).classList.add('moving-line');
-        }
-        let status = document.getElementById('status-' + m.id);
-        console.log(status);
-        status.classList.replace("bg-danger", stran === "0.00" ? "bg-danger" : "bg-success");
-    }
+    //     div.innerHTML = `
+    //             <div class="w-100 h-100 px-3 rounded" onclick="showModalMeter(${m.id})" style="background-color:#858585;">
+    //                 <div class="w-100 h-100 px-1 py-3 rounded position-relative" style="background-color:#666666;">
+    //                     <div id="status-${m.id}" class="position-absolute rounded-circle bg-danger p-2" style="top:20px; right:10px;">
+    //                     </div>
+    //                     <div class="w-100 h-100 p-2 d-flex flex-column rounded" style="background-color:#EFEFEF;">
+    //                         <div class="w-100 mb-1 d-flex justify-content-center align-content-center">
+    //                             <div class="w-100 d-flex justify-content-center align-items-center">
+    //                                 <div class="w-75 d-flex justify-content-end">
+    //                                     ${digitskw.map(d => `<div class="slot-number">${d}</div>`).join("")}
+    //                                 </div>
+    //                                 <div class="text-black ms-2 w-25">kW</div>
+    //                             </div>
+    //                         </div>
+    //                         <div class="w-100 mb-1 d-flex justify-content-center align-content-center">
+    //                             <div class="w-100 d-flex justify-content-center align-items-center">
+    //                                 <div class="w-75 d-flex justify-content-end">
+    //                                     ${digitskwh.map(d => `<div class="slot-number">${d}</div>`).join("")}
+    //                                 </div>
+    //                                 <div class="text-black ms-2 w-25">kW·h</div>
+    //                             </div>
+    //                         </div>
+    //                         <div class="w-100 h-25 text-black text-center">
+    //                             <div id="line-active-${m.id}" class="stop-line"></div>
+    //                         </div>
+    //                         <div class="w-100 mb-3 d-flex justify-content-center align-content-center">
+    //                             <div class="w-50 d-flex flex-column justify-content-center align-items-center">
+    //                                 <div class="text-black w-25">A-N</div>
+    //                                 <div class="w-75 d-flex justify-content-end">
+    //                                     ${digitsan.map(d => `<div class="slot-number">${d}</div>`).join("")}
+    //                                     <div class="text-black ms-1 w-25">V</div>
+    //                                 </div>
+    //                             </div>
+    //                             <div class="w-50 d-flex flex-column justify-content-center align-items-center">
+    //                                 <div class="text-black w-25">A-B</div>
+    //                                 <div class="w-75 d-flex justify-content-end">
+    //                                     ${digitsab.map(d => `<div class="slot-number">${d}</div>`).join("")}
+    //                                     <div class="text-black ms-1 w-25">V</div>
+    //                                 </div>
+    //                             </div>
+    //                         </div>
+    //                         <div class="w-100 mb-1 d-flex justify-content-center align-content-center">
+    //                             <div class="w-100 d-flex justify-content-center align-items-center">
+    //                                 <div class="w-75 d-flex justify-content-end">
+    //                                     <div class="text-black w-25">Cur-A</div>
+    //                                     ${digitsca.map(d => `<div class="slot-number">${d}</div>`).join("")}
+    //                                 </div>
+    //                                 <div class="text-black ms-1 w-25">A</div>
+    //                             </div>
+    //                         </div>
+    //                         <div class="w-100 mb-1 d-flex justify-content-center align-content-center">
+    //                             <div class="w-100 d-flex justify-content-center align-items-center">
+    //                                 <div class="w-75 d-flex justify-content-end">
+    //                                 <div class="text-black w-25">PF</div>
+    //                                 ${digitspf.map(d => `<div class="slot-number">${d}</div>`).join("")}
+    //                                 </div>
+    //                                 <div class="text-black ms-1 w-25"></div>
+    //                             </div>
+    //                         </div>
+    //                         <div class="w-100 mb-1 d-flex justify-content-center align-content-center">
+    //                             <div class="w-100 d-flex justify-content-center align-items-center">
+    //                                 <div class="w-75 d-flex justify-content-end">
+    //                                 <div class="text-black w-25">Fq</div>
+    //                                 ${digitsfq.map(d => `<div class="slot-number">${d}</div>`).join("")}
+    //                                 </div>
+    //                                 <div class="text-black ms-1 w-25">Hz</div>
+    //                             </div>
+    //                         </div>
+    //                         <div class="text-black text-center fw-bold fs-5">
+    //                             ${m.name}   
+    //                         </div>
+    //                     </div>
+    //                 </div>
+    //             </div>
+    //         `;
+    //     wrapper.appendChild(div);
+    //     parent.appendChild(wrapper);
+    //     if (m.is_active === '1') {
+    //         document.getElementById(`line-active-x-${m.id}`).classList.remove('stop-line');
+    //         document.getElementById(`line-active-x-${m.id}`).classList.add('moving-line');
+    //     }
+    //     let status = document.getElementById('status-' + m.id);
+    //     console.log(status);
+    //     status.classList.replace("bg-danger", stran === "0.00" ? "bg-danger" : "bg-success");
+    // }
 </script>
