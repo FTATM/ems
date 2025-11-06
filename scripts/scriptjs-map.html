@@ -7,6 +7,7 @@
   let boxMeshes = {};
   let refreshIntervalId; // เก็บ interval id
   let firstLoading = true;
+  let setShowMeter = 0;
 
   const typeMeterID = "<?=$_SESSION['tid'] ?? 0;?>";
   const groupID = "<?=$_SESSION['gid'] ?? 0;?>";
@@ -60,6 +61,8 @@
   function addHotspot(modelViewer, meter, slot, position, normal, label) {
     const btn = document.createElement("button");
     btn.className = "hotspot";
+    btn.id = "btn3d-meter-" + meter.id;
+    btn.style.display = 'none';
     btn.setAttribute("slot", slot);
     btn.setAttribute("data-position", position);
     btn.setAttribute("data-normal", normal);
@@ -150,6 +153,8 @@
         <p class="text-center mb-0">${isNaN(parseFloat(m.data['7'][m.data['7'].length - 1]?.value)) ? "Inactive" : "Active"}</p>
       `;
       div.onclick = () => showValueOnView(m.id);
+      div.onmouseover = () => showBtn3DMeter(m.id);
+      div.onmouseleave = () => hideBtn3DMeter(m.id);
       list.appendChild(div);
     });
   }
@@ -166,7 +171,6 @@
     filtermeters.flatMap(m => {
       deleteHotspot(modelViewer, "hotspot-" + m.id);
       firstLoading = false;
-      console.log(m.x, m.y, m.z);
       addHotspot(modelViewer, m, "hotspot-" + m.id, `${m.x}m ${m.y}m ${m.z}m`, "0m 1m 0m", m.name);
       // let div = document.createElement('div');
       // div.className = "point";
@@ -197,6 +201,9 @@
   }
 
   function showValueOnView(id) {
+    setBtn3DMeter(id);
+    hideAllBtn3DMeter();
+    showBtn3DMeter(id);
     const meter = filtermeters.find(m => m.id === id);
     document.getElementById('name-meter').textContent = meter.name;
     let lastIndex = meter?.data['7'].length - 1;
@@ -218,6 +225,27 @@
       }
     });
 
+  }
+
+  function showBtn3DMeter(mid) {
+    let btn = document.getElementById("btn3d-meter-" + mid);
+    btn.style.display = 'block';
+  }
+
+  function hideBtn3DMeter(mid) {
+    if (mid === setShowMeter) return;
+    let btn = document.getElementById("btn3d-meter-" + mid);
+    btn.style.display = 'none';
+  }
+
+  function hideAllBtn3DMeter() {
+    Object.values(filtermeters).forEach(m => {
+      hideBtn3DMeter(m.id);
+    });
+  }
+
+  function setBtn3DMeter(id) {
+    setShowMeter = id;
   }
 
   function gaugeJS() {
