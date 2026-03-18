@@ -1,0 +1,511 @@
+<script>
+    let meters = [];
+    let locations = [];
+    let groups = [];
+    let types = [];
+    let result = ['1', '3'];
+    let lastSelectValueTime = '0';
+    let refreshIntervalId;
+
+    const typeMeterID = "<?=$_SESSION['tid'];?>";
+    const groupID = "<?=$_SESSION['gid'];?>";
+    
+
+    let ftloaded = false;
+    document.addEventListener("DOMContentLoaded", async () => {
+        showLoading();
+        ftloaded = true;
+        await process();
+        await setRefreshTime();
+        hideLoading();
+    });
+
+    async function process() {
+        await fetchAll();
+        generateOption('select-meters', Object.values(meters), true);
+        await filterDataInMeters();
+        generateDataList();
+    }
+
+    async function fetchAll() {
+        let res_location = await fetch("../config/fetch-locations.php");
+        let json_location = await res_location.json();
+        locations = json_location.data;
+
+        let res_group = await fetch("../config/fetch-groups.php");
+        let json_group = await res_group.json();
+        groups = json_group.data;
+
+        let responsetype = await fetch("../config/fetch-data_type.php");
+        let jsontype = await responsetype.json();
+        types = jsontype.data;
+
+        meters = await fetchDataInMeters();
+        
+        
+    }
+
+    async function fetchDataInMeters() {
+        let formfilter = new FormData();
+        formfilter.append("tid", typeMeterID);
+        formfilter.append("gid", groupID);
+
+        try {
+            const res = await fetch("../config/fetch-meters-filter.php", {
+                method: "POST",
+                body: formfilter
+            });
+            const result = await res.json();
+            return result.data;
+        } catch (e) {
+            console.error('error unknown file fetch-meters-filter.php : ', e.message);
+            alertMessages('error', 'พบปัญหา', 'เกิดข้อผิดพลาดในการทำงานของสคริปต์ fetch-meters-filter กรุณาคัดลอกข้อความนี้และส่งต่อให้ผู้ดูแลระบบ', 4000, true);
+            return [];
+        }
+    }
+
+    async function filterDataInMeters() {
+        const time = document.getElementById('select-filter-value');
+        let now = new Date();
+        let selectedDateTime = new Date(now.getTime() - parseInt(time.value, 10) * 60000);
+        const filteredDataInMeters = Object.values(meters).map(fm => {
+            let Datafiltered = {};
+            Object.entries(fm.data).map(([key, rows]) => {
+                Datafiltered[key] = Object.values(rows).filter(datatype => {
+                    let date = new Date(datatype.create_date);
+                    
+                    return date >= selectedDateTime;
+                });
+            });
+
+            return {
+                ...fm,
+                data: Datafiltered,
+            }
+        });
+
+        await updateData(filteredDataInMeters);
+
+    }
+
+    function generateOption(id, data, selectfirst = false) {
+        if (!ftloaded) { return }
+        ftloaded = false;
+        let select = document.getElementById(id);
+        select.innerHTML = '<option>=== <?=$lang["select"]?> === </option>';
+        data.forEach(row => {
+            let option = document.createElement('option');
+            option.value = row.id;
+            option.textContent = `[${row.id}] ${row.name}`;
+            option.selected = selectfirst ? data[0].id === row.id : false;
+            select.appendChild(option);
+        });
+        const locate = document.getElementById('location');
+        locate.innerHTML = `<?=$lang['location']?> : ` + getNameLocation(groupID);
+        const group = document.getElementById('group');
+        group.innerHTML = `<?=$lang['group']?> : ` + getNameGroup(groupID);
+    }
+
+    async function updateData(filteredDataInMeters) {
+        const LinearchartData = [];
+        const PiechartData = [];
+        const LinearchartData2 = [];
+        const PiechartData2 = [];
+        let select = document.getElementById('select-meters');
+        if (!Number(select.value)) {
+            alertMessages('warning', "No Data Available", "No data was found for the selected period. Please choose a different timeframe.", 5000, true);
+            return
+        }
+        const selectedMeter = filteredDataInMeters.find(m => { return parseInt(m.id) === parseInt(select.value) })
+        if (lastSelectValueTime !== select.value && (selectedMeter?.data['1']?.length ?? 0) < 1) {
+            alertMessages('warning', "No Data Available", "No data was found for the selected period. Please choose a different timeframe.", 5000, true);
+            lastSelectValueTime = select.value;
+        }
+        // show infomation in table
+        generateInfomation(selectedMeter);
+
+        result.forEach(index => {
+            LinearchartData.push(...prepareLinearData(selectedMeter, index));
+        });
+        createLinearChart('chart-linear', "Date & Data", LinearchartData);
+
+        result.forEach(index => {
+            PiechartData.push(...preparePieData(selectedMeter, index));
+        });
+        createPieChart('chart-Pie', "Ratio of Data", PiechartData);
+
+        LinearchartData2.push(...prepareLinearPrice(selectedMeter));
+        createLinearChart('chart-linear-price', 'Price of time', LinearchartData2);
+
+    }
+
+    function getNameLocation(gid) {
+        return locations.find(l => {
+            return groups.filter(g => {
+                return g.id === gid;
+            })
+        }).name;
+    }
+
+    function getNameGroup(id) {
+        return groups.find(g => {
+            return g.id === id;
+        }).name;
+    }
+
+    // refer from meter
+    function generateInfomation(selectMeter) {
+        let div = document.getElementById('infomation');
+        div.innerHTML = `    
+        <h3 class='text-center pb-2'><?= $lang['information'] ?></h3>
+        `;
+
+        let table = document.createElement('table');
+        table.className = 'table table-borderless';
+        table.innerHTML = `
+            <tr>
+                <td class="text-end px-4">Location : </td>
+                <td>${getNameLocation(groupID)}</td>
+            </tr>
+            <tr>
+                <td class="text-end px-4">Group : </td>
+                <td>${getNameGroup(groupID)}</td>
+            </tr>
+        `;
+        Object.entries(selectMeter).forEach(([key, data]) => {
+            if (['name', 'is_active', 'ip_address', 'port'].includes(key)) {
+                let row = document.createElement('tr');
+                let cell1 = document.createElement('td');
+                let cell2 = document.createElement('td');
+                cell1.className = 'text-end px-4';
+                cell1.style.width = '40%';
+                cell1.innerText = key + ' : ';
+                cell2.innerText = key === "is_active" && Number(data) ? parseInt(data) == 1 ? 'True' : 'False' : data;
+                row.appendChild(cell1);
+                row.appendChild(cell2);
+                table.querySelector('tbody').appendChild(row);
+            }
+        });
+        div.appendChild(table);
+    }
+
+    // refer from types
+    async function generateDataList() {
+        let listdata = document.getElementById('list-data');
+        listdata.innerHTML = ''; // เคลียร์ข้อมูลเดิมก่อนสร้างใหม่
+
+        types.forEach($row => {
+            let div = document.createElement('div');
+
+            let button = document.createElement('button');
+            button.textContent = $row['name'];
+            button.setAttribute('data-id', $row['id']);
+            button.classList.add('toggle-button');
+            if (result.includes($row['id'])) {
+                button.classList.add('active');
+            }
+            // Event toggle เมื่อคลิกปุ่ม
+            button.addEventListener('click', function () {
+                const id = $row['id'];
+
+                if (result.includes(id)) {
+                    result = result.filter(item => item !== id);
+                    button.classList.remove('active'); // เปลี่ยน UI ปุ่ม
+                } else {
+                    // ถ้ายังไม่มี ให้เพิ่มเข้าไป
+                    result.push(id);
+                    button.classList.add('active');
+                }
+                filterDataInMeters();
+            });
+
+            // div.appendChild(button);
+            listdata.appendChild(button);
+        });
+    }
+
+    function setRefreshTime() {
+        const inputRefresh = document.getElementById('input-refresh');
+        const refreshTime = parseInt(inputRefresh.value, 10);
+        if (isNaN(refreshTime) || refreshTime < 1 || refreshTime > 60) {
+            alertMessages('error', 'Error', 'Please enter a valid refresh time between 1 and 30 seconds.');
+            return;
+        }
+        // เคลียร์ interval เก่า
+        clearInterval(refreshIntervalId);
+
+        console.log("Setting refresh time to:", refreshTime);
+
+        // ตั้ง interval ใหม่
+        refreshIntervalId = setInterval(() => {
+            process();
+        }, refreshTime * 1000);
+    }
+
+
+
+    // ======== prepare Data for Chart and Chart function ========
+
+    function prepareLinearData(SelectedFilterMeter, columnIndex) {
+        const chartData = [];
+
+        const rawData = SelectedFilterMeter.data?.[columnIndex];
+
+        if (rawData && Array.isArray(rawData)) {
+            const dataPoints = rawData.map(row => ({
+                x: new Date(row.create_date),
+                y: parseFloat(row.value) || 0
+            }));
+
+            chartData.push({
+                type: "spline",
+                axisYType: "secondary",
+                name: `${getLabelFromIndex(columnIndex)}`,
+                showInLegend: true,
+                markerSize: 0,
+                yValueFormatString: "#,##0.##",
+                dataPoints: dataPoints,
+                color: getRandomColor(columnIndex)
+            });
+        }
+
+        return chartData;
+    }
+
+    function prepareLinearPrice(SelectedFilterMeter) {
+        const chartData = [];
+
+        const rawData = SelectedFilterMeter.data?.[2];
+        if (rawData && Array.isArray(rawData) && rawData.length > 0) {
+            const { powerData, averageCost } = calculateElectricCost(rawData, 4);
+
+            chartData.push({
+                type: "spline",
+                axisYType: "secondary",
+                name: `price`,
+                showInLegend: true,
+                markerSize: 0,
+                yValueFormatString: "#,##0.##",
+                dataPoints: powerData,
+                color: getRandomColor(2)
+            });
+        }
+
+        return chartData;
+    }
+
+    function preparePieData(SelectedFilterMeter, columnIndex) {
+        const temp = [];
+
+        const rawData = SelectedFilterMeter.data?.[columnIndex];
+
+        if (rawData && Array.isArray(rawData) && rawData.length > 0) {
+            const total = rawData.reduce((sum, row) => sum + (parseFloat(row.value) || 0), 0);
+            const avg = total / rawData.length;
+
+            temp.push({
+                name: SelectedFilterMeter.name,
+                avg: avg
+            });
+        }
+
+
+        // ขั้นที่ 2: คำนวณรวมทั้งหมด
+        const totalAll = temp.reduce((acc, cur) => acc + cur.avg, 0);
+
+        // ขั้นที่ 3: คำนวณ % แล้วคืน chartData
+        const chartData = temp.map(item => {
+            const percent = (item.avg / totalAll) * 100;
+            return {
+                label: `${item.name} - ${getLabelFromIndex(columnIndex)}`,
+                y: parseFloat(item.avg.toFixed(2)),
+                indexLabel: `${item.name} - ${percent.toFixed(1)}%`,
+                color: getRandomColor(columnIndex)
+            };
+        });
+
+        return chartData;
+    }
+
+    function preparePiePrice(columnIndex) {
+        const temp = [];
+        const pricePerKWh = 4.5; // ราคาต่อหน่วย (บาท/หน่วย)
+
+        // ขั้นที่ 1: คำนวณค่าเฉลี่ยการใช้งานของแต่ละมิเตอร์
+        const rawData = SelectedFilterMeter.data?.[columnIndex];
+
+        if (rawData && Array.isArray(rawData) && rawData.length > 0) {
+            const total = rawData.reduce((sum, row) => sum + (parseFloat(row.value) || 0), 0);
+            const avgKW = total / rawData.length;
+            const avgPrice = avgKW * pricePerKWh;
+
+            temp.push({
+                name: SelectedFilterMeter.name,
+                avgPrice: avgPrice
+            });
+
+            console.log(`Avg Price (${SelectedFilterMeter.name}):`, avgPrice.toFixed(2));
+        }
+
+        // ขั้นที่ 2: รวมราคาทั้งหมดเพื่อใช้คำนวณ %
+        const totalPriceAll = temp.reduce((acc, cur) => acc + cur.avgPrice, 0);
+        console.log("Total Price All:", totalPriceAll.toFixed(2));
+
+        // ขั้นที่ 3: แปลงเป็น chartData พร้อมแสดง % และราคาเฉลี่ย
+        const chartData = temp.map(item => {
+            const percent = (item.avgPrice / totalPriceAll) * 100;
+
+            return {
+                label: `${item.name} - ${getLabelFromIndex(columnIndex)}`,
+                y: parseFloat(item.avgPrice.toFixed(2)), // แสดงเป็นค่าใช้จ่ายเฉลี่ย
+                indexLabel: `${item.name} - ${percent.toFixed(1)}%`
+            };
+        });
+
+        return chartData;
+    }
+
+    function calculateElectricCost(dataArray, pricePerKWh) {
+        let totalCost = 0;
+        let defaultkWh = dataArray[0].value;
+        const powerData = dataArray.map(row => {
+            const powerKWh = parseFloat(row.value - defaultkWh) * 120 || 0;
+            defaultkWh = row.value;
+            totalCost += (powerKWh * pricePerKWh);
+            return {
+                x: new Date(row.create_date),
+                y: powerKWh
+            };
+        });
+
+        const averageCost = dataArray.length > 0 ? (totalCost / dataArray.length) : 0;
+
+        return {
+            powerData,
+            averageCost: averageCost.toFixed(2)
+        };
+    }
+
+    function getLabelFromIndex(index) {
+        let name = "unknown";
+        types.forEach($row => {
+            if ($row['id'] == index) {
+                name = $row['name'];
+            }
+        });
+        return name;
+    }
+
+    function getRandomColor(index) {
+        const colors = [
+            "#ff6384", "#36a2eb", "#44B530", "#ffce56", "#4bc0c0",
+            "#9966ff", "#ff9f40", "#c9cbcf", "#00b894", "#e17055",
+            "#D5AAFF", "#A0E7E5", "#B4F8C8", "#FBE7C6", "#FFABAB",
+            "#FFC3A0", "#D0F4DE", "#A9DEF9", "#E4C1F9", "#F694C1"
+        ];
+        return colors[index];
+    }
+
+    function createBarChart(idContainer, title, dataPoints) {
+        var chart = new CanvasJS.Chart(idContainer, {
+            backgroundColor: "#1B1C1D",
+            title: {
+                text: title
+            },
+            axisY: {
+                minimum: 0,
+                maximum: 100,
+                suffix: "%"
+            },
+            data: [{
+                type: "column",
+                yValueFormatString: "#,##0.00\"%\"",
+                indexLabel: "{y}",
+                dataPoints: dataPoints
+            }]
+        });
+        return chart;
+    }
+    function createPieChart(idContainer, title, dataPoints) {
+        var chart = new CanvasJS.Chart(idContainer, {
+            theme: 'dark2',
+            backgroundColor: "#1B1C1D",
+            exportEnabled: true,
+            animationEnabled: false,
+            title: {
+                text: title
+            },
+            data: [{
+                type: "pie",
+                startAngle: 25,
+                toolTipContent: "<b>{label}</b>: {y}",
+                showInLegend: "true",
+                legendText: "{label}",
+                indexLabelFontSize: 16,
+                indexLabel: "{label} - {total}",
+                dataPoints: dataPoints
+
+            }],
+            toolTip: {
+                enabled: false
+            },
+            creditText: "",
+            creditHref: "",
+        });
+        chart.render();
+    }
+    function createLinearChart(idContainer, title, dataPointsLinear) {
+        const chart = new CanvasJS.Chart(idContainer, {
+            theme: 'dark2',
+            backgroundColor: "#1B1C1D",
+            title: { text: title },
+            axisX: {
+                valueFormatString: dataPointsLinear[0]?.dataPoints.length > 2880 ? "DD MMM YYYY" : "HH:mm:ss"
+            },
+            axisY2: {
+                title: "Value",
+                prefix: "",
+                suffix: ""
+            },
+            toolTip: {
+                shared: true,
+                contentFormatter: function (e) {
+                    // หาวันที่/เวลา
+                    let date = e.entries[0].dataPoint.x;
+                    let dateStr = CanvasJS.formatDate(date, "DD MMM YYYY HH:mm:ss");
+                    let html = `<div style="margin-bottom:8px;"><strong>${dateStr}</strong></div>`;
+                    // วนแสดง series แต่ละอัน
+                    e.entries.forEach(entry => {
+                        // ใช้สี series มาแสดงจุดสัญลักษณ์
+                        html += `<div style="white-space: nowrap;">`;
+                        html += `<span style="color:${entry.dataSeries.color};">●</span> `;
+                        html += `${entry.dataSeries.name}: <strong>${entry.dataPoint.y}</strong>`;
+                        html += `</div>`;
+                    });
+                    return html;
+                }
+            },
+            legend: {
+                cursor: "pointer",
+                verticalAlign: "top",
+                horizontalAlign: "center",
+                dockInsidePlotArea: true,
+                itemclick: toggleDataSeries
+            },
+            data: dataPointsLinear
+        });
+        chart.render();
+
+        window.myChart = chart; // ✅ เก็บไว้ใช้ภายนอก
+    }
+
+    function toggleDataSeries(e) {
+        if (typeof (e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
+            e.dataSeries.visible = false;
+        } else {
+            e.dataSeries.visible = true;
+        }
+        e.chart.render(); // ✅ ใช้ chart จาก even
+    }
+
+</script>

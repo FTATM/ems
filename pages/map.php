@@ -1,7 +1,7 @@
 <?php
 include '../components/session.php';
-checkLogin();
-checkSession();
+#checkLogin();
+#checkSession();
 ?>
 
 <!DOCTYPE html>
@@ -13,87 +13,117 @@ checkSession();
 <head>
     <meta charset="UTF-8">
     <title><?= $lang['overview'] ?> - EMS</title>
-
+    <link rel="stylesheet" href="../styles/map.css">
 </head>
 
-<body style="background-color: <?= $bg ?>; color: <?= $text ?>!important; min-height: 100svh;">
-    <div id="main" class="d-flex">
+<body>
+    <div id="main" class="d-flex" style="height:100svh; overflow:hidden;">
         <?php include "../components/sidemenu.php"; ?>
-        <div class="w-100 h-100 d-flex flex-column justify-content-center">
+        <div class="w-100 d-flex flex-column" style="height:100svh; overflow:hidden;">
             <?php include "../components/header.php"; ?>
-            <div class="w-100 justify-content-center align-items-center d-flex">
-                <div class="justify-content-center align-items-center d-flex flex-column" style="width: 90%;">
-                    <div class="w-100 text-center py-4 px-5 m-0 my-2 bg-secondary bg-opacity-25 d-flex justify-content-center position-relative">
-                        <h2 class="m-0">Overview</h2>
-                        <div class="d-flex gap-2 align-items-center position-absolute end-0 me-5">
-                            <label for="input-refresh" class="form-label form-label-sm text-end text-nowrap">Refresh every :</label>
-                            <input type="number" id="input-refresh" class="form-control form-control-sm ms-2" style="width: 80px;" value="15" min="1" max="30" onchange="setRefreshTime()">
-                            <label for="input-refresh" class="form-label form-label-sm">Seconds</label>
-                        </div>
+
+            <main class="overview-main">
+
+                <!-- Top bar -->
+                <div class="overview-topbar">
+                    <div class="overview-topbar__title">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="7" height="7" />
+                            <rect x="14" y="3" width="7" height="7" />
+                            <rect x="14" y="14" width="7" height="7" />
+                            <rect x="3" y="14" width="7" height="7" />
+                        </svg>
+                        Overview
                     </div>
-                    <div class="d-flex w-100 justify-content-center" style="min-height: 80svh;">
-                        <div class="w-25 px-5 bg-light bg-opacity-10 shadow-sm d-flex flex-column gap-2">
-                            <h3 class="w-100 text-center my-4" id="name-meter">-</h3>
-                            <div class="w-100 border mb-3" id="gauge-kW" style="min-height: 20%;"></div>
-                            <div class="w-100 d-flex gap-2">
-                                <div>
-                                    <h5>Voltage A</h5>
-                                    <input id="VoltageA" type="text" class="form-control bg-secondary bg-opacity-25" readonly>
-                                </div>
-                                <div>
-                                    <h5>Voltage B</h5>
-                                    <input id="VoltageB" type="text" class="form-control bg-secondary bg-opacity-25" readonly>
-                                </div>
-                                <div>
-                                    <h5>Voltage C</h5>
-                                    <input id="VoltageC" type="text" class="form-control bg-secondary bg-opacity-25" readonly>
-                                </div>
-                            </div>
-                            <div class="w-100 d-flex gap-2">
-                                <div>
-                                    <h5>Current A</h5>
-                                    <input id="CurrentA" type="text" class="form-control bg-secondary bg-opacity-25" readonly>
-                                </div>
-                                <div>
-                                    <h5>Current B</h5>
-                                    <input id="CurrentB" type="text" class="form-control bg-secondary bg-opacity-25" readonly>
-                                </div>
-                                <div>
-                                    <h5>Current C</h5>
-                                    <input id="CurrentC" type="text" class="form-control bg-secondary bg-opacity-25" readonly>
-                                </div>
-                            </div>
-                            <div class="w-100">
-                                <h5 class="ps-2">Pf</h5>
-                                <input id="Pf" type="text" class="form-control bg-secondary bg-opacity-25" readonly>
-                            </div>
-                            <div class="w-100">
-                                <h5 class="ps-2">Frequency</h5>
-                                <input id="frequency" type="text" class="form-control bg-secondary bg-opacity-25" readonly>
-                            </div>
-                        </div>
-                        <div class="w-50 position-relative">
-                            <model-viewer id="myModel" alt="3D model" auto-rotate camera-controls ar
-                                style="width: 100%; height: 100%; background-color: transparent;">
-                            </model-viewer>
-                            <!-- <div id="3d-viewer" style="position: relative; display: inline-block;"> -->
-                                <!-- รูปภาพ -->
-                                <!-- <img src="../assets/images/map.png" alt="My PNG" style="width: 100%; height: auto;"> -->
-                            <!-- </div> -->
-                            <div class="position-absolute w-25 bg-light bg-opacity-10 px-3 py-2 rounded flex-column gap-2" id="infomation-meter" style="top: 10px; right: 10px; display: none;">sadagsd</div>
-                        </div>
-                        <div class="w-25 px-3 bg-white bg-opacity-10 shadow-sm d-flex flex-column gap-1" id="listgroup">
-                        </div>
+                    <div class="overview-topbar__refresh">
+                        <span class="overview-refresh-label">รีเฟรชทุก</span>
+                        <input type="number" id="input-refresh" class="overview-refresh-input" value="15" min="1"
+                            max="30" onchange="setRefreshTime()">
+                        <span class="overview-refresh-label">วินาที</span>
                     </div>
                 </div>
-                <!-- <model-viewer id="myModel" alt="3D model" auto-rotate camera-controls ar
-                    style="width: 600px; height: 400px; background-color: #eee;">
-                </model-viewer> -->
 
-            </div>
+                <!-- Content -->
+                <div class="overview-body">
+
+                    <!-- Left panel: meter data -->
+                    <aside class="overview-panel overview-panel--left">
+
+                        <div class="overview-meter-name" id="name-meter">—</div>
+
+                        <!-- Gauge -->
+                        <div class="overview-gauge-wrap" id="gauge-kW"></div>
+
+                        <!-- Voltage row -->
+                        <div class="overview-section-label">Voltage</div>
+                        <div class="overview-data-row">
+                            <div class="overview-data-item">
+                                <span class="overview-data-item__label">Phase A</span>
+                                <input id="VoltageA" type="text" class="overview-data-input" readonly>
+                            </div>
+                            <div class="overview-data-item">
+                                <span class="overview-data-item__label">Phase B</span>
+                                <input id="VoltageB" type="text" class="overview-data-input" readonly>
+                            </div>
+                            <div class="overview-data-item">
+                                <span class="overview-data-item__label">Phase C</span>
+                                <input id="VoltageC" type="text" class="overview-data-input" readonly>
+                            </div>
+                        </div>
+
+                        <!-- Current row -->
+                        <div class="overview-section-label">Current</div>
+                        <div class="overview-data-row">
+                            <div class="overview-data-item">
+                                <span class="overview-data-item__label">Phase A</span>
+                                <input id="CurrentA" type="text" class="overview-data-input" readonly>
+                            </div>
+                            <div class="overview-data-item">
+                                <span class="overview-data-item__label">Phase B</span>
+                                <input id="CurrentB" type="text" class="overview-data-input" readonly>
+                            </div>
+                            <div class="overview-data-item">
+                                <span class="overview-data-item__label">Phase C</span>
+                                <input id="CurrentC" type="text" class="overview-data-input" readonly>
+                            </div>
+                        </div>
+
+                        <!-- Pf & Frequency -->
+                        <div class="overview-data-row overview-data-row--half">
+                            <div class="overview-data-item">
+                                <span class="overview-data-item__label">Power Factor</span>
+                                <input id="Pf" type="text" class="overview-data-input" readonly>
+                            </div>
+                            <div class="overview-data-item">
+                                <span class="overview-data-item__label">Frequency</span>
+                                <input id="frequency" type="text" class="overview-data-input" readonly>
+                            </div>
+                        </div>
+
+                    </aside>
+
+                    <!-- Center: 3D model viewer -->
+                    <div class="overview-viewer">
+                        <model-viewer id="myModel" alt="3D model" auto-rotate camera-controls ar
+                            style="width:100%; height:100%; background-color:transparent;">
+                        </model-viewer>
+                        <div class="overview-info-popup" id="infomation-meter" style="display:none;"></div>
+                    </div>
+
+                    <!-- Right panel: group list -->
+                    <aside class="overview-panel overview-panel--right" id="listgroup"></aside>
+
+                </div><!-- /.overview-body -->
+
+            </main>
+            <?php include "../components/footer.php"; ?>
         </div>
     </div>
 
+    <script id="theme-data" type="application/json">
+    <?= json_encode($_SESSION['theme'], JSON_UNESCAPED_UNICODE); ?>
+    </script>
 
     <?php include "../scripts/scriptjs.html"; ?>
     <?php include "../scripts/scriptjs-map.html"; ?>

@@ -19,7 +19,6 @@ $id = $_POST['id'] ?? null;
 $value = $_POST['value'] ?? '';
 // $status = $_POST['status'] ?? ''; 
 
-
 if (!$id || !$value) {
     echo json_encode(['success' => false, 'message' => 'ข้อมูลไม่ครบถ้วน']);
     exit;

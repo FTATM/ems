@@ -8,21 +8,21 @@ $token = 'Z0sfYOSM/5ji9yS7H48OVfCGHYovisD7DAoZcwWkXJgFikNTqEg3HB/pp/s5Lys4uLYjIz
 
 function checktoken()
 {
-    global $key, $token;
-    $instanceId = decode_aes_gcm($token, $key);
-    if ($instanceId === false) {
-        return false;
-        exit(1);
-    }
-    $instanceId = html_entity_decode($instanceId, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-    $psCommand = "powershell -NoProfile -Command \"Try { Get-PnpDevice -InstanceId '$instanceId' -ErrorAction Stop | Select-Object -ExpandProperty Status } Catch { Write-Output 'NotFound' }\"";
-    $output = trim(shell_exec($psCommand));
+    // global $key, $token;
+    // $instanceId = decode_aes_gcm($token, $key);
+    // if ($instanceId === false) {
+    //     return false;
+    //     exit(1);
+    // }
+    // $instanceId = html_entity_decode($instanceId, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    // $psCommand = "powershell -NoProfile -Command \"Try { Get-PnpDevice -InstanceId '$instanceId' -ErrorAction Stop | Select-Object -ExpandProperty Status } Catch { Write-Output 'NotFound' }\"";
+    // $output = trim(shell_exec($psCommand));
 
-    if ($output !== 'Unknown' && $output !== 'NotFound') {
+    // if ($output !== 'Unknown' && $output !== 'NotFound') {
         return true;
+    //     exit(1);
+    // } else {
+        // return false;
         exit(1);
-    } else {
-        return false;
-        exit(1);
-    }
+    // }
 }

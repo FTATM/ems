@@ -1,0 +1,264 @@
+/* ================================================
+   locations.css — EMS Location Selector UI
+   ================================================ */
+
+/* ── Root Tokens : Light Mode ── */
+:root {
+  --primary:        #8BAE66;
+  --primary-light:  rgba(139, 174, 102, 0.12);
+  --primary-border: rgba(139, 174, 102, 0.40);
+
+  --bg-page:        #f0f7ee;          /* เขียวอ่อนมาก */
+  --bg-card:        #ffffff;
+  --bg-icon:        #8BAE66;
+
+  --text-heading:   #1a2e14;          /* เขียวเข้มมาก */
+  --text-body:      #4d6b3a;          /* เขียวกลาง */
+  --text-card:      #1f2937;
+
+  --border-card:    rgba(139, 174, 102, 0.20);
+
+  --shadow-sm: 0 1px 3px rgba(80,120,50,.10), 0 1px 2px rgba(80,120,50,.06);
+  --shadow-md: 0 4px 20px rgba(80,120,50,.16), 0 2px 6px rgba(80,120,50,.08);
+
+  --radius-card: 16px;
+  --radius-icon: 12px;
+  --transition:  200ms ease;
+}
+
+/* ── Root Tokens : Dark Mode ── */
+html.dark {
+  --bg-card:    #18181b;
+  --bg-page:    #09090b;
+  --bg-icon:    #8BAE66;   /* ← เขียวเหมือน light */
+  --primary:    #8BAE66;   /* ← เขียวเหมือน light */
+  --text-heading: #f4f4f5;
+  --text-body:    #a1a1aa;
+  --text-card:    #e4e4e7;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.3);
+  --shadow-md: 0 4px 16px rgba(0,0,0,.4);
+}
+
+/* ── Base ── */
+body {
+  background-color: var(--bg-page) !important;
+  font-family: 'Noto Sans Thai', 'Sarabun', sans-serif;
+  min-height: 100svh;
+  transition: background-color 0.3s ease;
+}
+
+/* ── Page Wrapper ── */
+.locations-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  flex-grow: 1;
+}
+
+/* ── Hero Text ── */
+.locations-hero {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.locations-hero h2 {
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: var(--text-heading);
+  margin-bottom: 0.75rem;
+  letter-spacing: -0.02em;
+  transition: color 0.3s ease;
+}
+
+.locations-hero p {
+  font-size: 1.05rem;
+  color: var(--text-body);
+  max-width: 520px;
+  margin: 0 auto;
+  line-height: 1.6;
+  transition: color 0.3s ease;
+}
+
+/* ── Card List ── */
+.locations-list {
+  width: 100%;
+  max-width: 640px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* ── Location Card ── */
+.location-card {
+  display: flex;
+  align-items: center;
+  background: var(--bg-card);
+  padding: 1.375rem 1.5rem;
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-sm);
+  border: 1.5px solid var(--border-card);
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition: border-color var(--transition),
+              box-shadow var(--transition),
+              transform var(--transition),
+              background var(--transition);
+}
+
+.location-card:hover,
+.location-card:focus-visible {
+  border-color: var(--primary-border);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+  text-decoration: none;
+  color: inherit;
+}
+
+/* ── Icon bubble ── */
+.location-card__icon {
+  width: 2.75rem;
+  height: 2.75rem;
+  background-color: var(--bg-icon) !important;
+  border-radius: var(--radius-icon);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-right: 1.25rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,.20);
+  padding: 0.5rem;
+  box-sizing: border-box;
+  transition: background-color 0.3s ease;
+}
+
+/* ── Iconify mask icons ── */
+.mdi--location {
+  display: inline-block;
+  width: 1.5em;
+  height: 1.5em;
+  --svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23000' d='M12 11.5A2.5 2.5 0 0 1 9.5 9A2.5 2.5 0 0 1 12 6.5A2.5 2.5 0 0 1 14.5 9a2.5 2.5 0 0 1-2.5 2.5M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7'/%3E%3C/svg%3E");
+  background-color: #8BAE66;
+  -webkit-mask-image: var(--svg);
+  mask-image: var(--svg);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+}
+.dark .mdi--location {
+  background-color: white;
+}
+
+.mingcute--right-fill {
+  display: inline-block;
+  width: 1.2em;
+  height: 1.2em;
+  --svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cpath d='M24 0v24H0V0zM12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035q-.016-.005-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093q.019.005.029-.008l.004-.014l-.034-.614q-.005-.019-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z'/%3E%3Cpath fill='%23000' d='M16.06 10.94a1.5 1.5 0 0 1 0 2.12l-5.656 5.658a1.5 1.5 0 1 1-2.121-2.122L12.879 12L8.283 7.404a1.5 1.5 0 0 1 2.12-2.122l5.658 5.657Z'/%3E%3C/g%3E%3C/svg%3E");
+  background-color: currentColor;
+  -webkit-mask-image: var(--svg);
+  mask-image: var(--svg);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+}
+
+/* ── Card Name ── */
+.location-card__name {
+  flex-grow: 1;
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: var(--text-card);
+  transition: color var(--transition);
+}
+
+.location-card:hover .location-card__name {
+  color: var(--primary);
+}
+
+/* ── Chevron ── */
+.location-card__chevron {
+  color: var(--text-body);
+  opacity: 0.5;
+  transition: color var(--transition), transform var(--transition), opacity var(--transition);
+  flex-shrink: 0;
+}
+
+.location-card:hover .location-card__chevron {
+  color: var(--primary);
+  opacity: 1;
+  transform: translateX(3px);
+}
+
+/* ── Admin actions (optional) ── */
+.location-card__actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-left: 0.75rem;
+}
+
+.location-card__actions .btn-icon {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-body);
+  padding: 0.25rem;
+  border-radius: 6px;
+  transition: color var(--transition), background var(--transition);
+  display: flex;
+  align-items: center;
+}
+
+.location-card__actions .btn-icon:hover {
+  color: var(--primary);
+  background: var(--primary-light);
+}
+
+/* ── Legacy table hidden ── */
+#table-location {
+  display: none !important;
+}
+
+/* ── Skeleton loader ── */
+.location-card--skeleton {
+  pointer-events: none;
+}
+
+.location-card--skeleton .location-card__icon {
+  background: var(--border-card);
+  box-shadow: none;
+}
+
+.location-card--skeleton .location-card__name {
+  background: var(--border-card);
+  border-radius: 6px;
+  height: 1.1em;
+  width: 55%;
+  animation: shimmer 1.4s infinite linear;
+}
+
+@keyframes shimmer {
+  0%   { opacity: 1; }
+  50%  { opacity: 0.4; }
+  100% { opacity: 1; }
+}
+
+/* ── Card fade-in ── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.location-card:not(.location-card--skeleton) {
+  animation: fadeInUp 0.3s ease both;
+}
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+  .locations-hero h2  { font-size: 1.75rem; }
+  .location-card      { padding: 1rem 1.125rem; }
+  .location-card__icon { margin-right: 1rem; }
+}

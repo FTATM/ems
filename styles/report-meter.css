@@ -1,0 +1,494 @@
+/* ============================================
+   Report Meter Page Styles
+   style-report-meter.css
+   ============================================ */
+
+/* --- Body Background --- */
+body {
+    background-color: #f5f5f5 !important;
+}
+
+/* --- Filter Bar --- */
+.filter-bar {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
+    padding: 16px 24px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 0;
+}
+
+.filter-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 0 12px;
+    box-sizing: border-box;
+}
+
+.filter-item:first-child {
+    padding-left: 0;
+}
+
+.filter-item:last-child {
+    padding-right: 0;
+}
+
+.filter-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #888;
+    font-weight: 600;
+}
+
+.filter-value {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #e8f5e9;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 13px;
+    color: #2e7d32;
+    font-weight: 500;
+    width: 100%;
+    box-sizing: border-box;
+    min-width: 0;
+}
+
+.filter-value .bi {
+    color: #4caf50;
+}
+
+.filter-select {
+    border: 1px solid #d0d0d0;
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 13px;
+    color: #333;
+    background: #fff;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+.filter-date {
+    border: 1px solid #d0d0d0;
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 13px;
+    color: #333;
+    background: #fff;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+.filter-date-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #fff;
+    border: 1px solid #d0d0d0;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 13px;
+    color: #333;
+    cursor: pointer;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    position: relative;
+}
+
+.filter-date-wrapper .bi {
+    color: #4caf50;
+    flex-shrink: 0;
+}
+
+.filter-date-hidden {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+    width: 0;
+    height: 0;
+}
+
+/* --- Reports Layout --- */
+.reports-wrapper {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+}
+
+/* --- Report Card --- */
+.report-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
+    padding: 24px;
+    flex: 1;
+}
+
+.report-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.report-card-icon {
+    width: 36px;
+    height: 36px;
+    background: #e8f5e9;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #4caf50;
+    font-size: 18px;
+}
+
+.report-card-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #222;
+    margin: 0;
+}
+
+/* --- Section Title --- */
+.section-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #111 !important;
+    margin: 16px 0 8px 0;
+}
+
+/* --- Section Divider --- */
+.section-divider {
+    border: none;
+    border-top: 1px solid #eeeeee;
+    margin: 12px 0 0 0;
+}
+
+/* --- Report Table --- */
+.report-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    table-layout: fixed;
+}
+
+.report-table .col-label {
+    width: 18%;
+}
+
+.report-table .col-data {
+    width: 16.4%;
+}
+
+.report-table th {
+    text-align: center;
+    color: #111 !important;
+    font-weight: 600;
+    padding: 4px 6px;
+    border-bottom: 1px solid #e0e0e0;
+    white-space: nowrap;
+}
+
+.report-table td {
+    padding: 4px 6px;
+    text-align: center;
+    vertical-align: middle;
+    color: #111 !important;
+}
+
+.report-table td.label-cell {
+    text-align: left;
+    color: #111 !important;
+    white-space: nowrap;
+}
+
+.report-table input[type="text"],
+.report-table input[type="date"] {
+    width: 100%;
+    min-width: 60px;
+    padding: 3px 6px;
+    font-size: 12px;
+    border: 1px solid #d0d0d0;
+    border-radius: 8px;
+    text-align: center;
+    background: #fff !important;
+    color: #111 !important;
+    box-sizing: border-box;
+}
+
+.report-table input.editable {
+    background: #f5f5f5 !important;
+    border-color: #bbb;
+}
+
+.report-table input[readonly] {
+    background: #fff !important;
+    color: #111 !important;
+}
+
+.report-table input.total-input {
+    font-weight: 700;
+    border-color: #5d8a3c;
+}
+
+.report-table th.th-left {
+    text-align: left;
+}
+
+.report-table td.sub-label {
+    text-align: left;
+    font-size: 11px;
+    color: #888 !important;
+}
+.maxpeak-row td {
+    padding-top: 6px;
+}
+
+.maxpeak-label {
+    text-align: left;
+    font-size: 11px;
+    color: #888;
+}
+
+/* --- Buttons --- */
+.btn-export {
+    background: #5d8a3c;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 24px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 20px;
+    float: right;
+}
+
+.btn-export:hover {
+    background: #4a7030;
+}
+
+.btn-print {
+    background: #6a994e;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 24px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 20px;
+    float: right;
+}
+
+.btn-print:hover {
+    background: #4a7030;
+}
+
+/* --- Footer Note --- */
+.footer-note {
+    margin-top: 12px;
+    font-size: 12px;
+    color: #666;
+    padding: 8px 0;
+}
+
+/* ============================================
+   Theme System
+   ============================================ */
+
+/* --- CSS Variables (Default: Green) --- */
+:root {
+    --theme-primary: #4caf50;
+    --theme-primary-dark: #2e7d32;
+    --theme-primary-btn: #5d8a3c;
+    --theme-primary-btn-hover: #4a7030;
+    --theme-primary-btn2: #6a994e;
+    --theme-bg-light: #e8f5e9;
+    --theme-text-accent: #2e7d32;
+    --theme-icon-color: #4caf50;
+    --theme-total-border: #5d8a3c;
+}
+
+/* Dark Theme (Green Dark) — ใช้ html.dark ให้ตรงกับ sidemenu */
+html.dark {
+    --bg-page:            #18181b;
+    --bg-card:            #09090b;
+    --bg-filter:          #09090b;
+    --bg-info:            #09090b;
+    --bg-select:          #202a18;
+    --text-primary:       #deeacc;
+    --text-secondary:     #aec48a;
+    --text-muted:         #607048;
+    --text-label:         #7a9058;
+    --border:             #283820;
+    --border-focus:       #8BAE66;
+    --green:              #8BAE66;
+    --green-dark:         #6e9248;
+    --green-light:        #1c2a12;
+    --green-icon:         #8BAE66;
+    --green-glow:         rgba(139, 174, 102, 0.22);
+    --green-soft:         rgba(139, 174, 102, 0.09);
+    --shadow-card:        0 2px 14px rgba(0,0,0,0.45);
+    --shadow-filter:      0 1px 8px rgba(0,0,0,0.38);
+    --footer-bg:          #09090b;
+    --footer-text:        #4a6030;
+    --footer-border:      #202e16;
+
+    /* map theme variables ให้ใช้ palette ด้านบน */
+    --theme-primary:          #8BAE66;
+    --theme-primary-dark:     #6e9248;
+    --theme-primary-btn:      #6e9248;
+    --theme-primary-btn-hover:#5a7a38;
+    --theme-primary-btn2:     #8BAE66;
+    --theme-bg-light:         #1c2a12;
+    --theme-text-accent:      #aec48a;
+    --theme-icon-color:       #8BAE66;
+    --theme-total-border:     #8BAE66;
+}
+
+html.dark body {
+    background-color: var(--bg-page) !important;
+    color: var(--text-primary) !important;
+}
+
+html.dark .filter-bar {
+    background: var(--bg-filter);
+    box-shadow: var(--shadow-filter);
+}
+
+html.dark .report-card {
+    background: var(--bg-card);
+    box-shadow: var(--shadow-card);
+}
+
+html.dark .report-card-title {
+    color: var(--text-primary) !important;
+}
+
+html.dark .section-title {
+    color: var(--text-secondary) !important;
+}
+
+html.dark .report-table th,
+html.dark .report-table td,
+html.dark .report-table td.label-cell {
+    color: var(--text-primary) !important;
+}
+
+html.dark .report-table td.sub-label,
+html.dark .maxpeak-label {
+    color: var(--text-muted) !important;
+}
+
+html.dark .report-table input[type="text"],
+html.dark .report-table input[type="date"] {
+    background: var(--bg-select) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border);
+}
+
+html.dark .report-table input.editable {
+    background: var(--bg-select) !important;
+    border-color: var(--border-focus);
+}
+
+html.dark .report-table input[readonly] {
+    background: var(--bg-card) !important;
+    color: var(--text-secondary) !important;
+}
+
+html.dark .report-table input.total-input {
+    border-color: var(--green);
+    color: var(--green) !important;
+}
+
+html.dark .section-divider {
+    border-color: var(--border);
+}
+
+html.dark .footer-note {
+    color: var(--footer-text);
+}
+
+html.dark .filter-label {
+    color: var(--text-label);
+}
+
+html.dark .filter-select,
+html.dark .filter-date {
+    background: var(--bg-select);
+    color: var(--text-primary);
+    border-color: var(--border);
+}
+
+html.dark .filter-date-wrapper {
+    background: var(--bg-select);
+    color: var(--text-primary);
+    border-color: var(--border);
+}
+
+html.dark .filter-date-wrapper .bi {
+    color: var(--green-icon);
+}
+
+html.dark #date-display {
+    color: var(--text-primary) !important;
+}
+
+html.dark .report-table th {
+    border-bottom-color: var(--border);
+}
+
+/* Apply variables to existing elements */
+.filter-value {
+    background: var(--theme-bg-light);
+    color: var(--theme-text-accent);
+}
+
+.filter-value .bi {
+    color: var(--theme-icon-color);
+}
+
+.report-card-icon {
+    background: var(--theme-bg-light);
+    color: var(--theme-primary);
+}
+
+.report-table input.total-input {
+    border-color: var(--theme-total-border);
+}
+
+.btn-export {
+    background: var(--theme-primary-btn);
+}
+
+.btn-export:hover {
+    background: var(--theme-primary-btn-hover);
+}
+
+.btn-print {
+    background: var(--theme-primary-btn2);
+}
+
+.btn-print:hover {
+    background: var(--theme-primary-btn-hover);
+}

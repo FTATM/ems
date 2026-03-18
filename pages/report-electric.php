@@ -1,7 +1,7 @@
 <?php
 include '../components/session.php';
-checkLogin();
-checkSession();
+#checkLogin();
+#checkSession();
 ?>
 
 <!DOCTYPE html>
@@ -13,90 +13,168 @@ checkSession();
 <head>
     <meta charset="UTF-8">
     <title><?= $lang['report'] ?> - EMS</title>
+    <link rel="stylesheet" href="../styles/dashboard.css">
+    <link rel="stylesheet" href="../styles/report-electric.css">
 </head>
 
-<body style="background-color: <?= $bg ?>; color: <?= $text ?>!important; min-height: 100svh;">
-    <div id="main" class="d-flex">
+<body>
+    <div id="main">
         <?php include "../components/sidemenu.php"; ?>
-        <div class="w-100 h-100 d-flex flex-column justify-content-center">
+
+        <div class="dashboard-wrapper">
             <?php include "../components/header.php"; ?>
-            <div class="w-100 py-2 justify-content-center align-items-center d-flex">
-                <div class="justify-content-center align-items-center d-flex flex-column gap-2" style="width: 90%;">
-                    <div class="d-flex bg-white bg-opacity-10 p-3 w-100">
-                        <div class="w-25">
-                            <h4 class="text-center"><?= $lang['choosedate'] ?></h4>
 
-                            <h4 class="me-2 fw-semibold"><?=$lang['meter']?></h4>
-                            <select id="select-meter-show" class="form-select" onchange="loadingChart()">
-                                <option>No value</option>
-                            </select>
-                            <div class="d-flex my-2">
-                                <div class="w-50 pe-1">
-                                    <h4><?= $lang['from'] ?></h4>
-                                    <input id="datetime-from" type="date" class="form-control form-control-sm" value="2025-09-30" onchange="filterMeters()">
-                                </div>
-                                <div class="w-50 ps-1">
-                                    <h4><?= $lang['to'] ?></h4>
-                                    <input id="datetime-to" type="date" class="form-control form-control-sm" value="2025-10-30" onchange="filterMeters()">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="w-75 d-flex flex-column" style="height: 400px;">
-                            <h3 class="w-100 text-center"><?= $lang['preview'] ?></h3>
-                            <div class="p-2 flex-fill" id="linear-chart"></div>
+            <div class="dashboard-content">
+
+                <!-- ── Filter Bar ── -->
+                <div class="dash-filter-bar">
+
+                    <div class="dash-filter-group">
+                        <span class="dash-filter-label"><?= $lang['meter'] ?></span>
+                        <select id="select-meter-show" class="dash-select" onchange="loadingChart()">
+                            <option>No value</option>
+                        </select>
+                    </div>
+
+                    <div class="dash-divider"></div>
+
+                    <div class="dash-filter-group">
+                        <span class="dash-filter-label"><?= $lang['from'] ?></span>
+                        <div class="filter-date-wrapper"
+                            onclick="document.getElementById('datetime-from').showPicker()">
+                            <i class="bi bi-calendar3"></i>
+                            <span id="date-from-display" class="filter-date-display">30 กันยายน 2568</span>
+                            <input id="datetime-from" type="date" class="filter-date-hidden" value="2026-03-17"
+                                onchange="updateFromDisplay(); filterMeters()">
                         </div>
                     </div>
-                    <div class="bg-white bg-opacity-10 p-3 w-100">
-                        <div class="d-flex justify-content-between align-items-center px-2">
-                            <h3>Table</h3>
-                            <div class="d-flex justify-content-end gap-2">
-                                <div class="text-nowrap">Email : </div>
-                                <input class="form-control form-control-sm" id="email">
-                                <div class="text-nowrap">Export : </div>
-                                <!-- <input class="btn btn-sm border-1 bg-primary" style="width: 30%;" value="CSV" onclick="ExportCSV()">
-                                <input class="btn btn-sm border-1 bg-primary" style="width: 30%;" value="Excel" onclick="ExportExcel()"> -->
-                                <input id="csv" class="btn btn-sm border-1 bg-primary" style="width: 30%;" value="CSV" onclick="sendExportToEmail('csv')">
-                                <input id="excel" class="btn btn-sm border-1 bg-primary" style="width: 30%;" value="Excel" onclick="sendExportToEmail('excel')">
-                            </div>
+
+                    <div class="dash-divider"></div>
+
+                    <div class="dash-filter-group">
+                        <span class="dash-filter-label"><?= $lang['to'] ?></span>
+                        <div class="filter-date-wrapper" onclick="document.getElementById('datetime-to').showPicker()">
+                            <i class="bi bi-calendar3"></i>
+                            <span id="date-to-display" class="filter-date-display">30 ตุลาคม 2568</span>
+                            <input id="datetime-to" type="date" class="filter-date-hidden" value="2026-03-18"
+                                onchange="updateToDisplay(); filterMeters()">
                         </div>
-                        <div class="d-flex w-100 align-items-center justify-content-between p-2 rounded shadow-sm">
-                            <div class="form-check me-3">
-                                <input id="is-table-all-value" type="checkbox" class="form-check-input" onchange="ReloadTable()">
-                                <label class="form-check-label" for="is-table-all-value">
-                                    Show All Values
-                                </label>
-                            </div>
-
-                            <!-- Select Rows -->
-                            <div class="d-flex align-items-center">
-
-                                <label for="select-table-show" class="me-2 mb-0 ms-2 fw-semibold">Rows :</label>
-                                <select id="select-table-show" class="form-select form-select-sm w-auto" onchange="ReloadTable()">
-                                    <!-- <option value="all">All</option> -->
-                                    <option selected value="5">5</option>
-                                    <option value="10">10</option>
-                                    <option value="15">15</option>
-                                    <option value="20">20</option>
-                                    <option value="50">50</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <Table class="table table-bordered" id="table-data">
-                            <thead>
-                            </thead>
-                            <tbody>
-                            </tbody>
-                        </Table>
                     </div>
+
+                    <div class="dash-divider"></div>
+
+                    <!-- Email + Export -->
+                    <div class="dash-filter-group dash-filter-group--export">
+                        <span class="dash-filter-label">Export</span>
+                        <div class="report-export-row">
+                            <input class="dash-text-input" id="email" type="email" placeholder="Email address">
+                            <button class="report-btn report-btn--csv" onclick="sendExportToEmail('csv')">
+                                <i class="bi bi-filetype-csv"></i> CSV
+                            </button>
+                            <button id="excel" class="report-btn report-btn--xl" onclick="sendExportToEmail('excel')">
+                                <i class="bi bi-file-earmark-excel"></i> Excel
+                            </button>
+                        </div>
+                    </div>
+
                 </div>
+
+                <!-- ── Body ── -->
+                <div class="report-body">
+
+                    <!-- Chart Card -->
+                    <div class="dash-card report-chart-card">
+                        <div class="dash-card-header">
+                            <div class="dash-card-title">
+                                <i class="bi bi-graph-up-arrow"></i>
+                                <?= $lang['preview'] ?>
+                            </div>
+                        </div>
+                        <div class="dash-card-body">
+                            <div id="linear-chart" style="width:100%;height:100%;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Table Card -->
+                    <div class="dash-card report-table-card">
+                        <div class="dash-card-header report-table-header">
+                            <div class="dash-card-title">
+                                <i class="bi bi-table"></i> Table
+                            </div>
+                            <div class="report-table-controls">
+                                <div class="report-check-wrap">
+                                    <input id="is-table-all-value" type="checkbox" class="report-checkbox"
+                                        onchange="ReloadTable()">
+                                    <label for="is-table-all-value" class="report-check-label">Show All</label>
+                                </div>
+                                <div class="dash-filter-group"
+                                    style="flex-direction:row;align-items:center;gap:8px;padding:0;flex:unset;">
+                                    <span class="dash-filter-label">Rows</span>
+                                    <select id="select-table-show" class="dash-select" style="width:80px;"
+                                        onchange="ReloadTable()">
+                                        <option selected value="5">5</option>
+                                        <option value="10">10</option>
+                                        <option value="15">15</option>
+                                        <option value="20">20</option>
+                                        <option value="50">50</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="report-table-scroll">
+                            <table class="report-table" id="table-data">
+                                <thead></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+                <!-- end report-body -->
+
             </div>
+            <!-- end dashboard-content -->
+
+            <?php include "../components/footer.php"; ?>
         </div>
     </div>
 
-
     <?php include "../scripts/scriptjs.html"; ?>
     <?php include "../scripts/scriptjs-report.html"; ?>
+    <script>
+    function updateFromDisplay() {
+        const input = document.getElementById('datetime-from');
+        const display = document.getElementById('date-from-display');
+        if (input.value) {
+            const d = new Date(input.value);
+            display.textContent = d.toLocaleDateString('th-TH', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            display.style.color = '#222';
+        }
+    }
+
+    function updateToDisplay() {
+        const input = document.getElementById('datetime-to');
+        const display = document.getElementById('date-to-display');
+        if (input.value) {
+            const d = new Date(input.value);
+            display.textContent = d.toLocaleDateString('th-TH', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            display.style.color = '#222';
+        }
+    }
+    window.addEventListener('DOMContentLoaded', function() {
+        updateFromDisplay();
+        updateToDisplay();
+    });
+    </script>
+
 </body>
 
 </html>

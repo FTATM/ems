@@ -12,6 +12,8 @@ $lang = [
     "welcome" => "Welcome",
     "hi" => "Hi",
     "home" => "Home",
+    "homepage"=> "HomePage",
+    "settings"=> "Settings",
     "course" => "Course",
     "catalogue" => "Catalogue",
     "contact" => "Contect us",
@@ -179,6 +181,12 @@ $lang = [
     "password" => "Password",
     "husername" => "Enter&nbsp;username",
     "hpassword" => "Your&nbsp;password",
+    "login_notice"=> "Please sign in to manage your energy data.",
+    "system_tagline"=> "Enhance energy efficiency in your organization with a real-time monitoring and data analytics system driving smarter decisions for a sustainable future.",
+    "realtime"=> "Real-time",
+    "clean_energy"=> "Clean Energy",
+    "energy_saving"=> "Energy Saving",
+    "analysis"=> "Analysis",
 
     //reset password
     "resetpassword" => "Reset&nbsp;password",

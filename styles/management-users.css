@@ -1,0 +1,481 @@
+/* ================================================
+   management-users.css — EMS User Management UI
+   Matching locations.css aesthetic
+   ================================================ */
+
+/* ── Root Tokens : Light Mode ── */
+:root {
+  --primary:        #8BAE66;
+  --primary-light:  rgba(139, 174, 102, 0.12);
+  --primary-border: rgba(139, 174, 102, 0.40);
+  --primary-dark:   #6a8f4b;
+
+  --bg-page:        #f0f7ee;
+  --bg-card:        #ffffff;
+  --bg-icon:        #8BAE66;
+  --bg-header:      #001B5E;
+
+  --text-heading:   #1a2e14;
+  --text-body:      #4d6b3a;
+  --text-card:      #1f2937;
+  --text-muted:     #6b7280;
+
+  --border-card:    rgba(139, 174, 102, 0.20);
+
+  --shadow-sm: 0 1px 3px rgba(80,120,50,.10), 0 1px 2px rgba(80,120,50,.06);
+  --shadow-md: 0 4px 20px rgba(80,120,50,.16), 0 2px 6px rgba(80,120,50,.08);
+
+  --radius-card: 16px;
+  --radius-icon: 12px;
+  --transition:  200ms ease;
+}
+
+/* ── Root Tokens : Dark Mode ── */
+html.dark, [data-theme="dark"] {
+  --bg-card:      #18181b;
+  --bg-page:      #09090b;
+  --bg-icon:      #8BAE66;
+  --primary:      #8BAE66;
+  --text-heading: #f4f4f5;
+  --text-body:    #a1a1aa;
+  --text-card:    #e4e4e7;
+  --text-muted:   #71717a;
+  --border-card:  rgba(139,174,102,0.15);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.3);
+  --shadow-md: 0 4px 16px rgba(0,0,0,.4);
+}
+
+/* ── Base ── */
+body {
+  background-color: var(--bg-page) !important;
+  font-family: 'Noto Sans Thai', 'Sarabun', sans-serif;
+  min-height: 100svh;
+  transition: background-color 0.3s ease;
+}
+
+/* ── Page wrapper ── */
+.users-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.5rem 1.5rem 0;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* ── Hero ── */
+.users-hero {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  flex-shrink: 0;
+}
+
+.users-hero h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-heading);
+  margin-bottom: 0.4rem;
+  letter-spacing: -0.02em;
+  transition: color 0.3s ease;
+}
+
+.users-hero p {
+  font-size: 0.95rem;
+  color: var(--text-body);
+  max-width: 520px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* ── Content card — fills remaining height ── */
+.users-card {
+  width: 100%;
+  max-width: 1200px;
+  background: var(--bg-card);
+  border-radius: var(--radius-card);
+  border: 1.5px solid var(--border-card);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+/* ── Card header ── */
+.users-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.1rem 1.5rem;
+  border-bottom: 1.5px solid var(--border-card);
+  background: var(--bg-card);
+  flex-shrink: 0;
+}
+
+/* ── Table scroll wrapper ── */
+.users-table-wrap {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: auto;
+  min-height: 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-border) transparent;
+}
+
+.users-table-wrap::-webkit-scrollbar       { width: 5px; height: 5px; }
+.users-table-wrap::-webkit-scrollbar-track { background: transparent; }
+.users-table-wrap::-webkit-scrollbar-thumb { background: var(--primary-border); border-radius: 99px; }
+
+/* ── Pagination ── */
+#pagination {
+  flex-shrink: 0;
+  padding: 0.75rem 0 1rem;
+  display: flex;
+  gap: 0.4rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.users-card__title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--primary);
+}
+
+.users-card__count {
+  font-size: 0.78rem;
+  font-weight: 600;
+  background: var(--primary-light);
+  color: var(--primary-dark);
+  border: 1px solid var(--primary-border);
+  border-radius: 99px;
+  padding: 0.15rem 0.65rem;
+}
+
+/* ── Table override ── */
+#table-user {
+  margin: 0 !important;
+  border: none !important;
+  border-collapse: separate !important;
+  border-spacing: 0;
+  width: 100% !important;
+}
+
+/* Override inline background-color:#001B5E set by JS on th */
+#table-user thead tr th {
+  background-color: var(--bg-page) !important;
+  color: var(--text-muted) !important;
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  padding: 0.75rem 1.25rem !important;
+  border: none !important;
+  border-bottom: 1.5px solid var(--border-card) !important;
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+#table-user tbody tr {
+  transition: background var(--transition);
+}
+
+#table-user tbody tr:hover td {
+  background: var(--primary-light) !important;
+}
+
+#table-user tbody tr td {
+  padding: 0.75rem 1.25rem !important;
+  border: none !important;
+  border-bottom: 1px solid var(--border-card) !important;
+  font-size: 0.88rem !important;
+  color: var(--text-card) !important;
+  vertical-align: middle !important;
+  background: var(--bg-card) !important;
+  transition: background var(--transition);
+}
+
+#table-user tbody tr:last-child td {
+  border-bottom: none !important;
+}
+
+/* ── Action buttons inside table ── */
+#table-user .btn {
+  border-radius: 8px !important;
+  font-size: 0.78rem !important;
+  font-weight: 600 !important;
+  padding: 0.28rem 0.65rem !important;
+  border: none !important;
+  transition: background var(--transition), transform var(--transition);
+  white-space: nowrap;
+}
+
+#table-user .btn:hover {
+  transform: translateY(-1px);
+}
+
+/* Edit — btn-warning */
+#table-user .btn-warning {
+  background: var(--primary) !important;
+  color: #fff !important;
+}
+#table-user .btn-warning:hover {
+  background: var(--primary-dark) !important;
+}
+
+/* Delete — btn-danger */
+#table-user .btn-danger {
+  background: rgba(239,68,68,.10) !important;
+  color: #ef4444 !important;
+  border: 1px solid rgba(239,68,68,.25) !important;
+}
+#table-user .btn-danger:hover {
+  background: rgba(239,68,68,.20) !important;
+}
+
+/* Change Password — btn-success */
+#table-user .btn-success {
+  background: var(--primary-light) !important;
+  color: var(--primary-dark) !important;
+  border: 1px solid var(--primary-border) !important;
+}
+#table-user .btn-success:hover {
+  background: var(--primary-border) !important;
+}
+
+/* ── Pagination buttons ── */
+/* JS sets btn.style.backgroundColor inline — override with !important */
+#pagination button {
+  background-color: var(--bg-card) !important;
+  border: 1.5px solid var(--border-card) !important;
+  border-radius: 8px !important;
+  color: var(--text-muted) !important;
+  font-size: 0.85rem !important;
+  font-weight: 600 !important;
+  padding: 0.35rem 0.85rem !important;
+  cursor: pointer;
+  transition: background var(--transition), border-color var(--transition), color var(--transition);
+}
+
+#pagination button:hover {
+  background-color: var(--primary-light) !important;
+  border-color: var(--primary-border) !important;
+  color: var(--primary-dark) !important;
+}
+
+/* JS uses style.backgroundColor='#001B5E' for active — override */
+#pagination button[style*="001B5E"],
+#pagination button[style*="001b5e"] {
+  background-color: var(--primary) !important;
+  border-color: var(--primary) !important;
+  color: #fff !important;
+}
+
+
+/* ── Modal overrides ── */
+.modal-content {
+  border-radius: var(--radius-card) !important;
+  border: 1.5px solid var(--border-card) !important;
+  box-shadow: var(--shadow-md) !important;
+  background: var(--bg-card) !important;
+  color: var(--text-card) !important;
+}
+
+.modal-header {
+  border-bottom: 1.5px solid var(--border-card) !important;
+  padding: 1rem 1.5rem !important;
+}
+
+.modal-title {
+  font-weight: 700 !important;
+  color: var(--text-heading) !important;
+}
+
+.modal-body {
+  padding: 1.25rem 1.5rem !important;
+}
+
+.modal-footer {
+  border-top: 1.5px solid var(--border-card) !important;
+  padding: 0.875rem 1.5rem !important;
+  gap: 0.5rem;
+}
+
+.modal-body .form-label {
+  font-size: 0.8rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted) !important;
+  margin-bottom: 0.3rem !important;
+  margin-top: 0.75rem !important;
+}
+
+.modal-body .form-label:first-child {
+  margin-top: 0 !important;
+}
+
+.modal-body .form-control {
+  background: var(--bg-page) !important;
+  border: 1.5px solid var(--border-card) !important;
+  border-radius: 10px !important;
+  padding: 0.55rem 0.9rem !important;
+  font-size: 0.9rem !important;
+  color: var(--text-card) !important;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.modal-body .form-control:focus {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 3px var(--primary-light) !important;
+  outline: none !important;
+}
+
+/* Modal buttons */
+.modal-footer .btn-primary {
+  background: var(--primary) !important;
+  border: none !important;
+  border-radius: 9px !important;
+  font-weight: 600 !important;
+  color: #fff !important;
+  padding: 0.5rem 1.25rem !important;
+  transition: background var(--transition), transform var(--transition);
+}
+
+.modal-footer .btn-primary:hover {
+  background: var(--primary-dark) !important;
+  transform: translateY(-1px);
+}
+
+.modal-footer .btn-secondary {
+  background: transparent !important;
+  border: 1.5px solid var(--border-card) !important;
+  border-radius: 9px !important;
+  font-weight: 600 !important;
+  color: var(--text-muted) !important;
+  padding: 0.5rem 1.25rem !important;
+}
+
+.modal-footer .btn-secondary:hover {
+  background: var(--primary-light) !important;
+  border-color: var(--primary-border) !important;
+  color: var(--primary-dark) !important;
+}
+
+.modal-footer .btn-danger {
+  background: #ef4444 !important;
+  border: none !important;
+  border-radius: 9px !important;
+  font-weight: 600 !important;
+  color: #fff !important;
+  padding: 0.5rem 1.25rem !important;
+  transition: background var(--transition);
+}
+
+.modal-footer .btn-danger:hover {
+  background: #dc2626 !important;
+}
+
+/* ── Badge / role pill ── */
+.badge-admin {
+  background: rgba(59,130,246,.12);
+  color: #2563eb;
+  border: 1px solid rgba(59,130,246,.25);
+  border-radius: 99px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.15rem 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.badge-user {
+  background: var(--primary-light);
+  color: var(--primary-dark);
+  border: 1px solid var(--primary-border);
+  border-radius: 99px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.15rem 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ── Skeleton shimmer ── */
+@keyframes shimmer {
+  0%,100% { opacity: 1; }
+  50%      { opacity: 0.4; }
+}
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .users-hero h2 { font-size: 1.75rem; }
+  .users-card    { border-radius: 12px; }
+  #table-user tbody tr td,
+  #table-user thead tr th { padding: 0.65rem 0.75rem !important; }
+}
+
+/* ── Icon action buttons ── */
+.btn-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: 8px !important;
+  font-size: 0.8rem !important;
+  font-weight: 600 !important;
+  padding: 0.35rem 0.7rem !important;
+  border: 1.5px solid transparent !important;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--transition), border-color var(--transition),
+              color var(--transition), transform var(--transition);
+}
+
+.btn-action:hover { transform: translateY(-1px); }
+
+.btn-action svg {
+  flex-shrink: 0;
+  pointer-events: none;
+}
+
+.btn-action--edit {
+  background: var(--primary-light) !important;
+  color: var(--primary-dark) !important;
+  border-color: var(--primary-border) !important;
+}
+.btn-action--edit:hover {
+  background: var(--primary-border) !important;
+}
+
+.btn-action--password {
+  background: rgba(59,130,246,.10) !important;
+  color: #2563eb !important;
+  border-color: rgba(59,130,246,.25) !important;
+}
+.btn-action--password:hover {
+  background: rgba(59,130,246,.20) !important;
+}
+
+.btn-action--delete {
+  background: rgba(239,68,68,.08) !important;
+  color: #ef4444 !important;
+  border-color: rgba(239,68,68,.20) !important;
+}
+.btn-action--delete:hover {
+  background: rgba(239,68,68,.18) !important;
+}
+
+/* ── Action cell ── */
+#table-user td.action-cell {
+  white-space: nowrap;
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+  border-bottom: 1px solid var(--border-card) !important;
+}

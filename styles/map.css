@@ -1,0 +1,468 @@
+/* ================================================
+   overview.css — EMS Overview / 3D Map UI
+   Matching EMS design system tokens
+   ================================================ */
+
+/* ── Root Tokens : Light Mode ── */
+:root {
+  --primary:        #8BAE66;
+  --primary-light:  rgba(139, 174, 102, 0.12);
+  --primary-border: rgba(139, 174, 102, 0.35);
+  --primary-dark:   #6a8f4b;
+
+  --bg-page:        #f0f7ee;
+  --bg-card:        #ffffff;
+  --bg-sidebar:     #ffffff;
+  --bg-icon:        #8BAE66;
+  --bg-header:      #001B5E;
+
+  --text-heading:         #1a2e14;
+  --text-body:            #374151;
+  --text-card:            #1f2937;
+  --text-muted:           #9ca3af;
+  --text-sidebar-header:  #1f2937;
+
+  --border:       #e5e7eb;
+  --border-card:  #e5e7eb;
+  --border-input: rgba(139, 174, 102, 0.30);
+  --border-active: var(--primary);
+
+  --shadow-sm:    0 2px 12px rgba(0,0,0,.07);
+  --shadow-md:    0 4px 20px rgba(80,120,50,.16), 0 2px 6px rgba(80,120,50,.08);
+  --shadow-panel: 0 2px 12px rgba(0,0,0,.07);
+
+  --radius-card:  12px;
+  --radius-panel: 12px;
+  --radius-sm:    10px;
+  --radius-xs:    8px;
+  --radius-item:  8px;
+  --transition:   180ms ease;
+}
+
+/* ── Root Tokens : Dark Mode ── */
+html.dark, [data-theme="dark"] {
+  --bg-card:      #1c1c1f;
+  --bg-sidebar:   #1c1c1f;
+  --bg-page:      #09090b;
+  --bg-icon:      #8BAE66;
+  --primary:      #8BAE66;
+  --primary-dark: #6a8f4b;
+  --text-heading: #f4f4f5;
+  --text-body:    #d1d5db;
+  --text-card:    #e4e4e7;
+  --text-muted:   #6b7280;
+  --text-sidebar-header: #e4e4e7;
+  --border:       rgba(255,255,255,0.08);
+  --border-card:  rgba(255,255,255,0.08);
+  --border-input: rgba(139,174,102,0.20);
+  --shadow-sm:    0 2px 16px rgba(0,0,0,.35);
+  --shadow-panel: 0 2px 16px rgba(0,0,0,.35);
+  --shadow-md:    0 4px 16px rgba(0,0,0,.4);
+}
+
+/* ── Base ── */
+body {
+  background-color: var(--bg-page) !important;
+  font-family: 'Noto Sans Thai', 'Sarabun', sans-serif;
+  min-height: 100svh;
+  transition: background-color 0.3s ease;
+}
+
+/* ════════════════════════════════════════
+   LAYOUT
+   ════════════════════════════════════════ */
+
+.overview-main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  padding: 1rem 1.25rem 0;
+  gap: 0.875rem;
+}
+
+/* ── Top bar ── */
+.overview-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--shadow-panel);
+  padding: 0.75rem 1.25rem;
+  flex-shrink: 0;
+  transition: background 0.3s ease, border-color 0.3s ease;
+}
+
+.overview-topbar__title {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-heading);
+  letter-spacing: -0.01em;
+}
+
+.overview-topbar__title svg {
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+.overview-topbar__refresh {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.overview-refresh-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.overview-refresh-input {
+  width: 60px;
+  text-align: center;
+  background: var(--bg-page) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-item) !important;
+  padding: 0.38rem 0.5rem !important;
+  font-size: 0.88rem !important;
+  font-family: inherit !important;
+  color: var(--text-body) !important;
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition), color var(--transition);
+  -moz-appearance: textfield;
+}
+
+/* Force dark text in light mode regardless of style.html overrides */
+html:not(.dark):not([data-theme="dark"]) #input-refresh.overview-refresh-input {
+  color: #111827 !important;
+}
+
+.overview-refresh-input::-webkit-outer-spin-button,
+.overview-refresh-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+.overview-refresh-input:focus {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 3px var(--primary-light) !important;
+}
+
+/* ── Body: three-column ── */
+.overview-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  gap: 0.875rem;
+  padding-bottom: 1rem;
+}
+
+/* ════════════════════════════════════════
+   SIDE PANELS
+   ════════════════════════════════════════ */
+
+.overview-panel {
+  width: 260px;
+  min-width: 220px;
+  flex-shrink: 0;
+  background: var(--bg-sidebar);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--shadow-panel);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: background 0.3s ease, border-color 0.3s ease;
+}
+
+.overview-panel--left {
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 1.1rem 1rem;
+  gap: 0.6rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-border) transparent;
+}
+
+.overview-panel--left::-webkit-scrollbar       { width: 4px; }
+.overview-panel--left::-webkit-scrollbar-track { background: transparent; }
+.overview-panel--left::-webkit-scrollbar-thumb { background: var(--primary-border); border-radius: 99px; }
+
+.overview-panel--right {
+  overflow-y: auto;
+  padding: 0.75rem;
+  gap: 0.5rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-border) transparent;
+}
+
+.overview-panel--right::-webkit-scrollbar       { width: 4px; }
+.overview-panel--right::-webkit-scrollbar-track { background: transparent; }
+.overview-panel--right::-webkit-scrollbar-thumb { background: var(--primary-border); border-radius: 99px; }
+
+/* ── Meter name header ── */
+.overview-meter-name {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-heading);
+  text-align: center;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0.2rem;
+  letter-spacing: -0.01em;
+}
+
+/* ── Gauge wrapper ── */
+.overview-gauge-wrap {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-item);
+  background: var(--bg-page);
+  min-height: 130px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition: border-color var(--transition);
+}
+
+/* ── Section label ── */
+.overview-section-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--primary);
+  padding: 0.3rem 0 0.1rem;
+}
+
+/* ── Data rows ── */
+.overview-data-row {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.overview-data-row--half {
+  gap: 0.4rem;
+}
+
+.overview-data-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.overview-data-item__label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.overview-data-input {
+  width: 100%;
+  background: var(--bg-page) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-item) !important;
+  padding: 0.35rem 0.5rem !important;
+  font-size: 0.82rem !important;
+  font-family: inherit !important;
+  color: var(--text-body) !important;
+  font-weight: 600;
+  text-align: center;
+  outline: none;
+  cursor: default;
+  transition: border-color var(--transition), color var(--transition);
+}
+
+html:not(.dark):not([data-theme="dark"]) .overview-data-input {
+  color: #111827 !important;
+}
+
+/* ════════════════════════════════════════
+   CENTER: 3D VIEWER
+   ════════════════════════════════════════ */
+
+.overview-viewer {
+  flex: 1;
+  min-width: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--shadow-panel);
+  position: relative;
+  overflow: hidden;
+  transition: background 0.3s ease, border-color 0.3s ease;
+}
+
+/* ── Popup info card ── */
+.overview-info-popup {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-item);
+  box-shadow: var(--shadow-md);
+  padding: 0.75rem 1rem;
+  font-size: 0.85rem;
+  color: var(--text-body);
+  min-width: 160px;
+  max-width: 240px;
+  backdrop-filter: blur(8px);
+}
+
+/* ════════════════════════════════════════
+   RIGHT PANEL — matches meters-sidebar exactly
+   ════════════════════════════════════════ */
+
+/* Override panel--right layout */
+.overview-panel--right {
+  padding: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+
+/* ── Header — mirrors .meters-sidebar__header ── */
+.listgroup-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  background: var(--bg-sidebar);
+}
+
+.listgroup-header__title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-sidebar-header);
+}
+
+.listgroup-header__badge {
+  background: var(--primary-light);
+  border: 1px solid var(--primary-border);
+  color: var(--primary-dark);
+  font-size: 0.72rem;
+  font-weight: 700;
+  border-radius: 99px;
+  padding: 0.15rem 0.55rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+html.dark .listgroup-header__badge,
+[data-theme="dark"] .listgroup-header__badge {
+  color: var(--primary);
+}
+
+/* ── Scrollable list — mirrors #meter-list ── */
+.listgroup-items {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-border) transparent;
+}
+
+.listgroup-items::-webkit-scrollbar       { width: 4px; }
+.listgroup-items::-webkit-scrollbar-track { background: transparent; }
+.listgroup-items::-webkit-scrollbar-thumb { background: var(--primary-border); border-radius: 99px; }
+
+/* ── Each meter item — mirrors #meter-list .choice ── */
+.meter-list-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-item);
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-body);
+  min-height: 38px;
+  line-height: 1.3;
+  user-select: none;
+  transition: background var(--transition), color var(--transition), border-color var(--transition);
+  animation: fadeInItem 0.2s ease both;
+}
+
+.meter-list-item:hover {
+  background: var(--primary-light) !important;
+  border-color: var(--primary-border) !important;
+  color: var(--primary-dark) !important;
+}
+
+.meter-list-item.active {
+  background: var(--primary-light) !important;
+  border-color: var(--primary-border) !important;
+  color: var(--primary-dark) !important;
+  font-weight: 700 !important;
+}
+
+/* ── Icon circle — mirrors #meter-list .choice::before ── */
+.meter-list-item__icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  min-width: 1.5rem;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background-color: var(--primary-light);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='%238BAE66' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2a10 10 0 1 0 10 10'/%3E%3Cpath d='M12 12l4-4'/%3E%3Ccircle cx='12' cy='12' r='1' fill='%238BAE66'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  border: 1px solid var(--primary-border);
+  display: block;
+}
+
+.meter-list-item__name {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+}
+
+@keyframes fadeInItem {
+  from { opacity: 0; transform: translateX(-4px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ════════════════════════════════════════
+   ANIMATIONS
+   ════════════════════════════════════════ */
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.overview-topbar  { animation: fadeInUp 0.25s ease both; }
+.overview-panel   { animation: fadeInUp 0.3s ease both; }
+.overview-viewer  { animation: fadeInUp 0.3s ease 0.05s both; }
+
+/* ════════════════════════════════════════
+   RESPONSIVE
+   ════════════════════════════════════════ */
+
+@media (max-width: 900px) {
+  .overview-body        { flex-direction: column; }
+  .overview-panel       { width: 100%; min-width: unset; }
+  .overview-panel--left { max-height: 320px; }
+}
