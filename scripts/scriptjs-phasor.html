@@ -1,270 +1,474 @@
 <script>
+    // ════════════════════════════════════════════════════
+    //  EMS – Phasor / Voltage Integrated Gauge
+    // ════════════════════════════════════════════════════
+
     let meters = [];
-    let types = [];
-    let refreshIntervalId; // เก็บ interval id
-    let filteredMeters = [];
+    let types  = [];
+    let refreshIntervalId;
     let selectedMeterData = [];
-    const gaugeInstances = {};
 
     const typeMeterID = "<?=$_SESSION['tid'];?>";
-    const groupID = "<?=$_SESSION['gid'];?>";
+    const groupID     = "<?=$_SESSION['gid'];?>";
 
+    // ── Phase definitions ──
+    const PHASES = [
+        { id: '7',  label: 'Voltage A-N', group: 'LN', color: '#ef4444', needleW: 3.5 },
+        { id: '8',  label: 'Voltage B-N', group: 'LN', color: '#3b82f6', needleW: 3.5 },
+        { id: '9',  label: 'Voltage C-N', group: 'LN', color: '#eab308', needleW: 3.5 },
+        { id: '14', label: 'Voltage A-B', group: 'LL', color: '#a855f7', needleW: 2.2 },
+        { id: '15', label: 'Voltage B-C', group: 'LL', color: '#ec4899', needleW: 2.2 },
+        { id: '16', label: 'Voltage C-A', group: 'LL', color: '#06b6d4', needleW: 2.2 },
+    ];
+
+    const GAUGE_MIN = 0;
+    const GAUGE_MAX = 500;
+    const ARC_START = Math.PI * 0.75;
+    const ARC_END   = Math.PI * 2.25;
+
+    let canvas, ctx, CX, CY, R;
+
+    const phaseValues  = {};
+    const phaseMetrics = {};
+    PHASES.forEach(p => {
+        phaseValues[p.id]  = 0;
+        phaseMetrics[p.id] = { voltage:0, current:0, pf:0, kw:0, kva:0 };
+    });
+
+    // ════════════════════════════════════════════════════
+    //  INIT
+    // ════════════════════════════════════════════════════
     let ftloaded = false;
     document.addEventListener("DOMContentLoaded", async () => {
-        showLoading();
         ftloaded = true;
+        initCanvas();
+        buildLegend();
+        buildMetricCards();
+        drawGauge();
         await process();
         setRefreshTime();
         hideLoading();
     });
 
+    function initCanvas() {
+        canvas = document.getElementById('big-gauge-canvas');
+        ctx    = canvas.getContext('2d');
+        CX = canvas.width  / 2;
+        CY = canvas.height / 2 + 20;
+        R  = canvas.width  * 0.42;
+    }
+
+    // ════════════════════════════════════════════════════
+    //  FETCH
+    // ════════════════════════════════════════════════════
     async function fetchAll() {
         meters = await fetchDataInMeters();
-
-        let responsetype = await fetch("../config/fetch-data_type.php");
-        let jsontype = await responsetype.json();
-        types = jsontype.data;
-
+        const res  = await fetch("../config/fetch-data_type.php");
+        const json = await res.json();
+        types = json.data;
+        // resolve phase id หลัง types พร้อม
+        if (types && types.length) resolvePhaseIds();
     }
 
     async function fetchDataInMeters() {
-        let formfilter = new FormData();
-        formfilter.append("tid", typeMeterID);
-        formfilter.append("gid", groupID);
-
+        const form = new FormData();
+        form.append("tid", typeMeterID);
+        form.append("gid", groupID);
         try {
-            const res = await fetch("../config/fetch-meters-filter.php", {
-                method: "POST",
-                body: formfilter
-            });
+            const res    = await fetch("../config/fetch-meters-filter.php", { method:"POST", body:form });
             const result = await res.json();
             return result.data;
         } catch (e) {
-            console.error('error unknown file fetch-meters-filter.php : ', e.message);
-            alertMessages('error', 'พบปัญหา', 'เกิดข้อผิดพลาดในการทำงานของสคริปต์ fetch-meters-filter กรุณาคัดลอกข้อความนี้และส่งต่อให้ผู้ดูแลระบบ', 4000, true);
+            console.error('fetch-meters-filter:', e.message);
+            alertMessages('error','พบปัญหา','เกิดข้อผิดพลาดในการทำงานของสคริปต์ fetch-meters-filter',4000,true);
             return [];
         }
     }
 
+    // ════════════════════════════════════════════════════
+    //  PROCESS / FILTER
+    // ════════════════════════════════════════════════════
     async function process() {
         await fetchAll();
         await filterMeters();
     }
 
+    let _selectBuilt = false;
     async function filterMeters() {
-        await generateSelect('select-meters', Object.values(meters), true);
-        await generateGauge();
+        if (!_selectBuilt) {
+            generateSelect('select-meters', Object.values(meters), true);
+            _selectBuilt = true;
+        }
         await filterDataAndTime();
     }
 
     async function filterDataAndTime() {
-        const meter = document.getElementById('select-meters');
-        const meterID = meter && meter.value !== '-' ? meter.value : '1';
-        const time = document.getElementById('select-time');
-        if (time.value === '-') {
-            aleartmessages('error', 'Error', 'Time picker element not found.');
-            return;
-        }
-        let now = new Date();
+        const meter   = document.getElementById('select-meters');
+        const meterID = (meter && meter.value !== '-') ? meter.value : '1';
+        const time    = document.getElementById('select-time');
+        if (!time || time.value === '-') return;
+
+        const now = new Date();
         let selectedDateTime;
-        if (time.value === "all") {
-            selectedDateTime = new Date(1970, 0, 1);
-        } else if (time.value === "now") {
-            selectedDateTime = new Date(now.getTime() - 1.5 * 60000);
-        } else {
-            selectedDateTime = new Date(now.getTime() - parseInt(time.value, 10) * 60000);
-        }
+        if      (time.value === "all") selectedDateTime = new Date(1970,0,1);
+        else if (time.value === "now") selectedDateTime = new Date(now.getTime() - 1.5*60000);
+        else                           selectedDateTime = new Date(now.getTime() - parseInt(time.value,10)*60000);
 
+        const meterSelected       = Object.values(meters).find(m => m.id === parseInt(meterID));
         const filteredValueColumn = {};
-        const meterSelected = Object.values(meters).find(m => { return m.id === parseInt(meterID) });
-        Object.entries(meterSelected.data).map(([colName, rows]) => {
-            filteredValueColumn[colName] = Object.values(rows).filter(row => {
-                let rawDate = row.create_date;
-                rawDate = rawDate.replace(/\//g, "-");
-                const d2 = new Date(rawDate);
-                return d2 >= selectedDateTime;
+        Object.entries(meterSelected.data).forEach(([col, rows]) => {
+            filteredValueColumn[col] = Object.values(rows).filter(row => {
+                return new Date(row.create_date.replace(/\//g,"-")) >= selectedDateTime;
             });
-        })
-        selectedMeterData = {
-            ...meterSelected,
-            data: filteredValueColumn
-        };
-        await checkTimeChange();
+        });
+        selectedMeterData = { ...meterSelected, data: filteredValueColumn };
+        checkTimeChange();
     }
 
+    // ════════════════════════════════════════════════════
+    //  RESOLVE TYPE IDs จาก types array (ไม่ hardcode)
+    // ════════════════════════════════════════════════════
+    function resolveTypeId(namePart) {
+        if (!types || !types.length) return null;
+        const t = types.find(t => t.name && t.name.toLowerCase().includes(namePart.toLowerCase()));
+        return t ? String(t.id) : null;
+    }
+
+    function resolvePhaseIds() {
+        // map label keyword → PHASES entry
+        const map = [
+            ['Voltage A-N', 'LN'],
+            ['Voltage B-N', 'LN'],
+            ['Voltage C-N', 'LN'],
+            ['Voltage A-B', 'LL'],
+            ['Voltage B-C', 'LL'],
+            ['Voltage C-A', 'LL'],
+        ];
+        map.forEach(([label, group], i) => {
+            const found = types.find(t => t.name && t.name.trim().toLowerCase() === label.toLowerCase());
+            if (found) {
+                PHASES[i].id = String(found.id);
+            }
+        });
+
+        // reset phaseValues/phaseMetrics ด้วย id ใหม่
+        PHASES.forEach(p => {
+            if (!phaseValues[p.id])  phaseValues[p.id]  = 0;
+            if (!phaseMetrics[p.id]) phaseMetrics[p.id] = { voltage:0, current:0, pf:0, kw:0, kva:0 };
+        });
+    }
+
+    // ════════════════════════════════════════════════════
+    //  COMPUTE AVERAGES
+    // ════════════════════════════════════════════════════
     function checkTimeChange() {
-        console.log('selected Meter : ', selectedMeterData);
-        Object.entries(selectedMeterData.data).forEach(([key, values]) => {
-            if (['7', '8', '9', '14', '15', '16'].includes(key)) {  // Voltage A-N, B-N, C-N IDs == 7,8,9
-                let avgcolumn = 0;
-                let maxvalue = !isNaN(values[0]) ? parseFloat(values[0].value) : 0;
-                let minvalue = !isNaN(values[0]) ? parseFloat(values[0].value) : 0;
-                values.forEach(row => {
-                    let val = parseFloat(row.value);
-                    avgcolumn += val;
-                    maxvalue = val > maxvalue ? val : maxvalue;
-                    minvalue = val < minvalue ? val : minvalue;
-                });
-                avgcolumn = avgcolumn / values.length;
-                // Update gauge value using RadialGauge instance
-                setGaugeMeter('gauge_' + key, types[key - 1].name, types[key - 1].name, avgcolumn);
+        if (!types || !types.length) return;
 
-                let avgVoltage = 0;
-                let avgCurrent = 0;
-                let avgPf = 0;
-                let avgKw = 0;
-                let avgKva = 0;
-                values.forEach(row => {
-                    let voltageKey = key;
-                    let currentKey = (parseInt(key) + 3).toString();
-                    let pfKey = "17";
-                    let kwKey = "1";
-                    let kvaKey = "3";
+        // resolve id จาก types จริงๆ ก่อนคำนวณ
+        resolvePhaseIds();
 
-                    avgVoltage += parseFloat(row.value) || 0;
-                    avgCurrent += parseFloat(selectedMeterData.data[currentKey]?.find(r => r.create_date === row.create_date)?.value) || 0;
-                    avgPf += parseFloat(selectedMeterData.data[pfKey]?.find(r => r.create_date === row.create_date)?.value) || 0;
-                    avgKw += parseFloat(selectedMeterData.data[kwKey]?.find(r => r.create_date === row.create_date)?.value) || 0;
-                    avgKva += parseFloat(selectedMeterData.data[kvaKey]?.find(r => r.create_date === row.create_date)?.value) || 0;
-                });
-                const count = values.length || 1; // ป้องกันการหารด้วยศูนย์
-                avgVoltage /= count;
-                avgCurrent /= count;
-                avgPf /= count;
-                avgKw /= count;
-                avgKva /= count;
+        // หา key ของ Current A/B/C, Pf, kW, kVA จาก types
+        const idCurrentA = resolveTypeId('Current A');
+        const idCurrentB = resolveTypeId('Current B');
+        const idCurrentC = resolveTypeId('Current C');
+        const idPf       = resolveTypeId('Pf') || resolveTypeId('Power Factor');
+        const idKw       = resolveTypeId('kW');
+        const idKva      = resolveTypeId('kVA');
 
-                document.getElementById(`input-Voltage-${key}`).value = avgVoltage.toFixed(2);
-                document.getElementById(`input-current-${key}`).value = avgCurrent.toFixed(2);
-                document.getElementById(`input-pf-${key}`).value = avgPf.toFixed(2);
-                document.getElementById(`input-kw-${key}`).value = avgKw.toFixed(2);
-                document.getElementById(`input-kva-${key}`).value = avgKva.toFixed(2);
+        // map phase → current key
+        const phaseCurrentMap = {};
+        const lnPhases = PHASES.filter(p => p.group === 'LN');
+        if (lnPhases[0]) phaseCurrentMap[lnPhases[0].id] = idCurrentA;
+        if (lnPhases[1]) phaseCurrentMap[lnPhases[1].id] = idCurrentB;
+        if (lnPhases[2]) phaseCurrentMap[lnPhases[2].id] = idCurrentC;
+
+        PHASES.forEach(ph => {
+            const values = selectedMeterData.data?.[ph.id];
+            if (!values || !values.length) {
+                phaseValues[ph.id]  = 0;
+                phaseMetrics[ph.id] = { voltage:0, current:0, pf:0, kw:0, kva:0 };
+                return;
             }
+
+            let sumV=0, sumI=0, sumPf=0, sumKw=0, sumKva=0;
+            const currentKey = phaseCurrentMap[ph.id];
+
+            values.forEach(row => {
+                sumV += parseFloat(row.value) || 0;
+            });
+
+            // ใช้ค่าล่าสุดของ current/pf/kw/kva แทน per-row lookup (เร็วกว่าและ stable กว่า)
+            const lastV   = parseFloat(values[values.length-1]?.value) || 0;
+            const lastI   = currentKey ? (parseFloat(selectedMeterData.data?.[currentKey]?.[selectedMeterData.data[currentKey].length-1]?.value) || 0) : 0;
+            const lastPf  = idPf  ? (parseFloat(selectedMeterData.data?.[idPf]?.[selectedMeterData.data[idPf].length-1]?.value)   || 0) : 0;
+            const lastKw  = idKw  ? (parseFloat(selectedMeterData.data?.[idKw]?.[selectedMeterData.data[idKw].length-1]?.value)   || 0) : 0;
+            const lastKva = idKva ? (parseFloat(selectedMeterData.data?.[idKva]?.[selectedMeterData.data[idKva].length-1]?.value) || 0) : 0;
+
+            const n = values.length;
+            phaseValues[ph.id]  = sumV / n;
+            phaseMetrics[ph.id] = {
+                voltage : sumV / n,
+                current : lastI,
+                pf      : lastPf,
+                kw      : lastKw,
+                kva     : lastKva
+            };
         });
+
+        updateUI();
     }
 
-    async function generateGauge() {
-        if (!ftloaded) { return }
-        const listGauge = document.getElementById('list-gauge');
-        listGauge.innerHTML = ''; // Clear previous gauges
-        console.log(types);
+    // ════════════════════════════════════════════════════
+    //  BUILD DOM  (ครั้งแรกครั้งเดียว)
+    // ════════════════════════════════════════════════════
+    function buildLegend() {
+        const legend = document.getElementById('phase-legend');
+        if (!legend) return;
+        legend.innerHTML = '';
 
-        Object.values(types).forEach(type => {
-            if (["Voltage A-N", "Voltage A_B", "Voltage B-N", "Voltage B_C", "Voltage C-N", "Voltage C_A"].includes(type.name)) {
-                let divHeader = document.createElement('div');
-                let gaugediv = document.createElement('canvas');
-                divHeader.className = 'text-center col-2';
-                gaugediv.className = 'mb-2';
-                gaugediv.id = 'gauge_' + type.id;
-                divHeader.appendChild(gaugediv);
-                divHeader.innerHTML += `
-                <div class="d-grid bg-white bg-opacity-10 p-3 mx-1" style="text-align: center; color: #f0f0f0;">
-                    <strong class="my-2 fs-3">${type.name}</strong>
-                    <div class="d-flex justify-content-center align-items-center" style="margin-top: 10px;">
-                        <label class="w-50" for="input-Voltage-${type.id}">Voltage</label>
-                        <input class="w-50"  type="text" id="input-Voltage-${type.id}" value="0" readonly style="width: 80px; text-align: center; background: transparent; color: #fff; font-size: 1.2rem; margin-left: 10px;">
-                    </div>
-                    <div class="d-flex justify-content-center align-items-center" style="margin-top: 10px;">
-                        <label class="w-50" for="input-current-${type.id}">Current</label>
-                        <input class="w-50"  type="text" id="input-current-${type.id}" value="0" readonly style="width: 80px; text-align: center; background: transparent; color: #fff; font-size: 1.2rem; margin-left: 10px;">
-                    </div>
-                    <div class="d-flex justify-content-center align-items-center" style="margin-top: 10px;">
-                        <label class="w-50" for="input-pf-${type.id}">Pf</label>
-                        <input class="w-50"  type="text" id="input-pf-${type.id}" value="0" readonly style="width: 80px; text-align: center; background: transparent; color: #fff; font-size: 1.2rem; margin-left: 10px;">
-                    </div>
-                    <div class="d-flex justify-content-center align-items-center" style="margin-top: 10px;">
-                        <label class="w-50" for="input-kw-${type.id}">kW</label>
-                        <input class="w-50"  type="text" id="input-kw-${type.id}" value="0" readonly style="width: 80px; text-align: center; background: transparent; color: #fff; font-size: 1.2rem; margin-left: 10px;">
-                    </div>
-                    <div class="d-flex justify-content-center align-items-center" style="margin-top: 10px;">
-                        <label class="w-50" for="input-kva-${type.id}">kVA</label>
-                        <input class="w-50"  type="text" id="input-kva-${type.id}" value="0" readonly style="width: 80px; text-align: center; background: transparent; color: #fff; font-size: 1.2rem; margin-left: 10px;">
-                    </div>
-                </div>
+        ['LN','LL'].forEach(grp => {
+            // group divider label
+            const grpLabel = document.createElement('span');
+            grpLabel.className   = 'legend-group-label';
+            grpLabel.textContent = grp === 'LN' ? 'Phase-to-Neutral' : 'Phase-to-Phase';
+            legend.appendChild(grpLabel);
+
+            PHASES.filter(p => p.group === grp).forEach(ph => {
+                const chip = document.createElement('div');
+                chip.className = 'legend-chip';
+                chip.innerHTML = `
+                    <div class="legend-dot-sm" style="background:${ph.color};box-shadow:0 0 5px ${ph.color}40"></div>
+                    <span class="legend-name">${ph.label}</span>
+                    <span class="legend-val" id="lval-${ph.id}">0.0 V</span>
                 `;
-
-                listGauge.appendChild(divHeader);
-                setGaugeMeter('gauge_' + type.id, type.name, type.name, 0, 0, type.maxvaluecolumn, 5, width = 275, height = 275);
-            }
+                legend.appendChild(chip);
+            });
         });
-        ftloaded = false;
     }
 
-    function generateSelect(id, lists, selectfirst = false) {
-        if (!ftloaded) { return }
-        let select = document.getElementById(id);
-        if (!select) {
-            return;
+    function buildMetricCards() {
+        const container = document.getElementById('metric-cards');
+        if (!container) return;
+        container.innerHTML = '';
+
+        PHASES.forEach(ph => {
+            const card = document.createElement('div');
+            card.className = 'metric-card';
+            card.id        = 'card-' + ph.id;
+            card.style.setProperty('--ph-color', ph.color);
+            card.innerHTML = `
+                <div class="metric-card-header">
+                    <span class="metric-phase-label">
+                        <span class="metric-phase-dot"></span>
+                        ${ph.label}
+                    </span>
+                    <span class="metric-voltage-badge" id="badge-${ph.id}">0.0 V</span>
+                </div>
+                <div class="metric-divider"></div>
+                <div class="metric-row-labels">
+                    <span>Voltage</span><span>Current</span><span>Pf</span><span>kW</span><span>kVA</span>
+                </div>
+                <div class="metric-row-values">
+                    <strong id="mv-${ph.id}">0.00</strong>
+                    <strong id="mc-${ph.id}">0.00</strong>
+                    <strong id="mp-${ph.id}">0.00</strong>
+                    <strong id="mk-${ph.id}">0.00</strong>
+                    <strong id="mka-${ph.id}">0.00</strong>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    // ════════════════════════════════════════════════════
+    //  UPDATE UI
+    // ════════════════════════════════════════════════════
+    function pulseEl(el) {
+        if (!el) return;
+        el.classList.remove('val-update');
+        void el.offsetWidth;
+        el.classList.add('val-update');
+    }
+
+    function updateUI() {
+        // avg LN → centre display
+        const lnPhases = PHASES.filter(p => p.group === 'LN');
+        const avgLN    = lnPhases.reduce((s,p) => s + (phaseValues[p.id]||0), 0) / lnPhases.length;
+        const avgEl    = document.getElementById('avg-voltage-display');
+        if (avgEl) { avgEl.textContent = avgLN.toFixed(1); pulseEl(avgEl); }
+
+        PHASES.forEach(ph => {
+            const v = phaseValues[ph.id]  || 0;
+            const m = phaseMetrics[ph.id];
+
+            // legend chip value
+            const lv = document.getElementById('lval-' + ph.id);
+            if (lv) { lv.textContent = v.toFixed(1) + ' V'; pulseEl(lv); }
+
+            // voltage badge
+            const badge = document.getElementById('badge-' + ph.id);
+            if (badge) badge.textContent = v.toFixed(1) + ' V';
+
+            // metric values
+            [['mv','voltage'],['mc','current'],['mp','pf'],['mk','kw'],['mka','kva']].forEach(([pref, key]) => {
+                const el = document.getElementById(pref + '-' + ph.id);
+                if (el) { el.textContent = (m[key]||0).toFixed(2); pulseEl(el); }
+            });
+        });
+
+        drawGauge();
+    }
+
+    // ════════════════════════════════════════════════════
+    //  DRAW GAUGE
+    // ════════════════════════════════════════════════════
+    function valToAngle(v) {
+        return ARC_START + ((v - GAUGE_MIN) / (GAUGE_MAX - GAUGE_MIN)) * (ARC_END - ARC_START);
+    }
+
+    function drawGauge() {
+        if (!canvas) return;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // ── background track ──
+        ctx.beginPath();
+        ctx.arc(CX, CY, R, ARC_START, ARC_END);
+        ctx.strokeStyle = 'rgba(0,0,0,0.07)';
+        ctx.lineWidth   = 24;
+        ctx.lineCap     = 'round';
+        ctx.stroke();
+
+        // ── L-N zone tint (0-300 V) ──
+        ctx.beginPath();
+        ctx.arc(CX, CY, R, ARC_START, valToAngle(300));
+        ctx.strokeStyle = 'rgba(59,130,246,0.07)';
+        ctx.lineWidth   = 24;
+        ctx.stroke();
+
+        // ── L-L zone tint (300-500 V) ──
+        ctx.beginPath();
+        ctx.arc(CX, CY, R, valToAngle(300), ARC_END);
+        ctx.strokeStyle = 'rgba(234,179,8,0.07)';
+        ctx.lineWidth   = 24;
+        ctx.stroke();
+
+        // ── danger zone (top 30%) ──
+        ctx.beginPath();
+        ctx.arc(CX, CY, R, valToAngle(GAUGE_MAX * 0.70), ARC_END);
+        ctx.strokeStyle = 'rgba(239,68,68,0.10)';
+        ctx.lineWidth   = 24;
+        ctx.stroke();
+
+        // ── zone labels ──
+        [{ v:150, text:'L-N', color:'rgba(59,130,246,0.45)' },
+         { v:400, text:'L-L', color:'rgba(234,179,8,0.55)'  }].forEach(({ v, text, color }) => {
+            const a = valToAngle(v), tr = R + 20;
+            ctx.font         = '700 10px Rajdhani,sans-serif';
+            ctx.fillStyle    = color;
+            ctx.textAlign    = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(text, CX + tr*Math.cos(a), CY + tr*Math.sin(a));
+        });
+
+        // ── ticks + labels ──
+        for (let v = GAUGE_MIN; v <= GAUGE_MAX; v += 10) {
+            const a       = valToAngle(v);
+            const isMajor = v % 50 === 0;
+            const r0      = R - (isMajor ? 20 : 11);
+            ctx.beginPath();
+            ctx.moveTo(CX + r0*Math.cos(a), CY + r0*Math.sin(a));
+            ctx.lineTo(CX + (R+3)*Math.cos(a), CY + (R+3)*Math.sin(a));
+            ctx.strokeStyle = isMajor ? 'rgba(0,0,0,0.25)' : 'rgba(0,0,0,0.09)';
+            ctx.lineWidth   = isMajor ? 2 : 1;
+            ctx.stroke();
+
+            if (isMajor) {
+                const tr = R - 35;
+                ctx.fillStyle    = '#6b7280';
+                ctx.font         = '500 11px "Share Tech Mono",monospace';
+                ctx.textAlign    = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(v, CX + tr*Math.cos(a), CY + tr*Math.sin(a));
+            }
         }
+
+        // ── needles: LL (dashed) first, LN (solid) on top ──
+        [...PHASES].sort((a,b) => a.group==='LN' ? 1 : -1).forEach(ph => {
+            const v         = phaseValues[ph.id] || 0;
+            const angle     = valToAngle(v);
+            const needleLen = ph.group === 'LN' ? R - 6 : R - 24;
+
+            ctx.save();
+            ctx.translate(CX, CY);
+            ctx.shadowColor = ph.color + '55';
+            ctx.shadowBlur  = ph.group === 'LN' ? 10 : 6;
+
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(needleLen*Math.cos(angle), needleLen*Math.sin(angle));
+            ctx.strokeStyle = ph.color;
+            ctx.lineWidth   = ph.needleW;
+            ctx.lineCap     = 'round';
+            if (ph.group === 'LL') ctx.setLineDash([9, 5]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // tip dot
+            ctx.beginPath();
+            ctx.arc(needleLen*Math.cos(angle), needleLen*Math.sin(angle),
+                    ph.group==='LN' ? 4.5 : 3.5, 0, Math.PI*2);
+            ctx.fillStyle  = ph.color;
+            ctx.shadowBlur = 14;
+            ctx.fill();
+
+            ctx.restore();
+        });
+
+        // ── hub ──
+        const grad = ctx.createRadialGradient(CX,CY,0, CX,CY,15);
+        grad.addColorStop(0,'#4b5563');
+        grad.addColorStop(1,'#111827');
+        ctx.beginPath();
+        ctx.arc(CX, CY, 15, 0, Math.PI*2);
+        ctx.fillStyle   = grad;
+        ctx.shadowColor = 'rgba(0,0,0,0.4)';
+        ctx.shadowBlur  = 12;
+        ctx.fill();
+
+        ctx.shadowBlur = 0;
+        ctx.beginPath();
+        ctx.arc(CX, CY, 5.5, 0, Math.PI*2);
+        ctx.fillStyle = '#9ca3af';
+        ctx.fill();
+    }
+
+    // ════════════════════════════════════════════════════
+    //  GENERATE SELECT
+    // ════════════════════════════════════════════════════
+    function generateSelect(id, lists, selectfirst=false) {
+        const select = document.getElementById(id);
+        if (!select) return;
         select.innerHTML = `<option value="-">== select meters ==</option>`;
         lists.forEach(r => {
-            let option = document.createElement('option');
-            option.value = r.id;
-            option.textContent = r.name;
-            option.selected = selectfirst ? r.id === lists[0].id : false;
-            select.appendChild(option);
+            const opt       = document.createElement('option');
+            opt.value       = r.id;
+            opt.textContent = r.name;
+            opt.selected    = selectfirst ? r.id === lists[0].id : false;
+            select.appendChild(opt);
         });
     }
 
-    function setGaugeMeter(id, title, unitname, value = 0, minValue = 0, maxValue = 200, step = 10, width = 250, height = 250) {
-        if (id === undefined || unitname === undefined) {
-            console.error(`ID:${id} or title:${title} or unitname:${unitname} are required for gauge generation.`);
-            alertMessages('error', 'Error', 'ID and unit name are required for gauge generation.');
-            return;
-        }
-        let majorTicks = [];
-        for (let i = minValue; i <= maxValue; i += maxValue / step) {
-            majorTicks.push(parseFloat(i).toFixed(1).toString());
-        }
-        if (!gaugeInstances[id]) {
-            gaugeInstances[id] = new RadialGauge({
-                renderTo: id,
-                title: title,
-                width: width,
-                height: height,
-                // units: unitname,
-                minValue: minValue,
-                maxValue: maxValue,
-                majorTicks: majorTicks,
-                minorTicks: 2,
-                highlights: [
-                    { from: maxValue - (maxValue / 3), to: maxValue, color: "rgba(200, 50, 50, .75)" }
-                ],
-                value: value,
-                valueBox: true,
-                animationDuration: 500,
-                animationRule: "linear",
-                colorPlate: "rgba(0,0,0,.1)",
-                colorMajorTicks: "#fff",
-                colorMinorTicks: "#fff",
-                colorTitle: "#fff",
-                colorUnits: "#fff",
-                colorNumbers: "#fff",
-                colorNeedle: "#fff",
-                colorNeedleEnd: "#fff",
-                needleWidth: 1,
-                needleCircleSize: 4,
-            }).draw();
-        } else {
-            gaugeInstances[id].value = value;
-        }
-    }
-
+    // ════════════════════════════════════════════════════
+    //  SET REFRESH
+    // ════════════════════════════════════════════════════
     function setRefreshTime() {
         const inputRefresh = document.getElementById('input-refresh');
-        const refreshTime = parseInt(inputRefresh.value, 10);
-        if (isNaN(refreshTime) || refreshTime < 1 || refreshTime > 60) {
-            alertMessages('error', 'Error', 'Please enter a valid refresh time between 1 and 30 seconds.');
+        const t = parseInt(inputRefresh.value, 10);
+        if (isNaN(t) || t < 1 || t > 60) {
+            alertMessages('error','Error','Please enter a valid refresh time between 1 and 60 seconds.');
             return;
         }
-        // เคลียร์ interval เก่า
         clearInterval(refreshIntervalId);
-
-        console.log("Setting refresh time to:", refreshTime);
-
-        // ตั้ง interval ใหม่
-        refreshIntervalId = setInterval(() => {
-            process();
-        }, refreshTime * 1000);
+        refreshIntervalId = setInterval(() => process(), t * 1000);
     }
 </script>

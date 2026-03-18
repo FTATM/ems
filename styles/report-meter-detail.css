@@ -1,0 +1,64 @@
+/* ============================================
+   Report Meter Detail Page Styles
+   report-meter-detail.css
+   ============================================ */
+
+.report-table th,
+.report-table td,
+.report-table td.label-cell,
+.section-title {
+    color: #111 !important;
+}
+
+.report-table input[type="text"],
+.report-table input[type="date"] {
+    color: #111 !important;
+}
+
+/* --- Date Picker Wrapper --- */
+.filter-date-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #fff;
+    border: 1px solid #d0d0d0;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 13px;
+    color: #333;
+    cursor: pointer;
+    width: 100%;
+    box-sizing: border-box;
+    position: relative;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    user-select: none;
+}
+
+.filter-date-wrapper:hover {
+    border-color: #5d8a3c;
+}
+
+.filter-date-wrapper:focus-within {
+    border-color: #5d8a3c;
+    box-shadow: 0 0 0 2px rgba(93, 138, 60, 0.2);
+}
+
+.filter-date-wrapper .bi-calendar3 {
+    color: #5d8a3c;
+    font-size: 15px;
+    flex-shrink: 0;
+}
+
+#date-display {
+    flex: 1;
+    color: #333;
+    white-space: nowrap;
+}
+
+.filter-date-hidden {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+}

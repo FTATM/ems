@@ -1,50 +1,48 @@
 <script>
-    let meters = [];
-    let types = [];
-    let locations = [];
-    document.addEventListener("DOMContentLoaded", async () => {
-        await process();
-    });
+  let meters = [];
+  let types = [];
+  let locations = [];
+  document.addEventListener("DOMContentLoaded", async () => {
+    await process();
+  });
 
-    async function process() {
-        showLoading();
-        await fetchAll();
-        await generateTable();
-        hideLoading();
-    }
+  async function process() {
+    // showLoading();
+    await fetchAll();
+    await generateTable();
+    // hideLoading();
+  }
 
-    async function fetchAll() {
-        let responselocation = await fetch("../config/fetch-locations.php");
-        let json_l = await responselocation.json();
-        locations = json_l.data;
+  async function fetchAll() {
+    let responselocation = await fetch("../config/fetch-locations.php");
+    let json_l = await responselocation.json();
+    locations = json_l.data;
+  }
 
-    }
-
-    function generateTable() {
-        let table = document.getElementById('table-location');
-        Object.values(locations).forEach(row => {
-            let trd = document.createElement('tr');
-            trd.innerHTML += `
+  function generateTable() {
+    let table = document.getElementById("table-location");
+    Object.values(locations).forEach((row) => {
+      let trd = document.createElement("tr");
+      trd.innerHTML += `
             <td class="clickable py-3" onclick="goToGroups(${row.id})">${row.name}</td>
             `;
-            table.querySelector('tbody').appendChild(trd);
-        });
+      table.querySelector("tbody").appendChild(trd);
+    });
 
-            // <td class="py-2">${row.id}</td>
-            // <td class="clickable py-3" onmouseover="loadHoverImage('${row.name}')" onclick="goToGroups(${row.id})">${row.name}</td>
+    // <td class="py-2">${row.id}</td>
+    // <td class="clickable py-3" onmouseover="loadHoverImage('${row.name}')" onclick="goToGroups(${row.id})">${row.name}</td>
+  }
+
+  function loadHoverImage(name) {
+    console.log("Hover on : " + name);
+    let img = document.getElementById("img-showLocation");
+    img.setAttribute("src", "../assets/images/provinces/" + name + ".png");
+  }
+
+  async function goToGroups(id) {
+    let success = await setSession("lid", id);
+    if (success) {
+      window.location.href = "groups.php";
     }
-
-    function loadHoverImage(name) {
-        console.log("Hover on : " + name);
-        let img = document.getElementById('img-showLocation');
-        img.setAttribute('src', '../assets/images/provinces/' + name + '.png');
-    }
-
-    async function goToGroups(id) {
-        let success = await setSession('lid', id);
-        if (success) {
-            window.location.href = 'groups.php';
-        }
-    }
-
+  }
 </script>

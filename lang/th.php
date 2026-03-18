@@ -72,6 +72,9 @@ $lang = [
 
     'all_department' => '-- ทุกภาควิชา --',
 
+    'settings' => 'การตั้งค่า',
+    'homepage'=> 'หน้าหลัก',
+
     // Science departments
     'cs' => 'วิทยาการคอมพิวเตอร์',
     'math' => 'คณิตศาสตร์',
@@ -178,7 +181,13 @@ $lang = [
     "username" => "ชื่อผู้ใช้",
     "password" => "รหัสผ่าน",
     "husername" => "กรอกชื่อผู้ใช้ที่นี่",
-    "hpassword" => "รหัสผ่านของคุณ",
+    "hpassword" => "ระบุรหัสผ่านของคุณ",
+    "login_notice"=> "กรุณาลงชื่อเข้าใช้งานเพื่อจัดการข้อมูลพลังงานของคุณ",
+    "system_tagline"=> "เพิ่มประสิทธิภาพการใช้พลังงานในองค์กรด้วยระบบตรวจสอบและวิเคราะห์ข้อมูลแบบเรียลไทม์ เพื่ออนาคตที่ยั่งยืน",
+    "realtime"=> "เรียลไทม์",
+    "clean_energy"=> "พลังงานสะอาด",
+    "energy_saving"=> "ประหยัดพลังงาน",
+    "analysis"=> "การวิเคราะห์",
 
     //reset password
     "resetpassword" => "รีเซ็ตรหัสผ่าน",
@@ -272,7 +281,7 @@ $lang = [
     "member" => "สมาชิก",
     "membermnm" => "การจัดการสมาชิก",
 
-    "gauge" => "Gauge All Values",
+    "gauge" => "เกจแสดงค่าทั้งหมด",
     "gaugemnm" => "การจัดการเกจ/เครื่องวัด",
 
     "phasorovv" => "ภาพรวม Phase meter",
@@ -285,7 +294,7 @@ $lang = [
 
     "phasor" => "เฟส",
 
-    "diagram" => "Diagram",
+    "diagram" => "แผนผัง",
 
     "alltype" => "ชนิดของข้อมูลทั้งหมด",
 
@@ -317,9 +326,10 @@ $lang = [
     "mdidb" => "Manage Data In Database",
     "simulate" => "จำลองการส่งข้อมูล",
 
-    "egraph" => "Energy Graph",
+    "egraph" => "กราฟพลังงาน",
     "mapp" => "Map Preview",
-    "gvoltage" => "Gauge Voltage",
+    "gvoltage" => "เกจแรงดันไฟฟ้า",
+    
 
     "errortoken" => "Error Token",
 ];

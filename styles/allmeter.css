@@ -1,0 +1,347 @@
+:root {
+  --primary: #8BAE66;
+  --primary-light: rgba(139, 174, 102, 0.12);
+  --primary-border: rgba(139, 174, 102, 0.35);
+  --bg-card: #ffffff;
+  --bg-page: #f8fafc;
+  --bg-table-header: #f1f5f9;
+  --bg-stripe: #f8fafc;
+  --text-heading: #111827;
+  --text-body: #6b7280;
+  --text-card: #1f2937;
+  --text-th: #111827;
+  --border-color: #e5e7eb;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.04);
+  --shadow-md: 0 4px 16px rgba(0,0,0,.10), 0 2px 6px rgba(0,0,0,.06);
+  --radius-card: 16px;
+  --radius-badge: 999px;
+  --transition: 200ms ease;
+  --topbar-height: 56px;
+}
+
+html.dark {
+  --bg-card: #18181b;
+  --bg-page: #09090b;
+  --bg-table-header: #1c1c1f;
+  --bg-stripe: #141416;
+  --text-heading: #ffffff;
+  --text-body: #a1a1aa;
+  --text-card: #e4e4e7;
+  --text-th: #ffffff;
+  --border-color: #27272a;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.3);
+  --shadow-md: 0 4px 16px rgba(0,0,0,.4);
+}
+
+/* ── Base ── */
+body {
+  background-color: var(--bg-page) !important;
+  font-family: 'Noto Sans Thai', 'Sarabun', sans-serif;
+}
+
+/* ── Top Bar ── */
+.allmeter-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.75rem;
+  height: var(--topbar-height);
+  background: var(--bg-card);
+  border-bottom: 1.5px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  flex-shrink: 0;
+  gap: 1rem;
+}
+
+.allmeter-topbar__title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-heading);
+  margin: 0;
+  white-space: nowrap;
+}
+
+.allmeter-topbar__title .material-icons-outlined {
+  color: var(--primary);
+  font-size: 1.4rem;
+}
+
+.allmeter-topbar__refresh {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--bg-page);
+  border: 1.5px solid var(--border-color);
+  border-radius: 12px;
+  padding: 0.35rem 0.9rem;
+}
+
+.refresh-label {
+  font-size: 0.875rem;
+  color: var(--text-body);
+  white-space: nowrap;
+}
+
+.refresh-input {
+  width: 60px;
+  padding: 0.2rem 0.4rem;
+  border-radius: 8px;
+  border: 1.5px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-card);
+  font-size: 0.9rem;
+  text-align: center;
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.refresh-input:focus {
+  border-color: var(--primary-border);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.refresh-spin {
+  color: var(--primary);
+  font-size: 1.15rem;
+  animation: spin 2.5s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(360deg); }
+  to   { transform: rotate(0deg); }
+}
+
+/* ── Main Layout ── */
+.allmeter-main {
+  padding: 1.75rem;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Table Card ── */
+.allmeter-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-sm);
+  border: 1.5px solid var(--border-color);
+  overflow: hidden;
+}
+
+/* ── Table ── */
+.allmeter-table {
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  color: var(--text-card);
+}
+
+.allmeter-table thead tr {
+  background: var(--bg-table-header) !important;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.allmeter-table thead th,
+table#table-meter thead th {
+  padding: 0.875rem 1rem !important;
+  font-size: 0.85rem !important;
+  font-weight: 700 !important;
+  color: var(--text-th) !important;
+  background-color: var(--bg-table-header) !important;
+  white-space: nowrap;
+  border: none !important;
+  border-right: 1px solid var(--border-color) !important;
+}
+
+.allmeter-table thead th:last-child {
+  border-right: none;
+}
+
+.allmeter-table tbody tr {
+  border-bottom: 1px solid var(--border-color);
+  transition: background var(--transition);
+}
+
+.allmeter-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.allmeter-table tbody tr:nth-child(even) {
+  background: var(--bg-stripe);
+}
+
+.allmeter-table tbody tr:hover {
+  background: var(--primary-light) !important;
+}
+
+.allmeter-table tbody td {
+  padding: 0.75rem 1rem;
+  border: none;
+  border-right: 1px solid var(--border-color);
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+html.dark #table-meter * {
+  color: #ffffff !important;
+}
+
+html.dark .allmeter-table tbody td {
+  color: #ffffff !important;
+}
+
+html.dark .allmeter-table thead th {
+  color: #ffffff !important;
+}
+
+.allmeter-table tbody td:last-child {
+  border-right: none;
+}
+
+/* ── Protocol Badges ── */
+.allmeter-table .badge {
+  display: inline-block;
+  padding: 0.25em 0.65em;
+  border-radius: var(--radius-badge);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* TCP badge */
+.badge-tcp {
+  background: rgba(59, 130, 246, 0.12);
+  color: #2563eb;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+/* RS485 badge */
+.badge-rs485 {
+  background: rgba(245, 158, 11, 0.12);
+  color: #d97706;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+html.dark .badge-tcp {
+  background: rgba(59, 130, 246, 0.18);
+  color: #93c5fd;
+  border-color: rgba(59, 130, 246, 0.35);
+}
+
+html.dark .badge-rs485 {
+  background: rgba(245, 158, 11, 0.18);
+  color: #fcd34d;
+  border-color: rgba(245, 158, 11, 0.35);
+}
+
+/* ── Footer: pagination info + controls ── */
+.allmeter-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.875rem 1.25rem;
+  border-top: 1.5px solid var(--border-color);
+  background: var(--bg-table-header);
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.pagination-info {
+  font-size: 0.85rem;
+  color: var(--text-body);
+}
+
+/* ── Pagination Controls ── */
+.allmeter-pagination {
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+/* Pagination buttons generated by existing JS — override Bootstrap styling */
+#pagination .page-item .page-link,
+.allmeter-pagination button,
+.allmeter-pagination .page-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  height: 2rem;
+  padding: 0 0.5rem;
+  border-radius: 8px;
+  border: 1.5px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-body);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition);
+  text-decoration: none;
+}
+
+#pagination .page-item.active .page-link,
+.allmeter-pagination button.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(139, 174, 102, 0.4);
+}
+
+#pagination .page-item .page-link:hover,
+.allmeter-pagination button:hover {
+  border-color: var(--primary-border);
+  color: var(--primary);
+  background: var(--primary-light);
+}
+
+#pagination .page-item.active .page-link:hover {
+  background: var(--primary);
+  color: #fff;
+}
+
+/* ── Theme Toggle Button ── */
+.theme-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 10px;
+  border: 1.5px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-body);
+  cursor: pointer;
+  transition: color var(--transition), border-color var(--transition),
+              background var(--transition), transform var(--transition);
+  flex-shrink: 0;
+}
+
+.theme-toggle-btn:hover {
+  color: var(--primary);
+  border-color: var(--primary-border);
+  background: var(--primary-light);
+  transform: rotate(15deg);
+}
+
+.theme-toggle-btn .material-icons-outlined {
+  font-size: 1.2rem;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .allmeter-topbar {
+    flex-wrap: wrap;
+    height: auto;
+    padding: 0.75rem 1rem;
+  }
+
+  .allmeter-main {
+    padding: 1rem;
+  }
+
+  .allmeter-topbar__refresh {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}

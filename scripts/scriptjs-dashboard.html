@@ -10,6 +10,52 @@
     const typeMeterID = "<?=$_SESSION['tid'];?>";
     const groupID = "<?=$_SESSION['gid'];?>";
 
+    /*
+     * TYPE-OF-VALUE BUTTON CONFIG
+     * แต่ละ entry ประกอบด้วย:
+     *   id        — ตรงกับ type id จาก API (string)
+     *   name      — ชื่อหลัก
+     *   sub       — ชื่อย่อย (uppercase label)
+     *   icon      — Bootstrap Icons class
+     *   section   — กลุ่ม section (จะถูก render เป็น row แยกตาม category)
+     *   wide      — (optional) ถ้า true จะ render เป็นปุ่มแถวเดียวแบบกว้าง
+     *   cols      — (optional) จำนวน column ใน grid ของ section นี้ (default 3)
+     */
+    const TOV_CONFIG = [
+        // ── Power ──
+        { id: '1',  name: 'kW',           sub: 'POWER',      icon: 'bi-lightning-charge-fill', section: 'power' },
+        { id: '2',  name: 'kVA',          sub: 'APPARENT',   icon: 'bi-lightning-charge-fill', section: 'power' },
+        { id: '3',  name: 'kVAR',         sub: 'REACTIVE',   icon: 'bi-lightning-fill',        section: 'power' },
+        { id: '4',  name: 'kWh',          sub: 'ENERGY',     icon: 'bi-speedometer2',          section: 'power' },
+        { id: '5',  name: 'kVAh',         sub: 'REACTIVE H', icon: 'bi-speedometer2',          section: 'power' },
+        { id: '6',  name: 'kVARh',        sub: 'REACTIVE H', icon: 'bi-speedometer2',          section: 'power' },
+        // ── Voltage Phase-Neutral ──
+        { id: '7',  name: 'V A-N',        sub: '',           icon: 'bi-bar-chart-steps',       section: 'vpn' },
+        { id: '8',  name: 'V B-N',        sub: '',           icon: 'bi-bar-chart-steps',       section: 'vpn' },
+        { id: '9',  name: 'V C-N',        sub: '',           icon: 'bi-bar-chart-steps',       section: 'vpn' },
+        // ── Voltage Phase-Phase ──
+        { id: '10', name: 'V A-B',        sub: '',           icon: 'bi-circle-fill',           section: 'vpp' },
+        { id: '11', name: 'V B-C',        sub: '',           icon: 'bi-circle-fill',           section: 'vpp' },
+        { id: '12', name: 'V C-A',        sub: '',           icon: 'bi-circle-fill',           section: 'vpp' },
+        // ── Current ──
+        { id: '13', name: 'Curr A',       sub: '',           icon: 'bi-activity',              section: 'current' },
+        { id: '14', name: 'Curr B',       sub: '',           icon: 'bi-activity',              section: 'current' },
+        { id: '15', name: 'Curr C',       sub: '',           icon: 'bi-activity',              section: 'current' },
+        // ── Others ──
+        { id: '16', name: 'Current Average', sub: '',        icon: 'bi-bar-chart-line-fill',   section: 'other', wide: true },
+        { id: '17', name: 'Pf',           sub: 'POWER FACTOR', icon: 'bi-sliders',             section: 'other2' },
+        { id: '18', name: 'Frequency',    sub: 'ความถี่ (Hz)', icon: 'bi-soundwave',           section: 'other2', cols: 2 },
+    ];
+
+    const TOV_SECTIONS = [
+        { key: 'power',   label: null },
+        { key: 'vpn',     label: 'VOLTAGE PHASE-NEUTRAL' },
+        { key: 'vpp',     label: 'VOLTAGE PHASE-PHASE' },
+        { key: 'current', label: 'CURRENT' },
+        { key: 'other',   label: null, cols: 1 },
+        { key: 'other2',  label: null, cols: 2 },
+    ];
+
     let ftloaded = false;
     document.addEventListener("DOMContentLoaded", async () => {
         showLoading();
@@ -69,154 +115,371 @@
             let Datafiltered = {};
             Object.entries(fm.data).map(([key, rows]) => {
                 Datafiltered[key] = Object.values(rows).filter(datatype => {
-                    let date = new Date(datatype.create_date);
+                    let date = new Date(datatype.create_date.replace(' ', 'T'));
                     return date >= selectedDateTime;
                 });
             });
-            return {
-                ...fm,
-                data: Datafiltered,
-            }
+            return { ...fm, data: Datafiltered };
         });
 
         await updateData(filteredDataInMeters);
-
     }
 
-    function generateOption(id, data, selectfirst = false) {
-        if (!ftloaded) { return }
+    // ✅ FIX 1: force select.value หลัง append options + reset ftloaded ให้ refresh ทำงานได้
+    function generateOption(id, data, selectfirst = true) {
+        if (!ftloaded) { return; }
         ftloaded = false;
+
         let select = document.getElementById(id);
-        select.innerHTML = '<option>=== <?=$lang["select"]?> === </option>';
+        select.innerHTML = '<option value="">== <?=$lang["select"]?> ==</option>';
         data.forEach(row => {
             let option = document.createElement('option');
             option.value = row.id;
             option.textContent = `[${row.id}] ${row.name}`;
-            option.selected = selectfirst ? data[0].id === row.id : false;
             select.appendChild(option);
         });
+
+        // force set value ตรงๆ แทนการใช้ option.selected ที่ไม่น่าเชื่อถือ
+        if (selectfirst && data.length > 0) {
+            select.value = data[0].id;
+        }
+
+        // ✅ reset flag เพื่อให้ process() รอบถัดไป (refresh) ทำงานได้
+        ftloaded = true;
+
         const locate = document.getElementById('location');
         locate.innerHTML = `<?=$lang['location']?> : ` + getNameLocation(groupID);
         const group = document.getElementById('group');
         group.innerHTML = `<?=$lang['group']?> : ` + getNameGroup(groupID);
     }
 
-    async function updateData(filteredDataInMeters) {
-        const LinearchartData = [];
-        const PiechartData = [];
-        const LinearchartData2 = [];
-        const PiechartData2 = [];
-        let select = document.getElementById('select-meters');
-        if (!Number(select.value)) {
-            alertMessages('warning', "No Data Available", "No data was found for the selected period. Please choose a different timeframe.", 5000, true);
-            return
-        }
-        const selectedMeter = filteredDataInMeters.find(m => { return parseInt(m.id) === parseInt(select.value) })
-        if (lastSelectValueTime !== select.value && (selectedMeter?.data['1']?.length ?? 0) < 1) {
-            alertMessages('warning', "No Data Available", "No data was found for the selected period. Please choose a different timeframe.", 5000, true);
-            lastSelectValueTime = select.value;
-        }
-        // show infomation in table
-        generateInfomation(selectedMeter);
 
-        result.forEach(index => {
-            LinearchartData.push(...prepareLinearData(selectedMeter, index));
-        });
-        createLinearChart('chart-linear', "Date & Data", LinearchartData);
-
-        result.forEach(index => {
-            PiechartData.push(...preparePieData(selectedMeter, index));
-        });
-        createPieChart('chart-Pie', "Ratio of Data", PiechartData);
-
-        LinearchartData2.push(...prepareLinearPrice(selectedMeter));
-        createLinearChart('chart-linear-price', 'Price of time', LinearchartData2);
-
-    }
-
+    // ✅ FIX 4: getNameLocation หา location จาก group จริงๆ แทน logic เดิมที่ผิด
     function getNameLocation(gid) {
-        return locations.find(l => {
-            return groups.filter(g => {
-                return g.id === gid;
-            })
-        }).name;
+        const group = groups.find(g => String(g.id) === String(gid));
+        if (!group) return '—';
+        return locations.find(l => String(l.id) === String(group.location_id))?.name ?? '—';
     }
 
+    // ✅ FIX 5: getNameGroup guard กรณี group ไม่เจอ
     function getNameGroup(id) {
-        return groups.find(g => {
-            return g.id === id;
-        }).name;
+        return groups.find(g => String(g.id) === String(id))?.name ?? '—';
     }
 
-    // refer from meter
+    /* ─────────────────────────────────────────────
+     *  generateInfomation — render vertical stacked layout
+     * ───────────────────────────────────────────── */
     function generateInfomation(selectMeter) {
-        let div = document.getElementById('infomation');
-        div.innerHTML = `    
-        <h3 class='text-center pb-2'><?= $lang['information'] ?></h3>
-        `;
+        const rows = [
+            {
+                label: 'LOCATION',
+                value: getNameLocation(groupID),
+                icon:  'bi-geo-alt'
+            },
+            {
+                label: 'GROUP',
+                value: getNameGroup(groupID),
+                icon:  'bi-collection'
+            },
+            {
+                label: 'METER NAME',
+                value: selectMeter?.name ?? '—',
+                icon:  'bi-card-text'
+            },
+            {
+                label: 'STATUS',
+                value: selectMeter?.is_active,
+                icon:  'bi-phone',
+                isStatus: true
+            },
+            {
+                label: 'IP ADDRESS',
+                value: selectMeter?.ip_address ?? '—',
+                icon:  'bi-hdd-network'
+            },
+        ];
 
-        let table = document.createElement('table');
-        table.className = 'table table-borderless';
-        table.innerHTML = `
-            <tr>
-                <td class="text-end px-4">Location : </td>
-                <td>${getNameLocation(groupID)}</td>
-            </tr>
-            <tr>
-                <td class="text-end px-4">Group : </td>
-                <td>${getNameGroup(groupID)}</td>
-            </tr>
-        `;
-        Object.entries(selectMeter).forEach(([key, data]) => {
-            if (['name', 'is_active', 'ip_address', 'port'].includes(key)) {
-                let row = document.createElement('tr');
-                let cell1 = document.createElement('td');
-                let cell2 = document.createElement('td');
-                cell1.className = 'text-end px-4';
-                cell1.style.width = '40%';
-                cell1.innerText = key + ' : ';
-                cell2.innerText = key === "is_active" && Number(data) ? parseInt(data) == 1 ? 'True' : 'False' : data;
-                row.appendChild(cell1);
-                row.appendChild(cell2);
-                table.querySelector('tbody').appendChild(row);
+        const isDark = document.documentElement.classList.contains('dark');
+        const colorValue  = isDark ? '#deeacc' : '#1c2214';
+        const colorMuted  = isDark ? '#607048' : '#7a8f60';
+        const colorIcon   = isDark ? '#607048' : '#7a8f60';
+        const colorBorder = isDark ? '#283820' : '#d8e4c8';
+
+        const cells = rows.map((row, idx) => {
+            let valueHtml;
+            if (row.isStatus) {
+                const isOn = parseInt(row.value) === 1;
+                valueHtml = `
+                    <span class="info-status-badge ${isOn ? 'info-status--on' : 'info-status--off'}">
+                        <span class="info-status-dot"></span>
+                        ${isOn ? 'Active' : 'Inactive'}
+                    </span>`;
+            } else {
+                valueHtml = `<div class="info-vstack-value" style="color:${colorValue} !important;font-size:13px;font-weight:600;line-height:1.3;">${row.value}</div>`;
+            }
+
+            const divider = idx < rows.length - 1
+                ? `<div class="info-vstack-divider" style="height:1px;background:${colorBorder};margin:0 14px;"></div>`
+                : '';
+
+            return `
+                <div class="info-vstack-item" style="display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:10px 14px;">
+                    <div style="display:flex;align-items:center;gap:6px;">
+                        <i class="bi ${row.icon}" style="font-size:13px;color:${colorIcon} !important;"></i>
+                        <div class="info-vstack-label" style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:${colorMuted} !important;">${row.label}</div>
+                    </div>
+                    ${valueHtml}
+                </div>${divider}`;
+        }).join('');
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'info-vstack-list';
+        Object.assign(wrapper.style, {
+            display: 'flex', flexDirection: 'column',
+            width: '100%', boxSizing: 'border-box', padding: '4px 0',
+        });
+        wrapper.innerHTML = cells;
+        document.getElementById('infomation').innerHTML = '';
+        document.getElementById('infomation').appendChild(wrapper);
+    }
+
+    /* ─────────────────────────────────────────────
+     *  generateDataList — render Type of Value grid
+     * ───────────────────────────────────────────── */
+    function applyGridStyle(el, cols) {
+        const colMap = { 1: '1fr', 2: 'repeat(2,1fr)', 3: 'repeat(3,1fr)' };
+        Object.assign(el.style, {
+            display:             'grid',
+            gridTemplateColumns: colMap[cols] || 'repeat(3,1fr)',
+            gap:                 '5px',
+            marginBottom:        '6px',
+            width:               '100%',
+            boxSizing:           'border-box',
+        });
+    }
+
+    function generateDataList() {
+        const listdata = document.getElementById('list-data');
+        listdata.innerHTML = '';
+
+        Object.assign(listdata.style, {
+            display:    'block',
+            flexWrap:   'unset',
+            gap:        'unset',
+            alignItems: 'unset',
+            padding:    '0',
+            width:      '100%',
+            boxSizing:  'border-box',
+        });
+
+        if (!types || types.length === 0) return;
+
+        const normalize = s => String(s).toLowerCase().replace(/[\s\-_]/g, '');
+
+        const apiById   = {};
+        const apiByName = {};
+        types.forEach(t => {
+            apiById[String(t.id)] = t;
+            apiByName[normalize(t.name)] = t;
+        });
+
+        const matchedApiIds = new Set();
+        const resolvedConfig = TOV_CONFIG.map(cfg => {
+            if (apiById[cfg.id]) {
+                matchedApiIds.add(String(cfg.id));
+                return { ...cfg, realId: String(cfg.id) };
+            }
+            const apiRow = apiByName[normalize(cfg.name)];
+            if (apiRow) {
+                matchedApiIds.add(String(apiRow.id));
+                return { ...cfg, realId: String(apiRow.id) };
+            }
+            return null;
+        }).filter(Boolean);
+
+        const sectionMap = {};
+        TOV_SECTIONS.forEach(s => { sectionMap[s.key] = []; });
+        resolvedConfig.forEach(cfg => {
+            if (sectionMap[cfg.section] !== undefined) {
+                sectionMap[cfg.section].push(cfg);
             }
         });
-        div.appendChild(table);
-    }
 
-    // refer from types
-    async function generateDataList() {
-        let listdata = document.getElementById('list-data');
-        listdata.innerHTML = ''; // เคลียร์ข้อมูลเดิมก่อนสร้างใหม่
+        const extraTypes = types.filter(t => !matchedApiIds.has(String(t.id)));
 
-        types.forEach($row => {
-            let div = document.createElement('div');
+        TOV_SECTIONS.forEach((section, sectionIdx) => {
+            const items = sectionMap[section.key];
+            if (!items || items.length === 0) return;
 
-            let button = document.createElement('button');
-            button.textContent = $row['name'];
-            button.setAttribute('data-id', $row['id']);
-            button.classList.add('toggle-button');
-            if (result.includes($row['id'])) {
-                button.classList.add('active');
-            }
-            // Event toggle เมื่อคลิกปุ่ม
-            button.addEventListener('click', function () {
-                const id = $row['id'];
-
-                if (result.includes(id)) {
-                    result = result.filter(item => item !== id);
-                    button.classList.remove('active'); // เปลี่ยน UI ปุ่ม
-                } else {
-                    // ถ้ายังไม่มี ให้เพิ่มเข้าไป
-                    result.push(id);
-                    button.classList.add('active');
-                }
-                filterDataInMeters();
+            const sectionDiv = document.createElement('div');
+            sectionDiv.className = 'tov-section';
+            Object.assign(sectionDiv.style, {
+                display:   'block',
+                width:     '100%',
+                boxSizing: 'border-box',
+                padding:   '8px 10px 2px',
+                borderTop: sectionIdx > 0 ? '1px solid var(--border)' : 'none',
             });
 
-            // div.appendChild(button);
-            listdata.appendChild(button);
+            if (section.label) {
+                const catLabel = document.createElement('span');
+                catLabel.className = 'tov-cat-label';
+                catLabel.textContent = section.label;
+                Object.assign(catLabel.style, {
+                    display:       'block',
+                    fontSize:      '9px',
+                    fontWeight:    '700',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.08em',
+                    color:         'var(--text-muted)',
+                    padding:       '4px 2px 6px',
+                });
+                sectionDiv.appendChild(catLabel);
+            }
+
+            const cols = section.cols ?? 3;
+            const gridDiv = document.createElement('div');
+            gridDiv.className = `tov-grid tov-grid--${cols === 1 ? '1' : cols === 2 ? '2' : '3'}`;
+            applyGridStyle(gridDiv, cols);
+
+            items.forEach(cfg => {
+                gridDiv.appendChild(buildTovButton({ ...cfg, id: cfg.realId }));
+            });
+
+            sectionDiv.appendChild(gridDiv);
+            listdata.appendChild(sectionDiv);
         });
+
+        if (extraTypes.length > 0) {
+            const sectionDiv = document.createElement('div');
+            sectionDiv.className = 'tov-section';
+            Object.assign(sectionDiv.style, {
+                display: 'block', width: '100%', boxSizing: 'border-box',
+                padding: '8px 10px 2px', borderTop: '1px solid var(--border)',
+            });
+
+            const gridDiv = document.createElement('div');
+            gridDiv.className = 'tov-grid tov-grid--3';
+            applyGridStyle(gridDiv, 3);
+
+            extraTypes.forEach(t => {
+                gridDiv.appendChild(buildTovButton({
+                    id: String(t.id), name: t.name,
+                    sub: '', icon: 'bi-dash-circle', section: 'extra'
+                }));
+            });
+
+            sectionDiv.appendChild(gridDiv);
+            listdata.appendChild(sectionDiv);
+        }
+    }
+
+    function buildTovButton(cfg) {
+        const isActive  = result.includes(cfg.id);
+        const isWide    = !!cfg.wide;
+
+        const btn = document.createElement('button');
+        btn.setAttribute('data-id', cfg.id);
+        btn.className = 'tov-btn' + (isWide ? ' tov-btn--wide' : '') + (isActive ? ' active' : '');
+
+        Object.assign(btn.style, {
+            display:        'flex',
+            flexDirection:  isWide ? 'row'  : 'column',
+            alignItems:     'center',
+            justifyContent: isWide ? 'flex-start' : 'center',
+            gap:            isWide ? '10px' : '4px',
+            padding:        isWide ? '8px 12px' : '7px 4px 6px',
+            borderRadius:   '8px',
+            border:         isActive ? '1.5px solid var(--green)' : '1.5px solid var(--border)',
+            background:     isActive ? 'var(--green-light)' : 'var(--bg-card)',
+            cursor:         'pointer',
+            minHeight:      isWide ? '40px' : '54px',
+            width:          '100%',
+            boxSizing:      'border-box',
+            margin:         '0',
+            fontSize:       'inherit',
+            fontWeight:     'inherit',
+            transition:     'border-color 0.15s, background 0.15s',
+            position:       'relative',
+            overflow:       'hidden',
+            textAlign:      'center',
+        });
+
+        const iconDiv = document.createElement('div');
+        iconDiv.className = 'tov-icon';
+        Object.assign(iconDiv.style, {
+            width:          '26px',
+            height:         '26px',
+            minWidth:       '26px',
+            borderRadius:   '6px',
+            background:     isActive ? 'rgba(139,174,102,0.25)' : 'var(--bg-select)',
+            display:        'flex',
+            alignItems:     'center',
+            justifyContent: 'center',
+            flexShrink:     '0',
+        });
+
+        const icon = document.createElement('i');
+        icon.className = `bi ${cfg.icon}`;
+        Object.assign(icon.style, {
+            fontSize:   '12px',
+            lineHeight: '1',
+            color:      isActive ? 'var(--green)' : 'var(--text-muted)',
+        });
+        iconDiv.appendChild(icon);
+
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'tov-name';
+        nameSpan.textContent = cfg.name;
+        Object.assign(nameSpan.style, {
+            fontSize:   isWide ? '12px' : '11px',
+            fontWeight: '700',
+            color:      isActive ? 'var(--green-dark)' : 'var(--text-primary)',
+            textAlign:  isWide ? 'left' : 'center',
+            lineHeight: '1.1',
+        });
+
+        btn.appendChild(iconDiv);
+        btn.appendChild(nameSpan);
+
+        if (cfg.sub) {
+            const subSpan = document.createElement('span');
+            subSpan.className = 'tov-sub';
+            subSpan.textContent = cfg.sub;
+            Object.assign(subSpan.style, {
+                fontSize:      '8px',
+                fontWeight:    '600',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+                color:         isActive ? 'var(--green)' : 'var(--text-muted)',
+                textAlign:     'center',
+                lineHeight:    '1.1',
+            });
+            btn.appendChild(subSpan);
+        }
+
+        btn.addEventListener('click', function () {
+            const id = cfg.id;
+            let active;
+            if (result.includes(id)) {
+                result = result.filter(item => item !== id);
+                btn.classList.remove('active');
+                active = false;
+            } else {
+                result.push(id);
+                btn.classList.add('active');
+                active = true;
+            }
+            btn.style.border          = active ? '1.5px solid var(--green)'   : '1.5px solid var(--border)';
+            btn.style.background      = active ? 'var(--green-light)'         : 'var(--bg-card)';
+            iconDiv.style.background  = active ? 'rgba(139,174,102,0.25)'     : 'var(--bg-select)';
+            icon.style.color          = active ? 'var(--green)'               : 'var(--text-muted)';
+            nameSpan.style.color      = active ? 'var(--green-dark)'          : 'var(--text-primary)';
+
+            filterDataInMeters();
+        });
+
+        return btn;
     }
 
     function setRefreshTime() {
@@ -226,281 +489,291 @@
             alertMessages('error', 'Error', 'Please enter a valid refresh time between 1 and 30 seconds.');
             return;
         }
-        // เคลียร์ interval เก่า
         clearInterval(refreshIntervalId);
-
         console.log("Setting refresh time to:", refreshTime);
-
-        // ตั้ง interval ใหม่
         refreshIntervalId = setInterval(() => {
             process();
         }, refreshTime * 1000);
     }
 
+    // ======== Chart.js helpers ========
 
+    /* อ่าน CSS variable */
+    function getCssVar(name) {
+        return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    }
 
-    // ======== prepare Data for Chart and Chart function ========
+    /* โทนสีเขียว */
+    function getRandomColor(index) {
+        const isDark = document.documentElement.classList.contains('dark');
+        const colors = isDark ? [
+            "#8BAE66","#A8C87A","#6e9248","#C2DC9A","#5a7a3a",
+            "#B5D488","#7FA055","#D4EBB0","#4d6832","#9BC070",
+            "#E0F2C8","#638C40","#AECF80","#3d5628","#C8E4A0",
+            "#82A85E","#B8D890","#527838"
+        ] : [
+            "#6e9248","#8BAE66","#4d6832","#A8C87A","#3d5628",
+            "#7FA055","#527838","#B5D488","#638C40","#5a7a3a",
+            "#9BC070","#405e28","#C2DC9A","#2e4820","#AECF80",
+            "#6e9248","#82A85E","#344e1e"
+        ];
+        return colors[index % colors.length];
+    }
+
+    /* อ่าน theme จาก CSS variables */
+    function getChartTheme() {
+        const isDark = document.documentElement.classList.contains('dark');
+        return {
+            bgColor:       getCssVar('--bg-card'),
+            textColor:     getCssVar('--text-primary'),
+            mutedColor:    getCssVar('--text-muted'),
+            gridColor:     getCssVar('--border'),
+            tooltipBg:     isDark ? getCssVar('--bg-select') : '#ffffff',
+            tooltipBorder: getCssVar('--green'),
+            legendColor:   getCssVar('--text-secondary'),
+        };
+    }
+
+    /* format date → "DD Mon YYYY HH:mm:ss" */
+    function formatDate(d) {
+        const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        const pad = n => String(n).padStart(2,'0');
+        return `${pad(d.getDate())} ${months[d.getMonth()]} ${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+    }
+
+    /* เก็บ Chart instance ไว้ destroy ก่อน render ใหม่ */
+    const _chartInstances = {};
+
+    function _destroyChart(id) {
+        if (_chartInstances[id]) {
+            _chartInstances[id].destroy();
+            delete _chartInstances[id];
+        }
+    }
+
+    /* สร้าง <canvas> ใน container (ล้างเก่าก่อน) */
+    function _getCanvas(containerId) {
+        const wrap = document.getElementById(containerId);
+        wrap.innerHTML = '';
+        const canvas = document.createElement('canvas');
+        wrap.appendChild(canvas);
+        return canvas;
+    }
+
+    // ======== prepare Data ========
 
     function prepareLinearData(SelectedFilterMeter, columnIndex) {
-        const chartData = [];
-
         const rawData = SelectedFilterMeter.data?.[columnIndex];
-
-        if (rawData && Array.isArray(rawData)) {
-            const dataPoints = rawData.map(row => ({
-                x: new Date(row.create_date),
+        if (!rawData || !Array.isArray(rawData) || rawData.length === 0) return null;
+        return {
+            label: getLabelFromIndex(columnIndex),
+            data: rawData.map(row => ({
+                x: new Date(row.create_date.replace(' ', 'T')),
                 y: parseFloat(row.value) || 0
-            }));
-
-            chartData.push({
-                type: "spline",
-                axisYType: "secondary",
-                name: `${getLabelFromIndex(columnIndex)}`,
-                showInLegend: true,
-                markerSize: 0,
-                yValueFormatString: "#,##0.##",
-                dataPoints: dataPoints,
-                color: getRandomColor(columnIndex)
-            });
-        }
-
-        return chartData;
+            })),
+            color: getRandomColor(columnIndex)
+        };
     }
 
     function prepareLinearPrice(SelectedFilterMeter) {
-        const chartData = [];
-
         const rawData = SelectedFilterMeter.data?.[2];
-        if (rawData && Array.isArray(rawData) && rawData.length > 0) {
-            const { powerData, averageCost } = calculateElectricCost(rawData, 4);
-
-            chartData.push({
-                type: "spline",
-                axisYType: "secondary",
-                name: `price`,
-                showInLegend: true,
-                markerSize: 0,
-                yValueFormatString: "#,##0.##",
-                dataPoints: powerData,
-                color: getRandomColor(2)
-            });
-        }
-
-        return chartData;
+        if (!rawData || !Array.isArray(rawData) || rawData.length === 0) return null;
+        const { powerData } = calculateElectricCost(rawData, 4);
+        return {
+            label: 'Price (฿)',
+            data: powerData.map(p => ({ x: p.x, y: p.y })),
+            color: getRandomColor(2)
+        };
     }
 
     function preparePieData(SelectedFilterMeter, columnIndex) {
-        const temp = [];
-
         const rawData = SelectedFilterMeter.data?.[columnIndex];
-
-        if (rawData && Array.isArray(rawData) && rawData.length > 0) {
-            const total = rawData.reduce((sum, row) => sum + (parseFloat(row.value) || 0), 0);
-            const avg = total / rawData.length;
-
-            temp.push({
-                name: SelectedFilterMeter.name,
-                avg: avg
-            });
-        }
-
-
-        // ขั้นที่ 2: คำนวณรวมทั้งหมด
-        const totalAll = temp.reduce((acc, cur) => acc + cur.avg, 0);
-
-        // ขั้นที่ 3: คำนวณ % แล้วคืน chartData
-        const chartData = temp.map(item => {
-            const percent = (item.avg / totalAll) * 100;
-            return {
-                label: `${item.name} - ${getLabelFromIndex(columnIndex)}`,
-                y: parseFloat(item.avg.toFixed(2)),
-                indexLabel: `${item.name} - ${percent.toFixed(1)}%`,
-                color: getRandomColor(columnIndex)
-            };
-        });
-
-        return chartData;
-    }
-
-    function preparePiePrice(columnIndex) {
-        const temp = [];
-        const pricePerKWh = 4.5; // ราคาต่อหน่วย (บาท/หน่วย)
-
-        // ขั้นที่ 1: คำนวณค่าเฉลี่ยการใช้งานของแต่ละมิเตอร์
-        const rawData = SelectedFilterMeter.data?.[columnIndex];
-
-        if (rawData && Array.isArray(rawData) && rawData.length > 0) {
-            const total = rawData.reduce((sum, row) => sum + (parseFloat(row.value) || 0), 0);
-            const avgKW = total / rawData.length;
-            const avgPrice = avgKW * pricePerKWh;
-
-            temp.push({
-                name: SelectedFilterMeter.name,
-                avgPrice: avgPrice
-            });
-
-            console.log(`Avg Price (${SelectedFilterMeter.name}):`, avgPrice.toFixed(2));
-        }
-
-        // ขั้นที่ 2: รวมราคาทั้งหมดเพื่อใช้คำนวณ %
-        const totalPriceAll = temp.reduce((acc, cur) => acc + cur.avgPrice, 0);
-        console.log("Total Price All:", totalPriceAll.toFixed(2));
-
-        // ขั้นที่ 3: แปลงเป็น chartData พร้อมแสดง % และราคาเฉลี่ย
-        const chartData = temp.map(item => {
-            const percent = (item.avgPrice / totalPriceAll) * 100;
-
-            return {
-                label: `${item.name} - ${getLabelFromIndex(columnIndex)}`,
-                y: parseFloat(item.avgPrice.toFixed(2)), // แสดงเป็นค่าใช้จ่ายเฉลี่ย
-                indexLabel: `${item.name} - ${percent.toFixed(1)}%`
-            };
-        });
-
-        return chartData;
+        if (!rawData || !Array.isArray(rawData) || rawData.length === 0) return null;
+        const total = rawData.reduce((s, r) => s + (parseFloat(r.value) || 0), 0);
+        const avg   = total / rawData.length;
+        return {
+            label: `${SelectedFilterMeter.name} - ${getLabelFromIndex(columnIndex)}`,
+            value: parseFloat(avg.toFixed(2)),
+            color: getRandomColor(columnIndex)
+        };
     }
 
     function calculateElectricCost(dataArray, pricePerKWh) {
-        let totalCost = 0;
+        let totalCost  = 0;
         let defaultkWh = dataArray[0].value;
         const powerData = dataArray.map(row => {
             const powerKWh = parseFloat(row.value - defaultkWh) * 120 || 0;
             defaultkWh = row.value;
-            totalCost += (powerKWh * pricePerKWh);
-            return {
-                x: new Date(row.create_date),
-                y: powerKWh
-            };
+            totalCost += powerKWh * pricePerKWh;
+            return { x: new Date(row.create_date.replace(' ', 'T')), y: powerKWh };
         });
-
-        const averageCost = dataArray.length > 0 ? (totalCost / dataArray.length) : 0;
-
-        return {
-            powerData,
-            averageCost: averageCost.toFixed(2)
-        };
+        const averageCost = dataArray.length > 0 ? totalCost / dataArray.length : 0;
+        return { powerData, averageCost: averageCost.toFixed(2) };
     }
 
     function getLabelFromIndex(index) {
-        let name = "unknown";
-        types.forEach($row => {
-            if ($row['id'] == index) {
-                name = $row['name'];
+        const found = types.find(r => r['id'] == index);
+        return found ? found['name'] : 'unknown';
+    }
+
+    // ======== updateData (ใช้ format ใหม่) ========
+
+    async function updateData(filteredDataInMeters) {
+        let select = document.getElementById('select-meters');
+        if (!Number(select.value)) { return; }
+
+        const selectedMeter = filteredDataInMeters.find(m => parseInt(m.id) === parseInt(select.value));
+
+        if (lastSelectValueTime !== select.value && (selectedMeter?.data['1']?.length ?? 0) < 1) {
+            alertMessages('warning', "No Data Available", "No data was found for the selected period. Please choose a different timeframe.", 5000, true);
+            lastSelectValueTime = select.value;
+        }
+
+        generateInfomation(selectedMeter);
+
+        // ── Line chart (kW / kVAR) ──
+        const lineDatasets = result
+            .map(index => prepareLinearData(selectedMeter, index))
+            .filter(Boolean);
+        createLinearChart('chart-linear', 'กราฟการใช้พลังงาน (kW)', lineDatasets);
+
+        // ── Pie chart ──
+        const pieItems = result
+            .map(index => preparePieData(selectedMeter, index))
+            .filter(Boolean);
+        createPieChart('chart-Pie', 'สัดส่วนการใช้พลังงาน', pieItems);
+
+        // ── Price chart ──
+        const priceItem = prepareLinearPrice(selectedMeter);
+        createLinearChart('chart-linear-price', 'ค่าไฟฟ้า (บาท)', priceItem ? [priceItem] : []);
+    }
+
+    // ======== Chart.js render functions ========
+
+    function createLinearChart(containerId, title, datasets) {
+        const t = getChartTheme();
+        _destroyChart(containerId);
+        const canvas = _getCanvas(containerId);
+
+        const chartDatasets = datasets.map(ds => ({
+            label:           ds.label,
+            data:            ds.data,
+            borderColor:     ds.color,
+            backgroundColor: ds.color + '22',
+            borderWidth:     2,
+            pointRadius:     0,
+            pointHoverRadius:4,
+            tension:         0.3,
+            fill:            false,
+        }));
+
+        _chartInstances[containerId] = new Chart(canvas, {
+            type: 'line',
+            data: { datasets: chartDatasets },
+            options: {
+                responsive:          true,
+                maintainAspectRatio: false,
+                animation:           false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: {
+                        display:  true,
+                        position: 'top',
+                        labels: {
+                            color:     t.legendColor,
+                            font:      { size: 12 },
+                            boxWidth:  12,
+                            padding:   12,
+                            usePointStyle: true,
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: t.tooltipBg,
+                        borderColor:     t.tooltipBorder,
+                        borderWidth:     1,
+                        titleColor:      t.textColor,
+                        bodyColor:       t.mutedColor,
+                        titleFont:       { weight: 'bold', size: 12 },
+                        bodyFont:        { size: 12 },
+                        padding:         10,
+                        callbacks: {
+                            title: items => formatDate(new Date(items[0].parsed.x)),
+                            label: item  => ` ${item.dataset.label}: ${item.parsed.y.toLocaleString(undefined, {maximumFractionDigits:2})}`
+                        }
+                    },
+                },
+                scales: {
+                    x: {
+                        type: 'time',
+                        time: {
+                            tooltipFormat: 'dd MMM yyyy HH:mm:ss',
+                            displayFormats: { minute:'HH:mm', hour:'HH:mm', day:'dd MMM' }
+                        },
+                        ticks:  { color: t.mutedColor, font: { size: 11 }, maxRotation: 0 },
+                        grid:   { color: t.gridColor },
+                        border: { color: t.gridColor },
+                    },
+                    y: {
+                        ticks:  { color: t.mutedColor, font: { size: 11 } },
+                        grid:   { color: t.gridColor },
+                        border: { color: t.gridColor },
+                    }
+                }
             }
         });
-        return name;
     }
 
-    function getRandomColor(index) {
-        const colors = [
-            "#ff6384", "#36a2eb", "#44B530", "#ffce56", "#4bc0c0",
-            "#9966ff", "#ff9f40", "#c9cbcf", "#00b894", "#e17055",
-            "#D5AAFF", "#A0E7E5", "#B4F8C8", "#FBE7C6", "#FFABAB",
-            "#FFC3A0", "#D0F4DE", "#A9DEF9", "#E4C1F9", "#F694C1"
-        ];
-        return colors[index];
-    }
+    function createPieChart(containerId, title, items) {
+        const t = getChartTheme();
+        _destroyChart(containerId);
+        const canvas = _getCanvas(containerId);
 
-    function createBarChart(idContainer, title, dataPoints) {
-        var chart = new CanvasJS.Chart(idContainer, {
-            backgroundColor: "#1B1C1D",
-            title: {
-                text: title
+        _chartInstances[containerId] = new Chart(canvas, {
+            type: 'doughnut',
+            data: {
+                labels:   items.map(i => i.label),
+                datasets: [{
+                    data:            items.map(i => i.value),
+                    backgroundColor: items.map(i => i.color + 'cc'),
+                    borderColor:     items.map(i => i.color),
+                    borderWidth:     2,
+                    hoverOffset:     6,
+                }]
             },
-            axisY: {
-                minimum: 0,
-                maximum: 100,
-                suffix: "%"
-            },
-            data: [{
-                type: "column",
-                yValueFormatString: "#,##0.00\"%\"",
-                indexLabel: "{y}",
-                dataPoints: dataPoints
-            }]
-        });
-        return chart;
-    }
-    function createPieChart(idContainer, title, dataPoints) {
-        var chart = new CanvasJS.Chart(idContainer, {
-            theme: 'dark2',
-            backgroundColor: "#1B1C1D",
-            exportEnabled: true,
-            animationEnabled: false,
-            title: {
-                text: title
-            },
-            data: [{
-                type: "pie",
-                startAngle: 25,
-                toolTipContent: "<b>{label}</b>: {y}",
-                showInLegend: "true",
-                legendText: "{label}",
-                indexLabelFontSize: 16,
-                indexLabel: "{label} - {total}",
-                dataPoints: dataPoints
-
-            }],
-            toolTip: {
-                enabled: false
-            },
-            creditText: "",
-            creditHref: "",
-        });
-        chart.render();
-    }
-    function createLinearChart(idContainer, title, dataPointsLinear) {
-        const chart = new CanvasJS.Chart(idContainer, {
-            theme: 'dark2',
-            backgroundColor: "#1B1C1D",
-            title: { text: title },
-            axisX: {
-                valueFormatString: dataPointsLinear[0]?.dataPoints.length > 2880 ? "DD MMM YYYY" : "HH:mm:ss"
-            },
-            axisY2: {
-                title: "Value",
-                prefix: "",
-                suffix: ""
-            },
-            toolTip: {
-                shared: true,
-                contentFormatter: function (e) {
-                    // หาวันที่/เวลา
-                    let date = e.entries[0].dataPoint.x;
-                    let dateStr = CanvasJS.formatDate(date, "DD MMM YYYY HH:mm:ss");
-                    let html = `<div style="margin-bottom:8px;"><strong>${dateStr}</strong></div>`;
-                    // วนแสดง series แต่ละอัน
-                    e.entries.forEach(entry => {
-                        // ใช้สี series มาแสดงจุดสัญลักษณ์
-                        html += `<div style="white-space: nowrap;">`;
-                        html += `<span style="color:${entry.dataSeries.color};">●</span> `;
-                        html += `${entry.dataSeries.name}: <strong>${entry.dataPoint.y}</strong>`;
-                        html += `</div>`;
-                    });
-                    return html;
+            options: {
+                responsive:          true,
+                maintainAspectRatio: false,
+                animation:           false,
+                cutout:              '60%',
+                plugins: {
+                    legend: {
+                        display:  true,
+                        position: 'bottom',
+                        labels: {
+                            color:    t.legendColor,
+                            font:     { size: 11 },
+                            boxWidth: 12,
+                            padding:  10,
+                            usePointStyle: true,
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: t.tooltipBg,
+                        borderColor:     t.tooltipBorder,
+                        borderWidth:     1,
+                        titleColor:      t.textColor,
+                        bodyColor:       t.mutedColor,
+                        callbacks: {
+                            label: item => {
+                                const val   = item.parsed;
+                                const total = item.dataset.data.reduce((a,b) => a+b, 0);
+                                const pct   = total > 0 ? ((val/total)*100).toFixed(1) : 0;
+                                return ` ${item.label}: ${val.toLocaleString(undefined,{maximumFractionDigits:2})} (${pct}%)`;
+                            }
+                        }
+                    },
                 }
-            },
-            legend: {
-                cursor: "pointer",
-                verticalAlign: "top",
-                horizontalAlign: "center",
-                dockInsidePlotArea: true,
-                itemclick: toggleDataSeries
-            },
-            data: dataPointsLinear
+            }
         });
-        chart.render();
-
-        window.myChart = chart; // ✅ เก็บไว้ใช้ภายนอก
     }
-
-    function toggleDataSeries(e) {
-        if (typeof (e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
-            e.dataSeries.visible = false;
-        } else {
-            e.dataSeries.visible = true;
-        }
-        e.chart.render(); // ✅ ใช้ chart จาก even
-    }
-
 </script>

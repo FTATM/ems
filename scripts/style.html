@@ -180,21 +180,37 @@
         stroke-linecap: round;
     }
 
-    input {
-        color: #e0e0e0 !important;
-        background-color: transparent !important;
+html:not(.dark) input:not(#group-search) {
+    color: #1e1e1e !important;
+    background-color: transparent !important;
+}
+
+html.dark input:not(#group-search) {
+    color: #ffffff !important;
+    background-color: transparent !important;
+}
+
+    html.dark input[type="date"] {
+    color: #ffffff;
+    background-color: transparent;
+    border: 1px solid #f0f0f086 !important;
     }
 
-    input[type="date"] {
-        color: #ffffff;
-        background-color: transparent;
-        border: 1px solid #f0f0f086 !important;
+    html:not(.dark) input[type="date"] {
+    color: #111827;
+    background-color: #ffffff;
+    border: 1px solid #d1d5db !important;
     }
 
-    input[type="date"]::-webkit-calendar-picker-indicator {
-        filter: invert(1) brightness(2);
-        cursor: pointer;
-    }
+ html:not(.dark) input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(0);
+    cursor: pointer;
+}
+
+html.dark input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1) brightness(2);
+    cursor: pointer;
+}
 
     .no-bullet {
         list-style: none;
@@ -298,16 +314,27 @@
         }
     }
 
-    select,
-    select option {
-        color: #f0f0f0 !important;
-        border: 1px solid #f0f0f086 !important;
-        background-color: transparent !important;
-    }
+html.dark select,
+html.dark select option {
+  color: #f0f0f0 !important;
+  border: 1px solid #f0f0f086 !important;
+  background-color: transparent !important;
+}
 
-    select option {
-        background-color: #666 !important;
-    }
+html:not(.dark) select,
+html:not(.dark) select option {
+  color: #111827 !important;
+  border: 1px solid #d1d5db !important;
+  background-color: #ffffff !important;
+}
+
+html:not(.dark) select option {
+  background-color: #ffffff !important;
+}
+
+html.dark select option {
+  background-color: #666 !important;
+}
 
     .slot-number {
         text-align: center;
@@ -358,17 +385,21 @@
         width: 100%;
     }
 
-    table,
-    table th,
-    table td {
-        color: #e0e0e0 !important;
-        background-color: transparent !important;
-    }
+table,
+table th,
+table td {
+    background-color: transparent !important;
+}
 
-    table td {
-        color: #b6b6b6 !important;
-    }
+html:not(.dark) table th,
+html:not(.dark) table td {
+    color: #000000 !important;
+}
 
+html.dark table th,
+html.dark table td {
+    color: #ffffff !important;
+}
 
     #table-user tr {
         height: 20px;

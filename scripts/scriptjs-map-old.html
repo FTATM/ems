@@ -1,0 +1,302 @@
+<script>
+  let meters = [];
+  let types = [];
+  let locations = [];
+  let groups = [];
+  let filtermeters = [];
+  let boxMeshes = {};
+  let refreshIntervalId; // เก็บ interval id
+  let firstLoading = true;
+  let setShowMeter = 0;
+
+  const typeMeterID = "<?=$_SESSION['tid'] ?? 0;?>";
+  const groupID = "<?=$_SESSION['gid'] ?? 0;?>";
+
+  document.addEventListener("DOMContentLoaded", async () => {
+    await processData();
+  });
+
+  async function processData() {
+    //showLoading();
+    await process();
+    await setRefreshTime();
+    await loadMeter(filtermeters[0].id);
+    //hideLoading();
+  }
+
+  async function fetchAll() {
+    let response = await fetch("../config/fetch-meters.php");
+    let json = await response.json();
+    meters = json.data;
+
+    let responsetype = await fetch("../config/fetch-data_type.php");
+    let jsontype = await responsetype.json();
+    types = jsontype.data;
+
+    let responseLocation = await fetch("../config/fetch-locations.php");
+    let jsonLocation = await responseLocation.json();
+    locations = jsonLocation.data;
+
+    let responsegroup = await fetch("../config/fetch-groups.php");
+    let jsongroup = await responsegroup.json();
+    groups = jsongroup.data;
+
+  }
+
+  async function process() {
+    await fetchAll();
+    await filterData();
+    await generateListGroups();
+    await gaugeJS();
+  }
+
+  function filterData() {
+    if (groupID) {
+      filtermeters = Object.values(meters).filter((m) => m.group_id === groupID && m.meter_type_id === typeMeterID);
+    } else {
+      filtermeters = Object.values(meters);
+    }
+  }
+
+  function addHotspot(modelViewer, meter, slot, position, normal, label) {
+    const btn = document.createElement("button");
+    btn.className = "hotspot";
+    btn.id = "btn3d-meter-" + meter.id;
+    btn.style.display = 'none';
+    btn.setAttribute("slot", slot);
+    btn.setAttribute("data-position", position);
+    btn.setAttribute("data-normal", normal);
+    btn.textContent = label;
+    btn.onclick = () => showValueOnView(meter.id);
+    // onClickTemplate(btn, meter);
+    modelViewer.appendChild(btn);
+  }
+
+  function onClickTemplate(parent, meter) {
+    let lastIndex = meter?.data['7'].length - 1;
+    let is_Null = meter?.data['7'][lastIndex]?.value ? true : false;
+    let MeterValue = {
+      "VoltageA": is_Null ? meter.data['7'][lastIndex].value : 0,
+      "VoltageB": is_Null ? meter.data['8'][lastIndex].value : 0,
+      "VoltageC": is_Null ? meter.data['9'][lastIndex].value : 0,
+      "CurrentA": is_Null ? meter.data['10'][lastIndex].value : 0,
+      "CurrentB": is_Null ? meter.data['11'][lastIndex].value : 0,
+      "CurrentC": is_Null ? meter.data['12'][lastIndex].value : 0,
+      "Pf": is_Null ? meter.data['17'][lastIndex].value : 0,
+      "frequency": is_Null ? meter.data['18'][lastIndex].value : 0,
+    };
+    parent.onclick = () => {
+      let info = document.getElementById('infomation-meter');
+      info.style.display = "flex";
+      info.innerHTML = `
+        <div class="text-end position-absolute" style="top:0px; right:5px;"><i class="bi bi-x" onclick="document.getElementById('infomation-meter').style.display='none';"></i></div>
+        <h5 class="w-100 text-center">${meter.name}</h5>
+        <div class="w-100 d-flex gap-2">
+            <div class="flex-fill">
+                <h6 class="m-0">V_A</h6>
+                <input type="text" value="${MeterValue['VoltageA']}" class="bg-secondary bg-opacity-25" style="width:50px; font-size:0.75rem;" readonly>
+            </div>
+            <div class="flex-fill">
+                <h6 class="m-0">V_B</h6>
+                <input type="text" value="${MeterValue['VoltageB']}" class="bg-secondary bg-opacity-25" style="width:50px; font-size:0.75rem;" readonly>
+            </div>
+            <div class="flex-fill">
+                <h6 class="m-0">V_C</h6>
+                <input type="text" value="${MeterValue['VoltageC']}" class="bg-secondary bg-opacity-25" style="width:50px; font-size:0.75rem;" readonly>
+            </div>
+        </div>
+        <div class="w-100 d-flex gap-2">
+            <div class="flex-fill">
+                <h6 class="m-0">C_A</h6>
+                <input type="text" value="${MeterValue['CurrentA']}" class="bg-secondary bg-opacity-25" style="width:50px; font-size:0.75rem;" readonly>
+            </div>
+            <div class="flex-fill">
+                <h6 class="m-0">C_B</h6>
+                <input type="text" value="${MeterValue['CurrentB']}" class="bg-secondary bg-opacity-25" style="width:50px; font-size:0.75rem;" readonly>
+            </div>
+            <div class="flex-fill">
+                <h6 class="m-0">C_C</h6>
+                <input type="text" value="${MeterValue['CurrentC']}" class="bg-secondary bg-opacity-25" style="width:50px; font-size:0.75rem;" readonly>
+            </div>
+        </div>
+        <div class="w-100">
+            <h6 class="ps-2 m-0">Pf</h6>
+            <input type="text" value="${MeterValue['Pf']}" class="w-100 bg-secondary bg-opacity-25" style="font-size:0.75rem;" readonly>
+        </div>
+        <div class="w-100">
+            <h6 class="ps-2 m-0">Frequency</h6>
+            <input type="text" value="${MeterValue['frequency']}" class="w-100 bg-secondary bg-opacity-25" style="font-size:0.75rem;" readonly>
+        </div>
+        <input class="w-100 btn border btn-sm" value="close" onclick="document.getElementById('infomation-meter').style.display='none';">
+      `;
+    };
+  }
+
+  function deleteHotspot(modelViewer, slot) {
+    const hotspot = modelViewer.querySelector(`[slot="${slot}"]`);
+    if (hotspot) {
+      modelViewer.removeChild(hotspot);
+    }
+  }
+
+  function generateListGroups() {
+    let list = document.getElementById("listgroup");
+    list.innerHTML = `
+      <h3 class="text-center my-3">Meters</h3>
+    `;
+    Object.values(filtermeters).forEach((m) => {
+      let div = document.createElement("div");
+      div.className = "p-1 mx-2 d-flex justify-content-between clickable";
+      div.style.backgroundColor = isNaN(parseFloat(m.data['7'][m.data['7'].length - 1]?.value)) ? "rgba(255, 255, 255, 0.2)" : "rgba(64, 160, 64)";
+      div.innerHTML = `
+        <h4 class="text-center">${m.name}</h4>
+        <p class="text-center mb-0">${isNaN(parseFloat(m.data['7'][m.data['7'].length - 1]?.value)) ? "Inactive" : "Active"}</p>
+      `;
+      div.onclick = () => showValueOnView(m.id);
+      div.onmouseover = () => showBtn3DMeter(m.id);
+      div.onmouseleave = () => hideBtn3DMeter(m.id);
+      list.appendChild(div);
+    });
+  }
+
+  function loadMeter(id) {
+    const modelViewer = document.getElementById("myModel");
+    modelViewer.src = "../assets/Q.glb";
+
+    // let imageViewer = document.getElementById('3d-viewer');
+    // imageViewer.innerHTML = `
+    //   <img src="../assets/images/map.png" alt="My PNG" style="width: 100%; height: auto;">
+    // `;
+
+    filtermeters.flatMap(m => {
+      deleteHotspot(modelViewer, "hotspot-" + m.id);
+      firstLoading = false;
+      addHotspot(modelViewer, m, "hotspot-" + m.id, `${m.x}m ${m.y}m ${m.z}m`, "0m 1m 0m", m.name);
+      // let div = document.createElement('div');
+      // div.className = "point";
+      // imageViewer.innerHTML += `<div class="point" style="Left:${m.x}px; top:${m.z}px;" onclick="loadMeter(${m.id})">${m.id}</div>`;
+      // Object.values(meters).forEach(meter => {
+      // });
+
+    });
+    showValueOnView(id);
+  }
+
+  function setRefreshTime() {
+    const inputRefresh = document.getElementById('input-refresh');
+    const refreshTime = parseInt(inputRefresh.value, 10);
+    if (isNaN(refreshTime) || refreshTime < 1 || refreshTime > 60) {
+      alertMessages('error', 'Error', 'Please enter a valid refresh time between 1 and 30 seconds.');
+      return;
+    }
+    // เคลียร์ interval เก่า
+    clearInterval(refreshIntervalId);
+
+    console.log("Setting refresh time to:", refreshTime);
+
+    // ตั้ง interval ใหม่
+    refreshIntervalId = setInterval(() => {
+      process();
+    }, refreshTime * 1000);
+  }
+
+  function showValueOnView(id) {
+    setBtn3DMeter(id);
+    hideAllBtn3DMeter();
+    showBtn3DMeter(id);
+    const meter = filtermeters.find(m => m.id === id);
+    document.getElementById('name-meter').textContent = meter.name;
+    let lastIndex = meter?.data['7'].length - 1;
+    let is_Null = meter?.data['7'][lastIndex]?.value ? true : false;
+    let idsAndValues = {
+      "VoltageA": is_Null ? meter.data['7'][lastIndex].value : 0,
+      "VoltageB": is_Null ? meter.data['8'][lastIndex].value : 0,
+      "VoltageC": is_Null ? meter.data['9'][lastIndex].value : 0,
+      "CurrentA": is_Null ? meter.data['10'][lastIndex].value : 0,
+      "CurrentB": is_Null ? meter.data['11'][lastIndex].value : 0,
+      "CurrentC": is_Null ? meter.data['12'][lastIndex].value : 0,
+      "Pf": is_Null ? meter.data['17'][lastIndex].value : 0,
+      "frequency": is_Null ? meter.data['18'][lastIndex].value : 0,
+    };
+    Object.entries(idsAndValues).forEach(([key, value]) => {
+      let element = document.getElementById(key);
+      if (element) {
+        element.value = value;
+      }
+    });
+
+  }
+
+  function showBtn3DMeter(mid) {
+    let btn = document.getElementById("btn3d-meter-" + mid);
+    btn.style.display = 'block';
+  }
+
+  function hideBtn3DMeter(mid) {
+    if (mid === setShowMeter) return;
+    let btn = document.getElementById("btn3d-meter-" + mid);
+    btn.style.display = 'none';
+  }
+
+  function hideAllBtn3DMeter() {
+    Object.values(filtermeters).forEach(m => {
+      hideBtn3DMeter(m.id);
+    });
+  }
+
+  function setBtn3DMeter(id) {
+    setShowMeter = id;
+  }
+
+  function gaugeJS() {
+    var chart = JSC.chart('gauge-kW', {
+      legend_visible: false,
+      defaultTooltip_enabled: false,
+      xAxis_spacingPercentage: 0.4,
+      yAxis: [
+        {
+          id: 'ax2',
+          scale_range: [0, 850],
+          defaultTick: {
+            padding: 10,
+            enabled: false
+          },
+          customTicks: [0, 300, 600, 700, 800, 850],
+        }
+      ],
+      defaultSeries: {
+        type: 'gauge column roundcaps',
+        shape: {
+          label: {
+            text: '%max',
+            align: 'center',
+            verticalAlign: 'middle',
+            style_fontSize: 28
+          }
+        }
+      },
+      series: [
+        {
+          yAxis: 'ax2',
+          name: 'Temperatures',
+          palette: {
+            id: 'pal2',
+            pointValue: '{%yValue/850}',
+            colors: [
+              '#ffffd9',
+              '#edf8b0',
+              '#c7e9b4',
+              '#7fcdbb',
+              '#41b6c3',
+              '#1d91c0',
+              '#225ea8',
+              '#253494',
+              '#081d58'
+            ]
+          },
+          points: [['x', 320]]
+        }
+      ]
+    });
+  }
+</script>

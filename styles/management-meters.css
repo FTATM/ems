@@ -1,0 +1,702 @@
+/* ================================================
+   management-meters.css — EMS Meter Management
+   Design reference: screenshot UI
+   ================================================ */
+
+/* ── Root Tokens ── */
+:root {
+  --primary:        #8BAE66;
+  --primary-light:  rgba(139, 174, 102, 0.12);
+  --primary-border: rgba(139, 174, 102, 0.35);
+  --primary-dark:   #6a8f4b;
+
+  --bg-page:        #f0f7ee;
+  --bg-card:        #ffffff;
+  --bg-sidebar:     #ffffff;
+  --bg-header-tab:  #ffffff;
+
+  --text-heading:   #1a2e14;
+  --text-body:      #374151;
+  --text-muted:     #9ca3af;
+  --text-sidebar-header: #1f2937;
+
+  --border:         #e5e7eb;
+  --border-active:  var(--primary);
+
+  --shadow-panel: 0 2px 12px rgba(0,0,0,.07);
+
+  --radius-panel: 12px;
+  --radius-item:  8px;
+  --transition:   180ms ease;
+}
+
+html.dark, [data-theme="dark"] {
+  --bg-page:    #09090b;
+  --bg-card:    #1c1c1f;
+  --bg-sidebar: #1c1c1f;
+  --border:     rgba(255,255,255,0.08);
+  --text-heading: #f4f4f5;
+  --text-body:    #d1d5db;
+  --text-muted:   #6b7280;
+  --text-sidebar-header: #e4e4e7;
+  --shadow-panel: 0 2px 16px rgba(0,0,0,.35);
+}
+
+/* ── Base ── */
+body {
+  background: var(--bg-page) !important;
+  font-family: 'Noto Sans Thai', 'Sarabun', sans-serif;
+  height: 100svh;
+  overflow: hidden;
+}
+
+/* ════════════════════════════════════════
+   MAIN LAYOUT
+   ════════════════════════════════════════ */
+
+.meters-main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 1.25rem 1.5rem;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* ── Outer wrapper — two separate cards ── */
+.meters-panel {
+  display: flex;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  gap: 1rem;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  border-radius: 0;
+  overflow: visible;
+}
+
+/* ════════════════════════════════════════
+   SIDEBAR
+   ════════════════════════════════════════ */
+
+.meters-sidebar {
+  width: 210px;
+  min-width: 180px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  border-right: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-panel);
+  background: var(--bg-sidebar);
+  box-shadow: var(--shadow-panel);
+  overflow: hidden;
+  height: 100%;
+}
+
+/* Sidebar header row */
+.meters-sidebar__header {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 0.8rem 1rem;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    background: var(--bg-sidebar);
+}
+
+.meters-sidebar__title {
+    font-size: 0.85rem;
+    align-self: flex-start;
+    font-weight: 700;
+    color: var(--text-sidebar-header);
+    width: 100%; /* เพิ่มบรรทัดนี้ */
+}
+
+.meters-sidebar__count {
+  font-size: 0.72rem;
+  font-weight: 600;
+  align-self: flex-end;
+  background: var(--primary-light);
+  color: var(--primary-dark);
+  border-radius: 99px;
+  padding: 0.15rem 0.55rem;
+  border: 1px solid var(--primary-border);
+}
+
+/* Scrollable list */
+#meter-list {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0.5rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-border) transparent;
+}
+
+#meter-list::-webkit-scrollbar        { width: 4px; }
+#meter-list::-webkit-scrollbar-track  { background: transparent; }
+#meter-list::-webkit-scrollbar-thumb  { background: var(--primary-border); border-radius: 99px; }
+
+/* ── Meter item injected by generateMeter() ──
+   JS creates:  <div class="px-3 mb-2 fw-bold d-flex ...">
+                  <div id="meter" class="container ... choice">name</div>
+                </div>
+*/
+#meter-list > div {
+  padding: 0 !important;
+  margin-bottom: 0 !important;
+  height: auto !important;
+  display: block !important;
+}
+
+#meter-list > div > div,
+#meter-list .choice {
+  display: flex !important;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.75rem !important;
+  border-radius: var(--radius-item) !important;
+  cursor: pointer;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  color: var(--text-body) !important;
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  height: auto !important;
+  min-height: 38px;
+  line-height: 1.3;
+  transition: background var(--transition), color var(--transition), border-color var(--transition);
+}
+
+/* meter icon (gauge icon from screenshot) via pseudo */
+#meter-list > div > div::before,
+#meter-list .choice::before {
+  content: '';
+  display: inline-flex;
+  width: 1.5rem;
+  height: 1.5rem;
+  min-width: 1.5rem;
+  border-radius: 50%;
+  background-color: var(--primary-light);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='%238BAE66' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2a10 10 0 1 0 10 10'/%3E%3Cpath d='M12 12l4-4'/%3E%3Ccircle cx='12' cy='12' r='1' fill='%238BAE66'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  border: 1px solid var(--primary-border);
+  flex-shrink: 0;
+}
+
+#meter-list > div:hover > div,
+#meter-list > div:hover .choice {
+  background: var(--primary-light) !important;
+  color: var(--primary-dark) !important;
+  border-color: var(--primary-border) !important;
+}
+
+/* active state — set by JS via loadDataMeter click */
+#meter-list > div.meter-active > div,
+#meter-list > div.meter-active .choice {
+  background: var(--primary-light) !important;
+  color: var(--primary-dark) !important;
+  border-color: var(--primary-border) !important;
+  font-weight: 700 !important;
+}
+
+/* ── Skeleton ── */
+.meter-skeleton {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-item);
+  pointer-events: none;
+  min-height: 38px;
+}
+.meter-skeleton__icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  min-width: 1.5rem;
+  border-radius: 50%;
+  background: var(--border);
+  animation: shimmer 1.4s infinite linear;
+}
+.meter-skeleton__name {
+  height: 0.8em;
+  width: 60%;
+  background: var(--border);
+  border-radius: 5px;
+  animation: shimmer 1.4s infinite linear;
+}
+
+@keyframes shimmer {
+  0%,100% { opacity: 1; }
+  50%      { opacity: 0.4; }
+}
+
+/* ════════════════════════════════════════
+   CONTENT AREA — RIGHT SIDE
+   ════════════════════════════════════════ */
+
+.meters-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  gap: 0.75rem;
+}
+
+/* ── Tab bar — bottom border only ── */
+.meters-tabs {
+  display: flex;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+  box-shadow: none;
+  flex-shrink: 0;
+  padding: 0;
+  gap: 0;
+  width: 100%;
+  overflow: hidden;
+}
+
+#menu-config-1,
+#menu-config-2 {
+  flex: 1;
+  text-align: center;
+  justify-content: center;
+  position: relative;
+  padding: 0.85rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -1px;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  user-select: none;
+  white-space: nowrap;
+  background: transparent;
+  transition: color var(--transition), border-color var(--transition), background var(--transition);
+}
+
+#menu-config-1:hover,
+#menu-config-2:hover {
+  color: var(--text-body);
+}
+
+#menu-config-1.active,
+#menu-config-2.active {
+  color: var(--primary-dark);
+  border-bottom: none;
+  position: relative;
+}
+
+#menu-config-1.active::after,
+#menu-config-2.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--primary);
+  border-radius: 4px 4px 0 0;
+}
+
+/* ── Config body — separate card below tabs ── */
+#meter-form {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--shadow-panel);
+}
+
+#config {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 2rem 2.5rem;
+  color: var(--text-body);
+  height: 100%;
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-border) transparent;
+}
+
+#config::-webkit-scrollbar        { width: 5px; }
+#config::-webkit-scrollbar-track  { background: transparent; }
+#config::-webkit-scrollbar-thumb  { background: var(--primary-border); border-radius: 99px; }
+
+/* ── Placeholder ── */
+.meters-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 380px;
+  gap: 1.25rem;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 3rem 1rem;
+  user-select: none;
+}
+
+.meters-placeholder__icon-wrap {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+html.dark .meters-placeholder__icon-wrap,
+[data-theme="dark"] .meters-placeholder__icon-wrap {
+  background: rgba(255,255,255,0.06);
+}
+
+.meters-placeholder svg { opacity: 0.45; }
+
+.meters-placeholder h5 {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text-heading);
+  margin: 0;
+}
+
+.meters-placeholder p {
+  font-size: 0.92rem;
+  color: var(--text-muted);
+  max-width: 340px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ════════════════════════════════════════
+   CONFIG FORM — injected by loadDataMeter()
+   ════════════════════════════════════════ */
+
+/* Field rows: .w-100.mt-2.d-flex */
+#config .w-100.mt-2.d-flex {
+  align-items: center;
+  margin-bottom: 0.1rem;
+}
+
+/* Label column h5 */
+#config .w-100.mt-2.d-flex > .w-25 h5,
+#config .w-100.mt-2.d-flex > .w-25 > h5 {
+  font-size: 0.82rem !important;
+  font-weight: 600 !important;
+  color: var(--text-muted) !important;
+  text-transform: none;
+  margin: 0 !important;
+  padding-right: 0.75rem;
+  line-height: 2.4;
+  white-space: nowrap;
+}
+
+/* All inputs & selects */
+#config .form-control,
+#config .form-select {
+  background: var(--bg-page) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 8px !important;
+  padding: 0.45rem 0.8rem !important;
+  font-size: 0.88rem !important;
+  color: var(--text-body) !important;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  outline: none;
+}
+
+#config .form-control:focus,
+#config .form-select:focus {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 3px var(--primary-light) !important;
+}
+
+#config .form-control:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Checkbox */
+#config .form-check {
+  width: 1.1rem;
+  height: 1.1rem;
+  accent-color: var(--primary);
+  cursor: pointer;
+  margin-top: 0.6rem;
+}
+
+/* Divider */
+#config hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 1.25rem 0;
+}
+
+/* RS485 sub-col headers */
+#config .w-100.mt-2.d-flex .w-75 .text-center h5 {
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+  color: var(--primary-dark) !important;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.3rem !important;
+}
+
+/* Connect section label */
+#config .w-100.mx-3 h5 {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+/* Connect button */
+#btn-connect {
+  background: var(--primary) !important;
+  border: none !important;
+  border-radius: 8px !important;
+  padding: 0.42rem 1rem !important;
+  font-size: 0.86rem !important;
+  font-weight: 600 !important;
+  color: #fff !important;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(139,174,102,.30);
+  transition: background var(--transition), transform var(--transition);
+}
+#btn-connect:hover {
+  background: var(--primary-dark) !important;
+  transform: translateY(-1px);
+}
+
+#label-btn-connect {
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+#detailmore {
+  font-size: 0.8rem;
+  color: var(--primary);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  margin-top: 0.2rem;
+  display: inline-block;
+}
+
+/* Save / Cancel row */
+#config .w-100.text-end.my-2 {
+  display: flex !important;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+  margin-top: 1rem !important;
+}
+
+#config input[onclick="updateMeter()"] {
+  background: var(--primary) !important;
+  border: none !important;
+  border-radius: 8px !important;
+  padding: 0.45rem 1.25rem !important;
+  font-size: 0.88rem !important;
+  font-weight: 600 !important;
+  color: #fff !important;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(139,174,102,.25);
+  transition: background var(--transition), transform var(--transition);
+}
+#config input[onclick="updateMeter()"]:hover {
+  background: var(--primary-dark) !important;
+  transform: translateY(-1px);
+}
+
+#config .btn-danger {
+  background: transparent !important;
+  border: 1px solid rgba(239,68,68,.4) !important;
+  border-radius: 8px !important;
+  padding: 0.45rem 1.25rem !important;
+  font-size: 0.88rem !important;
+  font-weight: 600 !important;
+  color: #ef4444 !important;
+  cursor: pointer;
+  transition: background var(--transition);
+}
+#config .btn-danger:hover {
+  background: rgba(239,68,68,.07) !important;
+}
+
+/* ════════════════════════════════════════
+   NOTIFY TAB — injected cards
+   ════════════════════════════════════════ */
+
+#list-notify {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 0.25rem;
+  align-items: flex-start;
+}
+
+#list-notify > div {
+  width: 260px !important;
+  height: auto !important;
+  padding: 0 !important;
+  border-radius: var(--radius-panel) !important;
+  overflow: hidden;
+  box-shadow: 0 1px 6px rgba(0,0,0,.08);
+  border: 1px solid var(--border) !important;
+}
+
+/* Card header */
+#list-notify .bg-blue-reverse,
+#list-notify [class*="rounded-top"] {
+  background: #001B5E !important;
+  color: #fff !important;
+  border-radius: 0 !important;
+  padding: 0.6rem 0.85rem !important;
+  font-size: 0.88rem !important;
+  font-weight: 600;
+  display: flex !important;
+  align-items: center;
+  border: none !important;
+  min-height: 42px;
+}
+
+#list-notify .bi-trash3 {
+  color: rgba(255,255,255,.65);
+  cursor: pointer;
+  transition: color var(--transition);
+}
+#list-notify .bi-trash3:hover { color: #f87171; }
+
+/* Card body */
+#list-notify .bg-white.rounded-bottom {
+  background: var(--bg-card) !important;
+  border-radius: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0.85rem !important;
+}
+
+#list-notify h6 {
+  font-size: 0.73rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted) !important;
+  margin: 0.5rem 0 0.2rem !important;
+}
+
+#list-notify .form-control,
+#list-notify .form-select {
+  background: var(--bg-page) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 7px !important;
+  color: var(--text-body) !important;
+  font-size: 0.84rem !important;
+  padding: 0.38rem 0.65rem !important;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+#list-notify .form-control:focus,
+#list-notify .form-select:focus {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 3px var(--primary-light) !important;
+}
+
+#list-notify .bg-blue {
+  background: var(--primary) !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 7px !important;
+  font-size: 0.8rem !important;
+  font-weight: 600 !important;
+  cursor: pointer;
+  transition: background var(--transition);
+}
+#list-notify .bg-blue:hover { background: var(--primary-dark) !important; }
+
+#list-notify .bg-red {
+  background: rgba(239,68,68,.1) !important;
+  color: #ef4444 !important;
+  border: 1px solid rgba(239,68,68,.3) !important;
+  border-radius: 7px !important;
+  font-size: 0.8rem !important;
+  font-weight: 600 !important;
+}
+
+#list-notify .bg-green {
+  background: var(--primary-light) !important;
+  color: var(--primary-dark) !important;
+  border: 1px solid var(--primary-border) !important;
+  border-radius: 7px !important;
+  font-size: 0.8rem !important;
+  font-weight: 600 !important;
+  cursor: pointer;
+  transition: background var(--transition);
+}
+#list-notify .bg-green:hover { background: var(--primary-border) !important; }
+
+/* Add notify card */
+#blankdiv > div {
+  background: var(--primary-light) !important;
+  border: 2px dashed var(--primary-border) !important;
+  border-radius: var(--radius-panel) !important;
+  color: var(--primary) !important;
+  font-size: 1.75rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 180px;
+  height: 100% !important;
+  transition: background var(--transition), border-color var(--transition);
+}
+#blankdiv > div:hover {
+  background: var(--primary-border) !important;
+  border-color: var(--primary) !important;
+}
+
+/* ════════════════════════════════════════
+   ANIMATION
+   ════════════════════════════════════════ */
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateX(-6px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+#meter-list > div { animation: fadeIn 0.2s ease both; }
+
+/* ════════════════════════════════════════
+   RESPONSIVE
+   ════════════════════════════════════════ */
+
+@media (max-width: 680px) {
+  .meters-panel    { flex-direction: column; }
+  .meters-sidebar  { width: 100%; height: auto; border-right: none; border-bottom: 1px solid var(--border); max-height: 180px; }
+  #config          { padding: 1.25rem 1rem; }
+  #list-notify > div { width: 100% !important; }
+}

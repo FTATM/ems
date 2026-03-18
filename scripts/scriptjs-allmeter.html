@@ -87,13 +87,13 @@
 
         const headerRow = document.createElement("tr");
         headerRow.innerHTML = `
-            <th class="text-white text-nowrap" style="min-width:180px; background-color:#001B5E;"><?=$lang['nmeters']?></th>
-            <th class="text-white text-nowrap" style="background-color:#001B5E;"><?=$lang['location']?></th>
-            <th class="text-white text-nowrap" style="background-color:#001B5E;"><?=$lang['group']?>/<?=$lang['project']?></th>
-            <th class="text-white text-nowrap text-center" style="background-color:#001B5E;"><?=$lang['ip']?></th>
-            <th class="text-white text-nowrap text-center" style="background-color:#001B5E;"><?=$lang['port']?></th>
-            <th class="text-white text-nowrap text-center" style="background-color:#001B5E;"><?=$lang['protocol']?></th>
-        `;
+        <th class="text-nowrap" style="min-width:180px;"><?=$lang['nmeters']?></th>
+        <th class="text-nowrap"><?=$lang['location']?></th>
+        <th class="text-nowrap"><?=$lang['group']?>/<?=$lang['project']?></th>
+        <th class="text-nowrap text-center"><?=$lang['ip']?></th>
+        <th class="text-nowrap text-center"><?=$lang['port']?></th>
+        <th class="text-nowrap text-center"><?=$lang['protocol']?></th>
+    `;
 
         types.forEach(col => {
             const th = document.createElement("th");
@@ -106,14 +106,13 @@
         });
 
         table.querySelector('thead').appendChild(headerRow);
+        applyDarkModeColors();
     }
 
     async function updateData(page) {
         const table = document.getElementById("table-meter");
-        table.querySelector('tbody').innerHTML = ""; // clear
+        table.querySelector('tbody').innerHTML = "";
 
-
-        // slice ข้อมูลเฉพาะหน้าปัจจุบัน
         const start = (page - 1) * rowsPerPage;
         const end = start + rowsPerPage;
         const pageData = filteredDataInMeters.slice(start, end);
@@ -134,7 +133,7 @@
                 td.className = "text-center";
                 if (Array.isArray(column) && column.length > 0) {
                     const last = column[column.length - 1];
-                    td.textContent = last.value; // หรือ `${last.id}` ได้ตามต้องการ
+                    td.textContent = last.value;
                 } else {
                     td.textContent = "-";
                 }
@@ -144,6 +143,23 @@
         });
 
         renderPagination(meters.length, page);
+
+        // ✅ apply สีหลัง render เสร็จ
+        applyDarkModeColors();
+    }
+
+    // ✅ ฟังก์ชัน set สีตัวอักษรใน table ด้วย inline style (ชนะ Bootstrap และ CSS ทุกอัน)
+    function applyDarkModeColors() {
+        const isDark = document.documentElement.classList.contains('dark');
+        const color = isDark ? '#ffffff' : '#111827';
+        document.querySelectorAll('#table-meter td, #table-meter th').forEach(el => {
+            // ยกเว้น th ที่มี backgroundColor เป็น #001B5E (data type headers) ให้คงสีขาวไว้เสมอ
+            if (el.style.backgroundColor === 'rgb(0, 27, 94)') {
+                el.style.color = '#ffffff';
+            } else {
+                el.style.color = color;
+            }
+        });
     }
 
     function renderPagination(totalRows, currentPage) {
@@ -185,12 +201,10 @@
             alertMessages('error', 'Error', 'Please enter a valid refresh time between 1 and 30 seconds.');
             return;
         }
-        // เคลียร์ interval เก่า
         clearInterval(refreshIntervalId);
 
         console.log("Setting refresh time to:", refreshTime);
 
-        // ตั้ง interval ใหม่
         refreshIntervalId = setInterval(async () => {
             await process();
         }, refreshTime * 1000);

@@ -97,14 +97,16 @@ if ($_SESSION['theme'] === 'dark') {
     $bg = '#121212';
     $bgsec = '#1e1e1e';
     $secon = '#9e9e9e';
-    $text = '#e0e0e0';
+    $text = '#ffffff'; 
+    $textMuted = '#ffffff';
     $btnColor = '#424242';
     $accentColor = '#81D4FA';
 } else {
     $bg = '#f9f9f9';
     $bgsec = '#383838ff';
     $secon = '#616161';
-    $text = '#ffffffff';
+    $text = '#0a0a0a'; 
+    $textMuted = '#888888';
     $btnColor = '#303030ff';
     $accentColor = '#03A9F4';
 }

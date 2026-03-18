@@ -1,0 +1,345 @@
+/* ================================================
+   mndidb.css — EMS Database Console UI
+   Matching EMS design system tokens
+   ================================================ */
+
+/* ── Root Tokens : Light Mode ── */
+:root {
+  --primary:        #8BAE66;
+  --primary-light:  rgba(139, 174, 102, 0.12);
+  --primary-border: rgba(139, 174, 102, 0.40);
+  --primary-dark:   #6a8f4b;
+
+  --bg-page:        #f0f7ee;
+  --bg-card:        #ffffff;
+  --bg-editor:      #f8fafc;
+  --bg-icon:        #8BAE66;
+
+  --text-heading:   #1a2e14;
+  --text-body:      #4d6b3a;
+  --text-card:      #1f2937;
+  --text-muted:     #6b7280;
+  --text-code:      #1e293b;
+
+  --border-card:    rgba(139, 174, 102, 0.20);
+
+  --shadow-sm: 0 1px 3px rgba(80,120,50,.10), 0 1px 2px rgba(80,120,50,.06);
+  --shadow-md: 0 4px 20px rgba(80,120,50,.16), 0 2px 6px rgba(80,120,50,.08);
+
+  --radius-card: 16px;
+  --radius-sm:   10px;
+  --radius-xs:   7px;
+  --transition:  200ms ease;
+}
+
+/* ── Root Tokens : Dark Mode ── */
+html.dark, [data-theme="dark"] {
+  --bg-card:      #18181b;
+  --bg-page:      #09090b;
+  --bg-editor:    #0f172a;
+  --primary:      #8BAE66;
+  --primary-dark: #6a8f4b;
+  --text-heading: #f4f4f5;
+  --text-body:    #a1a1aa;
+  --text-card:    #e4e4e7;
+  --text-muted:   #71717a;
+  --text-code:    #e2e8f0;
+  --border-card:  rgba(139,174,102,0.15);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.3);
+  --shadow-md: 0 4px 16px rgba(0,0,0,.4);
+}
+
+/* ── Base ── */
+body {
+  background-color: var(--bg-page) !important;
+  font-family: 'Noto Sans Thai', 'Sarabun', sans-serif;
+  min-height: 100svh;
+  transition: background-color 0.3s ease;
+}
+
+/* ════════════════════════════════════════
+   LAYOUT
+   ════════════════════════════════════════ */
+
+.mndidb-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.5rem 1.5rem 0;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-border) transparent;
+}
+
+.mndidb-main::-webkit-scrollbar       { width: 5px; }
+.mndidb-main::-webkit-scrollbar-track { background: transparent; }
+.mndidb-main::-webkit-scrollbar-thumb { background: var(--primary-border); border-radius: 99px; }
+
+/* ── Hero ── */
+.mndidb-hero {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  flex-shrink: 0;
+  width: 100%;
+}
+
+.mndidb-hero h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-heading);
+  margin-bottom: 0.4rem;
+  letter-spacing: -0.02em;
+  transition: color 0.3s ease;
+}
+
+.mndidb-hero p {
+  font-size: 0.95rem;
+  color: var(--text-body);
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* ── Body: editor + sidebar ── */
+.mndidb-body {
+  width: 100%;
+  max-width: 1200px;
+  display: flex;
+  gap: 1rem;
+  flex: 1;
+  padding-bottom: 1.5rem;
+  align-items: flex-start;
+}
+
+/* ════════════════════════════════════════
+   EDITOR PANEL
+   ════════════════════════════════════════ */
+
+.mndidb-editor-wrap {
+  flex: 1;
+  min-width: 0;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border-card);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: background 0.3s ease, border-color 0.3s ease;
+}
+
+/* ── Toolbar ── */
+.mndidb-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.9rem 1.25rem;
+  border-bottom: 1.5px solid var(--border-card);
+  flex-shrink: 0;
+}
+
+.mndidb-toolbar__label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--primary);
+}
+
+.mndidb-toolbar__actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* ── SQL Editor ── */
+.mndidb-editor {
+  width: 100%;
+  min-height: 220px;
+  background: var(--bg-editor) !important;
+  color: var(--text-code) !important;
+  padding: 1rem 1.25rem;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  font-size: 0.88rem;
+  line-height: 1.7;
+  border: none;
+  outline: none;
+  resize: vertical;
+  border-bottom: 1.5px solid var(--border-card);
+  transition: background 0.3s ease, color 0.3s ease;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.mndidb-editor:focus {
+  background: var(--bg-editor) !important;
+  box-shadow: inset 0 0 0 2px var(--primary-border);
+}
+
+/* ── Result label ── */
+.mndidb-result-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.65rem 1.25rem 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+/* ── Output ── */
+.mndidb-output {
+  min-height: 100px;
+  padding: 0.75rem 1.25rem 1.25rem;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  font-size: 0.82rem;
+  color: var(--text-card);
+  line-height: 1.6;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  transition: color 0.3s ease;
+}
+
+/* ════════════════════════════════════════
+   SIDEBAR
+   ════════════════════════════════════════ */
+
+.mndidb-sidebar {
+  width: 260px;
+  min-width: 220px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.mndidb-sidebar__title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--primary);
+  padding: 0 0.25rem;
+}
+
+/* ── Menu card ── */
+.mndidb-menu-card {
+  background: var(--bg-card);
+  border: 1.5px solid var(--border-card);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition: background 0.3s ease, border-color 0.3s ease;
+}
+
+.mndidb-menu-card__icon {
+  background: var(--primary-light);
+  border-bottom: 1.5px solid var(--border-card);
+  padding: 0.9rem 1.25rem;
+  display: flex;
+  align-items: center;
+  color: var(--primary);
+}
+
+.mndidb-menu-card__body {
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.mndidb-menu-card__title {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text-heading);
+}
+
+.mndidb-menu-card__desc {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.mndidb-menu-card__status {
+  font-size: 0.8rem;
+  color: var(--primary-dark);
+  font-weight: 600;
+  margin: 0;
+  min-height: 1.2em;
+}
+
+/* ════════════════════════════════════════
+   BUTTONS
+   ════════════════════════════════════════ */
+
+.mndidb-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: none;
+  border-radius: var(--radius-xs);
+  font-size: 0.82rem;
+  font-weight: 600;
+  font-family: inherit;
+  padding: 0.45rem 0.9rem;
+  cursor: pointer;
+  transition: background var(--transition), transform var(--transition), box-shadow var(--transition);
+  justify-content: center;
+}
+
+.mndidb-btn:hover { transform: translateY(-1px); }
+.mndidb-btn:active { transform: translateY(0); }
+
+.mndidb-btn--primary {
+  background: var(--primary);
+  color: #fff;
+  box-shadow: 0 1px 4px rgba(139,174,102,.30);
+}
+.mndidb-btn--primary:hover {
+  background: var(--primary-dark);
+  box-shadow: 0 3px 10px rgba(139,174,102,.35);
+}
+
+.mndidb-btn--danger {
+  background: rgba(239,68,68,.10);
+  color: #ef4444;
+  border: 1.5px solid rgba(239,68,68,.25);
+}
+.mndidb-btn--danger:hover {
+  background: rgba(239,68,68,.18);
+}
+
+.w-100 { width: 100%; }
+
+/* ════════════════════════════════════════
+   ANIMATIONS
+   ════════════════════════════════════════ */
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.mndidb-editor-wrap { animation: fadeInUp 0.25s ease both; }
+.mndidb-sidebar     { animation: fadeInUp 0.3s ease 0.05s both; }
+
+/* ════════════════════════════════════════
+   RESPONSIVE
+   ════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .mndidb-body    { flex-direction: column; }
+  .mndidb-sidebar { width: 100%; min-width: unset; }
+}

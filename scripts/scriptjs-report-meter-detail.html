@@ -11,10 +11,10 @@
   const groupID = "<?=$_SESSION['gid'];?>";
   const username = "<?=$_SESSION['username'];?>";
   document.addEventListener("DOMContentLoaded", async () => {
-    showLoading();
+    // showLoading();
     ftloaded = true;
     await process();
-    hideLoading();
+    // hideLoading();
   });
 
   async function process() {

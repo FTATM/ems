@@ -34,7 +34,7 @@ if ($result->num_rows > 0) {
                 'data' => $data_types
             ];
         }
-        $sql_data = "SELECT * FROM meter_data WHERE meter_id = ?";
+        $sql_data = "SELECT * FROM meter_data WHERE meter_id = ? ORDER BY id DESC LIMIT 1000";
         $stmt = $conn->prepare($sql_data);
         $stmt->bind_param('i', $meter_id);
         $stmt->execute();

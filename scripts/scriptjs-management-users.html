@@ -174,8 +174,34 @@ function openDeleteModal(id) {
 
 function submitDelete() {
     let id = document.getElementById('delete-id').value;
-    UpdatedActionUser(id, 'delete', true);
-    bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
+
+    let form = new FormData();
+    form.append("id", id);
+    form.append("action", "delete");
+
+    fetch('../config/delete-user.php', {
+        method: 'POST',
+        body: form
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            // ลบออกจาก array ฝั่งหน้าเว็บ
+            user_data = user_data.filter(u => u.id != id);
+
+            // รีเฟรชตาราง
+            renderTablePage(user_data, currentPage);
+            renderPagination(user_data.length, currentPage);
+
+            bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
+        } else {
+            alert(data.message);
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert("เกิดข้อผิดพลาด");
+    });
 }
 
 function openChangedPasswordModal(id) {

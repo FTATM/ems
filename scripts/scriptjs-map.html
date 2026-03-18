@@ -17,30 +17,42 @@
   });
 
   async function processData() {
-    showLoading();
     await process();
     await setRefreshTime();
-    await loadMeter(filtermeters[0].id);
-    hideLoading();
+    if (filtermeters.length > 0) {
+      await loadMeter(filtermeters[0].id);
+    } else {
+      console.warn('[MAP] filtermeters is empty — no meters to display');
+      document.getElementById('name-meter').textContent = 'ไม่พบมิเตอร์';
+    }
   }
 
   async function fetchAll() {
-    let response = await fetch("../config/fetch-meters.php");
-    let json = await response.json();
-    meters = json.data;
+    try {
+      let response = await fetch("../config/fetch-meters.php");
+      let json = await response.json();
+      // รองรับทั้ง array และ object keyed
+      meters = Array.isArray(json.data) ? json.data : Object.values(json.data ?? {});
+      console.log('[MAP] meters:', meters.length, meters);
+    } catch(e) { console.error('[MAP] fetch meters error:', e); meters = []; }
 
-    let responsetype = await fetch("../config/fetch-data_type.php");
-    let jsontype = await responsetype.json();
-    types = jsontype.data;
+    try {
+      let responsetype = await fetch("../config/fetch-data_type.php");
+      let jsontype = await responsetype.json();
+      types = jsontype.data ?? [];
+    } catch(e) { types = []; }
 
-    let responseLocation = await fetch("../config/fetch-locations.php");
-    let jsonLocation = await responseLocation.json();
-    locations = jsonLocation.data;
+    try {
+      let responseLocation = await fetch("../config/fetch-locations.php");
+      let jsonLocation = await responseLocation.json();
+      locations = jsonLocation.data ?? [];
+    } catch(e) { locations = []; }
 
-    let responsegroup = await fetch("../config/fetch-groups.php");
-    let jsongroup = await responsegroup.json();
-    groups = jsongroup.data;
-
+    try {
+      let responsegroup = await fetch("../config/fetch-groups.php");
+      let jsongroup = await responsegroup.json();
+      groups = jsongroup.data ?? [];
+    } catch(e) { groups = []; }
   }
 
   async function process() {
@@ -51,11 +63,15 @@
   }
 
   function filterData() {
-    if (groupID) {
-      filtermeters = Object.values(meters).filter((m) => m.group_id === groupID && m.meter_type_id === typeMeterID);
+    const all = Array.isArray(meters) ? meters : Object.values(meters);
+    if (groupID && groupID !== "0") {
+      filtermeters = all.filter((m) => String(m.group_id) === String(groupID) && String(m.meter_type_id) === String(typeMeterID));
+      // fallback: ถ้า filter แล้วว่าง ให้แสดงทั้งหมด
+      if (filtermeters.length === 0) filtermeters = all;
     } else {
-      filtermeters = Object.values(meters);
+      filtermeters = all;
     }
+    console.log('[MAP] filtermeters:', filtermeters.length, 'groupID:', groupID, 'typeMeterID:', typeMeterID);
   }
 
   function addHotspot(modelViewer, meter, slot, position, normal, label) {
@@ -140,23 +156,40 @@
   }
 
   function generateListGroups() {
-    let list = document.getElementById("listgroup");
+    const list = document.getElementById("listgroup");
+    if (!list) return;
+
+    // reset panel styling
+    list.style.cssText = "";
+
     list.innerHTML = `
-      <h3 class="text-center my-3">Meters</h3>
+      <div class="listgroup-header">
+        <span class="listgroup-header__title">รายชื่อมิเตอร์ทั้งหมด</span>
+        <span class="listgroup-header__badge">${filtermeters.length} รายการ</span>
+      </div>
+      <div class="listgroup-items" id="listgroup-items"></div>
     `;
-    Object.values(filtermeters).forEach((m) => {
-      let div = document.createElement("div");
-      div.className = "p-1 mx-2 d-flex justify-content-between clickable";
-      div.style.backgroundColor = isNaN(parseFloat(m.data['7'][m.data['7'].length - 1]?.value)) ? "rgba(255, 255, 255, 0.2)" : "rgba(64, 160, 64)";
-      div.innerHTML = `
-        <h4 class="text-center">${m.name}</h4>
-        <p class="text-center mb-0">${isNaN(parseFloat(m.data['7'][m.data['7'].length - 1]?.value)) ? "Inactive" : "Active"}</p>
-      `;
-      div.onclick = () => showValueOnView(m.id);
-      div.onmouseover = () => showBtn3DMeter(m.id);
+
+    const container = document.getElementById("listgroup-items");
+
+    filtermeters.forEach((m) => {
+      const div = document.createElement("div");
+      div.className = "meter-list-item" + (setShowMeter === m.id ? " active" : "");
+      div.id = "listitem-" + m.id;
+      div.innerHTML = `<span class="meter-list-item__icon"></span>
+        <span class="meter-list-item__name">${m.name}</span>`;
+      div.onclick      = () => { setActiveMeterItem(m.id); showValueOnView(m.id); };
+      div.onmouseover  = () => showBtn3DMeter(m.id);
       div.onmouseleave = () => hideBtn3DMeter(m.id);
-      list.appendChild(div);
+      container.appendChild(div);
     });
+  }
+
+  
+  function setActiveMeterItem(id) {
+    document.querySelectorAll('.meter-list-item').forEach(el => el.classList.remove('active'));
+    const target = document.getElementById('listitem-' + id);
+    if (target) target.classList.add('active');
   }
 
   function loadMeter(id) {
@@ -204,6 +237,7 @@
     setBtn3DMeter(id);
     hideAllBtn3DMeter();
     showBtn3DMeter(id);
+    setActiveMeterItem(id);
     const meter = filtermeters.find(m => m.id === id);
     document.getElementById('name-meter').textContent = meter.name;
     let lastIndex = meter?.data['7'].length - 1;

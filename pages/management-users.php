@@ -12,31 +12,53 @@ if ($_SESSION['user']['is_admin'] == 0) {
 <?php include "../scripts/ref.html"; ?>
 <?php include "../scripts/style.html"; ?>
 
-
-
 <head>
     <meta charset="UTF-8">
     <title><?= $lang['usermnm'] ?> - EMS</title>
+    <link rel="stylesheet" href="../styles/management-users.css">
 </head>
 
-<body style="background-color: <?= $bg ?>; color: <?= $text ?>!important; min-height: 100svh;">
-    <div id="main" class="d-flex">
+<body style="height:100svh; overflow:hidden;">
+    <div id="main" class="d-flex" style="height:100svh; overflow:hidden;">
         <?php include "../components/sidemenu.php"; ?>
-        <div class="w-100 h-100 d-flex flex-column justify-content-center">
+        <div class="w-100 d-flex flex-column" style="height:100svh; overflow:hidden;">
             <?php include "../components/header.php"; ?>
-            <div class="bg-secondary bg-opacity-25 d-flex flex-column pt-5 align-items-center" style="min-height: 80svh;">
-                <div class="my-5 text-center fs-1 fw-bolder"><?=$lang['usermnm']?></div>
-                <!-- ตาราง -->
-                <table id="table-user" class="container table table-bordered table-striped" style="height: 90%;">
-                </table>
 
-                <div id="pagination" class="mt-3 d-flex gap-2 justify-content-center" style="height: 10%;"></div>
-            </div>
+            <main class="users-main">
+
+                <!-- Hero -->
+                <div class="users-hero">
+                    <h2><?= $lang['usermnm'] ?></h2>
+                    <p>จัดการข้อมูลผู้ใช้งานในระบบ แก้ไข ลบ หรือเปลี่ยนรหัสผ่าน</p>
+                </div>
+
+                <!-- Card -->
+                <div class="users-card">
+
+                    <!-- Card header -->
+                    <div class="users-card__header">
+                        <span class="users-card__title">รายชื่อผู้ใช้งาน</span>
+                        <span class="users-card__count" id="user-count">...</span>
+                    </div>
+
+                    <!-- Table scroll wrapper -->
+                    <div class="users-table-wrap">
+                        <table id="table-user"></table>
+                    </div>
+
+                </div>
+
+                <!-- Pagination -->
+                <div id="pagination"></div>
+
+            </main>
+
+            <?php include "../components/footer.php"; ?>
         </div>
     </div>
 
-    <!-- Modal แก้ไขข้อมูลผู้ใช้ -->
-    <div class="modal edit" id="editModal" tabindex="-1" aria-labelledby="editModalLabel">
+    <!-- ── Modal แก้ไขข้อมูล ── -->
+    <div class="modal fade" id="editModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -45,26 +67,24 @@ if ($_SESSION['user']['is_admin'] == 0) {
                 </div>
                 <div class="modal-body">
                     <input type="hidden" id="edit-id">
-                    <div class="mb-3">
-                        <label for="edit-full_name" class="form-label">ชื่อใหม่</label>
-                        <input type="text" class="form-control text-black" id="edit-full_name">
-                        <label for="edit-phone" class="form-label">เบอร์โทรศัพท์</label>
-                        <input type="text" class="form-control text-black" id="edit-phone">
-                        <label for="edit-address" class="form-label">ที่อยู่</label>
-                        <input type="text" class="form-control text-black" id="edit-address">
-                    </div>
+                    <label for="edit-full_name" class="form-label">ชื่อ</label>
+                    <input type="text" class="form-control" id="edit-full_name">
+                    <label for="edit-phone" class="form-label">เบอร์โทรศัพท์</label>
+                    <input type="text" class="form-control" id="edit-phone">
+                    <label for="edit-address" class="form-label">ที่อยู่</label>
+                    <input type="text" class="form-control" id="edit-address">
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?=$lang['cancel']?></button>
-                    <button type="button" class="btn btn-primary" onclick="submitEdit()"><?=$lang['save']?></button>
+                    <button type="button" class="btn btn-secondary"
+                        data-bs-dismiss="modal"><?= $lang['cancel'] ?></button>
+                    <button type="button" class="btn btn-primary" onclick="submitEdit()"><?= $lang['save'] ?></button>
                 </div>
             </div>
         </div>
     </div>
 
-
-    <!--  Modal ยืนยันการลบ -->
-    <div class="modal del" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel">
+    <!-- ── Modal ยืนยันการลบ ── -->
+    <div class="modal fade" id="deleteModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -72,57 +92,72 @@ if ($_SESSION['user']['is_admin'] == 0) {
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="ปิด"></button>
                 </div>
                 <div class="modal-body">
-                    <p>คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลนี้?</p>
+                    <p style="color:var(--text-card); margin:0;">คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลนี้?</p>
                     <input type="hidden" id="delete-id">
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?=$lang['cancel']?></button>
-                    <button type="button" class="btn btn-danger" onclick="submitDelete()"><?=$lang['confirm']?></button>
-                   
+                    <button type="button" class="btn btn-secondary"
+                        data-bs-dismiss="modal"><?= $lang['cancel'] ?></button>
+                    <button type="button" class="btn btn-danger"
+                        onclick="submitDelete()"><?= $lang['confirm'] ?></button>
                 </div>
             </div>
         </div>
     </div>
 
-
-    <!-- Modal เปลี่ยนรหัสผ่าน  -->
-     <!-- Modal -->
-<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form id="changePasswordForm">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="changePasswordModalLabel">Change Password</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <input type="hidden" id="change-password-id" name="user_id">
-                    
-                    <div class="mb-3">
-                        <label for="change-password-new" class="form-label">New Password</label>
-                        <input type="password" class="form-control text-black" id="change-password-new" name="change-password-new" required>
+    <!-- ── Modal เปลี่ยนรหัสผ่าน ── -->
+    <div class="modal fade" id="changePasswordModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="changePasswordForm">
+                    <div class="modal-header">
+                        <h5 class="modal-title">เปลี่ยนรหัสผ่าน</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="ปิด"></button>
                     </div>
-                    <div class="mb-3">
-                        <label for="change-password-confirm" class="form-label">Confirm New Password</label>
-                        <input type="password" class="form-control text-black" id="change-password-confirm" name="change-password-confirm" required>
+                    <div class="modal-body">
+                        <input type="hidden" id="change-password-id" name="user_id">
+                        <label for="change-password-new" class="form-label">รหัสผ่านใหม่</label>
+                        <input type="password" class="form-control" id="change-password-new" name="change-password-new"
+                            required>
+                        <label for="change-password-confirm" class="form-label">ยืนยันรหัสผ่าน</label>
+                        <input type="password" class="form-control" id="change-password-confirm"
+                            name="change-password-confirm" required>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary"><?=$lang['change']?></button>
-                </div>
-            </form>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary"
+                            data-bs-dismiss="modal"><?= $lang['cancel'] ?></button>
+                        <button type="submit" class="btn btn-primary"><?= $lang['change'] ?></button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
-</div>
-
-
-
 
     <script id="theme-data" type="application/json">
-        <?= json_encode($_SESSION['theme'], JSON_UNESCAPED_UNICODE); ?>
+    <?= json_encode($_SESSION['theme'], JSON_UNESCAPED_UNICODE); ?>
     </script>
+
     <?php include "../scripts/scriptjs.html"; ?>
     <?php include "../scripts/scriptjs-management-users.html"; ?>
+
+    <script>
+    /* ── Update user count badge after table renders ── */
+    window.addEventListener('load', () => {
+        const observer = new MutationObserver(() => {
+            const rows = document.querySelectorAll('#table-user tbody tr');
+            const badge = document.getElementById('user-count');
+            if (badge && rows.length > 0) {
+                badge.textContent = rows.length + ' รายการ';
+            }
+        });
+        const table = document.getElementById('table-user');
+        if (table) observer.observe(table, {
+            childList: true,
+            subtree: true
+        });
+    });
+    </script>
+
 </body>
 
 </html>

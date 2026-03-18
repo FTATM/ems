@@ -3,7 +3,7 @@
     let types = [];
     let locations = [];
     let groups = [];
-    let refreshIntervalId; // เก็บ interval id
+    let refreshIntervalId;
     const gaugeInstances = {};
 
     const typeMeterID = "<?=$_SESSION['tid'];?>";
@@ -16,12 +16,10 @@
     });
 
     async function process() {
-        showLoading();
         await fetchAll();
         await generateSelect('select-meters', Object.values(meters));
         await generateGauge();
         setRefreshTime();
-        hideLoading();
     }
 
     async function fetchAll() {
@@ -38,7 +36,6 @@
         let responsegroup = await fetch("../config/fetch-groups.php");
         let jsongroup = await responsegroup.json();
         groups = jsongroup.data;
-
     }
 
     async function fetchDataInMeters() {
@@ -62,59 +59,99 @@
 
     async function generateGauge() {
         const listGauge = document.getElementById('list-gauge');
-        listGauge.innerHTML = ''; // Clear previous gauges
-        meterID = document.getElementById('select-meters').value;
+        listGauge.innerHTML = '';
+        const meterID = document.getElementById('select-meters').value;
         let selectedMeter = Object.values(meters).find(m => m.id === parseInt(meterID));
+
         Object.entries(selectedMeter.data).forEach(([key, value]) => {
-            let typeSelect = types.find(t => t.id === key);
+            let typeSelect = types.find(t => String(t.id) === String(key));
+            if (!typeSelect) return;
+
             let max = 0;
             value.forEach(row => {
-                max = parseFloat(row.value) > max ? parseFloat(row.value) : max;
-            })
-            let gaugediv = document.createElement('canvas');
-            gaugediv.id = 'gauge_' + typeSelect.id;
-            listGauge.appendChild(gaugediv);
-            gaugeGenerate('gauge_' + typeSelect.id, typeSelect.name, typeSelect.name, 0, 0, max * 1.2, 5);
+                let v = parseFloat(row.value);
+                max = v > max ? v : max;
+            });
+
+            // ค่าล่าสุดจากฐานข้อมูล
+            let lastValue = parseFloat(value[value.length - 1]?.value) || 0;
+
+            // Wrapper card div
+            let card = document.createElement('div');
+            card.className = 'gauge-card';
+
+            // Title label above gauge
+            let titleEl = document.createElement('div');
+            titleEl.className = 'gauge-card__title';
+            titleEl.textContent = typeSelect.name;
+            card.appendChild(titleEl);
+
+            // Canvas
+            let canvas = document.createElement('canvas');
+            canvas.id = 'gauge_' + typeSelect.id;
+            card.appendChild(canvas);
+
+            listGauge.appendChild(card);
+
+            // ใส่ค่าล่าสุดจาก DB ตั้งแต่แรก ไม่ต้องรอ refresh
+            gaugeGenerate('gauge_' + typeSelect.id, typeSelect.name, typeSelect.name, lastValue, 0, max * 1.2 || 200, 5);
         });
-        generateDataList();
+
+        await generateDataList();
+
+        // อัปเดตค่าใน sidebar ทันทีหลัง render
+        Object.entries(selectedMeter.data).forEach(([key, value]) => {
+            let lastValue = parseFloat(value[value.length - 1]?.value) || 0;
+            const inputEl = document.getElementById('type-' + key);
+            if (inputEl) inputEl.value = lastValue.toFixed(2);
+        });
     }
 
     async function generateDataList() {
-        let listdata = document.getElementById('list-data');
-        meterID = document.getElementById('select-meters').value;
-        listdata.innerHTML = `
-        <div class="w-100 p-2 text-center">
-            <h4><?=$lang['alltype']?></h4>
-        </div>`;
+        const sidebarBody = document.getElementById('sidebar-body');
+        if (!sidebarBody) return;
+        sidebarBody.innerHTML = '';
 
-        types.forEach($row => {
-            let div = document.createElement('div');
-            div.className = "d-flex w-100";
-            let label = document.createElement('label');
-            label.className = "w-50 fs-6 text-end pe-3";
+        // ดึง type key ที่ meter ปัจจุบันมีข้อมูลจริง
+        const meterID = document.getElementById('select-meters').value;
+        const selectedMeter = Object.values(meters).find(m => m.id === parseInt(meterID));
+        const activeKeys = selectedMeter ? Object.keys(selectedMeter.data) : [];
+
+        // แสดงเฉพาะ type ที่มีใน meter นี้ (หรือทั้งหมดถ้า activeKeys ว่าง)
+        const showTypes = activeKeys.length > 0
+            ? activeKeys.map(k => types.find(t => String(t.id) === String(k))).filter(Boolean)
+            : types;
+
+        showTypes.forEach($row => {
+            let rowDiv = document.createElement('div');
+            rowDiv.className = 'gauge-data-row';
+
+            let label = document.createElement('span');
+            label.className = 'gauge-data-label';
             label.textContent = $row.name;
-            let input = document.createElement('input');
-            input.id = "type-" + $row.id;
-            input.className = "w-50 form-control form-control-sm border-opacity-50 disabled";
-            input.value = "0.00";
-            // input.value = meters[meterID].data[$row.id][meters[meterID].data[$row.id].length - 1].value;
 
-            div.appendChild(label);
-            div.appendChild(input);
-            listdata.appendChild(div);
+            let input = document.createElement('input');
+            input.id = 'type-' + $row.id;
+            input.className = 'gauge-data-value';
+            input.value = '0.00';
+            input.readOnly = true;
+            input.tabIndex = -1;
+
+            rowDiv.appendChild(label);
+            rowDiv.appendChild(input);
+            sidebarBody.appendChild(rowDiv);
         });
     }
 
     function generateSelect(id, datas) {
-        if (!ftloaded) { return }
+        if (!ftloaded) { return; }
         ftloaded = false;
         let select = document.getElementById(id);
-        // select.innerHTML = `<option value="0">-- <?=$lang['select']?> --</option>`;
         datas.forEach(row => {
             let option = document.createElement('option');
             option.value = row.id;
             option.textContent = `[${row.id}] ${row.name}`;
-            option.selected = datas[0].id === row.id ? true : false;
+            option.selected = datas[0].id === row.id;
             select.appendChild(option);
         });
     }
@@ -122,14 +159,14 @@
     async function checkTimeChange() {
         meters = await fetchDataInMeters();
 
-        const listGauge = document.getElementById('list-gauge');
         const time = document.getElementById('select-time');
-        meterID = document.getElementById('select-meters').value;
-        if (!Number(time.value)) {
-            console.log(time.value);
+        const meterID = document.getElementById('select-meters').value;
+
+        if (!Number(time.value) && time.value !== "0") {
             alertMessages('error', 'Error', 'Time picker Data not found.');
             return;
         }
+
         let now = new Date();
         let selectedDateTime;
         if (time.value === "0") {
@@ -139,99 +176,161 @@
         } else {
             selectedDateTime = new Date(now.getTime() - parseInt(time.value, 10) * 60000);
         }
-        console.log("==> now : ", now.toLocaleTimeString());
-        console.log("==> select : ", selectedDateTime.toLocaleTimeString());
+
         let filtermeter = filterData(meterID, selectedDateTime);
-        console.log("Data size : ", filtermeter.data['1'].length);
+
         Object.entries(filtermeter.data).forEach(([key, values]) => {
-            let maxvalue = parseFloat(values[0]?.value) || 0;
-            let minvalue = parseFloat(values[0]?.value) || 0;
-            let lastValue = parseFloat(values[values.length - 1]?.value) || "00.00";
-            values.forEach(row => {
-                let val = parseFloat(row.value);
-                maxvalue = val > maxvalue ? val : maxvalue;
-                minvalue = val < minvalue ? val : minvalue;
-            });
-            document.getElementById('type-' + key).value = lastValue;
-            gaugeGenerate('gauge_' + key, types[key - 1].name, types[key - 1].name, lastValue);
+            let lastValue = 0;
+            if (values && values.length > 0) {
+                lastValue = parseFloat(values[values.length - 1]?.value) || 0;
+            }
+
+            // อัปเดต sidebar input — ค้นหา type ด้วย String comparison
+            const inputEl = document.getElementById('type-' + key);
+            if (inputEl) inputEl.value = lastValue.toFixed(2);
+
+            // อัปเดต gauge — ค้นหา type จาก types array ด้วย id ที่ตรงกัน
+            const typeObj = types.find(t => String(t.id) === String(key));
+            if (typeObj) {
+                gaugeGenerate('gauge_' + key, typeObj.name, typeObj.name, lastValue);
+            }
         });
     }
 
     function filterData(id, selectedDateTime) {
         const filteredValueColumn = {};
-        let meterSelected = Object.values(meters).find(m => { return m.id === parseInt(id) });
+        let meterSelected = Object.values(meters).find(m => m.id === parseInt(id));
         Object.entries(meterSelected.data).map(([colName, rows]) => {
             filteredValueColumn[colName] = Object.values(rows).filter(row => {
-                let rawDate = row.create_date;
-                rawDate = rawDate.replace(/\//g, "-");
+                let rawDate = row.create_date.replace(/\//g, "-");
                 const d2 = new Date(rawDate);
                 return d2 >= selectedDateTime;
             });
-        })
-        return {
-            ...meterSelected,
-            data: filteredValueColumn
-        };
+        });
+        return { ...meterSelected, data: filteredValueColumn };
     }
 
-    function gaugeGenerate(id, title, unitname, value = 0, minValue = 0, maxValue = 200, step = 10, width = 225, height = 225) {
-        if (id === undefined || unitname === undefined) {
-            console.error(`ID:${id} or title:${title} or unitname:${unitname} are required for gauge generation.`);
-            alertMessages('error', 'Error', 'ID and unit name are required for gauge generation.');
+    function isDarkMode() {
+        return document.documentElement.classList.contains('dark') ||
+               document.documentElement.getAttribute('data-theme') === 'dark';
+    }
+
+    function gaugeGenerate(id, title, unitname, value = 0, minValue = 0, maxValue = 200, step = 5, width = 155, height = 155) {
+        if (!id || !unitname) {
+            console.error(`ID:${id} or unitname:${unitname} are required for gauge generation.`);
             return;
         }
+
+        const dark = isDarkMode();
+
+        // สีตัวอักษรและเข็ม — เข้มในโหมดสว่าง, ขาวในโหมดมืด
+        const tickColor     = dark ? "#cccccc" : "#2d2d2d";
+        const numberColor   = dark ? "#cccccc" : "#1f2937";
+        const needleColor   = dark ? "#ffffff" : "#1f2937";
+        const plateColor    = "rgba(0,0,0,0.0)";
+        const borderOuter   = dark ? "#333" : "#c8d8b8";
+        const borderMid     = dark ? "#222" : "#b0c898";
+        const borderInner   = dark ? "#111" : "#98b880";
+        const valueBoxBg    = "#2d4a1e";
+
         let majorTicks = [];
         for (let i = minValue; i <= maxValue; i += maxValue / step) {
             majorTicks.push(parseFloat(i).toFixed(1).toString());
         }
+
         if (!gaugeInstances[id]) {
             gaugeInstances[id] = new RadialGauge({
                 renderTo: id,
-                title: title,
+                title: '',
                 width: width,
                 height: height,
-                // units: unitname,
                 minValue: minValue,
                 maxValue: maxValue,
                 majorTicks: majorTicks,
                 minorTicks: 2,
                 highlights: [
-                    { from: maxValue - (maxValue / 3), to: maxValue, color: "rgba(200, 50, 50, .75)" }
+                    { from: maxValue * 0.67, to: maxValue, color: "rgba(200, 50, 50, .75)" }
                 ],
                 value: value,
-                animationDuration: 1000,
+                animationDuration: 900,
                 animationRule: "linear",
-                colorPlate: "rgba(0,0,0,.1)",
-                colorMajorTicks: "#fff",
-                colorMinorTicks: "#fff",
-                colorTitle: "#fff",
-                colorUnits: "#fff",
-                colorNumbers: "#fff",
-                colorNeedle: "#fff",
-                needleWidth: 1,
-                needleCircleSize: 4,
+                colorPlate: plateColor,
+                colorMajorTicks: dark ? "#ffffff" : tickColor,
+                colorMinorTicks: dark ? "#bbbbbb" : "#7a9a6a",
+                colorTitle: dark ? "#ffffff" : tickColor,
+                colorUnits: dark ? "#ffffff" : tickColor,
+                colorNumbers: dark ? "#ffffff" : numberColor,
+                colorNeedle: needleColor,
+                colorNeedleEnd: needleColor,
+                needleWidth: 2,
+                needleCircleSize: 5,
+                colorNeedleCircleOuter: dark ? "#555" : "#6a8f4b",
+                colorNeedleCircleInnerEnd: dark ? "#111" : "#c8d8b8",
+                colorBorderOuter: borderOuter,
+                colorBorderOuterEnd: dark ? "#333" : "#b0c898",
+                colorBorderMiddle: borderMid,
+                colorBorderMiddleEnd: dark ? "#222" : "#98b880",
+                colorBorderInner: borderInner,
+                colorBorderInnerEnd: dark ? "#111" : "#80a868",
+                colorValueBoxBackground: valueBoxBg,
+                colorValueBoxShadow: false,
+                colorValueText: "#ffffff",
+                colorValueTextShadow: "rgba(0,0,0,0.4)",
+                fontNumbersSize: 16,
+                fontValueSize: 30,
             }).draw();
         } else {
             gaugeInstances[id].value = value;
         }
     }
 
+    /* ── Re-render gauges เมื่อ theme เปลี่ยน ── */
+    function reRenderAllGauges() {
+        // ล้าง instance เก่าทั้งหมด เพื่อให้ gaugeGenerate สร้างใหม่พร้อมสีใหม่
+        Object.keys(gaugeInstances).forEach(id => {
+            try { gaugeInstances[id].destroy(); } catch(e) {}
+            delete gaugeInstances[id];
+        });
+        // วาด gauge ใหม่ทั้งหมดด้วยค่าปัจจุบัน
+        const meterID = document.getElementById('select-meters')?.value;
+        if (!meterID) return;
+        let selectedMeter = Object.values(meters).find(m => m.id === parseInt(meterID));
+        if (!selectedMeter) return;
+        Object.entries(selectedMeter.data).forEach(([key, value]) => {
+            let typeSelect = types.find(t => t.id === key);
+            if (!typeSelect) return;
+            let lastValue = parseFloat(value[value.length - 1]?.value) || 0;
+            let max = 0;
+            value.forEach(row => { let v = parseFloat(row.value); max = v > max ? v : max; });
+            gaugeGenerate('gauge_' + typeSelect.id, typeSelect.name, typeSelect.name, lastValue, 0, max * 1.2 || 200, 5);
+        });
+    }
+
+    /* ── MutationObserver จับการเปลี่ยน class/attribute บน <html> ── */
+    (function() {
+        const observer = new MutationObserver(mutations => {
+            mutations.forEach(m => {
+                if (
+                    (m.attributeName === 'class' || m.attributeName === 'data-theme') &&
+                    typeof gaugeInstances !== 'undefined'
+                ) {
+                    reRenderAllGauges();
+                }
+            });
+        });
+        observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'data-theme'] });
+    })();
+
     function setRefreshTime() {
         const inputRefresh = document.getElementById('input-refresh');
         const refreshTime = parseInt(inputRefresh.value, 10);
         if (isNaN(refreshTime) || refreshTime < 1 || refreshTime > 60) {
-            alertMessages('error', 'Error', 'Please enter a valid refresh time between 1 and 30 seconds.');
+            alertMessages('error', 'Error', 'Please enter a valid refresh time between 1 and 60 seconds.');
             return;
         }
-        // เคลียร์ interval เก่า
         clearInterval(refreshIntervalId);
-
-        console.log("Setting refresh time to:", refreshTime);
-
-        // ตั้ง interval ใหม่
         refreshIntervalId = setInterval(() => {
             checkTimeChange();
         }, refreshTime * 1000);
     }
-
 </script>
