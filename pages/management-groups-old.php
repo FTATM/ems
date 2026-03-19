@@ -1,7 +1,7 @@
 <?php
 include '../components/session.php';
-#checkLogin();
-#checkSession();
+checkLogin();
+checkSession();
 ?>
 
 <!DOCTYPE html>
@@ -20,7 +20,8 @@ include '../components/session.php';
         <?php include "../components/sidemenu.php"; ?>
         <div class="w-100 h-100 d-flex flex-column justify-content-center">
             <?php include "../components/header.php"; ?>
-            <div class="bg-secondary bg-opacity-25 d-flex flex-column pt-5 align-items-center" style="min-height: 80svh;">
+            <div class="bg-secondary bg-opacity-25 d-flex flex-column pt-5 align-items-center"
+                style="min-height: 80svh;">
                 <div class="my-5 text-center fs-1 fw-bolder"><?= $lang['group'] ?>/<?= $lang['project'] ?></div>
                 <div class="container mb-2 text-end">
                     <input class=" btn btn-primary bg-primary w-10" value="create" onclick="openGroupModal()">
@@ -31,7 +32,8 @@ include '../components/session.php';
                             <th class="text-white w-10" style="background-color:#001B5E;"><?= $lang['id']; ?></th>
                             <th class="text-white w-15" style="background-color:#001B5E;"><?= $lang['location']; ?></th>
                             <th class="text-white w-25" style="background-color:#001B5E;"><?= $lang['name']; ?></th>
-                            <th class="text-white w-25" style="width:10%; background-color:#001B5E;"><?= $lang['action']; ?></th>
+                            <th class="text-white w-25" style="width:10%; background-color:#001B5E;">
+                                <?= $lang['action']; ?></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -112,7 +114,7 @@ include '../components/session.php';
     </div>
 
     <script id="theme-data" type="application/json">
-        <?= json_encode($_SESSION['theme'], JSON_UNESCAPED_UNICODE); ?>
+    <?= json_encode($_SESSION['theme'], JSON_UNESCAPED_UNICODE); ?>
     </script>
     <?php include "../scripts/scriptjs.html"; ?>
     <?php include "../scripts/scriptjs-management-groups.html"; ?>
