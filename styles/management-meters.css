@@ -96,6 +96,34 @@ body {
   height: 100%;
 }
 
+/* ════════════════════════════════════════
+   DARK MODE — override Bootstrap inline classes
+   ════════════════════════════════════════ */
+
+html.dark #config,
+html.dark #list-notify {
+  color: var(--text-body);
+}
+
+/* bg-white ที่ถูก inject โดย JS */
+html.dark #list-notify .bg-white,
+html.dark #list-notify .bg-white.rounded-bottom {
+  background: var(--bg-card) !important;
+  color: var(--text-body) !important;
+}
+
+/* text-black ที่ติดมากับ input/select */
+html.dark #list-notify .text-black,
+html.dark #list-notify input.text-black,
+html.dark #list-notify select.text-black {
+  color: var(--text-body) !important;
+}
+
+/* placeholder icon wrap */
+html.dark .meters-placeholder__icon-wrap {
+  background: rgba(255,255,255,0.06);
+}
+
 /* Sidebar header row */
 .meters-sidebar__header {
     display: flex;

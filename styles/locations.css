@@ -43,8 +43,16 @@ html.dark {
 body {
   background-color: var(--bg-page) !important;
   font-family: 'Noto Sans Thai', 'Sarabun', sans-serif;
-  min-height: 100svh;
+  height: 100svh;
+  overflow: hidden;
   transition: background-color 0.3s ease;
+}
+
+/* ── #main: ล็อกความสูงเต็มหน้าจอ ── */
+#main {
+  height: 100svh !important;
+  min-height: unset !important;
+  overflow: hidden !important;
 }
 
 /* ── Page Wrapper ── */
@@ -52,15 +60,17 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 3rem 1rem;
-  flex-grow: 1;
+  padding: 2rem 1rem 0;
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
 }
 
 /* ── Hero Text ── */
 .locations-hero {
   text-align: center;
-  margin-bottom: 2.5rem;
+  margin-bottom: 1.5rem;
+  flex-shrink: 0;
 }
 
 .locations-hero h2 {
@@ -81,10 +91,30 @@ body {
   transition: color 0.3s ease;
 }
 
+/* ── Scroll wrapper: กินพื้นที่ที่เหลือและ scroll ── */
+.locations-list-wrap {
+  width: 100%;
+  max-width: 720px;
+  flex-shrink: 0;
+  max-height: 68vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-bottom: 2rem;
+  padding-right: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-border) transparent;
+}
+
+.locations-list-wrap::-webkit-scrollbar       { width: 5px; }
+.locations-list-wrap::-webkit-scrollbar-track { background: transparent; }
+.locations-list-wrap::-webkit-scrollbar-thumb {
+  background: var(--primary-border);
+  border-radius: 10px;
+}
+
 /* ── Card List ── */
 .locations-list {
   width: 100%;
-  max-width: 640px;
   display: flex;
   flex-direction: column;
   gap: 1rem;

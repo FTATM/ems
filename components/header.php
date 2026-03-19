@@ -100,7 +100,7 @@ html.dark .username-text {
             </a>
             <?php else: ?>
             <!-- Avatar + ชื่อ (คลิกไปหน้า user.php) -->
-            <a href="../pages/user.php" class="d-flex align-items-center gap-2 text-decoration-none" title="My Profile">
+            <div class="d-flex align-items-center gap-2 text-decoration-none" title="My Profile">
                 <div class="rounded-circle d-flex align-items-center justify-content-center"
                     style="width:36px; height:36px; background-color:#e8eee0; cursor:pointer; transition: background-color 0.2s;"
                     onmouseover="this.style.backgroundColor='#d0dcc0';"
@@ -110,14 +110,14 @@ html.dark .username-text {
                 <span style="font-weight:600; color:#1a1a1a; line-height:1.1;" class="username-text">
                     <?= htmlspecialchars($_SESSION['username'] ?? $_SESSION['name'] ?? 'Admin') ?>
                 </span>
-            </a>
-            <!-- Logout -->
-            <a href="../pages/logout.php" class="btn p-0 border-0" title="Logout">
-                <i class="bi bi-box-arrow-right fs-4" style="color:#8BAE66;"></i>
-            </a>
-            <?php endif; ?>
+                </a>
+                <!-- Logout -->
+                <a href="../pages/logout.php" class="btn p-0 border-0" title="Logout">
+                    <i class="bi bi-box-arrow-right fs-4" style="color:#8BAE66;"></i>
+                </a>
+                <?php endif; ?>
 
-        </div>
+            </div>
     </nav>
 </header>
 

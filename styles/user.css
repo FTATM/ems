@@ -8,7 +8,7 @@
     --bg-page:         #f5f5f5;
     --bg-card:         #ffffff;
     --bg-input:        #ffffff;
-    --bg-input-focus:  #f2f6eb;
+    --bg-input-focus:  #ffffff;
     --bg-role:         #fafafa;
     --bg-role-checked: #f2f6eb;
     --bg-cancel:       #ffffff;
@@ -38,10 +38,10 @@
 
 /* ── CSS Variables: Dark Mode ── */
 html.dark {
-    --bg-page:         #141a0f;
-    --bg-card:         #1a2114;
-    --bg-input:        #202a18;
-    --bg-input-focus:  #1e2e16;
+    --bg-page:         #000000;
+    --bg-card:         #181818;
+    --bg-input:        #181818;
+    --bg-input-focus:  #181818;
     --bg-role:         #202818;
     --bg-role-checked: #1c2a12;
     --bg-cancel:       #202a18;

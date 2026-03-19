@@ -1,6 +1,6 @@
 <?php
 include '../components/session.php';
-#checkLogin();
+checkLogin();
 ?>
 
 <!DOCTYPE html>
@@ -18,7 +18,8 @@ include '../components/session.php';
     <div id="main" class="d-flex">
         <div class="w-100 h-100 d-flex flex-column justify-content-center">
             <?php include "../components/header.php"; ?>
-            <div class="bg-secondary bg-opacity-25 d-flex flex-column pt-5 align-items-center" style="min-height: 80svh;">
+            <div class="bg-secondary bg-opacity-25 d-flex flex-column pt-5 align-items-center"
+                style="min-height: 80svh;">
                 <div class="my-5 text-center fs-1 fw-bolder"><?=$lang['choosegroup']?></div>
                 <table id="table-group" class="container table table-bordered table-striped" style="height: 90%;">
                     <thead class="text-center">
@@ -106,7 +107,7 @@ include '../components/session.php';
     </div>
 
     <script id="theme-data" type="application/json">
-        <?= json_encode($_SESSION['theme'], JSON_UNESCAPED_UNICODE); ?>
+    <?= json_encode($_SESSION['theme'], JSON_UNESCAPED_UNICODE); ?>
     </script>
     <?php include "../scripts/scriptjs.html"; ?>
     <?php include "../scripts/scriptjs-groups.html"; ?>

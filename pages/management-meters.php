@@ -1,7 +1,7 @@
 <?php
 include '../components/session.php';
-#checkLogin();
-#checkSession();
+checkLogin();
+checkSession();
 ?>
 <!DOCTYPE html>
 <html lang="<?= $langCode ?>">
@@ -85,8 +85,9 @@ include '../components/session.php';
 
                         <!-- JS uses id="config" inside id="meter-form" — preserved -->
                         <form id="meter-form">
-                            <div id="config" class="w-100 bg-black bg-white py-2" style="min-height: 500px;">
-                                <div class="meters-placeholder">
+                            <div id="config" class="w-100 py-2"
+                                style=" background:var(--bg-card); color:var(--text-body); min-height: 500px; ">
+                                <div class=" meters-placeholder">
                                     <div class="meters-placeholder__icon-wrap">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44"
                                             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"

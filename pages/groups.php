@@ -1,6 +1,6 @@
 <?php
 include '../components/session.php';
-#checkLogin();
+checkLogin();
 ?>
 
 <!DOCTYPE html>
@@ -12,55 +12,56 @@ include '../components/session.php';
 <head>
     <meta charset="UTF-8">
     <title><?= $lang['group'] ?> - EMS</title>
-    <!-- Separated CSS (same token system as locations.css) -->
     <link rel="stylesheet" href="../styles/groups.css">
 </head>
 
-<body style="min-height: 100svh;">
-    <div id="main" class="d-flex flex-column" style="min-height: 100svh;">
+<body style="height:100svh;overflow:hidden;">
+    <div id="main" class="d-flex flex-column" style="height:100svh;overflow:hidden;">
 
         <?php include "../components/header.php"; ?>
 
-        <!-- ─── Main Content ─── -->
-        <main class="groups-main flex-grow-1">
+        <main class="groups-main"
+            style="flex:1 1 0;min-height:0;overflow:hidden;display:flex;flex-direction:column;align-items:center;padding:1rem 1rem 0;">
 
             <!-- Hero -->
-            <div class="groups-hero">
-                <h2><?= $lang['choosegroup'] ?></h2>
-                <p>กรุณาเลือกกลุ่มที่คุณต้องการตรวจสอบข้อมูลการใช้พลังงาน</p>
+            <div class="groups-hero"
+                style="flex-shrink:0; width:100%; max-width:720px; text-align:center; margin-bottom:0.75rem;">
+                <h2 style="font-size:1.5rem; font-weight:700; margin-bottom:0.25rem;"><?= $lang['choosegroup'] ?></h2>
+                <p style="font-size:0.9rem; color:var(--text-body); margin:0;">
+                    กรุณาเลือกกลุ่มที่คุณต้องการตรวจสอบข้อมูลการใช้พลังงาน</p>
             </div>
 
-            <!-- Toolbar: search + add -->
-            <div class="groups-toolbar">
+            <!-- Toolbar -->
+            <div class="groups-toolbar" style="flex-shrink:0;margin-bottom:0.75rem;">
                 <div class="groups-search">
                     <input type="text" id="group-search" placeholder="ค้นหากลุ่ม…" oninput="filterGroupCards()">
                 </div>
             </div>
 
-            <!-- Group Cards -->
-            <div class="groups-list" id="groups-list">
-                <!-- Skeleton placeholders while JS loads -->
-                <div class="group-card group-card--skeleton" aria-hidden="true">
-                    <div class="group-card__icon">
-                        <span class="material-icons-outlined material-symbols--workspaces"></span>
+            <!-- Scroll wrapper: max-height ควบคุมความสูงกรอบ -->
+            <div class="groups-list-wrap"
+                style="flex-shrink:0; width:100%; max-width:720px; max-height:68vh; overflow-y:auto; overflow-x:hidden;padding-bottom:1rem;">
+                <div class="groups-list" id="groups-list">
+                    <div class="group-card group-card--skeleton" aria-hidden="true">
+                        <div class="group-card__icon"><span
+                                class="material-icons-outlined material-symbols--workspaces"></span></div>
+                        <div class="group-card__info">
+                            <span class="group-card__name">&nbsp;</span>
+                            <span class="group-card__location">&nbsp;</span>
+                        </div>
                     </div>
-                    <div class="group-card__info">
-                        <span class="group-card__name">&nbsp;</span>
-                        <span class="group-card__location">&nbsp;</span>
-                    </div>
-                </div>
-                <div class="group-card group-card--skeleton" aria-hidden="true">
-                    <div class="group-card__icon">
-                        <span class="material-icons-outlined material-symbols--workspaces"></span>
-                    </div>
-                    <div class="group-card__info">
-                        <span class="group-card__name">&nbsp;</span>
-                        <span class="group-card__location">&nbsp;</span>
+                    <div class="group-card group-card--skeleton" aria-hidden="true">
+                        <div class="group-card__icon"><span
+                                class="material-icons-outlined material-symbols--workspaces"></span></div>
+                        <div class="group-card__info">
+                            <span class="group-card__name">&nbsp;</span>
+                            <span class="group-card__location">&nbsp;</span>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Hidden legacy table (still populated by existing JS) -->
+            <!-- Hidden legacy -->
             <table id="table-group" class="d-none">
                 <thead>
                     <tr>
@@ -79,13 +80,13 @@ include '../components/session.php';
 
     </div>
 
-    <!-- 🔧 Modal แก้ไขชื่อ -->
-    <div class="modal fade" id="renameModal" tabindex="-1" aria-labelledby="renameModalLabel">
+    <!-- Modal แก้ไขชื่อ -->
+    <div class="modal fade" id="renameModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">แก้ไขชื่อ</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="ปิด"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <input type="hidden" id="rename-id">
@@ -102,13 +103,13 @@ include '../components/session.php';
         </div>
     </div>
 
-    <!-- ❌ Modal ยืนยันการลบ -->
-    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel">
+    <!-- Modal ยืนยันการลบ -->
+    <div class="modal fade" id="deleteModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">ยืนยันการลบ</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="ปิд"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <p class="text-black">คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลนี้?</p>
@@ -131,75 +132,54 @@ include '../components/session.php';
 
     <script>
     (function() {
-
         function waitForGroups(callback) {
-            if (typeof groups !== 'undefined' && groups.length > 0) {
-                callback();
-            } else {
-                setTimeout(() => waitForGroups(callback), 150);
-            }
+            if (typeof groups !== 'undefined' && groups.length > 0) callback();
+            else setTimeout(() => waitForGroups(callback), 150);
         }
 
         function buildCards() {
             const list = document.getElementById('groups-list');
             if (!list) return;
-
             const filtered = groups.filter(g => g.location_id == locationID);
-
             if (!filtered.length) {
-                list.innerHTML = `
-        <div style="grid-column:1/-1;text-align:center;padding:3rem;opacity:.5">
-          <span class="material-icons-outlined" style="font-size:3rem">workspaces</span>
-          <p>ไม่พบกลุ่มในโลเคชั่นนี้</p>
-        </div>`;
+                list.innerHTML =
+                    `<div style="text-align:center;padding:3rem;opacity:.5"><span class="material-icons-outlined" style="font-size:3rem">workspaces</span><p>ไม่พบกลุ่มในโลเคชั่นนี้</p></div>`;
                 return;
             }
-
             list.innerHTML = '';
-
             filtered.forEach(function(row) {
                 const locName = (typeof getNameLocation === 'function' && getNameLocation(locationID)) ?
-                    getNameLocation(locationID).name :
-                    locationID;
-
+                    getNameLocation(locationID).name : locationID;
                 const card = document.createElement('div');
                 card.className = 'group-card';
                 card.style.cursor = 'pointer';
-
                 card.innerHTML = `
-        <div class="group-card__icon">
-          <span class="material-icons-outlined">workspaces</span>
-        </div>
-        <div class="group-card__info">
-          <span class="group-card__name">${row.name || '—'}</span>
-          <span class="group-card__location">
-            <span class="material-icons-outlined" style="font-size:.85rem;vertical-align:middle">location_on</span>
-            ${locName}
-          </span>
-        </div>
-        <div class="group-card__actions" onclick="event.stopPropagation()">
-          <button class="btn-icon" title="Electrical" onclick="reDirectTo(1,${row.id})">
-            <span class="material-icons-outlined">bolt</span>
-            <span class="btn-icon__label">Electrical</span>
-          </button>
-          <button class="btn-icon" title="Water" onclick="reDirectTo(2,${row.id})">
-            <span class="material-icons-outlined">water_drop</span>
-            <span class="btn-icon__label">Water</span>
-          </button>
-          <button class="btn-icon" title="Room" onclick="reDirectTo(3,${row.id})">
-            <span class="material-icons-outlined">meeting_room</span>
-            <span class="btn-icon__label">Room</span>
-          </button>
-        </div>
-        <span class="group-card__chevron">
-          <span class="material-icons-outlined">chevron_right</span>
-        </span>
-      `;
-
+                    <div class="group-card__icon"><span class="material-icons-outlined">workspaces</span></div>
+                    <div class="group-card__info">
+                        <span class="group-card__name">${row.name || '—'}</span>
+                        <span class="group-card__location">
+                            <span class="material-icons-outlined" style="font-size:.85rem;vertical-align:middle">location_on</span>
+                            ${locName}
+                        </span>
+                    </div>
+                    <div class="group-card__actions" onclick="event.stopPropagation()">
+                <button class="btn-icon" title="Electrical" onclick="reDirectTo(1,${row.id})">
+                    <span class="material-icons-outlined">bolt</span>
+                    <span class="btn-icon__label">Electrical</span>
+                </button>
+                <button class="btn-icon" title="Water" onclick="reDirectTo(2,${row.id})" disabled style="opacity:0.35;cursor:not-allowed;pointer-events:none;">
+                    <span class="material-icons-outlined">water_drop</span>
+                    <span class="btn-icon__label">Water</span>
+                </button>
+                <button class="btn-icon" title="Room" onclick="reDirectTo(3,${row.id})" disabled style="opacity:0.35;cursor:not-allowed;pointer-events:none;">
+                    <span class="material-icons-outlined">meeting_room</span>
+                    <span class="btn-icon__label">Room</span>
+                </button>
+            </div>
+                `;
                 card.addEventListener('click', function() {
                     reDirectTo(1, row.id);
                 });
-
                 list.appendChild(card);
             });
         }
@@ -212,7 +192,6 @@ include '../components/session.php';
                 c.style.display = c.textContent.toLowerCase().includes(q) ? '' : 'none';
             });
         };
-
     })();
     </script>
 
