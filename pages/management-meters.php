@@ -61,25 +61,31 @@ checkSession();
                         <!-- JS uses id="menu-config-1" / "menu-config-2" — preserved -->
                         <div class="meters-tabs">
                             <div id="menu-config-1" class="menu active">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
-                                    stroke-linejoin="round">
-                                    <circle cx="12" cy="12" r="2" />
-                                    <path
-                                        d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+                                <svg xmlns="http://www.w3.org/2000/svg" width="1.2em" height="1.2em"
+                                    viewBox="0 0 24 24">
+                                    <g fill="none">
+                                        <path fill="currentColor" fill-opacity="0.16" fill-rule="evenodd"
+                                            d="M19.806 20a9.77 9.77 0 0 0 2.13-5.037a9.7 9.7 0 0 0-.922-5.38a9.9 9.9 0 0 0-3.69-4.071A10.1 10.1 0 0 0 12 4c-1.884 0-3.73.524-5.324 1.512a9.9 9.9 0 0 0-3.69 4.07a9.7 9.7 0 0 0-.921 5.38A9.77 9.77 0 0 0 4.194 20z"
+                                            clip-rule="evenodd" />
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                            stroke-width="1"
+                                            d="M12.707 15.293L18 10m1.806 10a9.77 9.77 0 0 0 2.13-5.037a9.7 9.7 0 0 0-.922-5.38a9.9 9.9 0 0 0-3.69-4.071A10.1 10.1 0 0 0 12 4c-1.884 0-3.73.524-5.324 1.512a9.9 9.9 0 0 0-3.69 4.07a9.7 9.7 0 0 0-.921 5.38A9.77 9.77 0 0 0 4.194 20zM13 16a1 1 0 1 1-2 0a1 1 0 0 1 2 0" />
+                                    </g>
                                 </svg>
                                 มิเตอร์
                             </div>
                             <div id="menu-config-2" class="menu">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
-                                    stroke-linejoin="round">
-                                    <path d="M5 12.55a11 11 0 0 1 14.08 0" />
-                                    <path d="M1.42 9a16 16 0 0 1 21.16 0" />
-                                    <path d="M8.53 16.11a6 6 0 0 1 6.95 0" />
-                                    <circle cx="12" cy="20" r="1" fill="currentColor" />
+                                <svg xmlns="http://www.w3.org/2000/svg" width="1.2em" height="1.2em"
+                                    viewBox="0 0 24 24">
+                                    <g fill="none">
+                                        <path fill="currentColor" d="M6 10v9h12v-9a6 6 0 0 0-12 0" opacity="0.16" />
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M6 19v-9a6 6 0 0 1 6-6v0a6 6 0 0 1 6 6v9M6 19h12M6 19H4m14 0h2m-9 3h2" />
+                                        <circle cx="12" cy="3" r="1" stroke="currentColor" stroke-width="2" />
+                                    </g>
                                 </svg>
-                                เชื่อมต่อ
+                                การแจ้งเตือน
                             </div>
                         </div>
 
