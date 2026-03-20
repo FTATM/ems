@@ -45,6 +45,10 @@ html.dark {
 
 *, *::before, *::after { box-sizing: border-box; }
 
+body {
+    font-family: 'Noto Sans Thai', 'Sarabun', sans-serif;
+}
+
 /* body lock */
 body.sm-body-lock { overflow: hidden; }
 

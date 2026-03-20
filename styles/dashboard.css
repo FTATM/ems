@@ -71,6 +71,7 @@ body {
     height: 100svh;
     overflow: hidden;
     transition: background-color 0.3s;
+    font-family: 'Noto Sans Thai', 'Sarabun', sans-serif;
 }
 
 #main {

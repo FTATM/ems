@@ -4,6 +4,11 @@
    ============================================ */
 
 /* ── Date input styled like dash-select ── */
+
+body {
+    font-family: 'Noto Sans Thai', 'Sarabun', sans-serif;
+}
+
 .dash-date-input {
     background: var(--bg-select);
     border: 1px solid var(--border);
@@ -34,6 +39,7 @@ html.dark .dash-date-input {
 /* ── Text input (email) ── */
 .dash-text-input {
     background: var(--bg-select);
+    font-family: 'Noto Sans Thai', 'Sarabun', sans-serif;
     border: 1px solid var(--border);
     border-radius: 8px;
     padding: 6px 10px;
@@ -171,6 +177,7 @@ html.dark .dash-date-input {
     position: relative;
     transition: border-color 0.15s, background 0.15s;
     flex-shrink: 0;
+    font-family: 'Noto Sans Thai', 'Sarabun', sans-serif;
 }
 
 .report-checkbox:checked {
