@@ -32,6 +32,10 @@ html.dark {
     --dg-shadow:      0 2px 14px rgba(0,0,0,0.45);
 }
 
+body {
+    font-family: 'Noto Sans Thai', 'Sarabun', sans-serif;
+}
+
 /* ── Background (light mode only) ── */
 html:not(.dark) body {
     background-color: #f0f7ee !important;

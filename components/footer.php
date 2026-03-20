@@ -12,6 +12,10 @@
 </footer>
 
 <style>
+body {
+    font-family: 'Noto Sans Thai', 'Sarabun', sans-serif;
+}
+
 :root {
     --footer-bg: #ffffff;
     --footer-text: #888888;

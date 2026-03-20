@@ -30,7 +30,7 @@ include '../components/session.php';
 
                     <!-- Location -->
                     <div class="dash-filter-group">
-                        <span class="dash-filter-label">Location</span>
+                        <span class="dash-filter-label"><?= $lang['location'] ?></span>
                         <div class="dash-location-badge">
                             <i class="bi bi-geo-alt-fill"></i>
                             <span id="location"></span>
@@ -41,7 +41,7 @@ include '../components/session.php';
 
                     <!-- Group -->
                     <div class="dash-filter-group">
-                        <span class="dash-filter-label">Group</span>
+                        <span class="dash-filter-label"><?= $lang['group'] ?></span>
                         <div class="dash-group-badge">
                             <i class="bi bi-collection-fill"></i>
                             <span id="group"></span>
@@ -60,32 +60,33 @@ include '../components/session.php';
 
                     <!-- Time range -->
                     <div class="dash-filter-group">
-                        <span class="dash-filter-label">ช่วงเวลา</span>
+                        <span class="dash-filter-label"><?= $lang['datalasttime'] ?></span>
+
                         <select id="select-filter-value" class="dash-select" onchange="setMeterID()">
-                            <option value="5">5 นาทีล่าสุด</option>
-                            <option value="10">10 นาทีล่าสุด</option>
-                            <option value="15">15 นาทีล่าสุด</option>
-                            <option value="30">30 นาทีล่าสุด</option>
-                            <option selected value="60">1 ชั่วโมงล่าสุด</option>
-                            <option value="120">2 ชั่วโมงล่าสุด</option>
-                            <option value="480">4 ชั่วโมงล่าสุด</option>
-                            <option value="1440">1 วันล่าสุด</option>
-                            <option value="4320">3 วันล่าสุด</option>
-                            <option value="10080">1 สัปดาห์ล่าสุด</option>
-                            <option value="43200">1 เดือนล่าสุด</option>
-                            <option value="259200">6 เดือนล่าสุด</option>
-                            <option value="518400">1 ปีล่าสุด</option>
+                            <option value="5"><?= $lang['last'] ?> 5 <?= $lang['minutes'] ?></option>
+                            <option value="10"><?= $lang['last'] ?> 10 <?= $lang['minutes'] ?></option>
+                            <option value="15"><?= $lang['last'] ?> 15 <?= $lang['minutes'] ?></option>
+                            <option value="30"><?= $lang['last'] ?> 30 <?= $lang['minutes'] ?></option>
+                            <option selected value="60"><?= $lang['last'] ?> 1 <?= $lang['hour'] ?></option>
+                            <option value="120"><?= $lang['last'] ?> 2 <?= $lang['hours'] ?></option>
+                            <option value="480"><?= $lang['last'] ?> 4 <?= $lang['hours'] ?></option>
+                            <option value="1440"><?= $lang['last'] ?> 1 <?= $lang['day'] ?></option>
+                            <option value="4320"><?= $lang['last'] ?> 3 <?= $lang['days'] ?></option>
+                            <option value="10080"><?= $lang['last'] ?> 1 <?= $lang['week'] ?></option>
+                            <option value="43200"><?= $lang['last'] ?> 1 <?= $lang['month'] ?></option>
+                            <option value="259200"><?= $lang['last'] ?> 6 <?= $lang['months'] ?></option>
+                            <option value="518400"><?= $lang['last'] ?> 1 <?= $lang['year'] ?></option>
                         </select>
                     </div>
 
                     <!-- Refresh -->
                     <div class="dash-divider"></div>
                     <div class="dash-refresh-wrap">
-                        <span class="dash-filter-label">รีเฟรชทุก</span>
+                        <span class="dash-filter-label"><?= $lang['refreshevery'] ?></span>
                         <div class="dash-refresh-inner">
                             <input type="number" id="input-refresh" class="dash-refresh-input" value="15" min="1"
                                 max="30" onchange="setRefreshTime()">
-                            <span class="dash-filter-label">วินาที</span>
+                            <span class="dash-filter-label"><?= $lang['seconds'] ?></span>
                         </div>
                     </div>
                 </div>
@@ -102,7 +103,7 @@ include '../components/session.php';
                             <div class="dash-side-card dash-card--meter">
                                 <div class="dash-side-header">
                                     <div class="dash-values-title">
-                                        <i class="bi bi-info-circle-fill"></i> ข้อมูลมิเตอร์
+                                        <i class="bi bi-info-circle-fill"></i><?= $lang['meterinfo'] ?>
                                     </div>
                                 </div>
                                 <div class="dash-side-scroll dash-side-scroll--info">
@@ -125,7 +126,7 @@ include '../components/session.php';
                             <div class="dash-card dash-card--pie">
                                 <div class="dash-card-header">
                                     <div class="dash-card-title">
-                                        <i class="bi bi-pie-chart-fill"></i> สัดส่วนการใช้พลังงาน
+                                        <i class="bi bi-pie-chart-fill"></i><?= $lang['energy_distribution'] ?>
                                     </div>
                                 </div>
                                 <div class="dash-card-body">
@@ -138,7 +139,7 @@ include '../components/session.php';
                             <div class="dash-card dash-card--line">
                                 <div class="dash-card-header">
                                     <div class="dash-card-title">
-                                        <i class="bi bi-graph-up"></i> กราฟการใช้พลังงาน (kW)
+                                        <i class="bi bi-graph-up"></i><?= $lang['energy_usage_graph_kw'] ?>
                                     </div>
                                 </div>
                                 <div class="dash-card-body">
@@ -150,7 +151,7 @@ include '../components/session.php';
                             <div class="dash-card dash-card--price">
                                 <div class="dash-card-header">
                                     <div class="dash-card-title">
-                                        <i class="bi bi-currency-exchange"></i> ค่าไฟฟ้า (บาท)
+                                        <i class="bi bi-currency-exchange"></i> <?= $lang['electricity_cost_baht'] ?>
                                     </div>
                                 </div>
                                 <div class="dash-card-body">

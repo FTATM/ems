@@ -170,6 +170,8 @@
      *  generateInfomation — render vertical stacked layout
      * ───────────────────────────────────────────── */
     function generateInfomation(selectMeter) {
+        const t = LANG[currentLang];
+
         const rows = [
             {
                 label: 'LOCATION',
@@ -182,7 +184,7 @@
                 icon:  'bi-collection'
             },
             {
-                label: 'METER NAME',
+                label: t.metername,
                 value: selectMeter?.name ?? '—',
                 icon:  'bi-card-text'
             },
