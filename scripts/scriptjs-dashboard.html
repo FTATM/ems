@@ -137,10 +137,6 @@
         updateData(meterWithData);
     }
 
-    async function filterDataInMeters() {
-        // await updateData(filteredDataInMeters);
-    }
-
     // ✅ FIX 1: force select.value หลัง append options + reset ftloaded ให้ refresh ทำงานได้
     function generateOption(id, data, selectfirst = true) {
         if (!ftloaded) { return; }
