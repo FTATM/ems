@@ -35,19 +35,6 @@
 
 
 <script>
-    var openSidebar = document.getElementById('sidebar_open');
-    var closeSidebar = document.getElementById('sidebar_close');
-    var sidebar = document.getElementById('sidebar');
-    var mainContent = document.getElementById('main-content');
-    openSidebar.addEventListener('click', () => {
-        sidebar.classList.toggle('collapsed');
-    });
-    if (closeSidebar) {
-        closeSidebar.addEventListener('click', () => {
-            sidebar.classList.toggle('collapsed');
-        });
-    }
-
     function redirect(target) {
         window.location.href = "../pages/" + target + ".php";
     }
@@ -100,5 +87,16 @@
                 return false;
             })
     }
+
+    function formatDateTime(date) {
+    const pad = (n) => n.toString().padStart(2, '0');
+
+    return date.getFullYear() + '-' +
+        pad(date.getMonth() + 1) + '-' +
+        pad(date.getDate()) + ' ' +
+        pad(date.getHours()) + ':' +
+        pad(date.getMinutes()) + ':' +
+        pad(date.getSeconds());
+}
 
 </script>
