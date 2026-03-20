@@ -110,6 +110,7 @@
     }
 
     async function updateData(page) {
+        currentPage = page;
         const table = document.getElementById("table-meter");
         table.querySelector('tbody').innerHTML = "";
 
@@ -142,7 +143,7 @@
             table.querySelector('tbody').appendChild(tr);
         });
 
-        renderPagination(meters.length, page);
+        renderPagination(filteredDataInMeters.length, page);
 
         // ✅ apply สีหลัง render เสร็จ
         applyDarkModeColors();
@@ -162,22 +163,46 @@
         });
     }
 
-    function renderPagination(totalRows, currentPage) {
+    function renderPagination(totalRows, activePage) {
         const paginationDiv = document.getElementById("pagination");
+        const infoDiv = document.getElementById("pagination-info");
         paginationDiv.innerHTML = "";
 
         const totalPages = Math.ceil(totalRows / rowsPerPage);
 
+        // ── สรุปข้อมูล: แสดง X ถึง Y จากทั้งหมด Z รายการ ──
+        const start = (activePage - 1) * rowsPerPage + 1;
+        const end = Math.min(activePage * rowsPerPage, totalRows);
+        infoDiv.textContent = `แสดง ${start} ถึง ${end} จากทั้งหมด ${totalRows} รายการ`;
+
+        // ── ปุ่ม Previous ──
+        const prevBtn = document.createElement("button");
+        prevBtn.innerHTML = `<span class="material-icons-outlined" style="font-size:1rem;line-height:1">chevron_left</span>`;
+        prevBtn.disabled = activePage === 1;
+        prevBtn.style.opacity = activePage === 1 ? '0.4' : '1';
+        prevBtn.addEventListener("click", () => {
+            if (activePage > 1) updateData(activePage - 1);
+        });
+        paginationDiv.appendChild(prevBtn);
+
+        // ── ปุ่มหมายเลขหน้า ──
         for (let i = 1; i <= totalPages; i++) {
             const btn = document.createElement("button");
-            btn.className = `btn btn-sm text-white`;
-            btn.style.backgroundColor = `${i === currentPage ? '#001B5E' : '#555555'}`;
             btn.textContent = i;
-            btn.addEventListener("click", () => {
-                updateData(i);
-            });
+            if (i === activePage) btn.classList.add("active");
+            btn.addEventListener("click", () => { updateData(i); });
             paginationDiv.appendChild(btn);
         }
+
+        // ── ปุ่ม Next ──
+        const nextBtn = document.createElement("button");
+        nextBtn.innerHTML = `<span class="material-icons-outlined" style="font-size:1rem;line-height:1">chevron_right</span>`;
+        nextBtn.disabled = activePage === totalPages;
+        nextBtn.style.opacity = activePage === totalPages ? '0.4' : '1';
+        nextBtn.addEventListener("click", () => {
+            if (activePage < totalPages) updateData(activePage + 1);
+        });
+        paginationDiv.appendChild(nextBtn);
     }
 
     function getNameLocation(gid) {
