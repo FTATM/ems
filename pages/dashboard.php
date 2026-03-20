@@ -53,7 +53,7 @@ include '../components/session.php';
                     <!-- Meter -->
                     <div class="dash-filter-group">
                         <span class="dash-filter-label"><?= $lang['meter'] ?></span>
-                        <select id="select-meters" class="dash-select" onchange=" filterDataInMeters()"></select>
+                        <select id="select-meters" class="dash-select" onchange=" setMeterID()"></select>
                     </div>
 
                     <div class="dash-divider"></div>
@@ -61,7 +61,7 @@ include '../components/session.php';
                     <!-- Time range -->
                     <div class="dash-filter-group">
                         <span class="dash-filter-label">ช่วงเวลา</span>
-                        <select id="select-filter-value" class="dash-select" onchange="filterDataInMeters()">
+                        <select id="select-filter-value" class="dash-select" onchange="setMeterID()">
                             <option value="5">5 นาทีล่าสุด</option>
                             <option value="10">10 นาทีล่าสุด</option>
                             <option value="15">15 นาทีล่าสุด</option>

@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    $sqlmeter = "SELECT * FROM meter WHERE is_deleted = 0 AND group_id = ? AND meter_type_id = ?";
+    $sqlmeter = "SELECT * FROM meter WHERE is_deleted = 0  AND is_active = 1 AND group_id = ? AND meter_type_id = ?";
     $stmt = $conn->prepare($sqlmeter);
     $stmt->bind_param('ii', $gid, $tid);
     $stmt->execute();
@@ -27,40 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($result->num_rows > 0) {
         while ($row = $result->fetch_assoc()) {
-            $meter_id = $row['id'];
-
-            // สร้าง array ของ data type สำหรับ meter นี้
-            $data_types = [];
-            if ($column->num_rows > 0) {
-                // ต้องรีเซ็ต pointer ก่อน fetch ใหม่
-                $column->data_seek(0);
-                while ($rows = $column->fetch_assoc()) {
-                    $data_types[$rows['id']] = [];
-                }
-            }
-
-            if (!isset($meters[$meter_id])) {
-                $meters[$meter_id] = $row;
-                $meters[$meter_id] += [
-                    'data' => $data_types
-                ];
-            }
-            $sql_data = "SELECT * FROM meter_data WHERE meter_id = ? ORDER BY id DESC LIMIT 1000";
-            $stmt = $conn->prepare($sql_data);
-            $stmt->bind_param('i', $meter_id);
-            $stmt->execute();
-            $resultdata = $stmt->get_result();
-
-            if ($resultdata->num_rows > 0) {
-                while ($rowdata = $resultdata->fetch_assoc()) {
-                    if ($rowdata['meter_id'] == $meter_id) {
-                        $type_id = $rowdata['type_value_id'];
-                        if (isset($meters[$meter_id]['data'][$type_id])) {
-                            $meters[$meter_id]['data'][$type_id][] = $rowdata;
-                        }
-                    }
-                }
-            }
+            $meters[] = $row;
         }
     }
 
