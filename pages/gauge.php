@@ -49,7 +49,7 @@ checkSession();
 
                     <!-- Data Last Time -->
                     <div class="gauge-controls__group gauge-controls__group--time">
-                        <label class="gauge-controls__label" for="select-time">
+                        <label class="gauge-controls__label" for="select-filter-value">
                             <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
                                 fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
                                 stroke-linejoin="round">
@@ -60,6 +60,22 @@ checkSession();
                             </svg>
                             <?= $lang['datalasttime'] ?>
                         </label>
+                        <select id="select-filter-value" class="gauge-select" onchange="checkTimeChange()">
+                            <option selected value="1">Now</option>
+                            <option value="5">5 mins</option>
+                            <option value="10">10 mins</option>
+                            <option value="15">15 mins</option>
+                            <option value="30">30 mins</option>
+                            <option value="60">1 hour</option>
+                            <option value="120">2 hours</option>
+                            <option value="240">4 hours</option>
+                            <option value="1440">Last 1 day</option>
+                            <option value="4320">Last 3 days</option>
+                            <option value="10080">Last 1 week</option>
+                            <option value="43200">Last 1 month</option>
+                            <option value="259200">Last 6 months</option>
+                            <option value="518400">Last 1 year</option>
+                            <option value="0">All time</option>
                         <select id="select-time" class="gauge-select" onchange="checkTimeChange()">
                             <option value="1"><?= $lang['now'] ?> (<?= $lang['live'] ?>)</option>
 
