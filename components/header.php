@@ -29,6 +29,10 @@
     mask-size: 100% 100%;
 }
 
+body {
+    font-family: 'Noto Sans Thai', 'Sarabun', sans-serif;
+}
+
 /* Dark mode styles for header */
 html.dark .navbar {
     background-color: #18181b !important;

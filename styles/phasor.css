@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap');
-
 /* ════════════════════════════════════════════════
    CSS VARIABLES
 ════════════════════════════════════════════════ */
@@ -70,6 +68,7 @@ body {
   background-color: var(--bg-deep);
   color: var(--text-bright);
   transition: background-color 0.3s, color 0.3s;
+  font-family: 'Noto Sans Thai', 'Sarabun', sans-serif;
 }
 
 /* ════════════════════════════════════════════════
@@ -108,7 +107,6 @@ body {
   padding: .35rem .9rem;
 }
 .dash-filter-label {
-  font-family: 'Rajdhani', sans-serif;
   font-size: .6rem;
   font-weight: 700;
   letter-spacing: .12em;
@@ -121,7 +119,6 @@ body {
   display: inline-flex;
   align-items: center;
   gap: .35rem;
-  font-family: 'Rajdhani', sans-serif;
   font-size: .82rem;
   font-weight: 600;
   color: var(--text-bright);
@@ -136,7 +133,6 @@ body {
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: .38rem 2rem .38rem .65rem;
-  font-family: 'Share Tech Mono', monospace;
   font-size: .8rem;
   color: var(--text-bright) !important;
   font-weight: 600;
@@ -173,7 +169,6 @@ body {
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: .38rem .5rem;
-  font-family: 'Share Tech Mono', monospace;
   font-size: .8rem;
   color: var(--text-bright) !important;
   text-align: center;
@@ -191,7 +186,6 @@ body {
   display: inline-flex;
   align-items: center;
   gap: .38rem;
-  font-family: 'Rajdhani', sans-serif;
   font-size: .65rem;
   font-weight: 700;
   letter-spacing: .14em;
@@ -251,7 +245,6 @@ body {
   margin-bottom: .25rem;
 }
 .gauge-panel-title {
-  font-family: 'Rajdhani', sans-serif;
   font-size: 1.2rem;
   font-weight: 700;
   color: var(--text-bright);
@@ -259,7 +252,6 @@ body {
   line-height: 1.2;
 }
 .gauge-panel-subtitle {
-  font-family: 'Rajdhani', sans-serif;
   font-size: .75rem;
   font-weight: 500;
   color: var(--text-dim);
@@ -272,7 +264,6 @@ body {
   display: inline-flex;
   align-items: center;
   gap: .35rem;
-  font-family: 'Rajdhani', sans-serif;
   font-size: .65rem;
   font-weight: 700;
   letter-spacing: .12em;
@@ -308,7 +299,6 @@ body {
   margin: .1rem 0 .3rem;
 }
 .avg-value {
-  font-family: 'Share Tech Mono', monospace;
   font-size: 3rem;
   font-weight: 700;
   color: var(--text-bright);
@@ -317,7 +307,6 @@ body {
   transition: color .3s;
 }
 .avg-label {
-  font-family: 'Rajdhani', sans-serif;
   font-size: .82rem;
   font-weight: 600;
   letter-spacing: .12em;
@@ -328,7 +317,6 @@ body {
 /* ── group divider between L-N and L-L ── */
 .legend-group-label {
   width: 100%;
-  font-family: 'Rajdhani', sans-serif;
   font-size: .6rem;
   font-weight: 700;
   letter-spacing: .14em;
@@ -372,14 +360,12 @@ body {
   box-shadow: 0 0 5px currentColor;
 }
 .legend-name {
-  font-family: 'Rajdhani', sans-serif;
   font-size: .7rem;
   font-weight: 600;
   letter-spacing: .04em;
   color: var(--text-mid);
 }
 .legend-val {
-  font-family: 'Share Tech Mono', monospace;
   font-size: .72rem;
   font-weight: 700;
   color: var(--text-bright);
@@ -448,7 +434,6 @@ body {
   display: flex;
   align-items: center;
   gap: .4rem;
-  font-family: 'Rajdhani', sans-serif;
   font-size: .68rem;
   font-weight: 700;
   letter-spacing: .1em;
@@ -464,7 +449,6 @@ body {
   flex-shrink: 0;
 }
 .metric-voltage-badge {
-  font-family: 'Share Tech Mono', monospace;
   font-size: .72rem;
   font-weight: 700;
   color: #fff;
@@ -537,7 +521,6 @@ html.dark .phasor-refresh-input { background: var(--bg-card); color: #ffffff !im
   text-align: center;
 }
 .metric-row-labels span {
-  font-family: 'Rajdhani', sans-serif;
   font-size: .6rem;
   font-weight: 700;
   letter-spacing: .08em;
@@ -547,7 +530,6 @@ html.dark .phasor-refresh-input { background: var(--bg-card); color: #ffffff !im
   margin-bottom: .1rem;
 }
 .metric-row-values strong {
-  font-family: 'Share Tech Mono', monospace;
   font-size: .9rem;
   font-weight: 700;
   color: var(--text-bright);

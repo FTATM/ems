@@ -3,6 +3,10 @@
    report-meter-detail.css
    ============================================ */
 
+body {
+    font-family: 'Noto Sans Thai', 'Sarabun', sans-serif;
+}
+
 .report-table th,
 .report-table td,
 .report-table td.label-cell,

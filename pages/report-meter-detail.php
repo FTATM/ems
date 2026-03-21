@@ -26,14 +26,14 @@ checkSession();
             <div class="container-fluid px-3 pt-3">
                 <div class="filter-bar">
                     <div class="filter-item">
-                        <span class="filter-label">Location</span>
+                        <span class="filter-label"><?= $lang['location'] ?></span>
                         <div class="filter-value">
                             <i class="bi bi-geo-alt-fill"></i>
                             <span id="location"></span>
                         </div>
                     </div>
                     <div class="filter-item">
-                        <span class="filter-label">Group</span>
+                        <span class="filter-label"><?= $lang['group'] ?></span>
                         <div class="filter-value">
                             <i class="bi bi-collection-fill"></i>
                             <span id="group"></span>
@@ -44,7 +44,7 @@ checkSession();
                         <select id="select-meters" class="filter-select" onchange="filterDataInMeters()"></select>
                     </div>
                     <div class="filter-item">
-                        <span class="filter-label"><?= $lang['time'] ?></span>
+                        <span class="filter-label"><?= $lang['select_date'] ?></span>
                         <div class="filter-date-wrapper"
                             onclick="document.getElementById('select-filter-value').showPicker()">
                             <i class="bi bi-calendar3"></i>
@@ -66,11 +66,11 @@ checkSession();
                         <div class="report-card">
                             <div class="report-card-header">
                                 <div class="report-card-icon"><i class="bi bi-calendar-day"></i></div>
-                                <h5 class="report-card-title">รายงานประจำวัน (Daily Report)</h5>
+                                <h5 class="report-card-title"><?= $lang['dailyreport'] ?></h5>
                             </div>
 
                             <!-- 1. ค่าความต้องการ -->
-                            <div class="section-title">1. ค่าความต้องการ</div>
+                            <div class="section-title">1. <?= $lang['demand'] ?></div>
                             <table class="report-table">
                                 <colgroup>
                                     <col class="col-label">
@@ -82,7 +82,7 @@ checkSession();
                                 </colgroup>
                                 <thead>
                                     <tr>
-                                        <th class="th-left">ช่วงเวลา</th>
+                                        <th class="th-left"><?= $lang['timerange'] ?></th>
                                         <th>kW</th>
                                         <th>บาท/kW</th>
                                         <th>บาท</th>
@@ -127,7 +127,7 @@ checkSession();
                             <hr class="section-divider">
 
                             <!-- 2. ค่าความต้องการไฟฟ้า -->
-                            <div class="section-title">2. ค่าความต้องการไฟฟ้า</div>
+                            <div class="section-title">2. <?= $lang['power_demand'] ?></div>
                             <table class="report-table">
                                 <colgroup>
                                     <col class="col-label">
@@ -139,7 +139,7 @@ checkSession();
                                 </colgroup>
                                 <thead>
                                     <tr>
-                                        <th class="th-left">ช่วงเวลา</th>
+                                        <th class="th-left"><?= $lang['timerange'] ?></th>
                                         <th>ชั่วโมง</th>
                                         <th>kWh</th>
                                         <th>บาท/kWh</th>
@@ -200,7 +200,7 @@ checkSession();
                             <hr class="section-divider">
 
                             <!-- 3. ค่าเพาเวอร์แฟคเตอร์ -->
-                            <div class="section-title">3. ค่าเพาเวอร์แฟคเตอร์</div>
+                            <div class="section-title">3. <?= $lang['powerfactor'] ?></div>
                             <table class="report-table">
                                 <colgroup>
                                     <col class="col-label">
@@ -235,7 +235,7 @@ checkSession();
                             <hr class="section-divider">
 
                             <!-- 4. ค่าบริการ -->
-                            <div class="section-title">4. ค่าบริการ</div>
+                            <div class="section-title">4. <?= $lang['servicecharge'] ?></div>
                             <table class="report-table">
                                 <colgroup>
                                     <col class="col-label">
@@ -270,7 +270,7 @@ checkSession();
                             <hr class="section-divider">
 
                             <!-- 5. ค่า FT -->
-                            <div class="section-title">5. ค่า FT</div>
+                            <div class="section-title">5. <?= $lang['fuel_adjustment_charge'] ?></div>
                             <table class="report-table">
                                 <colgroup>
                                     <col class="col-label">
@@ -305,7 +305,7 @@ checkSession();
                             <hr class="section-divider">
 
                             <!-- 6. ค่าไฟฟ้ารวม -->
-                            <div class="section-title">6. ค่าไฟฟ้ารวม</div>
+                            <div class="section-title">6. <?= $lang['total_electricity_charge'] ?></div>
                             <table class="report-table">
                                 <colgroup>
                                     <col class="col-label">
@@ -340,7 +340,7 @@ checkSession();
                             <hr class="section-divider">
 
                             <!-- 7. ค่าภาษี -->
-                            <div class="section-title">7. ค่าภาษี</div>
+                            <div class="section-title">7. <?= $lang['tax'] ?></div>
                             <table class="report-table">
                                 <colgroup>
                                     <col class="col-label">
@@ -375,7 +375,7 @@ checkSession();
                             <hr class="section-divider">
 
                             <!-- 8. ค่ารวมทั้งสิ้น -->
-                            <div class="section-title">8. ค่ารวมทั้งสิ้น</div>
+                            <div class="section-title">8. <?= $lang['total_amount'] ?></div>
                             <table class="report-table">
                                 <colgroup>
                                     <col class="col-label">
@@ -411,11 +411,10 @@ checkSession();
 
                             <div style="overflow:hidden;">
                                 <button id="btn-export" class="btn-export" onclick="createPDF(false)">
-                                    <i class="bi bi-printer"></i> Export
+                                    <i class="bi bi-printer"></i> <?= $lang['exportpdf'] ?>
                                 </button>
                             </div>
                         </div><!-- /daily card -->
-
 
                         <!-- ════════════════════════════════
                              รายงานประจำเดือน (Monthly Report)
@@ -423,11 +422,11 @@ checkSession();
                         <div class="report-card">
                             <div class="report-card-header">
                                 <div class="report-card-icon"><i class="bi bi-calendar-month"></i></div>
-                                <h5 class="report-card-title">รายงานประจำเดือน (Monthly Report)</h5>
+                                <h5 class="report-card-title"><?= $lang['monthlyreport'] ?></h5>
                             </div>
 
                             <!-- 1. ค่าความต้องการ -->
-                            <div class="section-title">1. ค่าความต้องการ</div>
+                            <div class="section-title">1. <?= $lang['demand'] ?></div>
                             <table class="report-table">
                                 <colgroup>
                                     <col class="col-label">
@@ -438,7 +437,7 @@ checkSession();
                                 </colgroup>
                                 <thead>
                                     <tr>
-                                        <th class="th-left">ช่วงเวลา</th>
+                                        <th class="th-left"><?= $lang['timerange'] ?></th>
                                         <th>kW</th>
                                         <th>บาท</th>
                                         <th>บาท/kWh</th>
@@ -479,7 +478,7 @@ checkSession();
                             <hr class="section-divider">
 
                             <!-- 2. ค่าความต้องการไฟฟ้า -->
-                            <div class="section-title">2. ค่าความต้องการไฟฟ้า</div>
+                            <div class="section-title">2. <?= $lang['power_demand'] ?></div>
                             <table class="report-table">
                                 <colgroup>
                                     <col class="col-label">
@@ -491,7 +490,7 @@ checkSession();
                                 </colgroup>
                                 <thead>
                                     <tr>
-                                        <th class="th-left">ช่วงเวลา</th>
+                                        <th class="th-left"><?= $lang['timerange'] ?></th>
                                         <th>ชั่วโมง</th>
                                         <th>kWhr</th>
                                         <th>บาท</th>
@@ -552,7 +551,7 @@ checkSession();
                             <hr class="section-divider">
 
                             <!-- 3. ค่าความต้องการไฟฟ้า (KVAR) -->
-                            <div class="section-title">3. ค่าความต้องการไฟฟ้า</div>
+                            <div class="section-title">3. <?= $lang['power_demand'] ?> (KVAR) </div>
                             <table class="report-table">
                                 <colgroup>
                                     <col class="col-label">
@@ -584,7 +583,7 @@ checkSession();
                             <hr class="section-divider">
 
                             <!-- 4. ค่าบริการ -->
-                            <div class="section-title">4. ค่าบริการ</div>
+                            <div class="section-title">4. <?= $lang['fuel_adjustment_charge'] ?></div>
                             <table class="report-table">
                                 <colgroup>
                                     <col class="col-label">
@@ -616,7 +615,7 @@ checkSession();
                             <hr class="section-divider">
 
                             <!-- 5. ค่า FT -->
-                            <div class="section-title">5. ค่า FT</div>
+                            <div class="section-title">5. <?= $lang['fuel_adjustment_charge'] ?></div>
                             <table class="report-table">
                                 <colgroup>
                                     <col class="col-label">
@@ -648,7 +647,7 @@ checkSession();
                             <hr class="section-divider">
 
                             <!-- 6. ค่าไฟฟ้ารวม -->
-                            <div class="section-title">6. ค่าไฟฟ้ารวม</div>
+                            <div class="section-title">6. <?= $lang['total_electricity_charge'] ?></div>
                             <table class="report-table">
                                 <colgroup>
                                     <col class="col-label">
@@ -681,7 +680,7 @@ checkSession();
                             <hr class="section-divider">
 
                             <!-- 7. ค่าภาษี -->
-                            <div class="section-title">7. ค่าภาษี</div>
+                            <div class="section-title">7. <?= $lang['tax'] ?></div>
                             <table class="report-table">
                                 <colgroup>
                                     <col class="col-label">
@@ -714,7 +713,7 @@ checkSession();
                             <hr class="section-divider">
 
                             <!-- 8. ค่ารวมทั้งสิ้น -->
-                            <div class="section-title">8. ค่ารวมทั้งสิ้น</div>
+                            <div class="section-title">8. <?= $lang['total_amount'] ?></div>
                             <table class="report-table">
                                 <colgroup>
                                     <col class="col-label">
@@ -747,7 +746,7 @@ checkSession();
 
                             <div style="overflow:hidden;">
                                 <button id="btn-export-month" class="btn-print" onclick="createPDF(true)">
-                                    <i class="bi bi-printer"></i> Export
+                                    <i class="bi bi-printer"></i> <?= $lang['exportpdf'] ?>
                                 </button>
                             </div>
                         </div><!-- /monthly card -->
@@ -755,7 +754,7 @@ checkSession();
                     </div><!-- /reports-wrapper -->
 
                     <div class="footer-note">
-                        หมายเหตุ : ไม่มีการกำหนดราคาค่าไฟฟ้าที่เปลี่ยนแปลงในแต่ละช่วงเวลา...
+                        <?= $lang['notee'] ?>
                     </div>
 
                 </div>

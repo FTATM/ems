@@ -22,8 +22,8 @@ checkSession();
             <div class="flex-grow-1">
                 <div
                     class="bg-secondary bg-opacity-25 d-flex flex-wrap mx-3 mt-3 gap-3 align-items-center py-2 diag-info-bar">
-                    <label id="location" class="px-2" for="locations">Location : </label>
-                    <label id="group" class="px-2" for="groups">Group : </label>
+                    <label id="location" class="px-2" for="locations"><?= $lang['location'] ?>: </label>
+                    <label id="group" class="px-2" for="groups"><?= $lang['group'] ?>: </label>
                 </div>
                 <div class="mx-3 bg-diagram-head d-flex justify-content-center align-items-end" style="height: 480px;">
                     <div id="main-meter" class="d-flex justify-content-center" style="margin-left: 240px;"></div>

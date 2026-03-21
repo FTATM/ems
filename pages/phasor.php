@@ -14,9 +14,6 @@ checkSession();
     <meta charset="UTF-8">
     <title><?= $lang['allmeter'] ?> - EMS</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap"
-        rel="stylesheet">
     <link rel="stylesheet" href="../styles/phasor.css">
     <style>
     /* ─── layout only — colours handled by phasor.css variables ─── */
@@ -48,23 +45,23 @@ checkSession();
 
                     <!-- Time range -->
                     <div class="dash-filter-group">
-                        <span class="dash-filter-label">Data Last Time</span>
+                        <span class="dash-filter-label"><?= $lang['datalasttime'] ?></span>
                         <select id="select-time" class="dash-select" onchange="filterMeters()">
-                            <option selected value="now">Now (Live)</option>
-                            <option value="5">5 mins</option>
-                            <option value="10">10 mins</option>
-                            <option value="15">15 mins</option>
-                            <option value="30">30 mins</option>
-                            <option value="60">1 hour</option>
-                            <option value="120">2 hours</option>
-                            <option value="240">4 hours</option>
-                            <option value="1440">1 day</option>
-                            <option value="4320">3 days</option>
-                            <option value="10080">1 week</option>
-                            <option value="43200">1 month</option>
-                            <option value="259200">6 months</option>
-                            <option value="518400">1 year</option>
-                            <option value="all">All Time</option>
+                            <option selected value="now"><?= $lang['now'] ?> (<?= $lang['live'] ?>)</option>
+                            <option value="5"><?= $lang['last'] ?> 5 <?= $lang['minutes'] ?></option>
+                            <option value="10"><?= $lang['last'] ?> 10 <?= $lang['minutes'] ?></option>
+                            <option value="15"><?= $lang['last'] ?> 15 <?= $lang['minutes'] ?></option>
+                            <option value="30"><?= $lang['last'] ?> 30 <?= $lang['minutes'] ?></option>
+                            <option value="60"><?= $lang['last'] ?> 1 <?= $lang['hour'] ?></option>
+                            <option value="120"><?= $lang['last'] ?> 2 <?= $lang['hours'] ?></option>
+                            <option value="240"><?= $lang['last'] ?> 4 <?= $lang['hours'] ?></option>
+                            <option value="1440"><?= $lang['last'] ?> 1 <?= $lang['day'] ?></option>
+                            <option value="4320"><?= $lang['last'] ?> 3 <?= $lang['days'] ?></option>
+                            <option value="10080"><?= $lang['last'] ?> 1 <?= $lang['week'] ?></option>
+                            <option value="43200"><?= $lang['last'] ?> 1 <?= $lang['month'] ?></option>
+                            <option value="259200"><?= $lang['last'] ?> 6 <?= $lang['months'] ?></option>
+                            <option value="518400"><?= $lang['last'] ?> 1 <?= $lang['year'] ?></option>
+                            <option value="all"><?= $lang['alltime'] ?></option>
                         </select>
                     </div>
 
@@ -74,10 +71,10 @@ checkSession();
                     <div class="dash-refresh-wrap">
                         <div class="phasor-refresh-box">
                             <span class="material-icons-outlined phasor-refresh-spin">sync</span>
-                            <span class="phasor-refresh-label">Refresh every</span>
+                            <span class="phasor-refresh-label"><?= $lang['refreshevery'] ?></span>
                             <input type="number" id="input-refresh" class="phasor-refresh-input" value="3" min="1"
                                 max="60" onchange="setRefreshTime()">
-                            <span class="phasor-refresh-label">sec</span>
+                            <span class="phasor-refresh-label"><?= $lang['seconds'] ?></span>
                         </div>
                     </div>
                 </div>
@@ -91,11 +88,12 @@ checkSession();
                         <div class="gauge-left-panel">
                             <div class="gauge-panel-header">
                                 <div>
-                                    <div class="gauge-panel-title">Voltage Integrated Gauge</div>
-                                    <div class="gauge-panel-subtitle">Real-time Phase-to-Neutral &amp; Phase-to-Phase
-                                        Monitoring</div>
+                                    <div class="gauge-panel-title"><?= $lang['voltageintegratedgauge'] ?></div>
+                                    <div class="gauge-panel-subtitle">
+                                        <?= $lang['realtime_phase_to_neutral_and_phase_to_phase'] ?></div>
                                 </div>
-                                <div class="live-feed-badge"><span class="live-dot"></span>LIVE FEED</div>
+                                <div class="live-feed-badge"><span class="live-dot"></span><?= $lang['livefeed'] ?>
+                                </div>
                             </div>
                             <div class="big-gauge-wrap">
                                 <canvas id="big-gauge-canvas" width="440" height="440"></canvas>

@@ -42,7 +42,7 @@ checkSession();
                                 <path
                                     d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
                             </svg>
-                            Select Meter
+                            <?= $lang['selectmeter'] ?>
                         </label>
                         <select id="select-meters" class="gauge-select" onchange="checkTimeChange()"></select>
                     </div>
@@ -58,7 +58,7 @@ checkSession();
                                 <line x1="8" y1="2" x2="8" y2="6" />
                                 <line x1="3" y1="10" x2="21" y2="10" />
                             </svg>
-                            Data Last Time
+                            <?= $lang['datalasttime'] ?>
                         </label>
                         <select id="select-filter-value" class="gauge-select" onchange="checkTimeChange()">
                             <option selected value="1">Now</option>
@@ -76,6 +76,29 @@ checkSession();
                             <option value="259200">Last 6 months</option>
                             <option value="518400">Last 1 year</option>
                             <option value="0">All time</option>
+                        <select id="select-time" class="gauge-select" onchange="checkTimeChange()">
+                            <option value="1"><?= $lang['now'] ?> (<?= $lang['live'] ?>)</option>
+
+                            <option value="5"><?= $lang['last'] ?> 5 <?= $lang['minutes'] ?></option>
+                            <option value="10"><?= $lang['last'] ?> 10 <?= $lang['minutes'] ?></option>
+                            <option value="15"><?= $lang['last'] ?> 15 <?= $lang['minutes'] ?></option>
+                            <option value="30"><?= $lang['last'] ?> 30 <?= $lang['minutes'] ?></option>
+
+                            <option selected value="60"><?= $lang['last'] ?> 1 <?= $lang['hour'] ?></option>
+                            <option value="120"><?= $lang['last'] ?> 2 <?= $lang['hours'] ?></option>
+                            <option value="480"><?= $lang['last'] ?> 4 <?= $lang['hours'] ?></option>
+
+                            <option value="1440"><?= $lang['last'] ?> 1 <?= $lang['day'] ?></option>
+                            <option value="4320"><?= $lang['last'] ?> 3 <?= $lang['days'] ?></option>
+
+                            <option value="10080"><?= $lang['last'] ?> 1 <?= $lang['week'] ?></option>
+
+                            <option value="43200"><?= $lang['last'] ?> 1 <?= $lang['month'] ?></option>
+                            <option value="259200"><?= $lang['last'] ?> 6 <?= $lang['months'] ?></option>
+
+                            <option value="518400"><?= $lang['last'] ?> 1 <?= $lang['year'] ?></option>
+
+                            <option value="0"><?= $lang['alltime'] ?></option>
                         </select>
                     </div>
 
@@ -91,12 +114,12 @@ checkSession();
                                 <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
                             </svg>
                         </span>
-                        <span class="dash-filter-label">ระยะเวลารีเฟรช :</span>
+                        <span class="dash-filter-label"><?= $lang['refreshevery'] ?></span>
                         <div class="dash-refresh-inner">
                             <input type="number" id="input-refresh" class="dash-refresh-input" value="15" min="1"
                                 max="60" onchange="setRefreshTime()">
                         </div>
-                        <span class="dash-filter-label--unit">วินาที</span>
+                        <span class="dash-filter-label--unit"><?= $lang['seconds'] ?></span>
                     </div>
 
                 </div><!-- /.gauge-controls -->
