@@ -12,10 +12,13 @@
     document.addEventListener("DOMContentLoaded", async () => {
         await fetchAll();
         await process();
+        setInterval(() => {
+            process();
+        }, 5000);
     });
 
     async function process() {
-        await fetchMetersAll();
+        await fetchMeterAndData();
         await generateMeters();
         await setInformation();
     };
@@ -35,7 +38,7 @@
 
     }
 
-    async function fetchMetersAll() {
+    async function fetchMeterAndData() {
         let formfilter = new FormData();
         formfilter.append("tid", typeMeterID);
         formfilter.append("gid", groupID);
@@ -75,11 +78,7 @@
         // แบ่งเป็นแถวละ 8 ตัว
         const itemsPerRow = 8;
 
-        console.log(meters);
-
-
         Object.values(meters).forEach((m, index) => {
-            // ถ้าเป็นตัวแรกของแถวใหม่
             if (index % itemsPerRow === 0) {
                 let row = document.createElement('div');
                 row.className = "mx-3 bg-diagram-body d-flex align-items-end justify-content-end"; // จัดเรียง meter ในแถว
@@ -216,13 +215,16 @@
             let currentRow = document.getElementById(`row-${Math.floor(index / itemsPerRow)}`);
             currentRow.appendChild(wrapper);
 
-            // ถ้า meter นี้ active ให้แสดง animation
-            if (m.is_active === '1') {
-                document.getElementById(`line-active-${m.id}`).classList.remove('stop-line');
-                document.getElementById(`line-active-${m.id}`).classList.add('moving-line');
+            if (m.data.length > 0) {
+                let now = new Date();
+                let time1mins = new Date(now.getTime() - parseInt(1, 10) * 60000);
+                let create_date = new Date(m.data[0].create_date);
+                if (create_date >= time1mins) {
+                    document.getElementById(`line-active-${m.id}`).classList.remove('stop-line');
+                    document.getElementById(`line-active-${m.id}`).classList.add('moving-line');
+                    document.getElementById('status-' + index).classList.replace("bg-danger", "bg-success");
+                }
             }
-            let status = document.getElementById('status-' + index);
-            status.classList.replace("bg-danger", stran === "0.00" ? "bg-danger" : "bg-success");
         });
     }
 
@@ -255,15 +257,21 @@
             console.log("already Modal in screen.");
             return;
         }
-        let m = meters.find(m => { return parseInt(m.id) === parseInt(id) });
+        let m = Object.values(meters).find(m => { return parseInt(m.id) === parseInt(id) });
 
-        let strkw = (parseFloat(m.data['1']?.at(-1)?.value) || 0).toFixed(2);
-        let strkwh = (parseFloat(m.data['2']?.at(-1)?.value) || 0).toFixed(2);
-        let stran = (parseFloat(m.data['7']?.at(-1)?.value) || 0).toFixed(2);
-        let strab = (parseFloat(m.data['14']?.at(-1)?.value) || 0).toFixed(2);
-        let strfq = (parseFloat(m.data['18']?.at(-1)?.value) || 0).toFixed(2);
-        let strca = (parseFloat(m.data['10']?.at(-1)?.value) || 0).toFixed(2);
-        let strpf = (parseFloat(m.data['17']?.at(-1)?.value) || 0).toFixed(2);
+        const dataMap = Object.fromEntries(
+            m.data.map(d => [d.type_id, d])
+        );
+
+        const getVal = (id) => parseFloat(dataMap[id]?.value) || 0;
+
+        let strkw = getVal('1').toFixed(2);
+        let strkwh = getVal('2').toFixed(2);
+        let stran = getVal('7').toFixed(2);
+        let strab = getVal('14').toFixed(2);
+        let strfq = getVal('18').toFixed(2);
+        let strca = getVal('10').toFixed(2);
+        let strpf = getVal('17').toFixed(2);
         let [intPartkw, decimalPartkw] = strkw.split(".");
         let [intPartkwh, decimalPartkwh] = strkwh.split(".");
         let [intPartan, decimalPartan] = stran.split(".");
@@ -287,7 +295,7 @@
         div.style.backgroundColor = "#EFEFEF";
         div.style.transformOrigin = "center center";
         div.innerHTML = `
-                <div class="w-100 h-100 px-3 rounded" onclick="showModalMeter(${m.id})" style="background-color:#858585;">
+                <div class="w-100 h-100 px-3 rounded" style="background-color:#858585;">
                     <div class="w-100 h-100 px-1 py-3 rounded position-relative" style="background-color:#666666;">
                         <div id="status-x" class="position-absolute rounded-circle bg-danger p-2" style="top:20px; right:10px;">
                         </div>
@@ -393,14 +401,17 @@
         modal.innerHTML += `<div class="mt-4">click any on screen to close.</div>`;
         document.body.appendChild(modal);
 
-        // ถ้า meter นี้ active ให้แสดง animation
-        if (m.is_active === '1') {
-            document.getElementById(`line-active-x-${m.id}`).classList.remove('stop-line');
-            document.getElementById(`line-active-x-${m.id}`).classList.add('moving-line');
-        }
-        let status = document.getElementById('status-x');
-        status.classList.replace("bg-danger", stran === "0.00" ? "bg-danger" : "bg-success");
 
+        if (m.data.length > 0) {
+            let now = new Date();
+            let time1mins = new Date(now.getTime() - parseInt(1, 10) * 60000);
+            let create_date = new Date(m.data[0].create_date);
+            if (create_date >= time1mins) {
+                document.getElementById(`line-active-x-${m.id}`).classList.remove('stop-line');
+                document.getElementById(`line-active-x-${m.id}`).classList.add('moving-line');
+                document.getElementById('status-x').classList.replace("bg-danger", "bg-success");
+            }
+        }
     }
 
 

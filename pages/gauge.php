@@ -49,7 +49,7 @@ checkSession();
 
                     <!-- Data Last Time -->
                     <div class="gauge-controls__group gauge-controls__group--time">
-                        <label class="gauge-controls__label" for="select-time">
+                        <label class="gauge-controls__label" for="select-filter-value">
                             <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
                                 fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
                                 stroke-linejoin="round">
@@ -60,7 +60,7 @@ checkSession();
                             </svg>
                             Data Last Time
                         </label>
-                        <select id="select-time" class="gauge-select" onchange="checkTimeChange()">
+                        <select id="select-filter-value" class="gauge-select" onchange="checkTimeChange()">
                             <option selected value="1">Now</option>
                             <option value="5">5 mins</option>
                             <option value="10">10 mins</option>
@@ -91,12 +91,12 @@ checkSession();
                                 <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
                             </svg>
                         </span>
-                        <span class="dash-filter-label">Refresh every:</span>
+                        <span class="dash-filter-label">ระยะเวลารีเฟรช :</span>
                         <div class="dash-refresh-inner">
                             <input type="number" id="input-refresh" class="dash-refresh-input" value="15" min="1"
                                 max="60" onchange="setRefreshTime()">
                         </div>
-                        <span class="dash-filter-label--unit">Seconds</span>
+                        <span class="dash-filter-label--unit">วินาที</span>
                     </div>
 
                 </div><!-- /.gauge-controls -->

@@ -51,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 $sql_data = "SELECT value, create_date
                              FROM meter_data
-                             WHERE meter_id = ? AND type_value_id = ? LIMIT 1";
+                             WHERE meter_id = ? AND type_value_id = ? ORDER BY create_date DESC LIMIT 1";
                 $stmt2 = $conn->prepare($sql_data);
                 $stmt2->bind_param('ii', $meter_id, $type['id']);
                 $stmt2->execute();

@@ -58,20 +58,20 @@
         { key: 'other2', label: null, cols: 2 },
     ];
 
-    let ftloaded = false;
     document.addEventListener("DOMContentLoaded", async () => {
         showLoading();
-        ftloaded = true;
         await fetchAll();
+        setInformation();
         await generateOption('select-meters', Object.values(meters), true);
-        await setMeterID();
+        setMeterID();
         await process();
         await setRefreshTime();
         hideLoading();
     });
 
     async function process() {
-        await setMeterID();
+        meterWithData = await fetchDataOfMeter(MeterID, typeMeterID, groupID);
+        updateData(meterWithData);
         generateDataList();
     }
 
@@ -99,13 +99,20 @@
         meters = jsonmeter.data;
     }
 
+    function setInformation() {
+        const locate = document.getElementById('location');
+        locate.innerHTML = `<?=$lang['location']?> : ` + getNameLocation(groupID);
+        const group = document.getElementById('group');
+        group.innerHTML = `<?=$lang['group']?> : ` + getNameGroup(groupID);
+    }
+
     async function fetchDataOfMeter() {
         const time = document.getElementById('select-filter-value');
         let now = new Date();
         let selectedDateTime = new Date(now.getTime() - parseInt(time.value, 10) * 60000);
         let lastdate = formatDateTime(selectedDateTime);
         console.log(lastdate);
-        
+
         let formfilter = new FormData();
         formfilter.append("id", MeterID);
         formfilter.append("tid", typeMeterID);
@@ -126,57 +133,12 @@
         }
     }
 
-    async function setMeterID() {
+    function setMeterID() {
         let select = document.getElementById('select-meters');
         if (!Number(select.value)) { return; }
         MeterID = Number(select.value);
-
-        meterWithData = await fetchDataOfMeter();
-        console.log(meterWithData);
-        
-        updateData(meterWithData);
     }
 
-    // ✅ FIX 1: force select.value หลัง append options + reset ftloaded ให้ refresh ทำงานได้
-    function generateOption(id, data, selectfirst = true) {
-        if (!ftloaded) { return; }
-        ftloaded = false;
-
-        let select = document.getElementById(id);
-        select.innerHTML = '<option value="">== <?=$lang["select"]?> ==</option>';
-        data.forEach(row => {
-            let option = document.createElement('option');
-            option.value = row.id;
-            option.textContent = `[${row.id}] ${row.name}`;
-            select.appendChild(option);
-        });
-
-        // force set value ตรงๆ แทนการใช้ option.selected ที่ไม่น่าเชื่อถือ
-        if (selectfirst && data.length > 0) {
-            select.value = data[0].id;
-            MeterID = data[0].id;
-        }
-
-        // ✅ reset flag เพื่อให้ process() รอบถัดไป (refresh) ทำงานได้
-        ftloaded = true;
-
-        const locate = document.getElementById('location');
-        locate.innerHTML = `<?=$lang['location']?> : ` + getNameLocation(groupID);
-        const group = document.getElementById('group');
-        group.innerHTML = `<?=$lang['group']?> : ` + getNameGroup(groupID);
-    }
-
-    // ✅ FIX 4: getNameLocation หา location จาก group จริงๆ แทน logic เดิมที่ผิด
-    function getNameLocation(gid) {
-        const group = groups.find(g => String(g.id) === String(gid));
-        if (!group) return '—';
-        return locations.find(l => String(l.id) === String(group.location_id))?.name ?? '—';
-    }
-
-    // ✅ FIX 5: getNameGroup guard กรณี group ไม่เจอ
-    function getNameGroup(id) {
-        return groups.find(g => String(g.id) === String(id))?.name ?? '—';
-    }
 
     /* ─────────────────────────────────────────────
      *  generateInfomation — render vertical stacked layout
