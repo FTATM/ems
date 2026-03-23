@@ -12,18 +12,16 @@
     const groupID = "<?=$_SESSION['gid'];?>";
 
     document.addEventListener("DOMContentLoaded", async () => {
-        showLoading();
         await fetchAll();
         await generateOption('select-meters', Object.values(meters), true);
-        await setMeterID();
+        setMeterID();
         await generateGauge();
         await process();
         await setRefreshTime();
-        hideLoading();
     });
 
     async function process() {
-        meterWithData = await fetchDataOfMeter(MeterID, typeMeterID, groupID);
+        meterWithData = await fetchRealtimeOfMeters(typeMeterID, groupID);
         updateDataInGauge();
         setRefreshTime();
     }
@@ -41,21 +39,7 @@
         let jsongroup = await responsegroup.json();
         groups = jsongroup.data;
 
-        let formfilter = new FormData();
-        formfilter.append("tid", typeMeterID);
-        formfilter.append("gid", groupID);
-        let responsemeter = await fetch("../config/fetch-meters-filter.php", {
-            method: "POST",
-            body: formfilter
-        });
-        let jsonmeter = await responsemeter.json();
-        meters = jsonmeter.data;
-    }
-
-    async function setMeterID() {
-        let select = document.getElementById('select-meters');
-        if (!Number(select.value)) { return; }
-        MeterID = Number(select.value);
+        meters = await fetchMeters(typeMeterID, groupID);
     }
 
     async function generateGauge() {

@@ -60,6 +60,30 @@
         }
     }
 
+    function showLoading(id) {
+        const el = document.getElementById(id);
+        if (!el) return;
+
+        if (el.querySelector('.loading-overlay')) return;
+
+        const overlay = document.createElement('div');
+        overlay.className = 'loading-overlay';
+
+        const spinner = document.createElement('div');
+        spinner.className = 'loading-spinner';
+
+        overlay.appendChild(spinner);
+        el.appendChild(overlay);
+    }
+
+    function hideLoading(id) {
+        const el = document.getElementById(id);
+        if (!el) return;
+
+        const overlay = el.querySelector('.loading-overlay');
+        if (overlay) overlay.remove();
+    }
+
     function alertMessages(icontxt = 'warning', titletxt = "Default title text.", textmessage = 'Default txt message.', timerShow = 1500, confirmbtn = false) {
         Swal.fire({
             icon: icontxt,
@@ -110,9 +134,9 @@
     }
 
     function generateOption(id, data, selectfirst = true) {
-
         let select = document.getElementById(id);
         select.innerHTML = '<option value="">== <?=$lang["select"]?> ==</option>';
+
         data.forEach(row => {
             let option = document.createElement('option');
             option.value = row.id;
@@ -120,15 +144,48 @@
             select.appendChild(option);
         });
 
-        // force set value ตรงๆ แทนการใช้ option.selected ที่ไม่น่าเชื่อถือ
         if (selectfirst && data.length > 0) {
             select.value = data[0].id;
             MeterID = data[0].id;
         }
 
-        // ✅ reset flag เพื่อให้ process() รอบถัดไป (refresh) ทำงานได้
     }
 
+    function setMeterID(id = 'select-meters') {
+        let select = document.getElementById(id);
+        if (!Number(select.value)) { return; }
+        MeterID = Number(select.value);
+    }
+    function parseLocalDate(dateStr) {
+        const [year, month, day] = dateStr.split('-').map(Number);
+        return new Date(year, month - 1, day); // local time
+    }
+
+    function filterDateTime(dateID = null, timeID = null) {
+        const dateel = dateID ? document.getElementById(dateID) : null;
+        const timeel = timeID ? document.getElementById(timeID) : null;
+
+        // safe value
+        let dateValue = dateel && dateel.value ? dateel.value : null;
+        let timeValue = timeel && timeel.value ? parseInt(timeel.value, 10) : 0;
+
+        if (isNaN(timeValue)) timeValue = 0;
+
+        // fallback date
+        let dateselect = dateValue ? parseLocalDate(dateValue) : new Date();
+
+        if (isNaN(dateselect.getTime())) {
+            dateselect = new Date();
+        }
+
+        // คำนวณเวลา
+        let selectedDateTime = new Date(dateselect.getTime() - timeValue * 60000);
+
+        let lastdate = formatDateTime(selectedDateTime);
+
+        console.log(lastdate);
+        return lastdate;
+    }
 
     async function fetchMeters(tid, gid) {
         let formfilter = new FormData();
@@ -149,18 +206,11 @@
         }
     }
 
-    async function fetchDataOfMeter(mid, tid, gid) {
-        const time = document.getElementById('select-filter-value');
-        let now = new Date();
-        let selectedDateTime = new Date(now.getTime() - parseInt(time.value, 10) * 60000);
-        let lastdate = formatDateTime(selectedDateTime);
-        console.log(lastdate);
+    async function fetchRealtimeOfMeters(tid, gid) {
 
         let formfilter = new FormData();
-        formfilter.append("id", mid);
         formfilter.append("tid", tid);
         formfilter.append("gid", gid);
-        formfilter.append("lastdate", lastdate);
 
         try {
             const res = await fetch("../config/fetch-meters-filter-realtime.php", {
@@ -172,6 +222,29 @@
         } catch (e) {
             console.error('error unknown file fetch-meters-filter-realtime.php : ', e.message);
             alertMessages('error', 'พบปัญหา', 'เกิดข้อผิดพลาดในการทำงานของสคริปต์ fetch-meters-filter-realtime กรุณาคัดลอกข้อความนี้และส่งต่อให้ผู้ดูแลระบบ', 4000, true);
+            return [];
+        }
+    }
+
+    async function fetchDataOfMeter(mid, tid, gid, dateID = null, timeID = null) {
+        const lastdate = filterDateTime(dateID, timeID);
+
+        let formfilter = new FormData();
+        formfilter.append("id", mid);
+        formfilter.append("tid", tid);
+        formfilter.append("gid", gid);
+        formfilter.append("lastdate", lastdate);
+
+        try {
+            const res = await fetch("../config/fetch-meter-filterById.php", {
+                method: "POST",
+                body: formfilter
+            });
+            const result = await res.json();
+            return result.data;
+        } catch (e) {
+            console.error('error unknown file fetch-meters-filterById.php : ', e.message);
+            alertMessages('error', 'พบปัญหา', 'เกิดข้อผิดพลาดในการทำงานของสคริปต์ fetch-meters-filter กรุณาคัดลอกข้อความนี้และส่งต่อให้ผู้ดูแลระบบ', 4000, true);
             return [];
         }
     }

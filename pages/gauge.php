@@ -61,43 +61,20 @@ checkSession();
                             <?= $lang['datalasttime'] ?>
                         </label>
                         <select id="select-filter-value" class="gauge-select" onchange="checkTimeChange()">
-                            <option selected value="1">Now</option>
-                            <option value="5">5 mins</option>
-                            <option value="10">10 mins</option>
-                            <option value="15">15 mins</option>
-                            <option value="30">30 mins</option>
-                            <option value="60">1 hour</option>
-                            <option value="120">2 hours</option>
-                            <option value="240">4 hours</option>
-                            <option value="1440">Last 1 day</option>
-                            <option value="4320">Last 3 days</option>
-                            <option value="10080">Last 1 week</option>
-                            <option value="43200">Last 1 month</option>
-                            <option value="259200">Last 6 months</option>
-                            <option value="518400">Last 1 year</option>
-                            <option value="0">All time</option>
-                        <select id="select-time" class="gauge-select" onchange="checkTimeChange()">
-                            <option value="1"><?= $lang['now'] ?> (<?= $lang['live'] ?>)</option>
-
+                            <option selected value="1"><?= $lang['now'] ?> (<?= $lang['live'] ?>)</option>
                             <option value="5"><?= $lang['last'] ?> 5 <?= $lang['minutes'] ?></option>
                             <option value="10"><?= $lang['last'] ?> 10 <?= $lang['minutes'] ?></option>
                             <option value="15"><?= $lang['last'] ?> 15 <?= $lang['minutes'] ?></option>
                             <option value="30"><?= $lang['last'] ?> 30 <?= $lang['minutes'] ?></option>
-
-                            <option selected value="60"><?= $lang['last'] ?> 1 <?= $lang['hour'] ?></option>
+                            <option value="60"><?= $lang['last'] ?> 1 <?= $lang['hour'] ?></option>
                             <option value="120"><?= $lang['last'] ?> 2 <?= $lang['hours'] ?></option>
                             <option value="480"><?= $lang['last'] ?> 4 <?= $lang['hours'] ?></option>
-
                             <option value="1440"><?= $lang['last'] ?> 1 <?= $lang['day'] ?></option>
                             <option value="4320"><?= $lang['last'] ?> 3 <?= $lang['days'] ?></option>
-
                             <option value="10080"><?= $lang['last'] ?> 1 <?= $lang['week'] ?></option>
-
                             <option value="43200"><?= $lang['last'] ?> 1 <?= $lang['month'] ?></option>
                             <option value="259200"><?= $lang['last'] ?> 6 <?= $lang['months'] ?></option>
-
                             <option value="518400"><?= $lang['last'] ?> 1 <?= $lang['year'] ?></option>
-
                             <option value="0"><?= $lang['alltime'] ?></option>
                         </select>
                     </div>
@@ -126,7 +103,7 @@ checkSession();
 
                 <!-- Content area -->
                 <div class="gauge-body">
-                    <div id="list-gauge" class="gauge-grid"></div>
+                    <div id="list-gauge" class="gauge-grid relative "></div>
 
                     <!-- Sidebar -->
                     <div id="list-data" class="gauge-sidebar">

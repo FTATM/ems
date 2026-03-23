@@ -1,5 +1,7 @@
 <script>
   let meters = []
+  let meterWithData = [];
+  let MeterID = 0;
   let locations = [];
   let groups = [];
   let types = [];
@@ -10,17 +12,18 @@
   const typeMeterID = "<?=$_SESSION['tid'];?>";
   const groupID = "<?=$_SESSION['gid'];?>";
   const username = "<?=$_SESSION['username'];?>";
+  const qrencode = "<?=$_SESSION['qrencode'] ?? '1234567890';?>";
+  const qrtext = "<?=$_SESSION['qrtext'] ?? 'Fieldtech Automation Co.,ltd';?>";
   document.addEventListener("DOMContentLoaded", async () => {
-    // showLoading();
-    ftloaded = true;
+    await fetchAll();
+    setInformation();
+    await generateOption('select-meters', Object.values(meters), true);
+    setMeterID();
     await process();
-    // hideLoading();
   });
 
   async function process() {
-    await fetchAll();
-    await generateOption('select-meters', Object.values(meters), true);
-    await toDay();
+    meterWithData = await fetchDataOfMeter(MeterID, typeMeterID, groupID, 'value-date-filter', null);
     await filterDataInMeters();
   }
 
@@ -37,98 +40,102 @@
     let jsontype = await responsetype.json();
     types = jsontype.data;
 
-    meters = await fetchDataInMeters();
+    meters = await fetchMeters(typeMeterID, groupID);
   }
 
-  async function fetchDataInMeters() {
-    let formfilter = new FormData();
-    formfilter.append("tid", typeMeterID);
-    formfilter.append("gid", groupID);
+  function setInformation() {
+    const locate = document.getElementById('location');
+    locate.innerHTML = `<?=$lang['location']?> : ` + getNameLocation(groupID);
+    const group = document.getElementById('group');
+    group.innerHTML = `<?=$lang['group']?> : ` + getNameGroup(groupID);
 
-    try {
-      const res = await fetch("../config/fetch-meters-filter.php", {
-        method: "POST",
-        body: formfilter
-      });
-      const result = await res.json();
-      return result.data;
-    } catch (e) {
-      console.error('error unknown file fetch-meters-filter.php : ', e.message);
-      alertMessages('error', 'พบปัญหา', 'เกิดข้อผิดพลาดในการทำงานของสคริปต์ fetch-meters-filter กรุณาคัดลอกข้อความนี้และส่งต่อให้ผู้ดูแลระบบ', 4000, true);
-      return [];
+    const input = document.getElementById('select-date-filter');
+    if (!input.value) {
+      const today = new Date().toISOString().split('T')[0];
+      input.value = today;
+      updateDateDisplay();
+    }
+    formatDateFromCalendarSelect();
+  }
+
+
+  function updateDateDisplay() {
+    const input = document.getElementById('select-date-filter');
+    const display = document.getElementById('date-display');
+    if (input.value) {
+      const d = new Date(input.value);
+      const options = {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      };
+      display.textContent = d.toLocaleDateString('th-TH', options);
+      display.style.color = '#222';
+    } else {
+      display.textContent = 'เลือกวันที่';
+      display.style.color = '#aaa';
     }
   }
 
-  function generateOption(id, data, selectfirst = false) {
-    if (!ftloaded) { return }
-    ftloaded = false;
-    let select = document.getElementById(id);
-    select.innerHTML = '<option>=== <?=$lang["select"]?> === </option>';
-    data.forEach(row => {
-      let option = document.createElement('option');
-      option.value = row.id;
-      option.textContent = `[${row.id}] ${row.name}`;
-      option.selected = selectfirst ? data[0].id === row.id : false;
-      select.appendChild(option);
-    });
-    const locate = document.getElementById('location');
-    locate.innerHTML = getNameLocation(groupID);
-    const group = document.getElementById('group');
-    group.innerHTML = getNameGroup(groupID);
+  async function changeSelectMeter() {
+    setMeterID();
+    formatDateFromCalendarSelect();
+    await process();
   }
 
-  function toDay() {
-    let dateDay = document.getElementById('select-filter-value');
+  function formatDateFromCalendarSelect() {
+    const datetime = document.getElementById('select-date-filter');
+    const dateValue = document.getElementById('value-date-filter');
 
-    let today = new Date();
-    let yyyy = today.getFullYear();
-    let mm = String(today.getMonth() + 1).padStart(2, '0'); // เดือนต้อง +1
-    let dd = String(today.getDate()).padStart(2, '0');
+    dateSelected = new Date(datetime.value);
+    let dateTimeBase = new Date(
+      dateSelected.getFullYear(),
+      dateSelected.getMonth(),
+      1
+    );
+    let text = '';
+    text += dateTimeBase.getFullYear() + "-";
+    text += (dateTimeBase.getMonth() + 1) + "-";
+    text += dateTimeBase.getDate();
 
-    dateDay.value = yyyy + "-" + mm + "-" + dd;
-    dateSelected = new Date(`${yyyy}-${mm}-${dd} 00:00:00`);
+    dateValue.value = text;
   }
 
   async function filterDataInMeters() {
-    const meterIDSelected = document.getElementById('select-meters');
-    const meterSelected = Object.values(meters).find(m => { return parseInt(m.id) === parseInt(meterIDSelected.value) });
-    const time = document.getElementById('select-filter-value');
-    let startDateDay = new Date(time.value + " 00:00:00");
-    let endDateDay = new Date(time.value + " 23:59:59");
-    const data = Object.entries(meterSelected.data).map(([key, rows]) => {
-      return Object.values(rows).filter(datatype => {
-        let date = new Date(datatype.create_date);
-        return date >= startDateDay && date <= endDateDay;
-      });
-    });
-    const filteredDataInMetersDay = {
-      ...meterSelected,
-      data: data
+    if (meterWithData.length == 0) {
+      console.warn("Sorry not found meter id : " + MeterID);
+      return;
     }
-    const dayData = await AvgMinMax(filteredDataInMetersDay);
-    console.log(dayData.data);
+    // เลือกมิเตอร์ที่ผู้ใช้ต้องการดูข้อมูล
+    meterWithData = meterWithData[MeterID];
 
-    let date = new Date(time.value); // yyyy-mm-dd
-    let year = date.getFullYear();
-    let month = date.getMonth(); // 0 = ม.ค., 11 = ธ.ค.
 
-    let startDate = new Date(year, month, 1, 0, 0, 0);
-    let endDate = new Date(year, month + 1, 0, 23, 59, 59);
-    const dataMonth = Object.entries(meterSelected.data).map(([key, rows]) => {
+    // ดึงค่า ปี เดือน วัน จากที่ผู้ใช้เลือก
+    let year = dateSelected.getFullYear();
+    let month = dateSelected.getMonth();
+    let date = dateSelected.getDate();
+
+    // กรอกเอาแค่ข้อมูลที่ตรงกับวันที่เลือกจากข้อมูลทั้งหมดของเดือนใน meterWithData
+    let startDate = new Date(year, month, date, 0, 0, 0);
+    let endDate = new Date(year, month, date, 23, 59, 59);
+    const DataOfSelectedDay = Object.entries(meterWithData.data).map(([key, rows]) => {
       return Object.values(rows).filter(datatype => {
         let date = new Date(datatype.create_date);
         return date >= startDate && date <= endDate;
       });
     });
-    const filteredDataInMetersMonth = {
-      ...meterSelected,
-      data: dataMonth
+
+    // นำข้อมูลใหม่ที่กรองวันที่แล้ว มาเก็บไว้ที่ meterWithDataOfDay
+    const meterWithDataOfDay = {
+      ...meterWithData,
+      data: DataOfSelectedDay
     }
 
-    const monthData = await AvgMinMax(filteredDataInMetersMonth);
-    console.log(monthData.data);
+    //หาค่า min/max/avg ของข้อมูลแต่ละช่วงเวลา
+    const dayData = await AvgMinMax(meterWithDataOfDay);
+    const monthData = await AvgMinMax(meterWithData);
 
-
+    // นำค่า min/max/avg ที่ได้ไปใช้งานที่หน้าเว็บ
     loadValueDay(dayData);
     loadValuemonth(monthData);
   }
@@ -239,15 +246,21 @@
   function changeValueToTime(value) {
     if (isNaN(value)) return "00:00";
 
-    // แยกชั่วโมงและนาที
-    const hours = Math.floor(value);
-    const minutes = Math.round((value - hours) * 60);
+    // แปลงเป็นนาทีทั้งหมดก่อน (กัน error ปัดเศษ)
+    let totalMinutes = Math.round(value * 60);
 
-    // จัดรูปแบบให้มีเลข 0 นำหน้า
+    const days = Math.floor(totalMinutes / 1440);
+    totalMinutes %= 1440;
+
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+
+    // format
+    const dStr = days > 0 ? `${days}d ` : '';
     const hStr = String(hours).padStart(2, '0');
     const mStr = String(minutes).padStart(2, '0');
 
-    return `${hStr}:${mStr}`;
+    return `${dStr}${hStr}:${mStr}`;
   }
 
   function diffTime(start, end) {

@@ -16,6 +16,8 @@ $sum = $_POST['sum'];
 $tax = $_POST['tax'];
 $rtax = $_POST['rtax'];
 $total = $_POST['total'];
+$text = $_POST['qrcode'];
+$qrtext = $_POST['qrtext'];
 // if ($consumption) {
 //     echo json_encode(['status' => false, 'message' => 'Failed: Required parameter not found. Please verify your request.']);
 // }
@@ -134,7 +136,7 @@ $pdf->Cell(30, 6, "สแกนจ่าย ณ บัญชี ", 0, 1);
 $pdf->Cell(35, 6, "รวมเงินค่าไฟฟ้าเดือนปัจจุบัน", 0, 0);
 $pdf->Cell(25, 6, $total, 0, 0, 'R');
 $pdf->Cell(3, 6, "", 0, 0);
-$pdf->Cell(30, 6, "Fieldtech Automation co,ltd ", 0, 1);
+$pdf->Cell(30, 6, $qrtext, 0, 1);
 
 $pdf->SetFont('THSarabunNew', '', 14);
 $pdf->SetTextColor(177, 34, 38);
@@ -144,8 +146,6 @@ $pdf->Cell(25, 10, $total, 0, 1, 'R');
 use Endroid\QrCode\QrCode;
 use Endroid\QrCode\Writer\PngWriter;
 use Endroid\QrCode\Encoding\Encoding;
-
-$text = "Hello, QadggdgwefagqtgasdfadR Coasdafasfgagwgde!asfag";
 
 // ✅ กำหนดค่าตั้งแต่ตอน new
 $qrCode = new QrCode(

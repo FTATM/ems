@@ -30,12 +30,10 @@
                     alertMessages('success', 'เข้าสู่ระบบสำเร็จ', 'ยินดีต้อนรับคุณ ' + username, 2000);
                     setTimeout(() => {
                         window.location.href = 'locations.php';
-                    }, 2000);
+                    }, 1000);
                 } else {
                     alertMessages('error', 'ผิดพลาด', data.message, 2000);
                 }
-
-                console.log("fetch data complete :", data);
 
                 hideLoading();
             });

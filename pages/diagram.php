@@ -28,13 +28,21 @@ checkSession();
                 <div class="mx-3 bg-diagram-head d-flex justify-content-center align-items-end" style="height: 480px;">
                     <div id="main-meter" class="d-flex justify-content-center" style="margin-left: 240px;"></div>
                 </div>
-                <div id="list-meters"></div>
+                <div id="list-meters">
+                    <div class="dash-skeleton">
+                        <div class="dash-skeleton-line" style="width:60%"></div>
+                        <div class="dash-skeleton-line" style="width:90%"></div>
+                        <div class="dash-skeleton-line" style="width:75%"></div>
+                        <div class="dash-skeleton-line" style="width:85%"></div>
+                        <div class="dash-skeleton-line" style="width:50%"></div>
+                    </div>
+                </div>
             </div>
             <?php include "../components/footer.php"; ?>
         </div>
     </div>
     <script id="theme-data" type="application/json">
-    <?= json_encode($_SESSION['theme'], JSON_UNESCAPED_UNICODE); ?>
+        <?= json_encode($_SESSION['theme'], JSON_UNESCAPED_UNICODE); ?>
     </script>
     <?php include "../scripts/scriptjs.html"; ?>
     <?php include "../scripts/scriptjs-diagram.html"; ?>
