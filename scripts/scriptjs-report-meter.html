@@ -1,25 +1,29 @@
 <script>
   let meters = [];
+  let meterWithData = [];
   let MeterID = 0;
   let locations = [];
   let groups = [];
   let types = [];
-  let ftloaded = false;
-  let dateSelected = "";
+  let dateSelected = new Date();
   let refreshIntervalId;
 
+  const SetPf = 0.85;
   const typeMeterID = "<?=$_SESSION['tid'];?>";
   const groupID = "<?=$_SESSION['gid'];?>";
   const username = "<?=$_SESSION['username'];?>";
+  const qrencode = "<?=$_SESSION['qrencode'] ?? '1234567890';?>";
+  const qrtext = "<?=$_SESSION['qrtext'] ?? 'Fieldtech Automation Co.,ltd';?>";
   document.addEventListener("DOMContentLoaded", async () => {
     await fetchAll();
+    setInformation();
     await generateOption('select-meters', Object.values(meters), true);
-    ftloaded = true;
+    setMeterID();
     await process();
   });
 
   async function process() {
-    await toDay();
+    meterWithData = await fetchDataOfMeter(MeterID, typeMeterID, groupID, 'value-date-filter', null);
     await filterDataInMeters();
   }
 
@@ -36,107 +40,101 @@
     let jsontype = await responsetype.json();
     types = jsontype.data;
 
-    meters = await fetchMeters(tid, gid);
+    meters = await fetchMeters(typeMeterID, groupID);
   }
 
+  function setInformation() {
+    const locate = document.getElementById('location');
+    locate.innerHTML = `<?=$lang['location']?> : ` + getNameLocation(groupID);
+    const group = document.getElementById('group');
+    group.innerHTML = `<?=$lang['group']?> : ` + getNameGroup(groupID);
 
-  async function fetchDataOfMeter() {
-    const time = document.getElementById('select-filter-value');
-    let now = new Date();
-    let selectedDateTime = new Date(now.getTime() - parseInt(time.value, 10) * 60000);
-    let lastdate = formatDateTime(selectedDateTime);
-    console.log(lastdate);
+    const input = document.getElementById('select-date-filter');
+    if (!input.value) {
+      const today = new Date().toISOString().split('T')[0];
+      input.value = today;
+      updateDateDisplay();
+    }
+    formatDateFromCalendarSelect();
+  }
 
-    let formfilter = new FormData();
-    formfilter.append("id", MeterID);
-    formfilter.append("tid", typeMeterID);
-    formfilter.append("gid", groupID);
-    formfilter.append("lastdate", lastdate);
-
-    try {
-      const res = await fetch("../config/fetch-meter-filterById.php", {
-        method: "POST",
-        body: formfilter
-      });
-      const result = await res.json();
-      return result.data;
-    } catch (e) {
-      console.error('error unknown file fetch-meters-filterById.php : ', e.message);
-      alertMessages('error', 'พบปัญหา', 'เกิดข้อผิดพลาดในการทำงานของสคริปต์ fetch-meters-filter กรุณาคัดลอกข้อความนี้และส่งต่อให้ผู้ดูแลระบบ', 4000, true);
-      return [];
+  function updateDateDisplay() {
+    const input = document.getElementById('select-date-filter');
+    const display = document.getElementById('date-display');
+    if (input.value) {
+      const d = new Date(input.value);
+      const options = {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      };
+      display.textContent = d.toLocaleDateString('th-TH', options);
+      display.style.color = '#222';
+    } else {
+      display.textContent = 'เลือกวันที่';
+      display.style.color = '#aaa';
     }
   }
 
-
-  function generateOption(id, data, selectfirst = false) {
-    if (!ftloaded) { return }
-    ftloaded = false;
-    let select = document.getElementById(id);
-    select.innerHTML = '<option>=== <?=$lang["select"]?> === </option>';
-    data.forEach(row => {
-      let option = document.createElement('option');
-      option.value = row.id;
-      option.textContent = `[${row.id}] ${row.name}`;
-      option.selected = selectfirst ? data[0].id === row.id : false;
-      select.appendChild(option);
-    });
-    const locate = document.getElementById('location');
-    locate.innerHTML = getNameLocation(groupID);
-    const group = document.getElementById('group');
-    group.innerHTML = getNameGroup(groupID);
+  async function changeSelectMeter() {
+    setMeterID();
+    formatDateFromCalendarSelect();
+    await process();
   }
 
-  function toDay() {
-    let dateDay = document.getElementById('select-filter-value');
+  function formatDateFromCalendarSelect() {
+    const datetime = document.getElementById('select-date-filter');
+    const dateValue = document.getElementById('value-date-filter');
 
-    let today = new Date();
-    let yyyy = today.getFullYear();
-    let mm = String(today.getMonth() + 1).padStart(2, '0'); // เดือนต้อง +1
-    let dd = String(today.getDate()).padStart(2, '0');
+    dateSelected = new Date(datetime.value);
+    let dateTimeBase = new Date(
+      dateSelected.getFullYear(),
+      dateSelected.getMonth(),
+      1
+    );
+    let text = '';
+    text += dateTimeBase.getFullYear() + "-";
+    text += (dateTimeBase.getMonth() + 1) + "-";
+    text += dateTimeBase.getDate();
 
-    dateDay.value = yyyy + "-" + mm + "-" + dd;
-    dateSelected = new Date(`${yyyy}-${mm}-${dd} 00:00:00`);
+    dateValue.value = text;
   }
 
   async function filterDataInMeters() {
-    const meterIDSelected = document.getElementById('select-meters');
-    const meterSelected = Object.values(meters).find(m => { return parseInt(m.id) === parseInt(meterIDSelected.value) });
-    const time = document.getElementById('select-filter-value');
-    let startDateDay = new Date(time.value + " 00:00:00");
-    let endDateDay = new Date(time.value + " 23:59:59");
-    const data = Object.entries(meterSelected.data).map(([key, rows]) => {
-      return Object.values(rows).filter(datatype => {
-        let date = new Date(datatype.create_date);
-        return date >= startDateDay && date <= endDateDay;
-      });
-    });
-    const filteredDataInMeters = {
-      ...meterSelected,
-      data: data
+    if (meterWithData.length == 0) {
+      console.warn("Sorry not found meter id : " + MeterID);
+      return;
     }
+    // เลือกมิเตอร์ที่ผู้ใช้ต้องการดูข้อมูล
+    meterWithData = meterWithData[MeterID];
 
-    const dayData = await AvgMinMax(filteredDataInMeters);
 
-    let date = new Date(time.value); // yyyy-mm-dd
-    let year = date.getFullYear();
-    let month = date.getMonth(); // 0 = ม.ค., 11 = ธ.ค.
+    // ดึงค่า ปี เดือน วัน จากที่ผู้ใช้เลือก
+    let year = dateSelected.getFullYear();
+    let month = dateSelected.getMonth();
+    let date = dateSelected.getDate();
 
-    let startDate = new Date(year, month, 1, 0, 0, 0);
-    let endDate = new Date(year, month + 1, 0, 23, 59, 59);
-    const dataMonth = Object.entries(meterSelected.data).map(([key, rows]) => {
+    // กรอกเอาแค่ข้อมูลที่ตรงกับวันที่เลือกจากข้อมูลทั้งหมดของเดือนใน meterWithData
+    let startDate = new Date(year, month, date, 0, 0, 0);
+    let endDate = new Date(year, month, date, 23, 59, 59);
+    const DataOfSelectedDay = Object.entries(meterWithData.data).map(([key, rows]) => {
       return Object.values(rows).filter(datatype => {
         let date = new Date(datatype.create_date);
         return date >= startDate && date <= endDate;
       });
     });
-    const filteredDataInMetersMonth = {
-      ...meterSelected,
-      data: dataMonth
+
+    // นำข้อมูลใหม่ที่กรองวันที่แล้ว มาเก็บไว้ที่ meterWithDataOfDay
+    const meterWithDataOfDay = {
+      ...meterWithData,
+      data: DataOfSelectedDay
     }
 
-    const monthData = await AvgMinMax(filteredDataInMetersMonth);
+    //หาค่า min/max/avg ของข้อมูลแต่ละช่วงเวลา
+    const dayData = await AvgMinMax(meterWithDataOfDay);
+    const monthData = await AvgMinMax(meterWithData);
 
-    // console.log(filteredDataInMeters);
+    // นำค่า min/max/avg ที่ได้ไปใช้งานที่หน้าเว็บ
     loadValueDay(dayData);
     loadValuemonth(monthData);
   }
@@ -183,7 +181,6 @@
 
   function loadValueDay(m) {
     let data = m.data;
-    console.log(data);
     const kw = data[0];
     const kwh = data[1];
     const kva = data[2];
@@ -198,8 +195,8 @@
     setValueInHTML('kwhr-diff', Math.abs(kwh.lv - kwh.fv).toFixed(2));
     setValueInHTML('hour-value', kw.tHours);
     setValueInHTML('kvar-avg', kvar.avg);
-    let pfv = pf.total / (pf.count === 0 ? 1 : pf.count);
-    setValueInHTML('pf-avg', pfv);
+    setValueInHTML('pf-avg', pf.avg);
+    setValueInHTML('pf-avg2', (kw.avg / kva.avg).toFixed(2));
 
     //[1] bath of kW
     addDetectEventMulti('input-kw', 'result-bath-kw', 'kw-avg', 'input-kw');
@@ -213,7 +210,7 @@
     addDetectEventLoadFactor('input-kwhr', 'load-factor', 'kwhr-diff', 'kw-max', 'hour-value');
 
     //[3] bath of kvar
-    if (pf.avg < 0.85) {
+    if (pf.avg < SetPf) {
       addDetectEventMulti('input-kvar', 'result-bath-kvar', 'kvar-avg', 'input-kvar');
     } else {
       setValueInHTML('result-bath-kvar', "0.00");
@@ -268,7 +265,7 @@
     addDetectEventLoadFactor('input-kwhr', 'load-factor-m', 'kwhr-diff-m', 'kw-avg-m', 'hour-value-m');
 
     //[3] bath of kvar
-    if (pf.avg < 0.85) {
+    if (pf.avg < SetPf) {
       addDetectEventMulti('input-kvar', 'result-bath-kvar-m', 'kvar-avg-m', 'input-kvar');
     } else {
       setValueInHTML('result-bath-kvar-m', "0.00");
@@ -382,7 +379,7 @@
 
   function createPDF(ismonth) {
     let id = document.getElementById('select-meters').value;
-    let date = document.getElementById('select-filter-value').value;
+    let date = document.getElementById('select-date-filter').value;
     let kwh_diff = document.getElementById('kwhr-diff')?.value;
     let kwh_fv = document.getElementById('kwhr-fv')?.value;
     let kwh_lv = document.getElementById('kwhr-lv')?.value;
@@ -417,6 +414,8 @@
     let formdata = new FormData();
     formdata.append('id', id);
     formdata.append('user', username);
+    formdata.append('qrcode', qrencode);
+    formdata.append('qrtext', qrtext);
     formdata.append('date', date);
     formdata.append('kwh', kwh_diff);
     formdata.append('fv', kwh_fv);
@@ -437,8 +436,8 @@
       .then(res => res.json())
       .then(data => {
         if (data.status) {
-          window.open(data.url, '_blank'); // เปิดไฟล์ PDF ในแท็บใหม่
-          // หรือ: window.location.href = data.url; // ดาวน์โหลดเลย
+          window.open(data.url, '_blank');
+          window.location.href = data.url; // ดาวน์โหลดเลย
         }
       })
       .catch(e => {

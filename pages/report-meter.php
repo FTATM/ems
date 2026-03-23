@@ -41,16 +41,17 @@ checkSession();
                     </div>
                     <div class="filter-item">
                         <span class="filter-label"><?= $lang['meter'] ?></span>
-                        <select id="select-meters" class="filter-select" onchange="filterDataInMeters()"></select>
+                        <select id="select-meters" class="filter-select" onchange="changeSelectMeter()"></select>
                     </div>
                     <div class="filter-item">
                         <span class="filter-label"><?= $lang['select_date'] ?></span>
                         <div class="filter-date-wrapper"
-                            onclick="document.getElementById('select-filter-value').showPicker()">
+                            onclick="document.getElementById('select-date-filter').showPicker()">
                             <i class="bi bi-calendar3"></i>
                             <span id="date-display">เลือกวันที่</span>
-                            <input id="select-filter-value" type="date" class="filter-date-hidden"
-                                onchange="updateDateDisplay(); filterDataInMeters()">
+                            <input id="select-date-filter" type="date" class="filter-date-hidden"
+                                onchange="updateDateDisplay(); changeSelectMeter()">
+                            <input hidden id="value-date-filter" />
                         </div>
                     </div>
                 </div>
@@ -83,21 +84,21 @@ checkSession();
                                 <thead>
                                     <tr>
                                         <th class="th-left"></th>
+                                        <th></th>
                                         <th>kW</th>
                                         <th>บาท/kW</th>
                                         <th>บาท</th>
                                         <th>บาท/kWh</th>
-                                        <th></th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr>
                                         <td></td>
+                                        <td></td>
                                         <td><input id="kw-avg" type="text" readonly></td>
                                         <td><input id="input-kw" type="text" class="editable"></td>
                                         <td><input id="result-bath-kw" type="text" value="0.00" readonly></td>
                                         <td><input id="bath-per-kwhr" type="text" value="0.00" readonly></td>
-                                        <td></td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -158,7 +159,7 @@ checkSession();
                                     <tr>
                                         <th></th>
                                         <th>KVAR</th>
-                                        <th>pf &lt;</th>
+                                        <th>pf &lt; 0.85</th>
                                         <th>บาท/kVar</th>
                                         <th>บาท</th>
                                         <th></th>
@@ -176,15 +177,7 @@ checkSession();
                                     <tr>
                                         <td></td>
                                         <td></td>
-                                        <td><input id="pf-avg2" type="text" readonly></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td><input id="pf-avg2" type="text" readonly></td>
+                                        <td><input id="pf-avg2" type="text" class="d-none" readonly></td>
                                         <td></td>
                                         <td></td>
                                         <td></td>
@@ -399,19 +392,19 @@ checkSession();
                                 <thead>
                                     <tr>
                                         <th></th>
+                                        <th></th>
                                         <th>kW</th>
                                         <th>บาท</th>
                                         <th>บาท/kWh</th>
-                                        <th></th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr>
                                         <td></td>
+                                        <td></td>
                                         <td><input id="kw-avg-m" type="text" readonly></td>
                                         <td><input id="result-bath-kw-m" type="text" value="0.00" readonly></td>
                                         <td><input id="result-bath-per-kwhr-m" type="text" value="0.00" readonly></td>
-                                        <td></td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -468,7 +461,7 @@ checkSession();
                                     <tr>
                                         <th></th>
                                         <th>KVAR</th>
-                                        <th>pf &lt;</th>
+                                        <th>pf &lt; 0.85</th>
                                         <th>บาท</th>
                                         <th></th>
                                     </tr>
@@ -484,14 +477,7 @@ checkSession();
                                     <tr>
                                         <td></td>
                                         <td></td>
-                                        <td><input id="pf-avg2-m" type="text" readonly></td>
-                                        <td></td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td><input id="pf-avg2-m" type="text" readonly></td>
+                                        <td><input id="pf-avg2-m" type="text" class="d-none" readonly></td>
                                         <td></td>
                                         <td></td>
                                     </tr>
@@ -671,11 +657,11 @@ checkSession();
 
                         </div><!-- /reports-wrapper -->
 
-                        <div class="footer-note">
-                            <?= $lang['notee'] ?>
-                        </div>
-
                     </div>
+                    <div class="footer-note">
+                        <?= $lang['notee'] ?>
+                    </div>
+                </div>
             </main>
 
             <?php include "../components/footer.php"; ?>
@@ -685,44 +671,6 @@ checkSession();
 
     <?php include "../scripts/scriptjs.html"; ?>
     <?php include '../scripts/scriptjs-report-meter.html'; ?>
-
-    <script>
-    /* ─── Sync Dark Mode กับ sidemenu (localStorage key: 'theme') ─── */
-    window.addEventListener('DOMContentLoaded', function() {
-        if (localStorage.getItem('theme') === 'dark') {
-            document.documentElement.classList.add('dark');
-        }
-    });
-    </script>
-
-    <script>
-    function updateDateDisplay() {
-        const input = document.getElementById('select-filter-value');
-        const display = document.getElementById('date-display');
-        if (input.value) {
-            const d = new Date(input.value);
-            const options = {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            };
-            display.textContent = d.toLocaleDateString('th-TH', options);
-            display.style.color = '#222';
-        } else {
-            display.textContent = 'เลือกวันที่';
-            display.style.color = '#aaa';
-        }
-    }
-    window.addEventListener('DOMContentLoaded', function() {
-        const input = document.getElementById('select-filter-value');
-        if (!input.value) {
-            const today = new Date().toISOString().split('T')[0];
-            input.value = today;
-            updateDateDisplay();
-        }
-    });
-    </script>
-
 </body>
 
 </html>

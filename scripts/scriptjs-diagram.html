@@ -1,6 +1,4 @@
 <script>
-    const rowsPerPage = 10;
-    let currentPage = 1;
     let meters = [];
     let locations = [];
     let groups = [];
@@ -18,7 +16,7 @@
     });
 
     async function process() {
-        await fetchMeterAndData();
+        meters = await fetchRealtimeOfMeters(typeMeterID, groupID);
         await generateMeters();
         await setInformation();
     };
@@ -36,32 +34,6 @@
         let jsontype = await responsetype.json();
         types = jsontype.data;
 
-    }
-
-    async function fetchMeterAndData() {
-        let formfilter = new FormData();
-        formfilter.append("tid", typeMeterID);
-        formfilter.append("gid", groupID);
-        let responsemeter = await fetch("../config/fetch-meters-filter-realtime.php", {
-            method: "POST",
-            body: formfilter
-        });
-        let jsonmeter = await responsemeter.json();
-        meters = jsonmeter.data;
-    }
-
-    function getNameLocation(gid) {
-        const group = groups.find(g => g.id === gid);
-        if (!group) return '-';
-        const location = locations.find(l => l.id === group.location_id);
-        return location ? location.name : '-';
-    }
-
-    function getNameGroup(id) {
-
-        return groups.find(g => {
-            return g.id === id;
-        }).name;
     }
 
     function setInformation() {

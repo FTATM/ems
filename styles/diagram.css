@@ -5,133 +5,171 @@
 
 /* ── CSS Variables (standalone) ── */
 :root {
-    --dg-bg:          #f0f7ee;
-    --dg-card:        #ffffff;
-    --dg-border:      #d8e4c8;
-    --dg-green:       #8BAE66;
-    --dg-green-dark:  #6e9248;
-    --dg-green-light: #edf3e4;
-    --dg-green-glow:  rgba(139,174,102,0.18);
-    --dg-green-soft:  rgba(139,174,102,0.09);
-    --dg-text:        #1c2214;
-    --dg-muted:       #7a8f60;
-    --dg-shadow:      0 1px 8px rgba(139,174,102,0.10);
+  --dg-bg: #f0f7ee;
+  --dg-card: #ffffff;
+  --dg-border: #d8e4c8;
+  --dg-green: #8bae66;
+  --dg-green-dark: #6e9248;
+  --dg-green-light: #edf3e4;
+  --dg-green-glow: rgba(139, 174, 102, 0.18);
+  --dg-green-soft: rgba(139, 174, 102, 0.09);
+  --dg-text: #1c2214;
+  --dg-muted: #7a8f60;
+  --dg-shadow: 0 1px 8px rgba(139, 174, 102, 0.1);
 }
 
 html.dark {
-    --dg-bg:          #18181b;
-    --dg-card:        #09090b;
-    --dg-border:      #283820;
-    --dg-green:       #8BAE66;
-    --dg-green-dark:  #6e9248;
-    --dg-green-light: #1c2a12;
-    --dg-green-glow:  rgba(139,174,102,0.22);
-    --dg-green-soft:  rgba(139,174,102,0.09);
-    --dg-text:        #deeacc;
-    --dg-muted:       #607048;
-    --dg-shadow:      0 2px 14px rgba(0,0,0,0.45);
+  --dg-bg: #18181b;
+  --dg-card: #09090b;
+  --dg-border: #283820;
+  --dg-green: #8bae66;
+  --dg-green-dark: #6e9248;
+  --dg-green-light: #1c2a12;
+  --dg-green-glow: rgba(139, 174, 102, 0.22);
+  --dg-green-soft: rgba(139, 174, 102, 0.09);
+  --dg-text: #deeacc;
+  --dg-muted: #607048;
+  --dg-shadow: 0 2px 14px rgba(0, 0, 0, 0.45);
 }
 
 body {
-    font-family: 'Noto Sans Thai', 'Sarabun', sans-serif;
+  font-family: "Noto Sans Thai", "Sarabun", sans-serif;
 }
 
 /* ── Background (light mode only) ── */
 html:not(.dark) body {
-    background-color: #f0f7ee !important;
+  background-color: #f0f7ee !important;
 }
 
 /* ── Info Bar (Location / Group) ── */
 .diag-info-bar {
-    border-radius: 12px !important;
-    background: var(--dg-card) !important;
-    border: 1px solid var(--dg-border) !important;
-    box-shadow: var(--dg-shadow);
-    padding: 0 !important;
-    margin: 16px 12px 16px !important;
-    gap: 0 !important;
-    display: flex !important;
-    align-items: stretch !important;
-    overflow: hidden;
-    position: relative;
-    transition: background 0.3s, border-color 0.3s;
+  border-radius: 12px !important;
+  background: var(--dg-card) !important;
+  border: 1px solid var(--dg-border) !important;
+  box-shadow: var(--dg-shadow);
+  padding: 0 !important;
+  margin: 16px 12px 16px !important;
+  gap: 0 !important;
+  display: flex !important;
+  align-items: stretch !important;
+  overflow: hidden;
+  position: relative;
+  transition:
+    background 0.3s,
+    border-color 0.3s;
 }
 
 /* green top accent */
 .diag-info-bar::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, var(--dg-green), var(--dg-green-dark));
-    z-index: 1;
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--dg-green), var(--dg-green-dark));
+  z-index: 1;
 }
 
 .diag-info-bar label {
-    flex: 1;
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--dg-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    display: flex !important;
-    align-items: center;
-    gap: 8px;
-    padding: 16px 28px !important;
-    margin: 0 !important;
-    border-right: 1px solid var(--dg-border);
-    transition: color 0.3s;
+  flex: 1;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--dg-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 28px !important;
+  margin: 0 !important;
+  border-right: 1px solid var(--dg-border);
+  transition: color 0.3s;
 }
 
 .diag-info-bar label:last-child {
-    border-right: none;
+  border-right: none;
 }
 
 /* ── Meter List ── */
 .diag-list-meters {
-    border-radius: 12px;
-    border: 1px solid var(--dg-border);
-    background: var(--dg-card);
-    box-shadow: var(--dg-shadow);
-    margin: 12px 12px 16px;
-    padding: 14px 16px 16px;
-    overflow-x: auto;
-    position: relative;
-    transition: background 0.3s, border-color 0.3s;
+  border-radius: 12px;
+  border: 1px solid var(--dg-border);
+  background: var(--dg-card);
+  box-shadow: var(--dg-shadow);
+  margin: 12px 12px 16px;
+  padding: 14px 16px 16px;
+  overflow-x: auto;
+  position: relative;
+  transition:
+    background 0.3s,
+    border-color 0.3s;
 }
 
 /* green top accent */
 .diag-list-meters::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, var(--dg-green), var(--dg-green-dark));
-    border-radius: 12px 12px 0 0;
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--dg-green), var(--dg-green-dark));
+  border-radius: 12px 12px 0 0;
 }
 
 /* ── Scrollbar ── */
 .diag-list-meters::-webkit-scrollbar {
-    width: 5px; height: 5px;
+  width: 5px;
+  height: 5px;
 }
+
 .diag-list-meters::-webkit-scrollbar-thumb {
-    background: var(--dg-border);
-    border-radius: 4px;
+  background: var(--dg-border);
+  border-radius: 4px;
 }
+
 .diag-list-meters::-webkit-scrollbar-thumb:hover {
-    background: var(--dg-green);
+  background: var(--dg-green);
 }
 
 /* ── Responsive ── */
 @media (max-width: 900px) {
-    .diag-info-bar {
-        flex-direction: column;
-    }
-    .diag-info-bar label {
-        border-right: none;
-        border-bottom: 1px solid var(--dg-border);
-    }
-    .diag-info-bar label:last-child {
-        border-bottom: none;
-    }
+  .diag-info-bar {
+    flex-direction: column;
+  }
+
+  .diag-info-bar label {
+    border-right: none;
+    border-bottom: 1px solid var(--dg-border);
+  }
+
+  .diag-info-bar label:last-child {
+    border-bottom: none;
+  }
 }
+
+/* skeleton placeholder */
+.dash-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.dash-skeleton-line {
+  height: 12px;
+  border-radius: 6px;
+  background: linear-gradient(90deg,
+      var(--dg-border) 25%,
+      var(--dg-green-soft) 50%,
+      var(--dg-border) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}
+
+@keyframes shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+

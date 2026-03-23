@@ -59,18 +59,18 @@
     ];
 
     document.addEventListener("DOMContentLoaded", async () => {
-        showLoading();
+        // showLoading();
         await fetchAll();
         setInformation();
         await generateOption('select-meters', Object.values(meters), true);
         setMeterID();
         await process();
         await setRefreshTime();
-        hideLoading();
+        // hideLoading();
     });
 
     async function process() {
-        meterWithData = await fetchDataOfMeter(MeterID, typeMeterID, groupID);
+        meterWithData = await fetchDataOfMeter(MeterID, typeMeterID, groupID, null, timeID = 'filter-lasttime');
         updateData(meterWithData);
         generateDataList();
     }
@@ -88,15 +88,7 @@
         let jsontype = await responsetype.json();
         types = jsontype.data;
 
-        let formfilter = new FormData();
-        formfilter.append("tid", typeMeterID);
-        formfilter.append("gid", groupID);
-        let responsemeter = await fetch("../config/fetch-meters-filter.php", {
-            method: "POST",
-            body: formfilter
-        });
-        let jsonmeter = await responsemeter.json();
-        meters = jsonmeter.data;
+        meters = await fetchMeters(typeMeterID, groupID);
     }
 
     function setInformation() {
@@ -106,39 +98,11 @@
         group.innerHTML = `<?=$lang['group']?> : ` + getNameGroup(groupID);
     }
 
-    async function fetchDataOfMeter() {
-        const time = document.getElementById('select-filter-value');
-        let now = new Date();
-        let selectedDateTime = new Date(now.getTime() - parseInt(time.value, 10) * 60000);
-        let lastdate = formatDateTime(selectedDateTime);
-        console.log(lastdate);
-
-        let formfilter = new FormData();
-        formfilter.append("id", MeterID);
-        formfilter.append("tid", typeMeterID);
-        formfilter.append("gid", groupID);
-        formfilter.append("lastdate", lastdate);
-
-        try {
-            const res = await fetch("../config/fetch-meter-filterById.php", {
-                method: "POST",
-                body: formfilter
-            });
-            const result = await res.json();
-            return result.data;
-        } catch (e) {
-            console.error('error unknown file fetch-meters-filterById.php : ', e.message);
-            alertMessages('error', 'พบปัญหา', 'เกิดข้อผิดพลาดในการทำงานของสคริปต์ fetch-meters-filter กรุณาคัดลอกข้อความนี้และส่งต่อให้ผู้ดูแลระบบ', 4000, true);
-            return [];
-        }
+    async function changeSelectMeter() {
+        setMeterID();
+        await process();
+        setRefreshTime();
     }
-
-    function setMeterID() {
-        let select = document.getElementById('select-meters');
-        if (!Number(select.value)) { return; }
-        MeterID = Number(select.value);
-    }
-
 
     /* ─────────────────────────────────────────────
      *  generateInfomation — render vertical stacked layout
