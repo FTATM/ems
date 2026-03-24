@@ -506,7 +506,7 @@ body {
 }
 html.dark .phasor-refresh-box  { background: var(--bg-select); border-color: var(--border); }
 html.dark .phasor-refresh-label { color: var(--text-dim) !important; }
-html.dark .phasor-refresh-input { background: var(--bg-card); color: #ffffff !important; font-weight: 700; }
+html.dark .phasor-refresh-input { background: var(--bg-card); color: #ffffff !important; font-weight: 400; }
 
 /* divider line — removed */
 .metric-divider {

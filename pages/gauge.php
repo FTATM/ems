@@ -82,21 +82,12 @@ checkSession();
                     <div class="dash-divider"></div>
 
                     <!-- Refresh -->
-                    <div class="dash-refresh-wrap">
-                        <span class="dash-refresh-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
-                                stroke-linejoin="round">
-                                <polyline points="23 4 23 10 17 10" />
-                                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
-                            </svg>
-                        </span>
-                        <span class="dash-filter-label"><?= $lang['refreshevery'] ?></span>
-                        <div class="dash-refresh-inner">
-                            <input type="number" id="input-refresh" class="dash-refresh-input" value="15" min="1"
-                                max="60" onchange="setRefreshTime()">
-                        </div>
-                        <span class="dash-filter-label--unit"><?= $lang['seconds'] ?></span>
+                    <div class="gauge-refresh-wrap">
+                        <span class="material-icons-outlined gauge-refresh-spin">sync</span>
+                        <span class="gauge-refresh-label"><?= $lang['refreshevery'] ?></span>
+                        <input type="number" id="input-refresh" class="gauge-refresh-input" value="15" min="1" max="60"
+                            onchange="setRefreshTime()">
+                        <span class="gauge-refresh-label"><?= $lang['seconds'] ?></span>
                     </div>
 
                 </div><!-- /.gauge-controls -->
