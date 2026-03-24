@@ -12,7 +12,7 @@ checkSession();
 
 <head>
     <meta charset="UTF-8">
-    <title><?= $lang['overview'] ?> - EMS</title>
+    <title><?= $lang['overview']?> - EMS</title>
     <link rel="stylesheet" href="../styles/map.css">
 </head>
 
@@ -34,13 +34,13 @@ checkSession();
                             <rect x="14" y="14" width="7" height="7" />
                             <rect x="3" y="14" width="7" height="7" />
                         </svg>
-                        Overview
+                        <?= $lang['overview']?>
                     </div>
                     <div class="overview-topbar__refresh">
-                        <span class="overview-refresh-label">รีเฟรชทุก</span>
+                        <span class="overview-refresh-label"><?= $lang['refreshevery']?></span>
                         <input type="number" id="input-refresh" class="overview-refresh-input" value="15" min="1"
                             max="30" onchange="setRefreshTime()">
-                        <span class="overview-refresh-label">วินาที</span>
+                        <span class="overview-refresh-label"><?= $lang['seconds']?></span>
                     </div>
                 </div>
 
@@ -56,35 +56,35 @@ checkSession();
                         <div class="overview-gauge-wrap" id="gauge-kW"></div>
 
                         <!-- Voltage row -->
-                        <div class="overview-section-label">Voltage</div>
+                        <div class="overview-section-label"><?= $lang['voltage']?></div>
                         <div class="overview-data-row">
                             <div class="overview-data-item">
-                                <span class="overview-data-item__label">Phase A</span>
+                                <span class="overview-data-item__label"><?= $lang['phase']?> A</span>
                                 <input id="VoltageA" type="text" class="overview-data-input" readonly>
                             </div>
                             <div class="overview-data-item">
-                                <span class="overview-data-item__label">Phase B</span>
+                                <span class="overview-data-item__label"><?= $lang['phase']?> B</span>
                                 <input id="VoltageB" type="text" class="overview-data-input" readonly>
                             </div>
                             <div class="overview-data-item">
-                                <span class="overview-data-item__label">Phase C</span>
+                                <span class="overview-data-item__label"><?= $lang['phase']?> C</span>
                                 <input id="VoltageC" type="text" class="overview-data-input" readonly>
                             </div>
                         </div>
 
                         <!-- Current row -->
-                        <div class="overview-section-label">Current</div>
+                        <div class="overview-section-label"><?= $lang['current']?></div>
                         <div class="overview-data-row">
                             <div class="overview-data-item">
-                                <span class="overview-data-item__label">Phase A</span>
+                                <span class="overview-data-item__label"><?= $lang['phase']?> A</span>
                                 <input id="CurrentA" type="text" class="overview-data-input" readonly>
                             </div>
                             <div class="overview-data-item">
-                                <span class="overview-data-item__label">Phase B</span>
+                                <span class="overview-data-item__label"><?= $lang['phase']?> B</span>
                                 <input id="CurrentB" type="text" class="overview-data-input" readonly>
                             </div>
                             <div class="overview-data-item">
-                                <span class="overview-data-item__label">Phase C</span>
+                                <span class="overview-data-item__label"><?= $lang['phase']?> C</span>
                                 <input id="CurrentC" type="text" class="overview-data-input" readonly>
                             </div>
                         </div>
@@ -92,11 +92,11 @@ checkSession();
                         <!-- Pf & Frequency -->
                         <div class="overview-data-row overview-data-row--half">
                             <div class="overview-data-item">
-                                <span class="overview-data-item__label">Power Factor</span>
+                                <span class="overview-data-item__label"><?= $lang['power_factor']?></span>
                                 <input id="Pf" type="text" class="overview-data-input" readonly>
                             </div>
                             <div class="overview-data-item">
-                                <span class="overview-data-item__label">Frequency</span>
+                                <span class="overview-data-item__label"><?= $lang['frequency']?></span>
                                 <input id="frequency" type="text" class="overview-data-input" readonly>
                             </div>
                         </div>

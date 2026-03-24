@@ -29,7 +29,7 @@ if ($_SESSION['user']['is_admin'] == 0) {
                 <!-- Hero -->
                 <div class="users-hero">
                     <h2><?= $lang['usermnm'] ?></h2>
-                    <p>จัดการข้อมูลผู้ใช้งานในระบบ แก้ไข ลบ หรือเปลี่ยนรหัสผ่าน</p>
+                    <p><?= $lang['user_management_desc'] ?></p>
                 </div>
 
                 <!-- Card -->
@@ -37,7 +37,7 @@ if ($_SESSION['user']['is_admin'] == 0) {
 
                     <!-- Card header -->
                     <div class="users-card__header">
-                        <span class="users-card__title">รายชื่อผู้ใช้งาน</span>
+                        <span class="users-card__title"><?= $lang['list_of_users'] ?></span>
                         <span class="users-card__count" id="user-count">...</span>
                     </div>
 
@@ -62,16 +62,17 @@ if ($_SESSION['user']['is_admin'] == 0) {
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">แก้ไขข้อมูลส่วนตัว</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="ปิด"></button>
+                    <h5 class="modal-title"><?= $lang['edit_personal_information'] ?></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        aria-label="<?= $lang['close'] ?>"></button>
                 </div>
                 <div class="modal-body">
                     <input type="hidden" id="edit-id">
-                    <label for="edit-full_name" class="form-label">ชื่อ</label>
+                    <label for="edit-full_name" class="form-label"><?= $lang['full_name'] ?></label>
                     <input type="text" class="form-control" id="edit-full_name">
-                    <label for="edit-phone" class="form-label">เบอร์โทรศัพท์</label>
+                    <label for="edit-phone" class="form-label"><?= $lang['phone'] ?></label>
                     <input type="text" class="form-control" id="edit-phone">
-                    <label for="edit-address" class="form-label">ที่อยู่</label>
+                    <label for="edit-address" class="form-label"><?= $lang['address'] ?></label>
                     <input type="text" class="form-control" id="edit-address">
                 </div>
                 <div class="modal-footer">
@@ -88,11 +89,12 @@ if ($_SESSION['user']['is_admin'] == 0) {
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">ยืนยันการลบ</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="ปิด"></button>
+                    <h5 class="modal-title"><?= $lang['confirm_deletion'] ?></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        aria-label="<?= $lang['close'] ?>"></button>
                 </div>
                 <div class="modal-body">
-                    <p style="color:var(--text-card); margin:0;">คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลนี้?</p>
+                    <p style="color:var(--text-card); margin:0;"><?= $lang['confirm_delete_message'] ?></p>
                     <input type="hidden" id="delete-id">
                 </div>
                 <div class="modal-footer">
@@ -111,15 +113,16 @@ if ($_SESSION['user']['is_admin'] == 0) {
             <div class="modal-content">
                 <form id="changePasswordForm">
                     <div class="modal-header">
-                        <h5 class="modal-title">เปลี่ยนรหัสผ่าน</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="ปิด"></button>
+                        <h5 class="modal-title"><?= $lang['change_password'] ?></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                            aria-label="<?= $lang['close'] ?>"></button>
                     </div>
                     <div class="modal-body">
                         <input type="hidden" id="change-password-id" name="user_id">
-                        <label for="change-password-new" class="form-label">รหัสผ่านใหม่</label>
+                        <label for="change-password-new" class="form-label"><?= $lang['new_password'] ?></label>
                         <input type="password" class="form-control" id="change-password-new" name="change-password-new"
                             required>
-                        <label for="change-password-confirm" class="form-label">ยืนยันรหัสผ่าน</label>
+                        <label for="change-password-confirm" class="form-label"><?= $lang['confirm_password'] ?></label>
                         <input type="password" class="form-control" id="change-password-confirm"
                             name="change-password-confirm" required>
                     </div>
@@ -147,7 +150,7 @@ if ($_SESSION['user']['is_admin'] == 0) {
             const rows = document.querySelectorAll('#table-user tbody tr');
             const badge = document.getElementById('user-count');
             if (badge && rows.length > 0) {
-                badge.textContent = rows.length + ' รายการ';
+                badge.textContent = rows.length + ' <?= $lang['list'] ?>';
             }
         });
         const table = document.getElementById('table-user');

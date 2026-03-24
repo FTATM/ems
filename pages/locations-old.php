@@ -22,7 +22,8 @@ include '../components/session.php';
             <div class="d-flex justify-content-center mt-3">
                 <div class="w-50">
                     <div class="my-5 text-center fs-1 fw-bolder"><?=$lang['chooselocate']?></div>
-                    <table id="table-location" class="w-100 table-striped table table-borderless bg-light bg-opacity-10 mb-0 w-25">
+                    <table id="table-location"
+                        class="w-100 table-striped table table-borderless bg-light bg-opacity-10 mb-0 w-25">
                         <thead class="text-center">
                             <tr>
                                 <!-- <th class="fs-3">ID</th> -->
@@ -46,7 +47,8 @@ include '../components/session.php';
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">แก้ไขชื่อ</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="ปิด"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        aria-label="<?= $lang['close'] ?>"></button>
                 </div>
                 <div class="modal-body">
                     <input type="hidden" id="rename-id">
@@ -56,8 +58,9 @@ include '../components/session.php';
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
-                    <button type="button" class="btn btn-primary" onclick="submitRename()">บันทึก</button>
+                    <button type="button" class="btn btn-secondary"
+                        data-bs-dismiss="modal"><?= $lang['cancel'] ?></button>
+                    <button type="button" class="btn btn-primary" onclick="submitRename()"><?= $lang['save'] ?></button>
                 </div>
             </div>
         </div>

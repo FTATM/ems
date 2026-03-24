@@ -24,7 +24,8 @@ if ($_SESSION['user']['is_admin'] == 0) {
         <?php include "../components/sidemenu.php"; ?>
         <div class="w-100 h-100 d-flex flex-column justify-content-center">
             <?php include "../components/header.php"; ?>
-            <div class="bg-secondary bg-opacity-25 d-flex flex-column pt-5 align-items-center" style="min-height: 80svh;">
+            <div class="bg-secondary bg-opacity-25 d-flex flex-column pt-5 align-items-center"
+                style="min-height: 80svh;">
                 <div class="my-5 text-center fs-1 fw-bolder"><?=$lang['usermnm']?></div>
                 <!-- ตาราง -->
                 <table id="table-user" class="container table table-bordered table-striped" style="height: 90%;">
@@ -41,7 +42,8 @@ if ($_SESSION['user']['is_admin'] == 0) {
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">แก้ไขข้อมูลส่วนตัว</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="ปิด"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        aria-label="<?= $lang['close'] ?>"></button>
                 </div>
                 <div class="modal-body">
                     <input type="hidden" id="edit-id">
@@ -55,7 +57,8 @@ if ($_SESSION['user']['is_admin'] == 0) {
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?=$lang['cancel']?></button>
+                    <button type="button" class="btn btn-secondary"
+                        data-bs-dismiss="modal"><?=$lang['cancel']?></button>
                     <button type="button" class="btn btn-primary" onclick="submitEdit()"><?=$lang['save']?></button>
                 </div>
             </div>
@@ -68,17 +71,19 @@ if ($_SESSION['user']['is_admin'] == 0) {
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">ยืนยันการลบ</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="ปิด"></button>
+                    <h5 class="modal-title"><?= $lang['confirm_deletion'] ?></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        aria-label="<?= $lang['close'] ?>"></button>
                 </div>
                 <div class="modal-body">
-                    <p>คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลนี้?</p>
+                    <p><?= $lang['confirm_delete_message'] ?></p>
                     <input type="hidden" id="delete-id">
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?=$lang['cancel']?></button>
+                    <button type="button" class="btn btn-secondary"
+                        data-bs-dismiss="modal"><?=$lang['cancel']?></button>
                     <button type="button" class="btn btn-danger" onclick="submitDelete()"><?=$lang['confirm']?></button>
-                   
+
                 </div>
             </div>
         </div>
@@ -86,40 +91,43 @@ if ($_SESSION['user']['is_admin'] == 0) {
 
 
     <!-- Modal เปลี่ยนรหัสผ่าน  -->
-     <!-- Modal -->
-<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form id="changePasswordForm">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="changePasswordModalLabel">Change Password</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <input type="hidden" id="change-password-id" name="user_id">
-                    
-                    <div class="mb-3">
-                        <label for="change-password-new" class="form-label">New Password</label>
-                        <input type="password" class="form-control text-black" id="change-password-new" name="change-password-new" required>
+    <!-- Modal -->
+    <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="changePasswordForm">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="changePasswordModalLabel">Change Password</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <div class="mb-3">
-                        <label for="change-password-confirm" class="form-label">Confirm New Password</label>
-                        <input type="password" class="form-control text-black" id="change-password-confirm" name="change-password-confirm" required>
+                    <div class="modal-body">
+                        <input type="hidden" id="change-password-id" name="user_id">
+
+                        <div class="mb-3">
+                            <label for="change-password-new" class="form-label">New Password</label>
+                            <input type="password" class="form-control text-black" id="change-password-new"
+                                name="change-password-new" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="change-password-confirm" class="form-label">Confirm New Password</label>
+                            <input type="password" class="form-control text-black" id="change-password-confirm"
+                                name="change-password-confirm" required>
+                        </div>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary"><?=$lang['change']?></button>
-                </div>
-            </form>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary"><?=$lang['change']?></button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
-</div>
 
 
 
 
     <script id="theme-data" type="application/json">
-        <?= json_encode($_SESSION['theme'], JSON_UNESCAPED_UNICODE); ?>
+    <?= json_encode($_SESSION['theme'], JSON_UNESCAPED_UNICODE); ?>
     </script>
     <?php include "../scripts/scriptjs.html"; ?>
     <?php include "../scripts/scriptjs-management-users.html"; ?>

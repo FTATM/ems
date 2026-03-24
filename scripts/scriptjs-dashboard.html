@@ -110,28 +110,28 @@
     function generateInfomation(selectMeter) {
         const rows = [
             {
-                label: 'METER NAME',
+                label: LANG['metername'],
                 value: selectMeter?.name ?? '—',
                 icon: 'bi-card-text'
             },
             {
-                label: 'STATUS',
+                label: LANG['status'],
                 value: selectMeter?.is_active,
                 icon: 'bi-phone',
                 isStatus: true
             },
             {
-                label: 'IP ADDRESS',
+                label: LANG['ip_address'],
                 value: selectMeter?.ip_address ?? '—',
                 icon: 'bi-hdd-network'
             },
             {
-                label: 'PROTOCOL',
+                label: LANG['protocol'],
                 value: selectMeter?.protocol ?? '—',
                 icon: 'bi-modem'
             },
             {
-                label: 'SLAVE ID',
+                label: LANG['slave_id'],
                 value: selectMeter?.slave_id ?? '—',
                 icon: 'bi-123'
             },
