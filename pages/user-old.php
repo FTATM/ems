@@ -92,11 +92,6 @@ checkSession();
         </div>
 
     </div>
-    <!--  Modal แก้ไขชื่อ -->
-
-
-    <!--  Modal ยืนยันการลบ -->
-
 
     <script id="theme-data" type="application/json">
     <?= json_encode($_SESSION['theme'], JSON_UNESCAPED_UNICODE); ?>

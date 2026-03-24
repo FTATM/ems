@@ -26,8 +26,8 @@ checkSession();
 
                 <!-- Hero -->
                 <div class="groups-hero">
-                    <h2><?= $lang['group'] ?>/<?= $lang['project'] ?></h2>
-                    <p>เลือกกลุ่มหรือโครงการที่คุณต้องการแก้ไขหรือลบ</p>
+                    <h2><?= $lang['group'] ?> / <?= $lang['project'] ?></h2>
+                    <p><?= $lang['select_group_action'] ?></p>
                 </div>
 
                 <!-- Content Card -->
@@ -36,7 +36,7 @@ checkSession();
                     <!-- Card Header / Toolbar -->
                     <div class="groups-card__header">
                         <div class="d-flex align-items-center gap-2">
-                            <span class="groups-card__title">กลุ่มทั้งหมด</span>
+                            <span class="groups-card__title"><?= $lang['all_group'] ?></span>
                             <span class="groups-card__count" id="group-count">—</span>
                         </div>
                         <button class="btn-create" onclick="openGroupModal()">
@@ -46,7 +46,7 @@ checkSession();
                                 <line x1="12" y1="5" x2="12" y2="19" />
                                 <line x1="5" y1="12" x2="19" y2="12" />
                             </svg>
-                            สร้างกลุ่มใหม่
+                            <?= $lang['create_group'] ?>
                         </button>
                     </div>
 
@@ -110,22 +110,26 @@ checkSession();
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">สร้างกลุ่มใหม่</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="ปิด"></button>
+                    <h5 class="modal-title"><?= $lang['create_group'] ?></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        aria-label="<?= $lang['close'] ?>"></button>
                 </div>
                 <div class="modal-body p-4">
                     <div class="mb-3">
-                        <label for="select-Location" class="form-label">เลือกโลเคชั่น</label>
+                        <label for="select-Location" class="form-label"><?= $lang['select_location'] ?></label>
                         <select class="form-select" id="select-Location"></select>
                     </div>
                     <div class="mb-3">
-                        <label for="newName" class="form-label">ชื่อกลุ่ม</label>
-                        <input type="text" class="form-control" id="newName" placeholder="กรอกชื่อกลุ่ม...">
+                        <label for="newName" class="form-label"><?= $lang['group_name'] ?></label>
+                        <input type="text" class="form-control" id="newName"
+                            placeholder="<?= $lang['enter_group_name'] ?>">
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
-                    <button type="button" class="btn btn-primary" onclick="submitnewGroup()">บันทึก</button>
+                    <button type="button" class="btn btn-secondary"
+                        data-bs-dismiss="modal"><?= $lang['cancel'] ?></button>
+                    <button type="button" class="btn btn-primary"
+                        onclick="submitnewGroup()"><?= $lang['save'] ?></button>
                 </div>
             </div>
         </div>
@@ -136,19 +140,22 @@ checkSession();
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">แก้ไขชื่อ</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="ปิด"></button>
+                    <h5 class="modal-title"><?= $lang['edit_name'] ?></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        aria-label="<?= $lang['close'] ?>"></button>
                 </div>
                 <div class="modal-body p-4">
                     <input type="hidden" id="rename-id">
                     <div class="mb-3">
-                        <label for="new-name" class="form-label">ชื่อใหม่</label>
-                        <input type="text" class="form-control" id="new-name" placeholder="กรอกชื่อใหม่...">
+                        <label for="new-name" class="form-label"><?= $lang['new_name'] ?></label>
+                        <input type="text" class="form-control" id="new-name"
+                            placeholder="<?= $lang['enter_new_name'] ?>">
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
-                    <button type="button" class="btn btn-primary" onclick="submitRename()">บันทึก</button>
+                    <button type="button" class="btn btn-secondary"
+                        data-bs-dismiss="modal"><?= $lang['cancel'] ?></button>
+                    <button type="button" class="btn btn-primary" onclick="submitRename()"><?= $lang['save'] ?></button>
                 </div>
             </div>
         </div>
@@ -159,16 +166,19 @@ checkSession();
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">ยืนยันการลบ</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="ปิด"></button>
+                    <h5 class="modal-title"><?= $lang['confirm_deletion'] ?></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        aria-label="<?= $lang['close'] ?>"></button>
                 </div>
                 <div class="modal-body p-4">
-                    <p class="mb-0">คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลนี้?</p>
+                    <p class="mb-0"><?= $lang['confirm_delete_message'] ?></p>
                     <input type="hidden" id="delete-id">
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
-                    <button type="button" class="btn btn-danger" onclick="submitDelete()">ยืนยันลบ</button>
+                    <button type="button" class="btn btn-secondary"
+                        data-bs-dismiss="modal"><?= $lang['cancel'] ?></button>
+                    <button type="button" class="btn btn-danger"
+                        onclick="submitDelete()"><?= $lang['confirm_delete'] ?></button>
                 </div>
             </div>
         </div>
@@ -212,7 +222,7 @@ checkSession();
                         <path d="M16 7V5a2 2 0 0 0-4 0v2"/>
                         <line x1="12" y1="12" x2="12" y2="16"/>
                     </svg>
-                    <p>ยังไม่มีกลุ่มในขณะนี้</p>
+                    <p><?= $lang['no_groups'] ?></p>
                 </div>`;
             return;
         }

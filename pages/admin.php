@@ -77,7 +77,7 @@ include '../components/session.php';
                         <!-- Actions -->
                         <div class="form-actions">
                             <a href="javascript:history.back()" class="btn-cancel">
-                                <i class="bi bi-x-lg"></i> ยกเลิก
+                                <i class="bi bi-x-lg"></i> <?= $lang['cancel'] ?>
                             </a>
                             <button type="submit" class="btn-save">
                                 <i class="bi bi-shield-plus"></i> สร้างบัญชี

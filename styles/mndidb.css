@@ -250,6 +250,7 @@ body {
   display: flex;
   align-items: center;
   color: var(--primary);
+  gap: 0.5rem;
 }
 
 .mndidb-menu-card__body {

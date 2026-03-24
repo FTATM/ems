@@ -14,6 +14,9 @@ include '../components/session.php';
     <meta charset="UTF-8">
     <title><?= $lang['home'] ?> - EMS</title>
     <link rel="stylesheet" href="../styles/dashboard.css">
+    <script>
+    const LANG = <?= json_encode($lang) ?>;
+    </script>
 </head>
 
 <body style="background-color: <?= $bg ?>; color: <?= $text ?>">

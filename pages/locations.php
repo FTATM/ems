@@ -22,7 +22,7 @@ include '../components/session.php';
 
             <div class="locations-hero">
                 <h2><?= $lang['chooselocate'] ?? 'เลือกสถานที่/โครงการ' ?></h2>
-                <p>กรุณาเลือกโครงการที่คุณต้องการตรวจสอบข้อมูลการใช้พลังงานในขณะนี้</p>
+                <p><?= $lang['select_project_for_energy'] ?></p>
             </div>
 
             <!-- ซ่อน table เดิม (CSS จัดการด้วย #table-location { display:none }) -->
@@ -60,7 +60,8 @@ include '../components/session.php';
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="renameModalLabel">แก้ไขชื่อ</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="ปิด"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                            aria-label="<?= $lang['close'] ?>"></button>
                     </div>
                     <div class="modal-body p-4">
                         <input type="hidden" id="rename-id">
@@ -71,8 +72,10 @@ include '../components/session.php';
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">ยกเลิก</button>
-                        <button type="button" class="btn btn-primary" onclick="submitRename()">บันทึก</button>
+                        <button type="button" class="btn btn-light"
+                            data-bs-dismiss="modal"><?= $lang['cancel'] ?></button>
+                        <button type="button" class="btn btn-primary"
+                            onclick="submitRename()"><?= $lang['save'] ?></button>
                     </div>
                 </div>
             </div>

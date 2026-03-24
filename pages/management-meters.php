@@ -26,7 +26,7 @@ checkSession();
                     <!-- ── Sidebar ── -->
                     <aside class="meters-sidebar">
                         <div class="meters-sidebar__header">
-                            <span class="meters-sidebar__title">รายชื่อมิเตอร์ทั้งหมด</span>
+                            <span class="meters-sidebar__title"><?= $lang['list_of_all_meters'] ?></span>
                             <span class="meters-sidebar__count" id="meter-count">...</span>
                         </div>
 
@@ -72,7 +72,7 @@ checkSession();
                                             d="M12.707 15.293L18 10m1.806 10a9.77 9.77 0 0 0 2.13-5.037a9.7 9.7 0 0 0-.922-5.38a9.9 9.9 0 0 0-3.69-4.071A10.1 10.1 0 0 0 12 4c-1.884 0-3.73.524-5.324 1.512a9.9 9.9 0 0 0-3.69 4.07a9.7 9.7 0 0 0-.921 5.38A9.77 9.77 0 0 0 4.194 20zM13 16a1 1 0 1 1-2 0a1 1 0 0 1 2 0" />
                                     </g>
                                 </svg>
-                                มิเตอร์
+                                <?= $lang['meter'] ?>
                             </div>
                             <div id="menu-config-2" class="menu">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="1.2em" height="1.2em"
@@ -85,7 +85,7 @@ checkSession();
                                         <circle cx="12" cy="3" r="1" stroke="currentColor" stroke-width="2" />
                                     </g>
                                 </svg>
-                                การแจ้งเตือน
+                                <?= $lang['notification'] ?>
                             </div>
                         </div>
 
@@ -105,8 +105,10 @@ checkSession();
                                         </svg>
                                     </div>
                                     <h5><?= $lang['cmisb'] ?></h5>
-                                    <p>เพื่อเรียกดูข้อมูลการใช้พลังงาน
-                                        สถานะการเชื่อมต่อ<br>และประวัติการแจ้งเตือนของมิเตอร์ที่ต้องการ</p>
+                                    <p>
+                                        <?= $lang['view_meter_info_main'] ?><br>
+                                        <?= $lang['view_meter_info_sub'] ?>
+                                    </p>
                                 </div>
                             </div>
                         </form>
@@ -132,7 +134,7 @@ checkSession();
             const items = document.querySelectorAll('#meter-list > div:not(.meter-skeleton)');
             const badge = document.getElementById('meter-count');
             if (badge && items.length > 0) {
-                badge.textContent = items.length + ' รายการ';
+                badge.textContent = items.length + ' <?= $lang['list'] ?>';
             }
         });
         const list = document.getElementById('meter-list');

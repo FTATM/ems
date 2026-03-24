@@ -65,9 +65,10 @@ checkSession();
 
                     <!-- Email + Export -->
                     <div class="dash-filter-group dash-filter-group--export">
-                        <span class="dash-filter-label">Export</span>
+                        <span class="dash-filter-label"><?= $lang['export'] ?></span>
                         <div class="report-export-row">
-                            <input class="dash-text-input" id="email" type="email" placeholder="Email address">
+                            <input class="dash-text-input" id="email" type="email"
+                                placeholder="<?= $lang['emailaddress'] ?>">
                             <button class="report-btn report-btn--csv" onclick="sendExportToEmail('csv')">
                                 <i class="bi bi-filetype-csv"></i> CSV
                             </button>
@@ -99,17 +100,18 @@ checkSession();
                     <div class="dash-card report-table-card">
                         <div class="dash-card-header report-table-header">
                             <div class="dash-card-title">
-                                <i class="bi bi-table"></i> Table
+                                <i class="bi bi-table"></i><?= $lang['table'] ?>
                             </div>
                             <div class="report-table-controls">
                                 <div class="report-check-wrap">
                                     <input id="is-table-all-value" type="checkbox" class="report-checkbox"
                                         onchange="ReloadTable()">
-                                    <label for="is-table-all-value" class="report-check-label">Show All</label>
+                                    <label for="is-table-all-value"
+                                        class="report-check-label"><?= $lang['showall'] ?></label>
                                 </div>
                                 <div class="dash-filter-group"
                                     style="flex-direction:row;align-items:center;gap:8px;padding:0;flex:unset;">
-                                    <span class="dash-filter-label">Rows</span>
+                                    <span class="dash-filter-label"><?= $lang['rows'] ?></span>
                                     <select id="select-table-show" class="dash-select" style="width:80px;"
                                         onchange="ReloadTable()">
                                         <option selected value="5">5</option>

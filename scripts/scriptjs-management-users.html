@@ -26,13 +26,13 @@ function renderTablePage(user_data, currentPage) {
     const headerRow = document.createElement("tr") ;
     
     headerRow.innerHTML = `
-    <th class="text-white" style="width:8%; background-color:#001B5E;">Username</th>
-    <th class="text-white" style="width:13%; background-color:#001B5E;">Full Name</th>
-    <th class="text-white" style="width:10%; background-color:#001B5E;">Phone</th>
-    <th class="text-white" style="width:18%; background-color:#001B5E;">Email</th>
-    <th class="text-white" style="width:14%; background-color:#001B5E;">ID Card</th>
-    <th class="text-white" style="width:12%; background-color:#001B5E;">Address</th>
-    <th class="text-white" style="width:20%; background-color:#001B5E;">Actions</th>
+    <th class="text-white" style="width:8%; background-color:#001B5E;"><?= $lang['username'] ?></th>
+    <th class="text-white" style="width:13%; background-color:#001B5E;"><?= $lang['full_name'] ?></th>
+    <th class="text-white" style="width:10%; background-color:#001B5E;"><?= $lang['phone'] ?></th>
+    <th class="text-white" style="width:18%; background-color:#001B5E;"><?= $lang['email'] ?></th>
+    <th class="text-white" style="width:14%; background-color:#001B5E;"><?= $lang['id_card'] ?></th>
+    <th class="text-white" style="width:12%; background-color:#001B5E;"><?= $lang['address'] ?></th>
+    <th class="text-white" style="width:20%; background-color:#001B5E;"><?= $lang['actions'] ?></th>
 `;
     thead.appendChild(headerRow) ;
     table.appendChild(thead) ; 
@@ -61,7 +61,7 @@ function renderTablePage(user_data, currentPage) {
             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
         </svg>
-        แก้ไข
+        <?= $lang['edit'] ?>
     </button>
     <button class="btn-action btn-action--password" onclick="openChangedPasswordModal(${row.id})" title="เปลี่ยนรหัสผ่าน">
         <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
@@ -69,7 +69,7 @@ function renderTablePage(user_data, currentPage) {
             <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
             <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
         </svg>
-        รหัสผ่าน
+        <?= $lang['password'] ?>
     </button>
     <button class="btn-action btn-action--delete" onclick="openDeleteModal(${row.id})" title="ลบ">
         <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
@@ -79,7 +79,7 @@ function renderTablePage(user_data, currentPage) {
             <path d="M10 11v6"/><path d="M14 11v6"/>
             <path d="M9 6V4h6v2"/>
         </svg>
-        ลบ
+        <?= $lang['delete'] ?>
     </button>
 </td>
             `;

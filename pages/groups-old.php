@@ -43,7 +43,8 @@ checkLogin();
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">สร้างกลุ่มใหม่</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="ปิด"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        aria-label="<?= $lang['close'] ?>"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
@@ -56,8 +57,10 @@ checkLogin();
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
-                    <button type="button" class="btn btn-primary" onclick="submitnewGroup()">บันทึก</button>
+                    <button type="button" class="btn btn-secondary"
+                        data-bs-dismiss="modal"><?= $lang['cancel'] ?></button>
+                    <button type="button" class="btn btn-primary"
+                        onclick="submitnewGroup()"><?= $lang['save'] ?></button>
                 </div>
             </div>
         </div>
@@ -69,7 +72,8 @@ checkLogin();
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">แก้ไขชื่อ</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="ปิด"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        aria-label="<?= $lang['close'] ?>"></button>
                 </div>
                 <div class="modal-body">
                     <input type="hidden" id="rename-id">
@@ -79,8 +83,9 @@ checkLogin();
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
-                    <button type="button" class="btn btn-primary" onclick="submitRename()">บันทึก</button>
+                    <button type="button" class="btn btn-secondary"
+                        data-bs-dismiss="modal"><?= $lang['cancel'] ?></button>
+                    <button type="button" class="btn btn-primary" onclick="submitRename()"><?= $lang['save'] ?></button>
                 </div>
             </div>
         </div>
@@ -91,16 +96,19 @@ checkLogin();
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">ยืนยันการลบ</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="ปิด"></button>
+                    <h5 class="modal-title"><?= $lang['confirm_deletion'] ?></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        aria-label="<?= $lang['close'] ?>"></button>
                 </div>
                 <div class="modal-body">
-                    <p class="text-black">คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลนี้?</p>
+                    <p class="text-black"><?= $lang['confirm_delete_message'] ?></p>
                     <input type="hidden" id="delete-id">
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
-                    <button type="button" class="btn btn-danger" onclick="submitDelete()">ยืนยันลบ</button>
+                    <button type="button" class="btn btn-secondary"
+                        data-bs-dismiss="modal"><?= $lang['cancel'] ?></button>
+                    <button type="button" class="btn btn-danger"
+                        onclick="submitDelete()"><?= $lang['confirm_delete'] ?></button>
                 </div>
             </div>
         </div>

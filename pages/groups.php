@@ -26,15 +26,15 @@ checkLogin();
             <!-- Hero -->
             <div class="groups-hero"
                 style="flex-shrink:0; width:100%; max-width:720px; text-align:center; margin-bottom:0.75rem;">
-                <h2 style="font-size:1.5rem; font-weight:700; margin-bottom:0.25rem;"><?= $lang['choosegroup'] ?></h2>
-                <p style="font-size:0.9rem; color:var(--text-body); margin:0;">
-                    กรุณาเลือกกลุ่มที่คุณต้องการตรวจสอบข้อมูลการใช้พลังงาน</p>
+                <h2><?= $lang['choosegroup'] ?></h2>
+                <p><?= $lang['select_group_for_energy'] ?></p>
             </div>
 
             <!-- Toolbar -->
-            <div class="groups-toolbar" style="flex-shrink:0;margin-bottom:0.75rem;">
+            <div class=" groups-toolbar" style="flex-shrink:0;margin-bottom:0.75rem;">
                 <div class="groups-search">
-                    <input type="text" id="group-search" placeholder="ค้นหากลุ่ม…" oninput="filterGroupCards()">
+                    <input type="text" id="group-search" placeholder="<?= $lang['search_group'] ?>"
+                        oninput="filterGroupCards()">
                 </div>
             </div>
 
@@ -85,19 +85,20 @@ checkLogin();
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">แก้ไขชื่อ</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <h5 class="modal-title"><?= $lang['edit_name'] ?>< /h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <input type="hidden" id="rename-id">
                     <div class="mb-3">
-                        <label for="new-name" class="form-label">ชื่อใหม่</label>
+                        <label for="new-name" class="form-label"><?= $lang['new_name'] ?></label>
                         <input type="text" class="form-control text-black" id="new-name">
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
-                    <button type="button" class="btn btn-primary" onclick="submitRename()">บันทึก</button>
+                    <button type="button" class="btn btn-secondary"
+                        data-bs-dismiss="modal"><?= $lang['cancel'] ?></button>
+                    <button type="button" class="btn btn-primary" onclick="submitRename()"><?= $lang['save'] ?></button>
                 </div>
             </div>
         </div>
@@ -108,16 +109,18 @@ checkLogin();
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">ยืนยันการลบ</h5>
+                    <h5 class="modal-title"><?= $lang['confirm_deletion'] ?></h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <p class="text-black">คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลนี้?</p>
+                    <p class="text-black"><?= $lang['confirm_delete_message'] ?></p>
                     <input type="hidden" id="delete-id">
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
-                    <button type="button" class="btn btn-danger" onclick="submitDelete()">ยืนยันลบ</button>
+                    <button type="button" class="btn btn-secondary"
+                        data-bs-dismiss="modal"><?= $lang['cancel'] ?></button>
+                    <button type="button" class="btn btn-danger"
+                        onclick="submitDelete()"><?= $lang['confirm_delete'] ?></button>
                 </div>
             </div>
         </div>
@@ -165,21 +168,18 @@ checkLogin();
                     <div class="group-card__actions" onclick="event.stopPropagation()">
                 <button class="btn-icon" title="Electrical" onclick="reDirectTo(1,${row.id})">
                     <span class="material-icons-outlined">bolt</span>
-                    <span class="btn-icon__label">Electrical</span>
+                    <span class="btn-icon__label"><?=$lang['electrical']?></span>
                 </button>
                 <button class="btn-icon" title="Water" onclick="reDirectTo(2,${row.id})" disabled style="opacity:0.35;cursor:not-allowed;pointer-events:none;">
                     <span class="material-icons-outlined">water_drop</span>
-                    <span class="btn-icon__label">Water</span>
+                    <span class="btn-icon__label"><?=$lang['water']?></span>
                 </button>
                 <button class="btn-icon" title="Room" onclick="reDirectTo(3,${row.id})" disabled style="opacity:0.35;cursor:not-allowed;pointer-events:none;">
                     <span class="material-icons-outlined">meeting_room</span>
-                    <span class="btn-icon__label">Room</span>
+                    <span class="btn-icon__label"><?=$lang['room']?></span>
                 </button>
             </div>
                 `;
-                card.addEventListener('click', function() {
-                    reDirectTo(1, row.id);
-                });
                 list.appendChild(card);
             });
         }
