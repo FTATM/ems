@@ -91,7 +91,7 @@ checkSession();
 
                         <!-- JS uses id="config" inside id="meter-form" — preserved -->
                         <form id="meter-form">
-                            <div id="config" class="w-100 py-2"
+                            <div id="config" class="w-100 p-3"
                                 style=" background:var(--bg-card); color:var(--text-body); min-height: 500px; ">
                                 <div class=" meters-placeholder">
                                     <div class="meters-placeholder__icon-wrap">
@@ -123,6 +123,10 @@ checkSession();
 
     <script id="theme-data" type="application/json">
     <?= json_encode($_SESSION['theme'], JSON_UNESCAPED_UNICODE); ?>
+    </script>
+
+    <script id="lang-data" type="application/json">
+    <?= json_encode($lang, JSON_UNESCAPED_UNICODE); ?>
     </script>
 
     <?php include "../scripts/scriptjs.html"; ?>
