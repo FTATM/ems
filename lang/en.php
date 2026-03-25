@@ -36,7 +36,6 @@ $lang = [
     "typelogs" => "Type of logs",
     "logs" => "Logs",
     "backup" => "Backup",
-    "error" => "Errors",
     "logins" => "Logins",
     "setting" => "Setting",
     "camera" => "Camera",
@@ -105,7 +104,6 @@ $lang = [
     "confirm" => "Confirm",
     "reset" => "Reset",
     "change" => "Change ",
-    "save" => "Save",
     "edit" => "Edit",
     "delete" => "Delete",
 
@@ -116,10 +114,8 @@ $lang = [
     "exam" => "Examination",
     "obj" => "Objective",
     "create" => "Create",
-    "update" => "Update",
     "close" => "Close ",
     "open" => "Open ",
-    "cancel" => "Cancel ",
     "n-header" => "New Unit/Header",
     "n-content" => "New Content",
     "edit-header" => "Edit Header",
@@ -397,7 +393,6 @@ $lang = [
     'location_name' => 'Location Name',
     'confirm_deletion' => 'Confirm Deletion',
     'confirm_delete_message' => 'Are you sure you want to delete this item?',
-    'confirm_delete' => 'Delete',
     'edit_name'=> 'Edit name',
     'new_name'=> 'New Name',
     'enter_location_name' => 'Enter location name...',
@@ -440,4 +435,58 @@ $lang = [
     "slave_id" => "Slave ID",
     "id_card"=> "ID Card",
     "actions" => "Actions",
-];
+
+        // ── General buttons ──
+    "ok"              => "OK",
+    "cancel"          => "Cancel",
+    "save"            => "Save",
+    "update"          => "Update",
+    "enabled"         => "Enabled",
+    "disabled"        => "Disabled",
+    "error"           => "Error",
+
+    // ── Badge labels (shown on modal notification) ──
+    "badge_save"      => "Save Data",
+    "badge_update"    => "Update",
+    "badge_create"    => "Create",
+    "badge_delete"    => "Delete",
+    "badge_enable"    => "Enable Notification",
+    "badge_disable"   => "Disable Notification",
+    "badge_connect"   => "Test Connection",
+    "badge_error"     => "Error",
+
+    // ── Confirm delete ──
+    "confirm_delete"       => "Confirm Delete",
+    "confirm_delete_title" => "Do you want to delete this notification?",
+    "confirm_delete_desc"  => "This action cannot be undone.",
+
+    // ── Test connection ──
+    "connect_success"       => "Connection Successful",
+    "connect_success_desc"  => "The meter is connected successfully. Please click",
+    "connect_success_desc2" => "to save.",
+    "connect_failed"        => "Connection Failed",
+    "connect_failed_desc"   => "Unable to connect to the meter. Please check the settings.",
+
+    // ── Save Meter ──
+    "save_success"      => "Saved Successfully",
+    "save_success_desc" => "The meter data has been saved successfully.",
+    "save_failed"       => "Save Failed",
+    "save_failed_desc"  => "An error occurred. Please try again.",
+    "save_error_desc"   => "An error occurred while saving data. Please try again.",
+    "network_error"     => "An unexpected error occurred. Please check your internet connection and try again.",
+
+    // ── Notification ──
+    "notify_enabled_title"  => "Notification Enabled",
+    "notify_enabled_desc"   => "This notification has been enabled successfully.",
+    "notify_disabled_title" => "Notification Disabled",
+    "notify_disabled_desc"  => "This notification has been disabled successfully.",
+    "notify_created_title"  => "Notification Created",
+    "notify_created_desc"   => "The new notification has been saved successfully.",
+    "notify_updated_title"  => "Notification Updated",
+    "notify_updated_desc"   => "The notification has been updated successfully.",
+    "delete_success"        => "Notification Deleted",
+    "delete_success_desc"   => "The notification has been removed successfully.",
+    "delete_failed"         => "Delete Failed",
+    "delete_error_desc"     => "An error occurred while deleting data.",
+    "status_change_error"   => "An error occurred while changing status. Please try again.",
+    ];

@@ -664,38 +664,70 @@ html.dark .meters-placeholder__icon-wrap,
   box-shadow: 0 0 0 3px var(--primary-light) !important;
 }
 
+/* ── Enabled button — blue pill ── */
+#list-notify .btn.bg-blue,
+#list-notify input.bg-blue,
 #list-notify .bg-blue {
-  background: var(--primary) !important;
-  color: #fff !important;
-  border: none !important;
+  background: rgba(99, 130, 215, 0.15) !important;
+  color: #3b5fc0 !important;
+  border: 1.5px solid rgba(99, 130, 215, 0.55) !important;
   border-radius: 7px !important;
   font-size: 0.8rem !important;
   font-weight: 600 !important;
   cursor: pointer;
-  transition: background var(--transition);
+  transition: background var(--transition), border-color var(--transition), color var(--transition);
+  box-shadow: none !important;
 }
-#list-notify .bg-blue:hover { background: var(--primary-dark) !important; }
+#list-notify .btn.bg-blue:hover,
+#list-notify input.bg-blue:hover,
+#list-notify .bg-blue:hover {
+  background: rgba(99, 130, 215, 0.30) !important;
+  border-color: rgba(99, 130, 215, 0.80) !important;
+  color: #2b4aaa !important;
+}
 
+/* ── Disabled button — red pill ── */
+#list-notify .btn.bg-red,
+#list-notify input.bg-red,
 #list-notify .bg-red {
-  background: rgba(239,68,68,.1) !important;
-  color: #ef4444 !important;
-  border: 1px solid rgba(239,68,68,.3) !important;
-  border-radius: 7px !important;
-  font-size: 0.8rem !important;
-  font-weight: 600 !important;
-}
-
-#list-notify .bg-green {
-  background: var(--primary-light) !important;
-  color: var(--primary-dark) !important;
-  border: 1px solid var(--primary-border) !important;
+  background: rgba(239, 68, 68, 0.12) !important;
+  color: #dc2626 !important;
+  border: 1.5px solid rgba(239, 68, 68, 0.45) !important;
   border-radius: 7px !important;
   font-size: 0.8rem !important;
   font-weight: 600 !important;
   cursor: pointer;
-  transition: background var(--transition);
+  transition: background var(--transition), border-color var(--transition), color var(--transition);
+  box-shadow: none !important;
 }
-#list-notify .bg-green:hover { background: var(--primary-border) !important; }
+#list-notify .btn.bg-red:hover,
+#list-notify input.bg-red:hover,
+#list-notify .bg-red:hover {
+  background: rgba(239, 68, 68, 0.25) !important;
+  border-color: rgba(239, 68, 68, 0.75) !important;
+  color: #b91c1c !important;
+}
+
+/* ── Update / Save button — green pill ── */
+#list-notify .btn.bg-green,
+#list-notify input.bg-green,
+#list-notify .bg-green {
+  background: rgba(139, 174, 102, 0.15) !important;
+  color: var(--primary-dark) !important;
+  border: 1.5px solid rgba(139, 174, 102, 0.50) !important;
+  border-radius: 7px !important;
+  font-size: 0.8rem !important;
+  font-weight: 600 !important;
+  cursor: pointer;
+  transition: background var(--transition), border-color var(--transition);
+  box-shadow: none !important;
+}
+#list-notify .btn.bg-green:hover,
+#list-notify input.bg-green:hover,
+#list-notify .bg-green:hover {
+  background: rgba(139, 174, 102, 0.30) !important;
+  border-color: rgba(139, 174, 102, 0.80) !important;
+}
 
 /* Add notify card */
 #blankdiv > div {

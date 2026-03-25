@@ -1,4 +1,312 @@
 <script>
+
+    /* ── Lang ── */
+    const _lang = JSON.parse(document.getElementById('lang-data').textContent);
+
+    /* ── Modal Notification System ── */
+    (function () {
+        const css = `
+        /* ── Overlay ── */
+        #ems-modal-overlay {
+            position: fixed; inset: 0; z-index: 99990;
+            background: rgba(0,0,0,.45);
+            backdrop-filter: blur(3px);
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.22s ease;
+        }
+        #ems-modal-overlay.show { opacity: 1; pointer-events: all; }
+
+        /* ── Card ── */
+        #ems-modal-card {
+            position: relative;
+            width: min(420px, 92vw);
+            background: var(--bg-card, #fff);
+            border-radius: 18px;
+            box-shadow: 0 24px 60px rgba(0,0,0,.22), 0 4px 16px rgba(0,0,0,.12);
+            overflow: hidden;
+            transform: scale(0.88) translateY(16px);
+            transition: transform 0.25s cubic-bezier(.34,1.45,.64,1), opacity 0.22s ease;
+            opacity: 0;
+        }
+        #ems-modal-overlay.show #ems-modal-card {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+        }
+
+        /* ── Accent bar ── */
+        #ems-modal-card::before {
+            content: '';
+            display: block;
+            height: 5px;
+            width: 100%;
+        }
+        #ems-modal-card.mod-success::before { background: linear-gradient(90deg,#a8c97a,#8BAE66); }
+        #ems-modal-card.mod-blue::before    { background: linear-gradient(90deg,#60a5fa,#3b82f6); }
+        #ems-modal-card.mod-error::before   { background: linear-gradient(90deg,#f87171,#ef4444); }
+        #ems-modal-card.mod-info::before    { background: linear-gradient(90deg,#60a5fa,#3b82f6); }
+        #ems-modal-card.mod-warning::before { background: linear-gradient(90deg,#fbbf24,#f59e0b); }
+
+        /* ── Inner padding ── */
+        .ems-modal-body {
+            padding: 1.6rem 1.75rem 1.4rem;
+            display: flex; flex-direction: column; align-items: center; gap: 0.75rem;
+            text-align: center;
+        }
+
+        /* ── Icon circle ── */
+        .ems-modal-icon-wrap {
+            width: 68px; height: 68px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+            margin-bottom: 0.25rem;
+        }
+        #ems-modal-card.mod-success .ems-modal-icon-wrap { background: rgba(139,174,102,.15); color: #2d4416; border: 2px solid rgba(139,174,102,.40); }
+        #ems-modal-card.mod-blue    .ems-modal-icon-wrap { background: rgba(59,130,246,.13);  color: #1d4ed8; border: 2px solid rgba(59,130,246,.35);  }
+        #ems-modal-card.mod-error   .ems-modal-icon-wrap { background: rgba(248,113,113,.14); color: #dc2626; border: 2px solid rgba(248,113,113,.35); }
+        #ems-modal-card.mod-info    .ems-modal-icon-wrap { background: rgba(96,165,250,.14);  color: #2563eb; border: 2px solid rgba(96,165,250,.35);  }
+        #ems-modal-card.mod-warning .ems-modal-icon-wrap { background: rgba(251,191,36,.14);  color: #d97706; border: 2px solid rgba(251,191,36,.35);  }
+
+        /* ── Title ── */
+        .ems-modal-title {
+            font-size: 1.08rem; font-weight: 700;
+            color: var(--text-heading, #1a2e14);
+            line-height: 1.3; margin: 0;
+        }
+
+        /* ── Description ── */
+        .ems-modal-desc {
+            font-size: 0.88rem;
+            color: var(--text-muted, #6b7280);
+            line-height: 1.55; margin: 0;
+            max-width: 320px;
+        }
+
+        /* ── Action label badge ── */
+        .ems-modal-action-badge {
+            display: inline-flex; align-items: center; gap: 0.35rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 99px;
+            font-size: 0.75rem; font-weight: 700;
+            letter-spacing: 0.04em; text-transform: uppercase;
+        }
+        #ems-modal-card.mod-success .ems-modal-action-badge { background: rgba(139,174,102,.13); color: #2d4416; border: 1px solid rgba(139,174,102,.40); }
+        #ems-modal-card.mod-blue    .ems-modal-action-badge { background: rgba(59,130,246,.11);  color: #1d4ed8; border: 1px solid rgba(59,130,246,.35);  }
+        #ems-modal-card.mod-error   .ems-modal-action-badge { background: rgba(248,113,113,.12); color: #b91c1c; border: 1px solid rgba(248,113,113,.35); }
+        #ems-modal-card.mod-info    .ems-modal-action-badge { background: rgba(96,165,250,.12);  color: #1d4ed8; border: 1px solid rgba(96,165,250,.35);  }
+        #ems-modal-card.mod-warning .ems-modal-action-badge { background: rgba(251,191,36,.12);  color: #b45309; border: 1px solid rgba(251,191,36,.35);  }
+
+        /* ── Footer ── */
+        .ems-modal-footer {
+            padding: 0.9rem 1.75rem 1.3rem;
+            display: flex; justify-content: center;
+        }
+
+        /* ── Close button ── */
+        #ems-modal-close-btn {
+            min-width: 120px;
+            padding: 0.52rem 1.5rem;
+            border: none; border-radius: 10px;
+            font-size: 0.9rem; font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.15s ease, filter 0.15s ease;
+        }
+        #ems-modal-close-btn:hover { transform: translateY(-1px); filter: brightness(1.1); }
+        #ems-modal-card.mod-success #ems-modal-close-btn { background: #8BAE66; color: #fff; }
+        #ems-modal-card.mod-blue    #ems-modal-close-btn { background: #3b82f6; color: #fff; }
+        #ems-modal-card.mod-error   #ems-modal-close-btn { background: #ef4444; color: #fff; }
+        #ems-modal-card.mod-info    #ems-modal-close-btn { background: #3b82f6; color: #fff; }
+        #ems-modal-card.mod-warning #ems-modal-close-btn { background: #f59e0b; color: #fff; }
+
+        /* ── X close icon (top-right) ── */
+        #ems-modal-x {
+            position: absolute; top: 0.75rem; right: 0.85rem;
+            width: 28px; height: 28px;
+            border-radius: 50%; border: none; background: transparent;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            color: var(--text-muted, #9ca3af);
+            font-size: 1.1rem; line-height: 1;
+            transition: background 0.15s ease, color 0.15s ease;
+        }
+        #ems-modal-x:hover { background: var(--border, #e5e7eb); color: var(--text-body, #374151); }
+
+        /* ── Auto-close progress bar ── */
+        .ems-modal-progress {
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary,#8BAE66), transparent);
+            transform-origin: left;
+            animation: modalProgress linear forwards;
+        }
+        @keyframes modalProgress { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+
+        /* ── Decorative circles (subtle, like notallow page style) ── */
+        .ems-modal-deco {
+            position: absolute; border-radius: 50%; pointer-events: none;
+        }
+        `;
+        const st = document.createElement('style');
+        st.textContent = css;
+        document.head.appendChild(st);
+
+        // Build DOM
+        const overlay = document.createElement('div');
+        overlay.id = 'ems-modal-overlay';
+        overlay.innerHTML = `
+            <div id="ems-modal-card">
+                <button id="ems-modal-x" onclick="closeEmsModal()" aria-label="Close">&#x2715;</button>
+                <div id="ems-modal-progress-wrap"></div>
+                <div class="ems-modal-body">
+                    <div class="ems-modal-icon-wrap" id="ems-modal-icon"></div>
+                    <div class="ems-modal-action-badge" id="ems-modal-badge"></div>
+                    <p class="ems-modal-title" id="ems-modal-title"></p>
+                    <p class="ems-modal-desc"  id="ems-modal-desc"></p>
+                </div>
+                <div class="ems-modal-footer">
+                    <button id="ems-modal-close-btn" onclick="closeEmsModal()">${_lang['ok']}</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) closeEmsModal(); });
+    })();
+
+    let _emsModalTimer = null;
+
+    /* ── SVG icons per type ── */
+    const _emsIcons = {
+        success: `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`,
+        error:   `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`,
+        blue:    `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/><circle cx="12" cy="3" r="1" fill="currentColor" stroke="none"/></svg>`,
+        info:    `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
+        warning: `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
+    };
+
+    /* ── Action badge labels ── */
+    const _emsBadgeLabels = {
+        save:     (_lang['badge_save']    || 'บันทึกข้อมูล'),
+        update:   (_lang['badge_update']  || 'อัพเดต'),
+        create:   (_lang['badge_create']  || 'สร้างใหม่'),
+        delete:   (_lang['badge_delete']  || 'ลบ'),
+        enable:   (_lang['badge_enable']  || 'เปิดการแจ้งเตือน'),
+        disable:  (_lang['badge_disable'] || 'ปิดการแจ้งเตือน'),
+        connect:  (_lang['badge_connect'] || 'ทดสอบการเชื่อมต่อ'),
+        error:    (_lang['badge_error']   || 'เกิดข้อผิดพลาด'),
+    };
+
+    function showEmsModal(type, action, title, desc, autoDuration = 3500) {
+        const overlay = document.getElementById('ems-modal-overlay');
+        const card    = document.getElementById('ems-modal-card');
+        if (!overlay || !card) return;
+
+        // Reset type class
+        card.className = 'mod-' + type;
+
+        // Always restore footer (may have been replaced by showEmsConfirm)
+        const footer = overlay.querySelector(".ems-modal-footer");
+        if (footer && !document.getElementById("ems-modal-close-btn")) {
+            footer.innerHTML = `<button id="ems-modal-close-btn" onclick="closeEmsModal()">${_lang['ok']}</button>`;
+        }
+
+        // Populate
+        document.getElementById('ems-modal-icon').innerHTML  = _emsIcons[type] || _emsIcons.info;
+        document.getElementById('ems-modal-badge').textContent = _emsBadgeLabels[action] || action;
+        document.getElementById('ems-modal-title').textContent = title;
+        document.getElementById('ems-modal-desc').textContent  = desc;
+
+        // Progress bar
+        const pw = document.getElementById('ems-modal-progress-wrap');
+        pw.innerHTML = '';
+        if (autoDuration > 0) {
+            const bar = document.createElement('div');
+            bar.className = 'ems-modal-progress';
+            bar.style.animationDuration = autoDuration + 'ms';
+            pw.appendChild(bar);
+        }
+
+        // Show
+        overlay.classList.add('show');
+        document.body.style.overflow = 'hidden';
+
+        // Clear old timer
+        if (_emsModalTimer) { clearTimeout(_emsModalTimer); _emsModalTimer = null; }
+        if (autoDuration > 0) {
+            _emsModalTimer = setTimeout(closeEmsModal, autoDuration);
+        }
+    }
+
+    function closeEmsModal() {
+        const overlay = document.getElementById('ems-modal-overlay');
+        if (!overlay) return;
+        overlay.classList.remove('show');
+        document.body.style.overflow = '';
+        if (_emsModalTimer) { clearTimeout(_emsModalTimer); _emsModalTimer = null; }
+    }
+
+    /**
+     * showEmsConfirm — confirm dialog with Cancel / Confirm buttons
+     * @param {string}   title      - headline
+     * @param {string}   desc       - sub description
+     * @param {Function} onConfirm  - callback when user presses Confirm
+     */
+    function showEmsConfirm(title, desc, onConfirm) {
+        const overlay = document.getElementById('ems-modal-overlay');
+        const card    = document.getElementById('ems-modal-card');
+        if (!overlay || !card) return;
+
+        card.className = 'mod-warning';
+
+        document.getElementById('ems-modal-icon').innerHTML    = _emsIcons.warning;
+        document.getElementById('ems-modal-badge').textContent = _emsBadgeLabels.delete;
+        document.getElementById('ems-modal-title').textContent  = title;
+        document.getElementById('ems-modal-desc').textContent   = desc;
+
+        document.getElementById('ems-modal-progress-wrap').innerHTML = '';
+
+        // Replace footer with Cancel + Confirm
+        const footer = overlay.querySelector('.ems-modal-footer');
+        footer.innerHTML = `
+            <button onclick="closeEmsModal()" style="
+                min-width:110px; padding:0.52rem 1.2rem; border:1.5px solid var(--border,#e5e7eb);
+                border-radius:10px; font-size:0.9rem; font-weight:600; cursor:pointer;
+                background:transparent; color:var(--text-body,#374151);
+                transition:background 0.15s ease; margin-right:0.6rem;
+            " onmouseover="this.style.background='var(--border,#e5e7eb)'" onmouseout="this.style.background='transparent'">
+                ${_lang['cancel']}
+            </button>
+            <button id="ems-confirm-ok-btn" style="
+                min-width:110px; padding:0.52rem 1.2rem; border:none;
+                border-radius:10px; font-size:0.9rem; font-weight:700; cursor:pointer;
+                background:#ef4444; color:#fff;
+                transition:filter 0.15s ease;
+            " onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter='brightness(1)'">
+                ${_lang['confirm_delete']}
+            </button>
+        `;
+
+        document.getElementById('ems-confirm-ok-btn').onclick = () => {
+            // Restore normal footer for next use
+            footer.innerHTML = `<button id="ems-modal-close-btn" onclick="closeEmsModal()">${_lang['ok']}</button>`;
+            closeEmsModal();
+            if (typeof onConfirm === 'function') onConfirm();
+        };
+
+        overlay.classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
+
+    /* ── Backward-compat shim so old showToast() calls still work ── */
+    function showToast(type, message, duration = 2800) {
+        const actionMap = { success: 'update', error: 'error', info: 'connect', blue: 'enable' };
+        const titleMap  = {
+            success: 'สำเร็จ',
+            error:   'เกิดข้อผิดพลาด',
+            info:    'ข้อมูล',
+            blue:    'แจ้งเตือน',
+        };
+        showEmsModal(type, actionMap[type] || 'update', titleMap[type] || '', message, duration);
+    }
+
     let meters = [];
     let selected_meter = [];
     let types = [];
@@ -85,6 +393,16 @@
         outputText = json.message + "\n" + json.output;
         labelStatusConnect.textContent = json.success ? "Connected" : "Failed";
         labelStatusConnect.style.color = json.success ? "green" : "red";
+
+        if (json.success) {
+            showEmsModal('success', 'connect',
+                _lang['connect_success']      || 'เชื่อมต่อสำเร็จ',
+                (_lang['connect_success_desc'] || 'Meter เชื่อมต่อได้ปกติ กรุณากดปุ่ม') + ' ' + _lang['save'] + ' ' + (_lang['connect_success_desc2'] || 'เพื่อบันทึก'), 4000);
+        } else {
+            showEmsModal('error', 'connect',
+                _lang['connect_failed']      || 'เชื่อมต่อไม่สำเร็จ',
+                json.message || _lang['connect_failed_desc'] || 'ไม่สามารถเชื่อมต่อกับ Meter ได้ กรุณาตรวจสอบการตั้งค่า', 5000);
+        }
     }
 
     function generateMeter(meters) {
@@ -225,9 +543,39 @@
                 <div id="detailmore" style="display:none;" class="clickable" onclick="openDetail()">Detail more...</div>
             </div>
 
-            <div class="w-100 text-end my-2">
-                <input class="btn btn-sm btn-primary bg-opacity-50 " onclick="updateMeter()" value="Save">
-                <input class="btn btn-sm btn-danger clickable" value="Cancel">
+            <div class="w-100 px-3 py-3 d-flex justify-content-end align-items-center gap-2" style="border-top: 1px solid var(--border); margin-top: 1rem;">
+                <button type="button"
+                    onclick="loadDataMeter(selected_meter)"
+                    style="
+                        display: inline-flex; align-items: center; gap: 0.4rem;
+                        padding: 0.48rem 1.2rem; border-radius: 9px;
+                        border: 1.5px solid rgba(239,68,68,.4);
+                        background: transparent; color: #ef4444;
+                        font-size: 0.875rem; font-weight: 600; cursor: pointer;
+                        transition: background 180ms ease, border-color 180ms ease;
+                    "
+                    onmouseover="this.style.background='rgba(239,68,68,.07)'; this.style.borderColor='rgba(239,68,68,.7)'"
+                    onmouseout="this.style.background='transparent'; this.style.borderColor='rgba(239,68,68,.4)'">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                    ${_lang['cancel']}
+                </button>
+                <button type="button"
+                    id="btn-save-meter"
+                    onclick="updateMeter()"
+                    style="
+                        display: inline-flex; align-items: center; gap: 0.4rem;
+                        padding: 0.48rem 1.35rem; border-radius: 9px;
+                        border: none;
+                        background: var(--primary, #8BAE66); color: #fff;
+                        font-size: 0.875rem; font-weight: 700; cursor: pointer;
+                        box-shadow: 0 2px 8px rgba(139,174,102,.35);
+                        transition: background 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+                    "
+                    onmouseover="this.style.background='var(--primary-dark, #2d4416)'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 14px rgba(139,174,102,.45)'"
+                    onmouseout="this.style.background='var(--primary, #8BAE66)'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(139,174,102,.35)'">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                    ${_lang['save']}
+                </button>
             </div>
         `;
             }
@@ -252,21 +600,21 @@
                         <div class="bg-white rounded-bottom shadow w-100 p-1 text-black">
                             <input id="meter-${row.id}" type="hidden" value="${row.meter_id}"/>
                             <input id="name-${row.id}" type="hidden" value="${row.name}"/>
-                            <h6 class="ps-2"for="mark"><?=$lang['sign']?></h6>
+                            <h6 class="ps-2"for="mark">${_lang['sign']}</h6>
                             <select id="select-mark-${row.id}" class="form-select form-select-sm text-black">
-                                <option ${row.mark == '<' ? 'selected' : ''} value="<"><?=$lang['<']?> (<)</option>
-                                <option ${row.mark == '>' ? 'selected' : ''} value=">"><?=$lang['>']?> (>)</option>
-                                <option ${row.mark == '=' ? 'selected' : ''} value="="><?=$lang['=']?> (=)</option>
+                                <option ${row.mark == '<' ? 'selected' : ''} value="<">${_lang['<']} (<)</option>
+                                <option ${row.mark == '>' ? 'selected' : ''} value=">">${_lang['>']} (>)</option>
+                                <option ${row.mark == '=' ? 'selected' : ''} value="=">${_lang['=']} (=)</option>
                             </select>
-                            <h6 class="ps-2"for="value"><?=$lang['value']?></h6>
+                            <h6 class="ps-2"for="value">${_lang['value']}</h6>
                             <input id="value-${row.id}" class="form-control form-control-sm text-black" type="number" value="${row.value_condition}" placeholder="Number value">
-                            <h6 class="ps-2"for="token"><?=$lang['token']?> <?=$lang['line']?></h6>
+                            <h6 class="ps-2"for="token">${_lang['token']} ${_lang['line']}</h6>
                             <input id="token-${row.id}" class="form-control form-control-sm text-black" type="text" value="${row.token_line}" placeholder="Line token here.">
-                            <h6 class="ps-2"for="email"><?=$lang['email']?></h6>
+                            <h6 class="ps-2"for="email">${_lang['email']}</h6>
                             <input id="email-${row.id}" class="form-control form-control-sm text-black" type="text" value="${row.email}" placeholder="Input email here.">
                             <div class="w-100 py-2 px-3 d-flex justify-content-between">
-                                <input id="active-${row.id}" onclick="UpdateStatusNotify(${meter.id},${row.id},'active')" value="${row.is_active == 1 ? 'Enabled' : 'Disabled'}" class="btn btn-sm text ${row.is_active == 1 ? 'bg-blue' : 'bg-red'} " style="width:40%;  ">
-                                <input id="update-${row.id}" onclick="UpdateStatusNotify(${meter.id},${row.id},'update')" value="Update" class="btn btn-sm bg-green text text-black" style="width:40%;">
+                                <input id="active-${row.id}" onclick="UpdateStatusNotify(${meter.id},${row.id},'active')" value="${row.is_active == 1 ? _lang['enabled'] : _lang['disabled']}" class="btn btn-sm text ${row.is_active == 1 ? 'bg-blue' : 'bg-red'} " style="width:40%;  ">
+                                <input id="update-${row.id}" onclick="UpdateStatusNotify(${meter.id},${row.id},'update')" value="${_lang['update']}" class="btn btn-sm bg-green text text-black" style="width:40%;">
                             </div>
                         </div>
                     `;
@@ -298,52 +646,87 @@
         formdata.append('id', notify_id);
         formdata.append('status', status);
 
+        // ── Toggle active/disabled ──────────────────────────────────────
         if (status === 'active') {
-            let btn_active = document.getElementById('active-' + notify_id);
-            let is_active = btn_active.classList.contains('bg-blue') ? 1 : 0;
-            formdata.append('value', is_active);
-        } else if (status === 'update' || status === 'create') {
-            let select = document.getElementById('select-mark-' + notify_id);
-            let name = document.getElementById('name-' + notify_id);
-            let value = document.getElementById('value-' + notify_id);
-            let token = document.getElementById('token-' + notify_id);
-            let email = document.getElementById('email-' + notify_id);
-            let active = document.getElementById('active-' + notify_id);
-            let meter = document.getElementById('meter-' + notify_id);
+            const btn = document.getElementById('active-' + notify_id);
+            const wasActive = btn.classList.contains('bg-blue'); // true = กำลัง enabled อยู่
 
-            const activeValue = active.classList.contains('bg-blue') ? 1 : 0;
-
-            if (select && value && token && email) {
-                formdata.append('meter_id', meter.value);
-                formdata.append('name', name.value);
-                formdata.append('mark', select.value);
-                formdata.append('value', value.value);
-                formdata.append('token', token.value);
-                formdata.append('email', email.value);
-                formdata.append('active', activeValue);
+            // สลับปุ่มทันที
+            if (wasActive) {
+                btn.classList.remove('bg-blue'); btn.classList.add('bg-red');
+                btn.value = _lang['disabled'];
             } else {
-                console.error('One or more input elements not found for ID:', notify_id);
-                return;
+                btn.classList.remove('bg-red'); btn.classList.add('bg-blue');
+                btn.value = _lang['enabled'];
             }
-        } else if (status === 'delete') {
-            console.log("กำลังลบแจ้งเตือน...");
+
+            formdata.append('value', wasActive ? 1 : 0); // ส่งค่าเดิม (server จะ flip)
+
+            showLoading();
+            try {
+                const res  = await fetch('../config/update-notify.php', { method: 'POST', body: formdata });
+                const data = await res.json();
+                if (data.success) {
+                    notifies = await fetchnotify();
+                    showEmsModal(wasActive ? 'error' : 'blue',
+                        wasActive ? 'disable' : 'enable',
+                        wasActive ? (_lang['notify_disabled_title'] || 'ปิดการแจ้งเตือนแล้ว')   : (_lang['notify_enabled_title'] || 'เปิดการแจ้งเตือนแล้ว'),
+                        wasActive ? (_lang['notify_disabled_desc']  || 'การแจ้งเตือนนี้ถูกปิดใช้งานเรียบร้อยแล้ว') : (_lang['notify_enabled_desc'] || 'การแจ้งเตือนนี้ถูกเปิดใช้งานเรียบร้อยแล้ว'));
+                } else {
+                    // Revert กลับถ้า API ล้มเหลว
+                    if (wasActive) {
+                        btn.classList.remove('bg-red'); btn.classList.add('bg-blue'); btn.value = _lang['enabled'];
+                    } else {
+                        btn.classList.remove('bg-blue'); btn.classList.add('bg-red'); btn.value = _lang['disabled'];
+                    }
+                    showEmsModal('error', 'error',
+                        _lang['save_failed'] || 'ไม่สามารถบันทึกได้',
+                        data.message || _lang['status_change_error'] || 'เกิดข้อผิดพลาดในการเปลี่ยนสถานะ กรุณาลองอีกครั้ง');
+                }
+            } catch(e) { showEmsModal('error', 'error', _lang['error'] || 'เกิดข้อผิดพลาด', e.message); }
+            hideLoading();
+            return;
         }
 
+        // ── Update / Create ──────────────────────────────────────────────
+        if (status === 'update' || status === 'create') {
+            const select = document.getElementById('select-mark-' + notify_id);
+            const name   = document.getElementById('name-'        + notify_id);
+            const value  = document.getElementById('value-'       + notify_id);
+            const token  = document.getElementById('token-'       + notify_id);
+            const email  = document.getElementById('email-'       + notify_id);
+            const active = document.getElementById('active-'      + notify_id);
+            const meter  = document.getElementById('meter-'       + notify_id);
 
-        showLoading(); // แสดง loading
-        const response = await fetch('../config/update-notify.php', {
-            method: 'POST',
-            body: formdata
-        });
-        const data = await response.json();
-        if (data.success) {
-            console.log(data.message);
-            notifies = await fetchnotify();
-            loadDataMeter(meters[meter_id - 1]);
-        } else {
-            console.error(`เกิดข้อผิดพลาด: ${data.message || 'ไม่สามารถบันทึกข้อมูลได้'}`);
+            if (!select || !value || !token || !email) {
+                console.error('Element not found for ID:', notify_id); return;
+            }
+            formdata.append('meter_id', meter.value);
+            formdata.append('name',     name.value);
+            formdata.append('mark',     select.value);
+            formdata.append('value',    value.value);
+            formdata.append('token',    token.value);
+            formdata.append('email',    email.value);
+            formdata.append('active',   active.classList.contains('bg-blue') ? 1 : 0);
         }
-        hideLoading(); // ซ่อนไม่ว่าจะสำเร็จหรือไม่
+
+        showLoading();
+        try {
+            const res  = await fetch('../config/update-notify.php', { method: 'POST', body: formdata });
+            const data = await res.json();
+            if (data.success) {
+                notifies = await fetchnotify();
+                loadDataMeter(meters[meter_id - 1]);
+                showEmsModal('success', status === 'create' ? 'create' : 'update',
+                    status === 'create' ? (_lang['notify_created_title'] || 'สร้างการแจ้งเตือนสำเร็จ')   : (_lang['notify_updated_title'] || 'อัพเดตการแจ้งเตือนสำเร็จ'),
+                    status === 'create' ? (_lang['notify_created_desc']  || 'การแจ้งเตือนใหม่ถูกบันทึกในระบบแล้ว') : (_lang['notify_updated_desc']  || 'ข้อมูลการแจ้งเตือนถูกอัพเดตเรียบร้อยแล้ว'));
+            } else {
+                showEmsModal('error', 'error',
+                    _lang['save_failed'] || 'ไม่สามารถบันทึกได้',
+                    data.message || _lang['save_error_desc'] || 'เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาลองอีกครั้ง');
+            }
+        } catch(e) { showEmsModal('error', 'error', _lang['error'] || 'เกิดข้อผิดพลาด', e.message); }
+        hideLoading();
     }
 
     document.getElementById("menu-config-1").addEventListener("click", function () {
@@ -360,27 +743,45 @@
 
     async function updateMeter() {
         let formMeter = document.getElementById('meter-form');
-        if (!formMeter) {
-            console.error("Form element not found!");
-            return;
+        if (!formMeter) { console.error("Form element not found!"); return; }
+
+        const btn = document.getElementById('btn-save-meter');
+        const origHTML = btn ? btn.innerHTML : '';
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation:spin .7s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> ${_lang['save']}...`;
+            btn.style.opacity = '0.75';
         }
-        let form = new FormData(formMeter);
-        fetch('../config/update-meter.php', {
-            method: "POST",
-            body: form
-        })
-            .then(res => res.json())
-            .then(async data => {
-                console.log("Success : ", data.success, "\n message : ", data.message);
-                alertMessages('success', "Data Saved Successfully", "Your information has been recorded in the system.");
-                setTimeout(() => {
-                    process();
-                }, 2000);
-            })
-            .catch(e => {
-                console.error(e)
-                alertMessages('error', "Save Failed", "An unexpected error occurred. Please check your internet connection and try again.");
-            })
+        if (!document.getElementById('ems-spin-style')) {
+            const s = document.createElement('style');
+            s.id = 'ems-spin-style';
+            s.textContent = '@keyframes spin { to { transform: rotate(360deg); } }';
+            document.head.appendChild(s);
+        }
+
+        showLoading();
+        try {
+            const res  = await fetch('../config/update-meter.php', { method: 'POST', body: new FormData(formMeter) });
+            const data = await res.json();
+            if (data.success) {
+                showEmsModal('success', 'save',
+                    _lang['save_success']      || 'บันทึกข้อมูลสำเร็จ',
+                    _lang['save_success_desc'] || 'ข้อมูล Meter ถูกบันทึกในระบบเรียบร้อยแล้ว');
+                setTimeout(() => process(), 2000);
+            } else {
+                showEmsModal('error', 'error',
+                    _lang['save_failed']      || 'บันทึกไม่สำเร็จ',
+                    data.message || _lang['save_failed_desc'] || 'เกิดข้อผิดพลาด กรุณาลองอีกครั้ง');
+            }
+        } catch(e) {
+            console.error(e);
+            showEmsModal('error', 'error',
+                _lang['save_failed']    || 'บันทึกไม่สำเร็จ',
+                _lang['network_error']  || 'เกิดข้อผิดพลาดที่ไม่คาดคิด กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตแล้วลองใหม่อีกครั้ง');
+        } finally {
+            hideLoading();
+            if (btn) { btn.disabled = false; btn.innerHTML = origHTML; btn.style.opacity = '1'; }
+        }
     }
 
     function addNotify() {
@@ -393,26 +794,26 @@
         div.style.width = '280px';
         div.style.height = '380px';
         div.innerHTML = `
-            <div class="text-center border fs-5 rounded-top fw-bold align-content-center bg-blue-reverse" style="height:10%;"><?=$lang['nnotify']?></div>
+            <div class="text-center border fs-5 rounded-top fw-bold align-content-center bg-blue-reverse" style="height:10%;">${_lang['nnotify']}</div>
             <div class="bg-white rounded-bottom shadow w-100 p-1 text-black">
                 <input id="meter-0" type="hidden" value="${meterID}"/>
-                <h6 class="ps-2"for="name"><?=$lang['name']?></h6>
+                <h6 class="ps-2"for="name">${_lang['name']}</h6>
                 <input id="name-0" class="form-control form-control-sm text-black" type="text" placeholder="Unknown">
-                <h6 class="ps-2"for="mark"><?=$lang['sign']?></h6>
+                <h6 class="ps-2"for="mark">${_lang['sign']}</h6>
                 <select id="select-mark-0" class="form-select form-select-sm text-black">
-                    <option value="<"><?=$lang['<']?> (<)</option>
-                    <option value=">"><?=$lang['>']?> (>)</option>
-                    <option value="="><?=$lang['=']?> (=)</option>
+                    <option value="<">${_lang['<']} (<)</option>
+                    <option value=">">${_lang['>']} (>)</option>
+                    <option value="=">${_lang['=']} (=)</option>
                 </select>
-                <h6 class="ps-2"for="value"><?=$lang['value']?></h6>
+                <h6 class="ps-2"for="value">${_lang['value']}</h6>
                 <input id="value-0" class="form-control form-control-sm text-black" type="number" placeholder="Number value">
-                <h6 class="ps-2"for="token"><?=$lang['token']?> <?=$lang['line']?></h6>
+                <h6 class="ps-2"for="token">${_lang['token']} ${_lang['line']}</h6>
                 <input id="token-0" class="form-control form-control-sm text-black" type="text" placeholder="Line token here">
-                <h6 class="ps-2"for="email"><?=$lang['email']?></h6>
+                <h6 class="ps-2"for="email">${_lang['email']}</h6>
                 <input id="email-0" class="form-control form-control-sm text-black" type="text" placeholder="paste email here">
                 <div class="w-100 py-2 px-3 d-flex justify-content-between">
-                    <input id="active-0" value="Enabled" class="btn btn-sm text bg-blue" style="width:40%;">
-                    <input id="update-0" value="Save" onclick="UpdateStatusNotify(${meterID},0,'create')" class="btn btn-sm bg-green text text-black" style="width:40%;">
+                    <input id="active-0" value="${_lang['enabled']}" class="btn btn-sm text bg-blue" style="width:40%;">
+                    <input id="update-0" value="${_lang['save']}" onclick="UpdateStatusNotify(${meterID},0,'create')" class="btn btn-sm bg-green text text-black" style="width:40%;">
                 </div>
             </div>
         `;
@@ -421,6 +822,33 @@
     }
 
     function deleteNotify(mid, id) {
-        UpdateStatusNotify(mid, id, 'delete');
+        showEmsConfirm(
+            _lang['confirm_delete_title'] || 'คุณต้องการลบการแจ้งเตือนนี้?',
+            _lang['confirm_delete_desc']  || 'การดำเนินการนี้ไม่สามารถย้อนกลับได้',
+            async () => {
+                showLoading();
+                try {
+                    let formdata = new FormData();
+                    formdata.append('id', id);
+                    formdata.append('status', 'delete');
+                    const res  = await fetch('../config/update-notify.php', { method: 'POST', body: formdata });
+                    const data = await res.json();
+                    if (data.success) {
+                        notifies = await fetchnotify();
+                        loadDataMeter(meters[mid - 1]);
+                        showEmsModal('success', 'delete',
+                            _lang['delete_success']      || 'ลบการแจ้งเตือนสำเร็จ',
+                            _lang['delete_success_desc'] || 'การแจ้งเตือนถูกลบออกจากระบบเรียบร้อยแล้ว');
+                    } else {
+                        showEmsModal('error', 'error',
+                            _lang['delete_failed']      || 'ลบไม่สำเร็จ',
+                            data.message || _lang['delete_error_desc'] || 'เกิดข้อผิดพลาดในการลบข้อมูล');
+                    }
+                } catch(e) {
+                    showEmsModal('error', 'error', _lang['error'] || 'เกิดข้อผิดพลาด', e.message);
+                }
+                hideLoading();
+            }
+        );
     }
 </script>
