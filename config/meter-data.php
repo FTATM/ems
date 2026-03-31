@@ -14,7 +14,7 @@ if ($data) {
     $sql = "SELECT * FROM data_type";
     $result = $conn->query($sql);
 
-    $column = [];
+    $column = ['is_active'];
     if ($result->num_rows > 0) {
         while ($row = $result->fetch_assoc()) {
             $column[] = $row;

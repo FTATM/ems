@@ -125,15 +125,23 @@
       });
     });
 
+    const dataOfSelectedMonth = Object.values(meterWithData.data).map((data) => {
+      return Object.values(data).filter(rows => { return true; });
+    });
+
     // นำข้อมูลใหม่ที่กรองวันที่แล้ว มาเก็บไว้ที่ meterWithDataOfDay
     const meterWithDataOfDay = {
       ...meterWithData,
       data: DataOfSelectedDay
     }
+    const meterWithDataOfMonth = {
+      ...meterWithData,
+      data: dataOfSelectedMonth
+    }
 
     //หาค่า min/max/avg ของข้อมูลแต่ละช่วงเวลา
     const dayData = await AvgMinMax(meterWithDataOfDay);
-    const monthData = await AvgMinMax(meterWithData);
+    const monthData = await AvgMinMax(meterWithDataOfMonth);
 
     // นำค่า min/max/avg ที่ได้ไปใช้งานที่หน้าเว็บ
     loadValueDay(dayData);
@@ -141,18 +149,123 @@
   }
 
   function templateOfDay() {
-    return { 'onpeak': 0, "offpeak": 0, 'holiday': 0 };
+    return { 'onpeak': null, "offpeak": null, 'holiday': null };
   }
 
+  // function AvgMinMax(meter) {
+  //   let values = {}
+  //   const dataAll = Object.entries(meter.data).map(([key, rows]) => {
+  //     const fValue = rows[0] ? parseFloat(rows[0].value) : 0;
+  //     const lValue = rows[0] ? parseFloat(rows[rows.length - 1].value) : 0;
+  //     let list = {
+  //       avg: templateOfDay(),
+  //       total: templateOfDay(),
+  //       min: templateOfDay(),
+  //       max: templateOfDay(),
+  //       thours: templateOfDay(),
+  //       ttime: templateOfDay(),
+  //       count: templateOfDay(),
+  //       fv_date: templateOfDay(),
+  //       lv_date: templateOfDay(),
+  //       fv: templateOfDay(),
+  //       lv: templateOfDay(),
+  //       mpeak: { value: 0, ttime: "", ltime: "" }
+  //     }
+
+  //     let lastPeriod = '';
+  //     let lastData = {};
+  //     let fv_date = "";
+
+  //     Object.values(rows).forEach((data, r) => {
+  //       let peak = 0;
+  //       lastData = data;
+  //       let date = new Date(data.create_date);
+  //       let period = checkPeriod(date);
+  //       let val = ['1', '3', '5'].includes(key) ? Math.abs(parseFloat(fValue) - parseFloat(data.value)) : parseFloat(data.value);
+  //       let value = parseFloat(data.value);
+  //       if (period !== lastPeriod) {
+
+  //         list.fv[period] = list.fv[period] === 0 ? value : list.fv[period];
+  //         list.min[period] = value;
+  //         list.fv_date[period] = list.fv_date[period] === 0 ? data.create_date : list.fv_date[period];
+  //         fv_date = data.create_date;
+  //         if (lastPeriod !== '') {
+  //           const diff = diffTime(list.fv_date[lastPeriod], lastData.create_date);
+  //           list.thours[lastPeriod] += diff.thours;
+  //         }
+  //         lastPeriod = period;
+  //       }
+  //       else if (data.id === rows[rows.length - 1].id) {
+  //         const diff = diffTime(fv_date, data.create_date);
+  //         list.thours[period] += diff.thours;
+  //       }
+  //       list.total[period] += val;
+  //       list.count[period] += 1;
+  //       list.lv[period] = value;
+  //       list.lv_date[period] = data.create_date;
+  //       list.min[period] = value < list.min[period] ? value : list.min[period];
+  //       list.max[period] = value > list.max[period] ? value : list.max[period];
+
+  //       if (period !== 'offpeak') {
+  //         for (let i = 14; i >= 0; i--) {
+  //           let a = parseFloat(rows[r - i]?.value);
+  //           if (a) {
+  //             peak += a;
+  //           }
+  //         }
+  //         if ((peak / 15) > list.mpeak['value']) {
+  //           list.mpeak['value'] = peak / 15;
+  //           list.mpeak['ttime'] = date.toLocaleTimeString('th-TH', {
+  //             hour12: false,    // ปิด AM/PM
+  //             hour: '2-digit',
+  //             minute: '2-digit',
+  //             second: '2-digit'
+  //           });
+  //           let rdate = new Date(rows[r - 15]?.create_date ?? 0);
+  //           list.mpeak['ltime'] = rdate.toLocaleTimeString('th-TH', {
+  //             hour12: false,    // ปิด AM/PM
+  //             hour: '2-digit',
+  //             minute: '2-digit',
+  //             second: '2-digit'
+  //           });
+  //         }
+  //       }
+  //     });
+  //     return values[key] = {
+  //       ...list,
+  //       avg: {
+  //         'onpeak': list.total['onpeak'] / (list.count['onpeak'] || 1),
+  //         'offpeak': list.total['offpeak'] / (list.count['offpeak'] || 1),
+  //         'holiday': list.total['holiday'] / (list.count['holiday'] || 1),
+  //       },
+  //       ttime: {
+  //         'onpeak': changeValueToTime(list.thours['onpeak']),
+  //         'offpeak': changeValueToTime(list.thours['offpeak']),
+  //         'holiday': changeValueToTime(list.thours['holiday']),
+  //       }
+  //     };
+  //   });
+  //   return meterSum = {
+  //     ...meter,
+  //     data: dataAll
+  //   }
+  // }
+
   function AvgMinMax(meter) {
-    let values = {}
-    const dataAll = Object.entries(meter.data).map(([key, rows]) => {
-      const fValue = rows[0] ? parseFloat(rows[0].value) : 0;
-      const lValue = rows[0] ? parseFloat(rows[rows.length - 1].value) : 0;
-      let list = {
+
+    const result = {};
+
+    Object.entries(meter.data).forEach(([key, rows]) => {
+
+      if (!rows || rows.length === 0) {
+        result[key] = null;
+        return;
+      }
+
+      const list = {
         avg: templateOfDay(),
         total: templateOfDay(),
-        min: templateOfDay(),
+        min: { onpeak: Infinity, offpeak: Infinity, holiday: Infinity },
         max: templateOfDay(),
         thours: templateOfDay(),
         ttime: templateOfDay(),
@@ -162,85 +275,127 @@
         fv: templateOfDay(),
         lv: templateOfDay(),
         mpeak: { value: 0, ttime: "", ltime: "" }
-      }
+      };
 
-      let lastPeriod = '';
-      let lastData = {};
-      let fv_date = "";
+      let lastPeriod = null;
+      let periodStartDate = null;
 
-      Object.values(rows).filter((data, r) => {
-        let peak = 0;
-        lastData = data;
-        let date = new Date(data.create_date);
-        let period = checkPeriod(date);
-        let val = ['1', '3', '5'].includes(key) ? Math.abs(parseFloat(fValue) - parseFloat(data.value)) : parseFloat(data.value);
-        let value = parseFloat(data.value);
+      // 🔥 sliding window สำหรับ peak (เร็วกว่าเดิม)
+      let peakQueue = [];
+      let peakSum = 0;
+
+      rows.forEach((data, i) => {
+
+        const value = parseFloat(data.value);
+        if (isNaN(value)) return;
+
+        const date = new Date(data.create_date);
+        const period = checkPeriod(date);
+
+        // 🔹 ใช้ diff จาก previous (แก้ bug สำคัญ)
+        let prev = parseFloat(rows[i - 1]?.value ?? value);
+        let val = ['1', '3', '5'].includes(key)
+          ? Math.abs(value - prev)
+          : value;
+
+        // 🔹 เปลี่ยน period
         if (period !== lastPeriod) {
 
-          list.fv[period] = list.fv[period] === 0 ? value : list.fv[period];
-          list.min[period] = value;
-          list.fv_date[period] = list.fv_date[period] === 0 ? data.create_date : list.fv_date[period];
-          fv_date = data.create_date;
-          if (lastPeriod !== '') {
-            const diff = diffTime(list.fv_date[lastPeriod], lastData.create_date);
+          // ปิดช่วงก่อนหน้า
+          if (lastPeriod && periodStartDate) {
+            const diff = diffTime(periodStartDate, date);
             list.thours[lastPeriod] += diff.thours;
           }
+
+          // เปิดช่วงใหม่
+          list.fv[period] = list.fv[period] === 0 ? value : list.fv[period];
+          list.fv_date[period] = list.fv_date[period] === 0 ? data.create_date : list.fv_date[period];
+          list.min[period] = value;
+
+          periodStartDate = date;
           lastPeriod = period;
         }
-        else if (data.id === rows[rows.length - 1].id) {
-          const diff = diffTime(fv_date, data.create_date);
-          list.thours[period] += diff.thours;
-        }
+
+        // 🔹 สะสมค่า
         list.total[period] += val;
         list.count[period] += 1;
+
         list.lv[period] = value;
         list.lv_date[period] = data.create_date;
-        list.min[period] = value < list.min[period] ? value : list.min[period];
-        list.max[period] = value > list.max[period] ? value : list.max[period];
 
+        list.min[period] = Math.min(list.min[period], value);
+        list.max[period] = Math.max(list.max[period], value);
+
+        // 🔥 PEAK (เฉพาะ onpeak / holiday)
         if (period !== 'offpeak') {
-          for (let i = 14; i >= 0; i--) {
-            let a = parseFloat(rows[r - i]?.value);
-            if (a) {
-              peak += a;
-            }
+
+          peakQueue.push(value);
+          peakSum += value;
+
+          if (peakQueue.length > 15) {
+            peakSum -= peakQueue.shift();
           }
-          if ((peak / 15) > list.mpeak['value']) {
-            list.mpeak['value'] = peak / 15;
-            list.mpeak['ttime'] = date.toLocaleTimeString('th-TH', {
-              hour12: false,    // ปิด AM/PM
-              hour: '2-digit',
-              minute: '2-digit',
-              second: '2-digit'
-            });
-            let rdate = new Date(rows[r - 15]?.create_date ?? 0);
-            list.mpeak['ltime'] = rdate.toLocaleTimeString('th-TH', {
-              hour12: false,    // ปิด AM/PM
-              hour: '2-digit',
-              minute: '2-digit',
-              second: '2-digit'
-            });
+
+          if (peakQueue.length === 15) {
+            const avgPeak = peakSum / 15;
+
+            if (avgPeak > list.mpeak.value) {
+              list.mpeak.value = avgPeak;
+
+              list.mpeak.ttime = date.toLocaleTimeString('th-TH', {
+                hour12: false,
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+              });
+
+              const startIdx = i - 14;
+              if (rows[startIdx]) {
+                const sDate = new Date(rows[startIdx].create_date);
+                list.mpeak.ltime = sDate.toLocaleTimeString('th-TH', {
+                  hour12: false,
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  second: '2-digit'
+                });
+              }
+            }
           }
         }
       });
-      return values[key] = {
-        ...list,
-        avg: {
-          'onpeak': list.total['onpeak'] / (list.count['onpeak'] || 1),
-          'offpeak': list.total['offpeak'] / (list.count['offpeak'] || 1),
-          'holiday': list.total['holiday'] / (list.count['holiday'] || 1),
-        },
-        ttime: {
-          'onpeak': changeValueToTime(list.thours['onpeak']),
-          'offpeak': changeValueToTime(list.thours['offpeak']),
-          'holiday': changeValueToTime(list.thours['holiday']),
-        }
+
+      // 🔹 ปิดช่วงสุดท้าย
+      if (lastPeriod && periodStartDate) {
+        const lastDate = new Date(rows[rows.length - 1].create_date);
+        const diff = diffTime(periodStartDate, lastDate);
+        list.thours[lastPeriod] += diff.thours;
+      }
+
+      // 🔹 คำนวณ avg + format เวลา
+      const avg = {
+        onpeak: list.total.onpeak / (list.count.onpeak || 1),
+        offpeak: list.total.offpeak / (list.count.offpeak || 1),
+        holiday: list.total.holiday / (list.count.holiday || 1),
       };
+
+      const ttime = {
+        onpeak: changeValueToTime(list.thours.onpeak),
+        offpeak: changeValueToTime(list.thours.offpeak),
+        holiday: changeValueToTime(list.thours.holiday),
+      };
+
+      result[key] = {
+        ...list,
+        avg,
+        ttime
+      };
+
     });
-    return meterSum = {
+
+    return {
       ...meter,
-      data: dataAll
-    }
+      data: result
+    };
   }
 
   function changeValueToTime(value) {
@@ -279,14 +434,10 @@
     const date = new Date(datetime);
     const hour = date.getHours();
     const day = date.getDay();
-    let period;
 
-    if (hour >= 9 && hour < 22) period = 'onpeak';
-    if (hour >= 22 && hour < 24) period = 'offpeak';
-    if (hour >= 0 && hour < 9) period = 'offpeak';
-    if (day == 6 || day == 0) period = 'holiday';
-
-    return period;
+    if (day === 0 || day === 6) return 'holiday';
+    if (hour >= 9 && hour < 22) return 'onpeak';
+    return 'offpeak';
   }
 
   function sumValue(object) {

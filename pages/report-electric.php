@@ -31,7 +31,7 @@ checkSession();
 
                     <div class="dash-filter-group">
                         <span class="dash-filter-label"><?= $lang['meter'] ?></span>
-                        <select id="select-meter-show" class="dash-select" onchange="loadingChart()">
+                        <select id="select-meters" class="dash-select" onchange="loadingChart()">
                             <option>No value</option>
                         </select>
                     </div>
@@ -44,8 +44,8 @@ checkSession();
                             onclick="document.getElementById('datetime-from').showPicker()">
                             <i class="bi bi-calendar3"></i>
                             <span id="date-from-display" class="filter-date-display">30 กันยายน 2568</span>
-                            <input id="datetime-from" type="date" class="filter-date-hidden" value="2026-03-17"
-                                onchange="updateFromDisplay(); filterMeters()">
+                            <input id="datetime-from" type="date" class="filter-date-hidden" value="2026-03-26"
+                                onchange="updateToDisplay(); changeSelectMeter()">
                         </div>
                     </div>
 
@@ -56,8 +56,8 @@ checkSession();
                         <div class="filter-date-wrapper" onclick="document.getElementById('datetime-to').showPicker()">
                             <i class="bi bi-calendar3"></i>
                             <span id="date-to-display" class="filter-date-display">30 ตุลาคม 2568</span>
-                            <input id="datetime-to" type="date" class="filter-date-hidden" value="2026-03-18"
-                                onchange="updateToDisplay(); filterMeters()">
+                            <input id="datetime-to" type="date" class="filter-date-hidden" value="2026-03-27"
+                                onchange="updateFromDisplay(); changeSelectMeter()">
                         </div>
                     </div>
 

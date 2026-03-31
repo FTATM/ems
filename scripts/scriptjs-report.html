@@ -1,383 +1,362 @@
 <script>
-let meters = [];
-let types = [];
-let locations = [];
-let groups = [];
-let filtermeters = [];
-let filterDatas = [];
+    let meters = [];
+    let meterWithData = [];
+    let types = [];
+    let locations = [];
+    let groups = [];
+    let filterMeterWithData = [];
 
-const typeMeterID = "<?=$_SESSION['tid'];?>";
-const groupID = "<?=$_SESSION['gid'];?>";
+    let MeterID = 0;
+    const typeMeterID = "<?=$_SESSION['tid'];?>";
+    const groupID = "<?=$_SESSION['gid'];?>";
 
-document.addEventListener("DOMContentLoaded", async () => {
-    await process();
-});
-
-async function process() {
-    await fetchAll();
-
-    // ✅ auto set date
-    const { minDate, maxDate } = getAutoDateRange(meters);
-
-    if (minDate && maxDate) {
-        document.getElementById('datetime-from').value = minDate.toISOString().split('T')[0];
-        document.getElementById('datetime-to').value = maxDate.toISOString().split('T')[0];
-    }
-
-    await filterMeters();
-    loadingChart();
-}
-
-async function fetchAll() {
-    let response = await fetch('../config/fetch-meters.php');
-    let json = await response.json();
-    meters = json.data || {};
-
-    let responsetype = await fetch("../config/fetch-data_type.php");
-    let jsontype = await responsetype.json();
-    types = jsontype.data || [];
-
-    let responseLocation = await fetch("../config/fetch-locations.php");
-    let jsonLocation = await responseLocation.json();
-    locations = jsonLocation.data || [];
-
-    let responsegroup = await fetch("../config/fetch-groups.php");
-    let jsongroup = await responsegroup.json();
-    groups = jsongroup.data || [];
-}
-
-function createSelect(id, Values) {
-    let select = document.getElementById(id);
-
-    if (!Values || Values.length === 0) {
-        select.innerHTML = `<option value="">No data</option>`;
-        return;
-    }
-
-    select.innerHTML = "";
-
-    Values.forEach((value, index) => {
-        let option = document.createElement('option');
-        option.value = value.id;
-        option.textContent = value.name;
-
-        if (index === 0) option.selected = true;
-
-        select.appendChild(option);
-    });
-}
-
-async function filterMeters() {
-
-    filtermeters = Object.values(meters).filter(m => {
-        return (
-            Number(m.group_id) === Number(groupID) &&
-            Number(m.meter_type_id) === Number(typeMeterID)
-        );
+    document.addEventListener("DOMContentLoaded", async () => {
+        await fetchAll();
+        setInformation();
+        createSelect('select-meters', meters);
+        setMeterID();
+        await process();
     });
 
-    console.log("✅ filtermeters:", filtermeters);
-
-    if (!filtermeters || filtermeters.length === 0) {
-        console.warn("❌ no meters after filter");
-        filterDatas = [];
-        return;
+    async function process() {
+        meterWithData = await fetchDataOfMeter(MeterID, typeMeterID, groupID, 'datetime-from', null, 'datetime-to');
+        await filterDataInMeters();
+        loadingChart();
     }
 
-    // 🔥 debug meter.data
-    filtermeters.forEach(m => {
-        if (!m.data) {
-            console.error("❌ meter ไม่มี data:", m.id);
-        }
-    });
+    async function fetchAll() {
+        // let response = await fetch('../config/fetch-meters.php');
+        // let json = await response.json();
+        // meters = json.data || {};
 
-    createSelect('select-meter-show', filtermeters);
+        meters = await fetchMeters(typeMeterID, groupID);
 
-    await filterDataInMeters();
-}
 
-function filterDataInMeters() {
+        let responsetype = await fetch("../config/fetch-data_type.php");
+        let jsontype = await responsetype.json();
+        types = jsontype.data || [];
 
-    if (!Array.isArray(filtermeters) || filtermeters.length === 0) {
-        console.warn("❌ filtermeters empty");
-        filterDatas = [];
-        return;
+        let responseLocation = await fetch("../config/fetch-locations.php");
+        let jsonLocation = await responseLocation.json();
+        locations = jsonLocation.data || [];
+
+        let responsegroup = await fetch("../config/fetch-groups.php");
+        let jsongroup = await responsegroup.json();
+        groups = jsongroup.data || [];
     }
 
-    let from = document.getElementById('datetime-from');
-    let to = document.getElementById('datetime-to');
+    function setInformation() {
+        // ✅ auto set date
+        // const { minDate, maxDate } = getAutoDateRange(meters);
 
-    const fromDate = new Date(from.value + " 00:00:00");
-    const toDate = new Date(to.value + " 23:59:59");
+        // if (minDate && maxDate) {
+        //     document.getElementById('datetime-from').value = minDate.toISOString().split('T')[0];
+        //     document.getElementById('datetime-to').value = maxDate.toISOString().split('T')[0];
+        // }
+        // const locate = document.getElementById('location');
+        // locate.innerHTML = `<?=$lang['location']?> : ` + getNameLocation(groupID);
+        // const group = document.getElementById('group');
+        // group.innerHTML = `<?=$lang['group']?> : ` + getNameGroup(groupID);
+    }
 
-    filterDatas = filtermeters.map(meter => {
+    function createSelect(id, Values) {
+        let select = document.getElementById(id);
 
-        if (!meter || !meter.data || typeof meter.data !== 'object') {
-            console.warn("❌ meter.data พัง:", meter?.id);
-            return null;
+        if (!Values || Values.length === 0) {
+            select.innerHTML = `<option value="">No data</option>`;
+            return;
         }
 
-        const filteredValueColumn = {};
+        select.innerHTML = "";
 
-        Object.keys(meter.data).forEach(colName => {
+        Values.forEach((value, index) => {
+            let option = document.createElement('option');
+            option.value = value.id;
+            option.textContent = value.name;
 
-            const rows = meter.data[colName];
+            if (index === 0) option.selected = true;
 
-            if (!Array.isArray(rows)) {
-                filteredValueColumn[colName] = [];
-                return;
-            }
-
-            filteredValueColumn[colName] = rows.filter(row => {
-                if (!row?.create_date) return false;
-
-                let d = new Date(row.create_date);
-                return d >= fromDate && d <= toDate;
-            });
+            select.appendChild(option);
         });
+    }
 
-        return {
-            ...meter,
+    async function changeSelectMeter() {
+        setMeterID();
+        await process();
+    }
+
+    function filterDataInMeters() {
+
+        console.log(meterWithData);
+        meterWithData = meterWithData[MeterID];
+
+        if (meterWithData.data.length === 0) {
+            console.warn("❌ filtermeters empty");
+            filterMeterWithData = [];
+            return;
+        }
+
+        let from = document.getElementById('datetime-from');
+        let to = document.getElementById('datetime-to');
+
+        const fromDate = new Date(from.value + " 00:00:00");
+        const toDate = new Date(to.value + " 23:59:59");
+        const filteredValueColumn = {};
+        Object.keys(meterWithData.data).forEach(colName => {
+
+                const rows = meterWithData.data[colName];
+
+                if (!Array.isArray(rows)) {
+                    filteredValueColumn[colName] = [];
+                    return;
+                }
+
+                filteredValueColumn[colName] = rows.filter(row => {
+                    if (!row?.create_date) return false;
+
+                    let d = new Date(row.create_date);
+                    return d >= fromDate && d <= toDate;
+                });
+            });
+
+        filterMeterWithData = {
+            ...meterWithData,
             data: filteredValueColumn
         };
 
-    }).filter(Boolean);
+        
 
-    console.log("✅ filterDatas:", filterDatas);
-}
-
-async function loadingChart() {
-
-    if (!filterDatas || filterDatas.length === 0) {
-        console.warn("❌ no data for chart");
-        return;
+        console.log("✅ filterDatas:", filterMeterWithData);
     }
 
-    let Data = [];
+    async function loadingChart() {
 
-    let select = document.getElementById('select-meter-show');
-    let selectMeterId = parseInt(select.value) || filterDatas[0]?.id;
+        if (!filterMeterWithData || filterMeterWithData.length === 0) {
+            console.warn("❌ no data for chart");
+            return;
+        }
 
-    let meterData = filterDatas.find(f => parseInt(f.id) === parseInt(selectMeterId));
+        let Data = [];
 
-    // if (!meterData) {
-    //     meterData = filterDatas[0];
-    //     if (!meterData) return;
-    //     select.value = meterData.id;
-    // }
+        // if (!meterData) {
+        //     meterData = filterDatas[0];
+        //     if (!meterData) return;
+        //     select.value = meterData.id;
+        // }
 
-    Data.push(...prepareLinearData(meterData, 1));
+        Data.push(...prepareLinearData(filterMeterWithData, 1));
 
-    if (Data.length === 0) {
-        console.warn("❌ no chart data");
-        return;
+        if (Data.length === 0) {
+            console.warn("❌ no chart data");
+            return;
+        }
+
+        createLinearChart('linear-chart', Data);
+        ReloadTable();
     }
 
-    createLinearChart('linear-chart', Data);
-    ReloadTable();
-}
+    function ReloadTable() {
+        const table = document.getElementById('table-data');
+        const is_check = document.getElementById('is-table-all-value');
+        const count = parseInt(document.getElementById('select-table-show').value);
 
-function ReloadTable() {
-    const table = document.getElementById('table-data');
-    const is_check = document.getElementById('is-table-all-value');
-    const count = parseInt(document.getElementById('select-table-show').value);
+        const select = document.getElementById('select-meters');
+        const selectMeterId = parseInt(select.value);
 
-    const select = document.getElementById('select-meter-show');
-    const selectMeterId = parseInt(select.value);
+        console.log("📌 Selected Meter ID:", selectMeterId);
 
-    console.log("📌 Selected Meter ID:", selectMeterId);
+        // ✅ หา meter ที่เลือก
+        const meterData = filterMeterWithData;
 
-    // ✅ หา meter ที่เลือก
-    const meterData = filterDatas.find(f => parseInt(f.id) === selectMeterId);
+        if (!meterData) {
+            console.warn("❌ ไม่พบ meterData");
+            table.querySelector('tbody').innerHTML =
+                `<tr><td colspan="100%" style="text-align:center;padding:20px">No meter selected</td></tr>`;
+            return;
+        }
 
-    if (!meterData) {
-        console.warn("❌ ไม่พบ meterData");
-        table.querySelector('tbody').innerHTML =
-            `<tr><td colspan="100%" style="text-align:center;padding:20px">No meter selected</td></tr>`;
-        return;
+        if (!meterData.data) {
+            console.warn("❌ meterData ไม่มี data");
+            return;
+        }
+
+        // ✅ นับจำนวนแถวจาก column ที่ยาวสุด
+        const Datameter = Object.values(meterData.data);
+        const total = Math.max(...Datameter.map(col => col?.length || 0));
+
+        const showCount = is_check.checked ? total : count;
+
+        TableData(meterData, showCount);
     }
 
-    if (!meterData.data) {
-        console.warn("❌ meterData ไม่มี data");
-        return;
-    }
+    function TableData(meterData, countShow) {
+        let table = document.getElementById('table-data');
+        table.innerHTML = `<thead></thead><tbody></tbody>`;
 
-    // ✅ นับจำนวนแถวจาก column ที่ยาวสุด
-    const Datameter = Object.values(meterData.data);
-    const total = Math.max(...Datameter.map(col => col?.length || 0));
+        if (!meterData || !meterData.data) return;
 
-    const showCount = is_check.checked ? total : count;
+        let trh = document.createElement('tr');
+        trh.innerHTML = `<th>No.</th><th>Create Date</th>`;
 
-    TableData(meterData, showCount);
-}
+        types.forEach(type => {
+            let th = document.createElement('th');
+            th.className = "text-nowrap";
+            th.innerText = type.name;
+            trh.appendChild(th);
+        });
 
-function TableData(meterData, countShow) {
-    let table = document.getElementById('table-data');
-    table.innerHTML = `<thead></thead><tbody></tbody>`;
+        table.querySelector('thead').appendChild(trh);
 
-    if (!meterData || !meterData.data) return;
+        let Datameter = Object.values(meterData.data || {});
+        if (!Datameter.length) return;
 
-    let trh = document.createElement('tr');
-    trh.innerHTML = `<th>No.</th><th>Create Date</th>`;
+        // ✅ หา column ที่ยาวที่สุด
+        let total = Math.max(...Datameter.map(col => col?.length || 0));
 
-    types.forEach(type => {
-        let th = document.createElement('th');
-        th.className = "text-nowrap";
-        th.innerText = type.name;
-        trh.appendChild(th);
-    });
-
-    table.querySelector('thead').appendChild(trh);
-
-    let Datameter = Object.values(meterData.data || {});
-if (!Datameter.length) return;
-
-// ✅ หา column ที่ยาวที่สุด
-let total = Math.max(...Datameter.map(col => col?.length || 0));
-
-if (total === 0) {
-    table.querySelector('tbody').innerHTML =
-        `<tr><td colspan="100%" style="text-align:center;padding:20px">
+        if (total === 0) {
+            table.querySelector('tbody').innerHTML =
+                `<tr><td colspan="100%" style="text-align:center;padding:20px">
             No data
          </td></tr>`;
-    return;
-}
+            return;
+        }
 
-    for (let i = total - 1; i >= Math.max(0, total - countShow); i--) {
-        let trd = document.createElement('tr');
+        for (let i = total - 1; i >= Math.max(0, total - countShow); i--) {
+            let trd = document.createElement('tr');
 
-        trd.innerHTML = `
+            trd.innerHTML = `
             <td>${i + 1}</td>
             <td>${Datameter[0][i]?.create_date || '-'}</td>
         `;
 
-        for (let j = 0; j < types.length; j++) {
-            let td = document.createElement('td');
-            let val = Datameter[j]?.[i]?.value;
-            td.textContent = (val === undefined || isNaN(val)) ? '-' : val;
-            trd.appendChild(td);
+            for (let j = 0; j < types.length; j++) {
+                let td = document.createElement('td');
+                let val = Datameter[j]?.[i]?.value;
+                td.textContent = (val === undefined || isNaN(val)) ? '-' : val;
+                trd.appendChild(td);
+            }
+
+            table.querySelector('tbody').appendChild(trd);
+        }
+    }
+
+    function prepareLinearData(meterData, columnIndex) {
+        const chartData = [];
+
+        if (!meterData || !meterData.data) return chartData;
+
+        const isDark = document.documentElement.classList.contains('dark');
+
+        const rawData = meterData.data?.[columnIndex];
+
+        if (rawData && Array.isArray(rawData)) {
+            const dataPoints = rawData.map(row => ({
+                x: new Date(row.create_date),
+                y: parseFloat(row.value) || 0
+            }));
+
+            chartData.push({
+                type: "splineArea",
+                axisYType: "secondary",
+                name: meterData.name,
+                showInLegend: true,
+                markerSize: 0,
+
+                // 🎯 สีที่คุณต้องการ
+                color: isDark ? "#283820" : "#8BAE66",
+
+                // ความทึบ (ทำให้สวยขึ้น)
+                fillOpacity: isDark ? 0.4 : 0.7,
+
+                dataPoints: dataPoints
+            });
         }
 
-        table.querySelector('tbody').appendChild(trd);
+        return chartData;
     }
-}
 
-function prepareLinearData(meterData, columnIndex) {
-    const chartData = [];
+    function createLinearChart(idContainer, dataPointsLinear) {
 
-    if (!meterData || !meterData.data) return chartData;
+        const isDark = document.documentElement.classList.contains('dark');
 
-    const isDark = document.documentElement.classList.contains('dark');
+        const chart = new CanvasJS.Chart(idContainer, {
+            theme: isDark ? "dark2" : "light2",
 
-    const rawData = meterData.data?.[columnIndex];
+            backgroundColor: isDark ? "#1B1C1D" : "#ffffff",
 
-    if (rawData && Array.isArray(rawData)) {
-        const dataPoints = rawData.map(row => ({
-            x: new Date(row.create_date),
-            y: parseFloat(row.value) || 0
-        }));
+            axisX: {
+                valueFormatString: dataPointsLinear[0]?.dataPoints.length > 2880
+                    ? "DD MMM YYYY"
+                    : "HH:mm:ss",
+                labelFontColor: isDark ? "#ffffff" : "#000000"
+            },
 
-        chartData.push({
-            type: "splineArea",
-            axisYType: "secondary",
-            name: meterData.name,
-            showInLegend: true,
-            markerSize: 0,
+            axisY2: {
+                title: "",
+                labelFontColor: isDark ? "#ffffff" : "#000000"
+            },
 
-            // 🎯 สีที่คุณต้องการ
-            color: isDark ? "#283820" : "#8BAE66",
+            legend: {
+                fontColor: isDark ? "#ffffff" : "#000000"
+            },
 
-            // ความทึบ (ทำให้สวยขึ้น)
-            fillOpacity: isDark ? 0.4 : 0.7,
+            toolTip: {
+                shared: true
+            },
 
-            dataPoints: dataPoints
+            data: dataPointsLinear
         });
+
+        chart.render();
+
+        // 🔥 เก็บไว้ใช้ตอน toggle
+        window.currentChart = chart;
     }
 
-    return chartData;
-}
+    // ✅ AUTO DATE
+    function getAutoDateRange(meters) {
+        let minDate = null;
+        let maxDate = null;
 
-function createLinearChart(idContainer, dataPointsLinear) {
+        Object.values(meters).forEach(m => {
+            if (!m.data) return;
 
-    const isDark = document.documentElement.classList.contains('dark');
+            Object.values(m.data).forEach(arr => {
+                if (!Array.isArray(arr)) return;
 
-    const chart = new CanvasJS.Chart(idContainer, {
-        theme: isDark ? "dark2" : "light2",
+                arr.forEach(row => {
+                    if (!row?.create_date) return;
 
-        backgroundColor: isDark ? "#1B1C1D" : "#ffffff",
+                    let d = new Date(row.create_date);
 
-        axisX: {
-            valueFormatString: dataPointsLinear[0]?.dataPoints.length > 2880 
-                ? "DD MMM YYYY" 
-                : "HH:mm:ss",
-            labelFontColor: isDark ? "#ffffff" : "#000000"
-        },
-
-        axisY2: {
-            title: "",
-            labelFontColor: isDark ? "#ffffff" : "#000000"
-        },
-
-        legend: {
-            fontColor: isDark ? "#ffffff" : "#000000"
-        },
-
-        toolTip: {
-            shared: true
-        },
-
-        data: dataPointsLinear
-    });
-
-    chart.render();
-
-    // 🔥 เก็บไว้ใช้ตอน toggle
-    window.currentChart = chart;
-}
-
-// ✅ AUTO DATE
-function getAutoDateRange(meters) {
-    let minDate = null;
-    let maxDate = null;
-
-    Object.values(meters).forEach(m => {
-        if (!m.data) return;
-
-        Object.values(m.data).forEach(arr => {
-            if (!Array.isArray(arr)) return;
-
-            arr.forEach(row => {
-                if (!row?.create_date) return;
-
-                let d = new Date(row.create_date);
-
-                if (!minDate || d < minDate) minDate = d;
-                if (!maxDate || d > maxDate) maxDate = d;
+                    if (!minDate || d < minDate) minDate = d;
+                    if (!maxDate || d > maxDate) maxDate = d;
+                });
             });
         });
-    });
 
-    return { minDate, maxDate };
-}
-function toggleDarkMode() {
-    const html = document.documentElement;
-    const isDark = html.classList.toggle('dark');
-
-    document.getElementById('icon-moon').style.display = isDark ? 'none' : 'inline';
-    document.getElementById('icon-sun').style.display = isDark ? 'inline' : 'none';
-
-    localStorage.setItem('theme', isDark ? 'dark' : 'light');
-
-    // 🔥 อัปเดตกราฟทันที
-    if (window.currentChart) {
-        window.currentChart.options.theme = isDark ? "dark2" : "light2";
-        window.currentChart.options.backgroundColor = isDark ? "#1B1C1D" : "#ffffff";
-
-        window.currentChart.options.axisX.labelFontColor = isDark ? "#fff" : "#000";
-        window.currentChart.options.axisY2.labelFontColor = isDark ? "#fff" : "#000";
-        window.currentChart.options.legend.fontColor = isDark ? "#fff" : "#000";
-
-        window.currentChart.render();
+        return { minDate, maxDate };
     }
-}
+
+    function toggleDarkMode() {
+        const html = document.documentElement;
+        const isDark = html.classList.toggle('dark');
+
+        document.getElementById('icon-moon').style.display = isDark ? 'none' : 'inline';
+        document.getElementById('icon-sun').style.display = isDark ? 'inline' : 'none';
+
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+
+        // 🔥 อัปเดตกราฟทันที
+        if (window.currentChart) {
+            window.currentChart.options.theme = isDark ? "dark2" : "light2";
+            window.currentChart.options.backgroundColor = isDark ? "#1B1C1D" : "#ffffff";
+
+            window.currentChart.options.axisX.labelFontColor = isDark ? "#fff" : "#000";
+            window.currentChart.options.axisY2.labelFontColor = isDark ? "#fff" : "#000";
+            window.currentChart.options.legend.fontColor = isDark ? "#fff" : "#000";
+
+            window.currentChart.render();
+        }
+    }
 </script>
