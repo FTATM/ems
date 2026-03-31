@@ -226,13 +226,18 @@
         }
     }
 
-    async function fetchDataOfMeter(mid, tid, gid, dateID = null, timeID = null) {
-        const lastdate = filterDateTime(dateID, timeID);
+    async function fetchDataOfMeter(mid, tid, gid, startDateID = null, timeID = null, endDateID = null) {
+        const startdate = filterDateTime(startDateID, timeID);
+        const lastdate = filterDateTime(endDateID, null);
+
+        console.log(startdate);
+        console.log(lastdate);
 
         let formfilter = new FormData();
         formfilter.append("id", mid);
         formfilter.append("tid", tid);
         formfilter.append("gid", gid);
+        formfilter.append("startdate", startdate);
         formfilter.append("lastdate", lastdate);
 
         try {

@@ -11,7 +11,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id = $_POST['id'] ?? 0;
     $tid = $_POST['tid'] ?? 0;
     $gid = $_POST['gid'] ?? 0;
-    $lastdate = $_POST['lastdate'];
+    $startdate = $_POST['startdate'];
+    $lastdate = $_POST['lastdate'] ?? "NOW()";
 
     if ($tid === 0 && $gid === 0) {
         echo json_encode(['success' => false, 'data' => [], 'message' => 'Failed variable not found.']);
@@ -50,11 +51,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // }
 
         $sql_data = "SELECT meter_id, create_date, type_value_id, value FROM meter_data 
-            WHERE meter_id = ? AND create_date BETWEEN ? AND NOW() 
+            WHERE meter_id = ? AND create_date BETWEEN ? AND ? 
             ORDER BY create_date ASC ";
 
         $stmt = $conn->prepare($sql_data);
-        $stmt->bind_param('is', $meter_id, $lastdate);
+        $stmt->bind_param('iss', $meter_id, $startdate, $lastdate);
         $stmt->execute();
         $resultdata = $stmt->get_result();
 
