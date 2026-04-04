@@ -14,11 +14,18 @@ if ($data) {
     $sql = "SELECT * FROM data_type";
     $result = $conn->query($sql);
 
-    $column = ['is_active'];
+    $column = [];
     if ($result->num_rows > 0) {
         while ($row = $result->fetch_assoc()) {
             $column[] = $row;
         }
+        $column[] = [
+            "id" => "0",
+            "name" => "is_active",
+            "maxvaluecolumn" => "2",
+            "create_date" => "2000-01-01",
+            "is_deleted" => "0"
+        ];
     }
 
     $success_count = 0;

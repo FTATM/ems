@@ -730,7 +730,7 @@
   function setValueInHTML(id, value) {
     let element = document.getElementById(id);
     if (element) {
-      element.value = value.toFixed(2);
+      element.value = value == null ? "-" : value.toFixed(2);
     } else {
       ['-f', '-h', '-n', '-all'].forEach(sf => {
         let el = document.getElementById(id + sf);
@@ -785,7 +785,7 @@
 
   function createPDF(ismonth) {
     let id = document.getElementById('select-meters').value;
-    let date = document.getElementById('select-filter-value').value;
+    let date = document.getElementById('value-date-filter').value;
     let kwh_diff = document.getElementById('kwhr-diff-all')?.value;
     let kwh_fv = document.getElementById('kwhr-fv-all')?.value;
     let kwh_lv = document.getElementById('kwhr-lv-all')?.value;
@@ -821,6 +821,8 @@
     let formdata = new FormData();
     formdata.append('id', id);
     formdata.append('user', username);
+    formdata.append('qrcode', qrencode);
+    formdata.append('qrtext', qrtext);
     formdata.append('date', date);
     formdata.append('kwh', kwh_diff);
     formdata.append('fv', kwh_fv);
