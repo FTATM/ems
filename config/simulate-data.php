@@ -2,7 +2,8 @@
 date_default_timezone_set('Asia/Bangkok');
 $api_url = "http://localhost/ems/config/meter-data.php"; // 🔥 เปลี่ยนเป็น URL ของคุณ
 
-function randomFloat($min, $max, $decimals = 2) {
+function randomFloat($min, $max, $decimals = 2)
+{
     return round($min + mt_rand() / mt_getrandmax() * ($max - $min), $decimals);
 }
 

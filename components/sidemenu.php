@@ -62,7 +62,7 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
         <li>
             <a href="../pages/phasor.php" class="sm-link <?= $current_page === 'phasor' ? 'active' : '' ?>">
                 <span class="sm-icon"><i class="bi bi-activity"></i></span>
-                <?= $lang['gvoltage'] ?>
+                <?= $lang['gvoltage'] ?> x
             </a>
         </li>
         <li>
@@ -74,7 +74,7 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
         <li>
             <a href="../pages/allmeter.php" class="sm-link <?= $current_page === 'allmeter' ? 'active' : '' ?>">
                 <span class="sm-icon"><i class="bi bi-grid-3x3-gap"></i></span>
-                <?= $lang['allmeter'] ?>
+                <?= $lang['allmeter'] ?> x
             </a>
         </li>
 
@@ -86,27 +86,27 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
         <li>
             <a href="../pages/report-meter.php" class="sm-link <?= $current_page === 'report-meter' ? 'active' : '' ?>">
                 <span class="sm-icon"><i class="bi bi-file-earmark-bar-graph"></i></span>
-                <?= $lang['reporttotal'] ?>
+                <?= $lang['reporttotal'] ?> x
             </a>
         </li>
         <li>
             <a href="../pages/report-meter-detail.php"
                 class="sm-link <?= $current_page === 'report-meter-detail' ? 'active' : '' ?>">
                 <span class="sm-icon"><i class="bi bi-file-earmark-text"></i></span>
-                <?= $lang['reportdetail'] ?>
+                <?= $lang['reportdetail'] ?> x
             </a>
         </li>
         <li>
             <a href="../pages/report-electric.php"
                 class="sm-link <?= $current_page === 'report-electric' ? 'active' : '' ?>">
                 <span class="sm-icon"><i class="bi bi-lightning"></i></span>
-                <?= $lang['reportelec'] ?>
+                <?= $lang['reportelec'] ?> x
             </a>
         </li>
         <li>
             <a href="../pages/map.php" class="sm-link <?= $current_page === 'map' ? 'active' : '' ?>">
                 <span class="sm-icon"><i class="bi bi-map"></i></span>
-                <?= $lang['overview'] ?>
+                <?= $lang['overview'] ?> x
             </a>
         </li>
 
