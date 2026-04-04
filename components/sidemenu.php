@@ -86,14 +86,14 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
         <li>
             <a href="../pages/report-meter.php" class="sm-link <?= $current_page === 'report-meter' ? 'active' : '' ?>">
                 <span class="sm-icon"><i class="bi bi-file-earmark-bar-graph"></i></span>
-                <?= $lang['reporttotal'] ?> x
+                <?= $lang['reporttotal'] ?>
             </a>
         </li>
         <li>
             <a href="../pages/report-meter-detail.php"
                 class="sm-link <?= $current_page === 'report-meter-detail' ? 'active' : '' ?>">
                 <span class="sm-icon"><i class="bi bi-file-earmark-text"></i></span>
-                <?= $lang['reportdetail'] ?> x
+                <?= $lang['reportdetail'] ?>
             </a>
         </li>
         <li>
