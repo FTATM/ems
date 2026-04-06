@@ -11,7 +11,7 @@ $address    = $_POST['address']    ?? "";
 $quality    = $_POST['quality']    ?? "";
 
 try {
-    $response = shell_exec("python ../config/pymodbusrs485.py $meter_id $serialport $buadrate $databits $parity $stopbits $slaveid $address $quality 2>&1");
+    $response = shell_exec("python ../connector/pymodbusrs485.py $meter_id $serialport $buadrate $databits $parity $stopbits $slaveid $address $quality 2>&1");
     $decoded = json_decode($response, true);
 
     if (json_last_error() === JSON_ERROR_NONE && isset($decoded['success'])) {
