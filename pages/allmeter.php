@@ -47,7 +47,14 @@ checkSession();
                 <div class="allmeter-card">
                     <div class="table-responsive">
                         <table id="table-meter" class="allmeter-table w-100">
-                            <thead></thead>
+                            <thead>
+                                <tr>
+                                    <th class="text-nowrap" style="min-width:5vw;"><?= $lang['nmeters'] ?></th>
+                                    <th class="text-nowrap text-center"><?= $lang['ip'] ?></th>
+                                    <th class="text-nowrap text-center"><?= $lang['port'] ?></th>
+                                    <th class="text-nowrap text-center"><?= $lang['protocol'] ?></th>
+                                </tr>
+                            </thead>
                             <tbody></tbody>
                         </table>
                     </div>
@@ -66,44 +73,11 @@ checkSession();
     </div>
 
     <script id="theme-data" type="application/json">
-    <?= json_encode($_SESSION['theme'], JSON_UNESCAPED_UNICODE); ?>
+        <?= json_encode($_SESSION['theme'], JSON_UNESCAPED_UNICODE); ?>
     </script>
 
     <?php include "../scripts/scriptjs.html"; ?>
     <?php include "../scripts/scriptjs-allmeter.html"; ?>
-
-    <script>
-    (function() {
-        const STORAGE_KEY = 'ems-theme';
-        const html = document.documentElement;
-        const icon = document.getElementById('theme-icon');
-
-        function applyTheme(dark) {
-            if (dark) {
-                html.classList.add('dark');
-                if (icon) icon.textContent = 'light_mode';
-            } else {
-                html.classList.remove('dark');
-                if (icon) icon.textContent = 'dark_mode';
-            }
-        }
-
-        /* โหลด preference ที่บันทึกไว้ หรือ fallback ตาม OS */
-        const saved = localStorage.getItem(STORAGE_KEY);
-        const prefersDark = saved !== null ?
-            saved === 'dark' :
-            window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-        applyTheme(prefersDark);
-
-        window.toggleTheme = function() {
-            const isDark = html.classList.toggle('dark');
-            localStorage.setItem(STORAGE_KEY, isDark ? 'dark' : 'light');
-            if (icon) icon.textContent = isDark ? 'light_mode' : 'dark_mode';
-        };
-    })();
-    </script>
-
 </body>
 
 </html>
