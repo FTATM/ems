@@ -13,10 +13,10 @@
     const groupID = "<?=$_SESSION['gid'];?>";
 
     document.addEventListener("DOMContentLoaded", async () => {
-        showLoading();
+        await fetchAll();
+        await createTable();
         await process();
         await setRefreshTime();
-        hideLoading();
     });
 
     async function fetchAll() {
@@ -28,76 +28,28 @@
         let json_group = await res_group.json();
         groups = json_group.data;
 
-        meters = await fetchDataInMeters();
-
         let responsetype = await fetch("../config/fetch-data_type.php");
         let jsontype = await responsetype.json();
         types = jsontype.data;
+
+        meters = await fetchRealtimeOfMeters(typeMeterID, groupID);
+        console.log(meters);
+
     }
 
-    async function fetchDataInMeters() {
-        let formfilter = new FormData();
-        formfilter.append("tid", typeMeterID);
-        formfilter.append("gid", groupID);
-
-        try {
-            const res = await fetch("../config/fetch-meters-filter.php", {
-                method: "POST",
-                body: formfilter
-            });
-            const result = await res.json();
-            return result.data;
-        } catch (e) {
-            console.error('error unknown file fetch-meters-filter.php : ', e.message);
-            alertMessages('error', 'พบปัญหา', 'เกิดข้อผิดพลาดในการทำงานของสคริปต์ fetch-meters-filter กรุณาคัดลอกข้อความนี้และส่งต่อให้ผู้ดูแลระบบ', 4000, true);
-            return [];
-        }
-    }
 
     async function process() {
-        await fetchAll();
-        await createTable();
-        await filterDataInMeters();
-    }
-
-    async function filterDataInMeters() {
-        const time = document.getElementById('select-filter-value');
-        let now = new Date();
-        let selectedDateTime = new Date(now.getTime() - parseInt(10, 10) * 60000);
-        filteredDataInMeters = Object.values(meters).map(fm => {
-            let Datafiltered = {};
-            Object.entries(fm.data).map(([key, rows]) => {
-                Datafiltered[key] = Object.values(rows).filter(datatype => {
-                    let date = new Date(datatype.create_date);
-                    return date >= selectedDateTime;
-                });
-            });
-            return {
-                ...fm,
-                data: Datafiltered,
-            }
-        });
-
+        // await filterDataInMeters();
         await updateData(currentPage);
     }
 
+
     function createTable() {
         const table = document.getElementById("table-meter");
-        table.querySelector('thead').innerHTML = "";
-
-        const headerRow = document.createElement("tr");
-        headerRow.innerHTML = `
-        <th class="text-nowrap" style="min-width:180px;"><?=$lang['nmeters']?></th>
-        <th class="text-nowrap"><?=$lang['location']?></th>
-        <th class="text-nowrap"><?=$lang['group']?>/<?=$lang['project']?></th>
-        <th class="text-nowrap text-center"><?=$lang['ip']?></th>
-        <th class="text-nowrap text-center"><?=$lang['port']?></th>
-        <th class="text-nowrap text-center"><?=$lang['protocol']?></th>
-    `;
+        const headerRow = table.querySelector('thead').querySelector('tr');
 
         types.forEach(col => {
             const th = document.createElement("th");
-            th.style.backgroundColor = '#001B5E';
             th.style.whiteSpace = "nowrap";
             th.className = "text-center";
             th.style.color = 'white';
@@ -105,7 +57,6 @@
             headerRow.appendChild(th);
         });
 
-        table.querySelector('thead').appendChild(headerRow);
         applyDarkModeColors();
     }
 
@@ -116,34 +67,31 @@
 
         const start = (page - 1) * rowsPerPage;
         const end = start + rowsPerPage;
-        const pageData = filteredDataInMeters.slice(start, end);
+        const pageData = Object.values(meters).slice(start, end);
 
         pageData.forEach(meter => {
             const tr = document.createElement("tr");
             tr.innerHTML = `
             <td>${meter.name}</td>
-            <td class="text-center text-nowrap">${getNameLocation(meter.group_id)}</td>
-            <td class="text-center text-nowrap">${getNameGroup(meter.group_id)}</td>
             <td class="text-center text-nowrap">${meter.ip_address}</td>
             <td class="text-center">${meter.port}</td>
             <td class="text-center">${meter.protocol}</td>
             `;
 
-            Object.values(meter.data).forEach(column => {
+            Object.values(types).forEach(t => {
+                let column = {};
+                if (meter.data.length > 0) {
+                    column = meter.data[Number(t.id) - 1];
+                }
                 const td = document.createElement("td");
                 td.className = "text-center";
-                if (Array.isArray(column) && column.length > 0) {
-                    const last = column[column.length - 1];
-                    td.textContent = last.value;
-                } else {
-                    td.textContent = "-";
-                }
+                td.innerHTML = column.value ? column.value : "-";
                 tr.appendChild(td);
             });
             table.querySelector('tbody').appendChild(tr);
         });
 
-        renderPagination(filteredDataInMeters.length, page);
+        renderPagination(Object.values(meters).length, page);
 
         // ✅ apply สีหลัง render เสร็จ
         applyDarkModeColors();
@@ -205,19 +153,6 @@
         paginationDiv.appendChild(nextBtn);
     }
 
-    function getNameLocation(gid) {
-        return locations.find(l => {
-            return groups.filter(g => {
-                return parseInt(g.id) === gid;
-            })
-        }).name;
-    }
-
-    function getNameGroup(id) {
-        return groups.find(g => {
-            return parseInt(g.id) === id;
-        }).name;
-    }
 
     function setRefreshTime() {
         const inputRefresh = document.getElementById('input-refresh');

@@ -74,7 +74,7 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
         <li>
             <a href="../pages/allmeter.php" class="sm-link <?= $current_page === 'allmeter' ? 'active' : '' ?>">
                 <span class="sm-icon"><i class="bi bi-grid-3x3-gap"></i></span>
-                <?= $lang['allmeter'] ?> x
+                <?= $lang['allmeter'] ?>
             </a>
         </li>
 
