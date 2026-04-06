@@ -4,5 +4,5 @@ echo ==============================
 echo          Fetch Meter
 echo ==============================
 echo result
-python .\config\pymodbustcpAllmeters.py
+python .\connector\pymodbustcpAllmeters.py
 pause

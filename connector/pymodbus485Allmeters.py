@@ -5,6 +5,7 @@ import json
 from datetime import datetime
 import time
 import threading
+from config import DB_CONFIG  # ดึง Config มาใช้งาน
 from pymodbus.client.sync import ModbusTcpClient
 from pymodbus.exceptions import ConnectionException
 
@@ -129,16 +130,17 @@ def process_meter(meter):
 # =========================
 # MAIN LOOP
 # =========================
+# ฟังก์ชันสำหรับสร้างการเชื่อมต่อใหม่
+def get_db_connection():
+    return mysql.connector.connect(**DB_CONFIG)
+
+# เริ่มต้นเชื่อมต่อครั้งแรก
+conn = get_db_connection()
+
+
 while True:
 
     try:
-        conn = mysql.connector.connect(
-            host="localhost",
-            user="root",
-            password="",
-            database="ams"
-        )
-
         cursor = conn.cursor(dictionary=True)
         cursor.execute("SELECT * FROM meter")
         meters = cursor.fetchall()

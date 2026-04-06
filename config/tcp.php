@@ -7,7 +7,7 @@ $qua = $_POST['quality'] ?? 2;
 $sid = $_POST['slaveid'] ?? 1;
 
 try {
-    $response = shell_exec("python ../config/pymodbustcp.py $meter_id $ip $port $qua $sid 2>&1");
+    $response = shell_exec("python ../connector/pymodbustcp.py $meter_id $ip $port $qua $sid 2>&1");
     $decoded = json_decode($response, true);
 
     if (json_last_error() === JSON_ERROR_NONE && isset($decoded['success'])) {
