@@ -11,3 +11,5 @@ DB_CONFIG = {
     "password": os.getenv("DB_PASS"),
 }
 LINE_TOKEN = os.getenv("LINE_CHANNEL_TOKEN")
+
+CHAT_LINE_TOKEN = os.getenv("LINE_ROOM_TOKEN")

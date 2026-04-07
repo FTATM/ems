@@ -7,17 +7,12 @@ if (!checktoken()) {
     header("../pages/notallow.php");
 }
 
-// $servername = $db_config['host'] ?? '127.0.0.1';
-// $database = $db_config['name'] ?? "database";
-// $port = $db_config['port'] ?? 3306;
-// $username = $db_config['user'] ?? "root";
-// $password = $db_config['pass'] ?? "";
+$servername = $db_config['host'] ?? '127.0.0.1';
+$database = $db_config['name'] ?? "database";
+$port = $db_config['port'] ?? 3306;
+$username = $db_config['user'] ?? "root";
+$password = $db_config['pass'] ?? "";
 
-$servername = "localhost";
-$database = "ams";
-$port = 3306;
-$username = "mysql";
-$password = "FTATM54164000";
 
 $conn = new mysqli($servername, $username, $password, $database, $port);
 
