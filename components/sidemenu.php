@@ -62,7 +62,7 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
         <li>
             <a href="../pages/phasor.php" class="sm-link <?= $current_page === 'phasor' ? 'active' : '' ?>">
                 <span class="sm-icon"><i class="bi bi-activity"></i></span>
-                <?= $lang['gvoltage'] ?> x
+                <?= $lang['gvoltage'] ?>
             </a>
         </li>
         <li>

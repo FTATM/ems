@@ -5,13 +5,18 @@ import json
 from datetime import datetime
 import time
 import threading
-from config import DB_CONFIG  # ดึง Config มาใช้งาน
+from config import DB_CONFIG, LINE_TOKEN, CHAT_LINE_TOKEN  # ดึง Config มาใช้งาน
+from function import LINE_OA
 from pymodbus.client.sync import ModbusTcpClient
 from pymodbus.exceptions import ConnectionException
 
 # =========================
 # CONFIG
 # =========================
+counter_lock = threading.Lock()
+TIME_AT_CHECK_REPORT = ["6", "18"]
+count_failed_connect = 0
+
 MAX_THREADS = 15  # 🔥 ปรับได้ (แนะนำ 5–10)
 DELAY_BETWEEN_READ = 0.05
 
@@ -52,6 +57,7 @@ def safe_read(client, addr, quantity, slave):
 # Thread worker
 # =========================
 def process_meter(meter):
+    global count_failed_connect
     with semaphore:  # 🔥 จำกัดจำนวน thread
 
         try:
@@ -59,6 +65,8 @@ def process_meter(meter):
 
             if not client.connect():
                 print(f"❌ ID {meter['id']} connect fail")
+                with counter_lock:
+                    count_failed_connect += 1
                 return
 
             data = {}
@@ -132,13 +140,16 @@ conn = get_db_connection()
 try:
     while True:
         try:
+            # 1. รีเซ็ตค่าการนับในแต่ละรอบ
+            count_failed_connect = 0
+
             # ตรวจสอบว่า Connection ยังใช้งานได้ไหม ถ้าไม่ให้ต่อใหม่
             if not conn.is_connected():
                 print("Database disconnected. Reconnecting...")
                 conn = get_db_connection()
 
             cursor = conn.cursor(dictionary=True)
-            cursor.execute("SELECT * FROM meter")
+            cursor.execute("SELECT * FROM meter WHERE is_active = 1 AND is_deleted = 0")
             meters = cursor.fetchall()
 
             threads = []
@@ -152,7 +163,28 @@ try:
             for t in threads:
                 t.join()
 
-            cursor.close()
+
+            # 2. ดึงเวลาปัจจุบันมาเช็ค
+            now = datetime.now()
+            current_hour = now.hour
+            current_minute = now.minute
+
+            # ==========================================
+            # 3. เงื่อนไขการส่ง Line (Lock เฉพาะช่วงเวลา)
+            # ==========================================
+            is_time_to_send = current_hour in [6, 18] and current_minute in [0, 4]
+            if is_time_to_send:
+                if count_failed_connect > 0:
+                    message_line = f"⚠️ [Daily Report] พบมิเตอร์ที่ไม่สามารถ CONNECT ได้จำนวน : {count_failed_connect} ตัว"
+                else:
+                    message_line = f"✅ [Daily Report] มิเตอร์ทุกตัวเชื่อมต่อปกติ"
+                
+                # ส่ง Line
+                LINE_OA(LINE_TOKEN, CHAT_LINE_TOKEN, message_line)
+                print(f"📢 Line Sent at {now.strftime('%H:%M')}")
+            else:
+                print(f"🕒 Current time {now.strftime('%H:%M')} (Not in report window)")
+
             print("Cycle completed. Sleeping for 60s...")
 
         except Exception as e:

@@ -72,7 +72,7 @@ checkSession();
                         <div class="phasor-refresh-box">
                             <span class="material-icons-outlined phasor-refresh-spin">sync</span>
                             <span class="phasor-refresh-label"><?= $lang['refreshevery'] ?></span>
-                            <input type="number" id="input-refresh" class="phasor-refresh-input" value="3" min="1"
+                            <input type="number" id="input-refresh" class="phasor-refresh-input" value="30" min="1"
                                 max="60" onchange="setRefreshTime()">
                             <span class="phasor-refresh-label"><?= $lang['seconds'] ?></span>
                         </div>
@@ -97,6 +97,7 @@ checkSession();
                             </div>
                             <div class="big-gauge-wrap">
                                 <canvas id="big-gauge-canvas" width="440" height="440"></canvas>
+                                <canvas id="current-gauge-canvas" width="440" height="440"></canvas>
                             </div>
                             <div class="avg-display">
                                 <span class="avg-value" id="avg-voltage-display">0.0</span>
