@@ -1,48 +1,204 @@
 <script>
-  let meters = [];
-  let types = [];
-  let locations = [];
-  document.addEventListener("DOMContentLoaded", async () => {
-    await process();
-  });
+/* ================================================================
+   scriptjs-locations.html — Location / Group selector (2-step wizard)
+   โหลด locations + groups ครั้งเดียว, สลับขั้นด้วย JS ไม่โหลดหน้าใหม่
+   ================================================================ */
 
-  async function process() {
-    // showLoading();
+let locations = [];
+let groups = [];
+let currentStep = 1;
+let selectedLid = (SESSION_LID && Number(SESSION_LID) > 0) ? SESSION_LID : null;
+
+document.addEventListener("DOMContentLoaded", init);
+
+async function init() {
+    bindPopState();
     await fetchAll();
-    await generateTable();
-    // hideLoading();
-  }
+    renderLocations();
 
-  async function fetchAll() {
-    let responselocation = await fetch("../config/fetch-locations.php");
-    let json_l = await responselocation.json();
-    locations = json_l.data;
-  }
-
-  function generateTable() {
-    let table = document.getElementById("table-location");
-    Object.values(locations).forEach((row) => {
-      let trd = document.createElement("tr");
-      trd.innerHTML += `
-            <td class="clickable py-3" onclick="goToGroups(${row.id})">${row.name}</td>
-            `;
-      table.querySelector("tbody").appendChild(trd);
-    });
-
-    // <td class="py-2">${row.id}</td>
-    // <td class="clickable py-3" onmouseover="loadHoverImage('${row.name}')" onclick="goToGroups(${row.id})">${row.name}</td>
-  }
-
-  function loadHoverImage(name) {
-    console.log("Hover on : " + name);
-    let img = document.getElementById("img-showLocation");
-    img.setAttribute("src", "../assets/images/provinces/" + name + ".png");
-  }
-
-  async function goToGroups(id) {
-    let success = await setSession("lid", id);
-    if (success) {
-      window.location.href = "groups.php";
+    if (INITIAL_STEP === 2 && selectedLid) {
+        openGroupStep(selectedLid);
+        goToStep(2, true);
+    } else {
+        goToStep(1, true);
     }
-  }
+}
+
+/* ── โหลดข้อมูลครั้งเดียว ── */
+async function fetchAll() {
+    try {
+        const [rl, rg] = await Promise.all([
+            fetch("../config/fetch-locations.php"),
+            fetch("../config/fetch-groups.php")
+        ]);
+        const jl = await rl.json();
+        const jg = await rg.json();
+        locations = Object.values(jl.data || []);
+        groups = Object.values(jg.data || []);
+    } catch (e) {
+        console.error("โหลดข้อมูลสถานที่/กลุ่มไม่สำเร็จ:", e);
+        alertMessages('error', 'พบปัญหา',
+            (LANG && LANG.network_error) || 'ไม่สามารถโหลดข้อมูลได้ กรุณาลองใหม่อีกครั้ง', 4000, true);
+    }
+}
+
+/* ── helpers (ไม่ทับ getNameLocation/getNameGroup ใน scriptjs.html) ── */
+function locationNameById(id) {
+    const row = locations.find(l => String(l.id) === String(id));
+    return row ? row.name : '—';
+}
+
+function countGroups(locId) {
+    return groups.filter(g => String(g.location_id) === String(locId)).length;
+}
+
+/* ── Step 1 : render การ์ดสถานที่ ── */
+function renderLocations() {
+    const list = document.getElementById("location-list");
+    list.innerHTML = "";
+
+    if (!locations.length) {
+        list.innerHTML = `<p class="loc-empty">${LANG.no_location_found}</p>`;
+        return;
+    }
+
+    locations.forEach((row, i) => {
+        const n = countGroups(row.id);
+        const card = document.createElement("div");
+        card.className = "loc-card";
+        card.style.animationDelay = `${i * 0.05}s`;
+        card.dataset.name = (row.name || '').toLowerCase();
+        card.innerHTML = `
+            <div class="loc-card__icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="white">
+                    <path d="M12 11.5A2.5 2.5 0 0 1 9.5 9A2.5 2.5 0 0 1 12 6.5A2.5 2.5 0 0 1 14.5 9a2.5 2.5 0 0 1-2.5 2.5M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7"/>
+                </svg>
+            </div>
+            <div class="loc-card__body">
+                <span class="loc-card__name">${row.name || '—'}</span>
+                <span class="loc-card__meta">${n} ${LANG.groups_unit}</span>
+            </div>
+            <span class="loc-card__chevron"><i class="bi bi-chevron-right"></i></span>
+        `;
+        card.onclick = () => selectLocation(row.id);
+        list.appendChild(card);
+    });
+}
+
+/* ── เลือกสถานที่ → เก็บ session แล้วไปขั้น 2 (ไม่โหลดหน้าใหม่) ── */
+async function selectLocation(id) {
+    const ok = await setSession("lid", id);
+    if (!ok) return;
+    selectedLid = id;
+    openGroupStep(id);
+    goToStep(2);
+}
+
+function openGroupStep(locId) {
+    document.getElementById("selected-location-name").textContent = locationNameById(locId);
+    const search = document.getElementById("group-search");
+    if (search) search.value = "";
+    renderGroups(locId);
+}
+
+/* ── Step 2 : render การ์ดกลุ่ม ── */
+function renderGroups(locId) {
+    const list = document.getElementById("groups-list");
+    const filtered = groups.filter(g => String(g.location_id) === String(locId));
+
+    if (!filtered.length) {
+        list.innerHTML = `<p class="loc-empty">${LANG.no_group_found}</p>`;
+        return;
+    }
+
+    list.innerHTML = "";
+    const locName = locationNameById(locId);
+
+    filtered.forEach((row, i) => {
+        const card = document.createElement("div");
+        card.className = "group-card";
+        card.style.animationDelay = `${i * 0.05}s`;
+        card.dataset.name = (row.name || '').toLowerCase();
+        card.innerHTML = `
+            <div class="group-card__icon"><i class="bi bi-diagram-3-fill"></i></div>
+            <div class="group-card__info">
+                <span class="group-card__name">${row.name || '—'}</span>
+                <span class="group-card__location">
+                    <i class="bi bi-geo-alt-fill"></i> ${locName}
+                </span>
+            </div>
+            <div class="group-card__actions" onclick="event.stopPropagation()">
+                <button class="btn-icon" title="${LANG.electrical}" onclick="reDirectTo(1, ${row.id})">
+                    <i class="bi bi-lightning-charge-fill"></i>
+                    <span class="btn-icon__label">${LANG.electrical}</span>
+                </button>
+                <button class="btn-icon" title="${LANG.water}" disabled onclick="reDirectTo(2, ${row.id})">
+                    <i class="bi bi-droplet-fill"></i>
+                    <span class="btn-icon__label">${LANG.water}</span>
+                </button>
+                <button class="btn-icon" title="${LANG.room}" disabled onclick="reDirectTo(3, ${row.id})">
+                    <i class="bi bi-door-closed-fill"></i>
+                    <span class="btn-icon__label">${LANG.room}</span>
+                </button>
+            </div>
+        `;
+        list.appendChild(card);
+    });
+}
+
+/* ── เลือกกลุ่ม + ชนิดมิเตอร์ → ไป dashboard (ยกมาจาก scriptjs-groups.html) ── */
+async function reDirectTo(tid, gid) {
+    const a = await setSession('tid', tid);
+    const b = await setSession('gid', gid);
+    if (a && b) window.location.href = "dashboard.php";
+}
+
+/* ── สลับขั้น ── */
+function applyStepUI(n) {
+    currentStep = n;
+    document.getElementById("pane-1").classList.toggle("is-active", n === 1);
+    document.getElementById("pane-2").classList.toggle("is-active", n === 2);
+    document.querySelectorAll(".step-node").forEach(node => {
+        const s = Number(node.dataset.step);
+        node.classList.toggle("is-active", s === n);
+        node.classList.toggle("is-done", s < n);
+    });
+    window.scrollTo(0, 0);
+}
+
+function goToStep(n, replace = false) {
+    applyStepUI(n);
+    const url = n === 2 ? "locations.php?step=2" : "locations.php";
+    const st = { step: n };
+    if (replace) history.replaceState(st, "", url);
+    else history.pushState(st, "", url);
+}
+
+/* ── ปุ่ม Back ของเบราว์เซอร์ ── */
+function bindPopState() {
+    window.addEventListener("popstate", (e) => {
+        const s = (e.state && e.state.step) ? e.state.step : 1;
+        if (s === 2 && selectedLid) {
+            openGroupStep(selectedLid);
+            applyStepUI(2);
+        } else {
+            applyStepUI(1);
+        }
+    });
+}
+
+/* ── ค้นหา (กรองจากชื่อในข้อมูล ไม่ใช่ textContent ทั้งการ์ด) ── */
+window.filterLocationCards = function () {
+    const q = (document.getElementById("location-search").value || "").toLowerCase().trim();
+    document.querySelectorAll("#location-list .loc-card").forEach(c => {
+        c.style.display = (c.dataset.name || "").includes(q) ? "" : "none";
+    });
+};
+
+window.filterGroupCards = function () {
+    const q = (document.getElementById("group-search").value || "").toLowerCase().trim();
+    document.querySelectorAll("#groups-list .group-card").forEach(c => {
+        c.style.display = (c.dataset.name || "").includes(q) ? "" : "none";
+    });
+};
 </script>

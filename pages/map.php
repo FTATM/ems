@@ -52,8 +52,19 @@ checkSession();
 
                         <div class="overview-meter-name" id="name-meter">—</div>
 
-                        <!-- Gauge -->
-                        <div class="overview-gauge-wrap" id="gauge-kW"></div>
+                        <!-- Gauge (SVG arc — kW) -->
+                        <div class="overview-gauge-wrap" id="gauge-kW">
+                            <svg class="gauge-svg" viewBox="0 0 200 128" role="img" aria-label="kW">
+                                <path class="gauge-track" d="M 16 104 A 84 84 0 0 1 184 104" />
+                                <path class="gauge-arc" id="gauge-arc" d="M 16 104 A 84 84 0 0 1 184 104" />
+                                <text class="gauge-value" id="gauge-value" x="100" y="78"
+                                    text-anchor="middle">0</text>
+                                <text class="gauge-unit" x="100" y="97" text-anchor="middle">kW</text>
+                                <text class="gauge-end" x="14" y="126" text-anchor="start">0</text>
+                                <text class="gauge-end" id="gauge-max" x="186" y="126"
+                                    text-anchor="end">10</text>
+                            </svg>
+                        </div>
 
                         <!-- Voltage row -->
                         <div class="overview-section-label"><?= $lang['voltage']?></div>

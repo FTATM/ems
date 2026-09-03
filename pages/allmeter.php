@@ -5,6 +5,10 @@ checkSession();
 ?>
 <!DOCTYPE html>
 <html lang="<?= $langCode ?>">
+<script>
+/* no-flash dark mode: ตั้ง html.dark ก่อน first paint (header.php ตั้งช้าไปทำให้ตาราง sticky ค้างสีเดิม) */
+try { if (localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark'); } catch (e) {}
+</script>
 <?php include "../scripts/ref.html"; ?>
 <?php include "../scripts/style.html"; ?>
 
@@ -12,6 +16,9 @@ checkSession();
     <meta charset="UTF-8">
     <title><?= $lang['allmeter'] ?> - EMS</title>
     <link rel="stylesheet" href="../styles/allmeter.css">
+    <script>
+    const LANG = <?= json_encode($lang) ?>;
+    </script>
 </head>
 
 <body style="min-height: 100svh;">
@@ -30,14 +37,41 @@ checkSession();
                     <?= $lang['allmeter'] ?>
                 </h4>
 
-                <div class="d-flex align-items-center gap-3">
-                    <div class="allmeter-topbar__refresh">
-                        <span class="material-icons-outlined refresh-spin">sync</span>
-                        <span class="refresh-label">Refresh every:</span>
-                        <input type="number" id="input-refresh" class="refresh-input" value="15" min="1" max="30"
-                            onchange="setRefreshTime()">
-                        <span class="refresh-label">Seconds</span>
-                    </div>
+                <div class="allmeter-search">
+                    <input type="text" id="meter-search" placeholder="<?= $lang['search'] ?>"
+                        oninput="filterMeters()" autocomplete="off">
+                </div>
+
+                <div class="allmeter-topbar__refresh">
+                    <span class="material-icons-outlined refresh-spin">sync</span>
+                    <span class="refresh-label"><?= $lang['refreshevery'] ?>:</span>
+                    <input type="number" id="input-refresh" class="refresh-input" value="15" min="1" max="60"
+                        onchange="setRefreshTime()">
+                    <span class="refresh-label"><?= $lang['seconds'] ?></span>
+                </div>
+            </div>
+
+            <!-- ─── KPI tiles ─── -->
+            <div class="allmeter-kpi" id="allmeter-kpi">
+                <div class="kpi-tile">
+                    <span class="kpi-value" id="kpi-total">–</span>
+                    <span class="kpi-label"><?= $lang['total_meters'] ?></span>
+                </div>
+                <div class="kpi-tile">
+                    <span class="kpi-value" id="kpi-sum-kw">–</span>
+                    <span class="kpi-label"><?= $lang['sum_kw'] ?></span>
+                </div>
+                <div class="kpi-tile">
+                    <span class="kpi-value" id="kpi-sum-kwh">–</span>
+                    <span class="kpi-label"><?= $lang['sum_kwh'] ?></span>
+                </div>
+                <div class="kpi-tile">
+                    <span class="kpi-value kpi-status">
+                        <span class="kpi-dot kpi-dot--on"></span><span id="kpi-active">–</span>
+                        <span class="kpi-status-sep">/</span>
+                        <span class="kpi-dot kpi-dot--off"></span><span id="kpi-inactive">–</span>
+                    </span>
+                    <span class="kpi-label"><?= $lang['active'] ?> / <?= $lang['inactive'] ?></span>
                 </div>
             </div>
 
@@ -47,16 +81,10 @@ checkSession();
                 <div class="allmeter-card">
                     <div class="table-responsive">
                         <table id="table-meter" class="allmeter-table w-100">
-                            <thead>
-                                <tr>
-                                    <th class="text-nowrap" style="min-width:5vw;"><?= $lang['nmeters'] ?></th>
-                                    <th class="text-nowrap text-center"><?= $lang['ip'] ?></th>
-                                    <th class="text-nowrap text-center"><?= $lang['port'] ?></th>
-                                    <th class="text-nowrap text-center"><?= $lang['protocol'] ?></th>
-                                </tr>
-                            </thead>
+                            <thead></thead>
                             <tbody></tbody>
                         </table>
+                        <div id="allmeter-empty" class="allmeter-empty" hidden><?= $lang['no_meter_found'] ?></div>
                     </div>
 
                     <!-- Pagination -->

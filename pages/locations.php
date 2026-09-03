@@ -1,6 +1,8 @@
 <?php
 include '../components/session.php';
-// checkLogin();
+checkLogin();
+
+$initialStep = (isset($_GET['step']) && $_GET['step'] == '2' && isset($_SESSION['lid'])) ? 2 : 1;
 ?>
 <!DOCTYPE html>
 <html lang="<?= $langCode ?>">
@@ -9,153 +11,125 @@ include '../components/session.php';
 
 <head>
     <meta charset="UTF-8">
-    <title><?= $lang['home'] ?> - EMS</title>
+    <title><?= $lang['chooselocate'] ?> - EMS</title>
     <link rel="stylesheet" href="../styles/locations.css">
+    <script>
+    const LANG = <?= json_encode($lang) ?>;
+    const INITIAL_STEP = <?= $initialStep ?>;
+    const SESSION_LID = "<?= (int)($_SESSION['lid'] ?? 0) ?>";
+    </script>
 </head>
 
-<body style="height:100svh;overflow:hidden;">
-    <div id="main" class="d-flex flex-column" style="height:100svh;overflow:hidden;">
+<body style="background-color: <?= $bg ?>; color: <?= $text ?>;">
+    <div id="main" class="d-flex flex-column">
 
         <?php include "../components/header.php"; ?>
 
-        <main class="locations-main">
+        <main class="loc-main">
 
-            <div class="locations-hero">
-                <h2><?= $lang['chooselocate'] ?? 'เลือกสถานที่/โครงการ' ?></h2>
-                <p><?= $lang['select_project_for_energy'] ?></p>
+            <!-- ── Stepper bar ── -->
+            <div class="step-bar" id="step-bar">
+                <div class="step-node is-active" data-step="1">
+                    <span class="step-dot">1</span>
+                    <span class="step-label"><?= $lang['step_location'] ?></span>
+                </div>
+                <div class="step-line"></div>
+                <div class="step-node" data-step="2">
+                    <span class="step-dot">2</span>
+                    <span class="step-label"><?= $lang['step_group'] ?></span>
+                </div>
             </div>
 
-            <!-- ซ่อน table เดิม (CSS จัดการด้วย #table-location { display:none }) -->
-            <table id="table-location">
-                <thead>
-                    <tr>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
+            <!-- ── Step 1 : เลือกสถานที่ ── -->
+            <section class="step-pane is-active" id="pane-1">
+                <div class="loc-hero">
+                    <h2><?= $lang['chooselocate'] ?></h2>
+                    <p><?= $lang['select_project_for_energy'] ?></p>
+                </div>
 
-            <!-- Card list -->
-            <div class="locations-list-wrap">
-                <div class="locations-list" id="location-list">
-                    <!-- Skeleton -->
-                    <div class="location-card location-card--skeleton">
-                        <div class="location-card__icon"></div>
-                        <span class="location-card__name"></span>
+                <div class="loc-toolbar">
+                    <div class="loc-search">
+                        <input type="text" id="location-search" placeholder="<?= $lang['search_location'] ?>"
+                            oninput="filterLocationCards()">
                     </div>
-                    <div class="location-card location-card--skeleton">
-                        <div class="location-card__icon"></div>
-                        <span class="location-card__name"></span>
+                </div>
+
+                <div class="loc-list-wrap">
+                    <div class="loc-list" id="location-list">
+                        <div class="loc-card loc-card--skeleton">
+                            <div class="loc-card__icon"></div>
+                            <span class="loc-card__name"></span>
+                        </div>
+                        <div class="loc-card loc-card--skeleton">
+                            <div class="loc-card__icon"></div>
+                            <span class="loc-card__name"></span>
+                        </div>
+                        <div class="loc-card loc-card--skeleton">
+                            <div class="loc-card__icon"></div>
+                            <span class="loc-card__name"></span>
+                        </div>
                     </div>
-                </div><!-- /.locations-list -->
-            </div><!-- /.locations-list-wrap -->
+                </div>
+            </section>
+
+            <!-- ── Step 2 : เลือกกลุ่ม ── -->
+            <section class="step-pane" id="pane-2">
+                <div class="step-breadcrumb">
+                    <button type="button" class="step-back" onclick="goToStep(1)">
+                        <i class="bi bi-chevron-left"></i>
+                        <span><?= $lang['back'] ?></span>
+                    </button>
+                    <span class="step-breadcrumb__sep">/</span>
+                    <span class="step-breadcrumb__current">
+                        <i class="bi bi-geo-alt-fill"></i>
+                        <span id="selected-location-name">—</span>
+                    </span>
+                </div>
+
+                <div class="loc-hero loc-hero--sm">
+                    <h2><?= $lang['choosegroup'] ?></h2>
+                    <p><?= $lang['select_group_for_energy'] ?></p>
+                </div>
+
+                <div class="loc-toolbar">
+                    <div class="loc-search">
+                        <input type="text" id="group-search" placeholder="<?= $lang['search_group'] ?>"
+                            oninput="filterGroupCards()">
+                    </div>
+                </div>
+
+                <div class="loc-list-wrap">
+                    <div class="loc-list" id="groups-list">
+                        <div class="group-card group-card--skeleton" aria-hidden="true">
+                            <div class="group-card__icon"></div>
+                            <div class="group-card__info">
+                                <span class="group-card__name">&nbsp;</span>
+                                <span class="group-card__location">&nbsp;</span>
+                            </div>
+                        </div>
+                        <div class="group-card group-card--skeleton" aria-hidden="true">
+                            <div class="group-card__icon"></div>
+                            <div class="group-card__info">
+                                <span class="group-card__name">&nbsp;</span>
+                                <span class="group-card__location">&nbsp;</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
         </main>
 
         <?php include "../components/footer.php"; ?>
 
-        <!-- Modal แก้ไขชื่อ -->
-        <div class="modal fade" id="renameModal" tabindex="-1" aria-labelledby="renameModalLabel">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="renameModalLabel">แก้ไขชื่อ</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"
-                            aria-label="<?= $lang['close'] ?>"></button>
-                    </div>
-                    <div class="modal-body p-4">
-                        <input type="hidden" id="rename-id">
-                        <div class="mb-3">
-                            <label for="new-name" class="form-label fw-semibold">ชื่อใหม่</label>
-                            <input type="text" class="form-control text-black" id="new-name"
-                                placeholder="กรอกชื่อใหม่...">
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-light"
-                            data-bs-dismiss="modal"><?= $lang['cancel'] ?></button>
-                        <button type="button" class="btn btn-primary"
-                            onclick="submitRename()"><?= $lang['save'] ?></button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <?php include "../scripts/scriptjs.html"; ?>
-
-        <script>
-        let meters = [];
-        let types = [];
-        let locations = [];
-
-        document.addEventListener("DOMContentLoaded", async () => {
-            await process();
-        });
-
-        async function process() {
-            await fetchAll();
-            generateTable();
-        }
-
-        async function fetchAll() {
-            let responselocation = await fetch("../config/fetch-locations.php");
-            let json_l = await responselocation.json();
-            locations = json_l.data;
-        }
-
-        function generateTable() {
-            const list = document.getElementById("location-list");
-            list.innerHTML = ''; // ลบ skeleton
-
-            if (!locations || Object.values(locations).length === 0) {
-                list.innerHTML = '<p class="text-center text-muted py-4">ไม่พบสถานที่</p>';
-                return;
-            }
-
-            Object.values(locations).forEach((row, i) => {
-                const card = document.createElement("div");
-                card.className = "location-card";
-                card.style.animationDelay = `${i * 0.08}s`;
-                card.innerHTML = `
-                <div class="location-card__icon" style="background-color:#8BAE66; border-radius:12px; min-width:44px; min-height:44px; margin-right:1.25rem;">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="white">
-                    <path d="M12 11.5A2.5 2.5 0 0 1 9.5 9A2.5 2.5 0 0 1 12 6.5A2.5 2.5 0 0 1 14.5 9a2.5 2.5 0 0 1-2.5 2.5M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7"/>
-                    </svg>
-                </div>
-                <span class="location-card__name">${row.name}</span>
-                <span class="location-card__chevron">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                    <path d="M9.29 6.71a1 1 0 000 1.41L13.17 12l-3.88 3.88a1 1 0 001.41 1.41l4.59-4.59a1 1 0 000-1.41L10.7 6.7a1 1 0 00-1.41.01z"/>
-                    </svg>
-                </span>
-                `;
-                card.onclick = () => goToGroups(row.id);
-                list.appendChild(card);
-            });
-        }
-
-        function loadHoverImage(name) {
-            console.log("Hover on : " + name);
-            let img = document.getElementById("img-showLocation");
-            if (img) img.setAttribute("src", "../assets/images/provinces/" + name + ".png");
-        }
-
-        async function goToGroups(id) {
-            let success = await setSession("lid", id);
-            if (success) {
-                window.location.href = "groups.php";
-            }
-        }
-
-        function submitRename() {
-            const id = document.getElementById('rename-id').value;
-            const name = document.getElementById('new-name').value;
-            if (!name.trim()) return;
-            bootstrap.Modal.getInstance(document.getElementById('renameModal'))?.hide();
-        }
-        </script>
-
     </div><!-- /#main -->
+
+    <script id="theme-data" type="application/json">
+    <?= json_encode($_SESSION['theme'], JSON_UNESCAPED_UNICODE); ?>
+    </script>
+
+    <?php include "../scripts/scriptjs.html"; ?>
+    <?php include "../scripts/scriptjs-locations.html"; ?>
 </body>
 
 </html>

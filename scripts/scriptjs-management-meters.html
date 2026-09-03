@@ -308,6 +308,7 @@
     }
 
     let meters = [];
+    let groups = [];
     let selected_meter = [];
     let types = [];
     let notifies = [];
@@ -324,16 +325,22 @@
 
     async function fetchAll() {
         meters = await fetchMetersData();
+        groups = await fetchGroups();
         types = await fetchTypes();
         notifies = await fetchnotify();
 
         console.log(meters);
-        
+
     }
     async function fetchMetersData() {
         let response = await fetch("../config/fetch-meters.php");
         let json = await response.json();
         return Object.values(json.data);
+    }
+    async function fetchGroups() {
+        let response = await fetch("../config/fetch-groups.php");
+        let json = await response.json();
+        return json.data || [];
     }
     async function fetchTypes() {
         let response = await fetch("../config/fetch-data_type.php");
@@ -409,16 +416,34 @@
         let list = document.getElementById('meter-list');
         list.innerHTML = '';
         meters.forEach(meter => {
-            let div = document.createElement('div');
-            div.className = `px-3 mb-2 fw-bold d-flex justify-content-center align-content-center`;
-            div.style.height = '40px';
-            const container = document.createElement("div");
-            container.id = 'meter';
-            container.className = "container text-center align-content-center rounded bg choice";
-            container.textContent = meter.name;
-            div.onclick = () => loadDataMeter(meter);
-            div.appendChild(container);
-            list.appendChild(div);
+            const proto = (meter.protocol === 'rs485') ? 'rs485' : 'tcp';
+            const on = Number(meter.is_active) === 1;
+
+            let row = document.createElement('div');
+            row.className = 'meter-row';
+            row.dataset.name = (meter.name || '').toLowerCase();
+            row.dataset.id = meter.id;
+            row.innerHTML = `
+                <span class="status-dot status-dot--${on ? 'on' : 'off'}"></span>
+                <span class="meter-row__name">${meter.name}</span>
+                <span class="badge-proto badge-proto--${proto}">${proto === 'rs485' ? 'RS485' : 'TCP'}</span>
+            `;
+            row.onclick = () => {
+                document.querySelectorAll('#meter-list .meter-row.is-selected')
+                    .forEach(el => el.classList.remove('is-selected'));
+                row.classList.add('is-selected');
+                loadDataMeter(meter);
+            };
+            list.appendChild(row);
+        });
+        filterMeterList();
+    }
+
+    function filterMeterList() {
+        const box = document.getElementById('meter-search');
+        const term = (box ? box.value : '').trim().toLowerCase();
+        document.querySelectorAll('#meter-list .meter-row').forEach(row => {
+            row.hidden = term !== '' && !row.dataset.name.includes(term);
         });
     }
 
@@ -427,157 +452,96 @@
             selected_meter = meter;
             let config = document.getElementById('config');
             if (document.getElementById("menu-config-1").classList.contains("active")) {
+                const groupOpts = (groups || []).map(g =>
+                    `<option value="${g.id}" ${String(g.id) === String(meter.group_id) ? 'selected' : ''}>${g.name}</option>`
+                ).join('');
+
                 config.innerHTML = `
-            <div class="w-100 mt-2 d-flex">
-                <div class="w-25 text-end"> <h5>Meter ID :</h5> </div>
-                <div class="w-75 px-2"> 
-                    <input class="w-lg-25 w-d-50 form-control border-opcity-50" value='${meter.id}' disabled>
-                    <input id="meter-id" name="id" type="hidden" value='${meter.id}'>
-                </div>
-            </div>
-
-            <div class="w-100 mt-2 d-flex">
-                <div class="w-25 text-end"> <h5>Meter name :</h5> </div>
-                <div class="w-75 px-2"> <input name="name" class="w-lg-25 w-d-50 form-control border-opcity-50" value='${meter.name}'> </div>
-            </div>
-
-            <div class="w-100 mt-2 d-flex">
-                <div class="w-25 text-end"> <h5>Active :</h5> </div>
-                <div class="w-75 px-2"> 
-                    <input name="is_active" type="hidden" value=${meter.is_active}>    
-                    <input name="is_active" type="checkbox" class="form-check" ${meter.is_active == 1 ? 'checked' : ''}> 
-                </div>
-            </div>
-
-            <div class="w-100 mt-2 d-flex">
-                <div class="w-25 text-end"><h5>Group ID :</h5></div>
-                <div class="w-75 px-2"><input name="group_id" class="w-d-50 w-lg-25 form-control border-opcity-50" value="${meter.group_id}"></div>
-            </div>
-            <div class="w-100 mt-2 d-flex">
-                <div class="w-25 text-end"><h5>Postion (x, y, z) : </h5></div>
-                <div class="w-75 d-flex px-2 gap-2">
-                    <input name="x" class="form-control w-10 border-opcity-50" value="${meter.x}">
-                    <input name="y" class="form-control w-10 border-opcity-50" value="${meter.y}">
-                    <input name="z" class="form-control w-10 border-opcity-50" value="${meter.z}">
-                </div>
-            </div>
-            <hr>
-           <div class="w-100 mt-2 d-flex">
-                <div class="w-25 text-end"><h5>Protocol :</h5></div>
-                <div class="w-75 px-2">
-                    <select id="select-protocol" name="select_protocol" class="w-25 form-select border-opcity-50">
-                        <option value="tcp" ${meter.protocol === 'tcp' ? 'selected' : ''}>TCP</option>
-                        <option value="rs485" ${meter.protocol === 'rs485' ? 'selected' : ''}>RS485</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="w-100 mt-2 d-flex">
-                <div class="w-25 text-end"><h5>DNS :</h5></div>
-                <div class="w-75 px-2"><input name="dns" class="w-d-50 w-lg-25 form-control border-opcity-50" value="${meter.dns}"></div>
-            </div>
-
-            <div class="w-100 mt-2 d-flex">
-                <div class="w-25 text-end"><h5>Port :</h5></div>
-                <div class="w-75 px-2"><input name="port" id="port" type="number" class="w-d-50 w-lg-25 form-control border-opcity-50" value="${meter.port}"></div>
-            </div>
-
-            <div class="w-100 mt-2 d-flex">
-                <div class="w-25 text-end"><h5>IP Address :</h5></div>
-                <div class="w-75 px-2"><input name="ip" id="ip-meter" class="w-d-50 w-lg-25 form-control border-opcity-50" value="${meter.ip_address}"></div>
-            </div>
-
-            <div class="w-100 mt-2 d-flex">
-                <div class="w-25 text-end"><h5>Submask :</h5></div>
-                <div class="w-75 px-2"><input name="submask" class="w-d-50 w-lg-25 form-control border-opcity-50" value="${meter.submask}"></div>
-            </div>
-            <div class="w-100 mt-2 d-flex">
-                <div class="w-25 text-end"><h5>RS485</h5></div>
-                <div class="w-75 d-flex">
-                    <div class="">
-                        <div class="text-center"><h5>Serial Port</h5></div>
-                        <div class="px-4"><input id="serialport" name="serialport" class="form-control border-opcity-50" value="${meter.serial_port}"></div>
+            <div class="mcfg-section">
+                <p class="mcfg-section__title">${_lang['section_general'] || 'General'}</p>
+                <div class="mcfg-grid">
+                    <div class="mcfg-field">
+                        <label>Meter ID</label>
+                        <input value='${meter.id}' disabled>
+                        <input id="meter-id" name="id" type="hidden" value='${meter.id}'>
                     </div>
-
-                    <div class="">
-                        <div class="text-center"><h5>Baud Rate</h5></div>
-                        <div class="px-4"><input id="buad_rate" name="buad_rate" class="form-control border-opcity-50" value="${meter.buad_rate}"></div>
+                    <div class="mcfg-field">
+                        <label>${_lang['meter_name'] || 'Meter name'}</label>
+                        <input name="name" value='${meter.name ?? ''}'>
                     </div>
-
-                    <div class="">
-                        <div class="text-center"><h5>Data Bits</h5></div>
-                        <div class="px-4"><input id="data_bits" name="data_bits" type="number" class="form-control border-opcity-50" value="${meter.data_bits}"></div>
+                    <div class="mcfg-field">
+                        <label>${_lang['group'] || 'Group'}</label>
+                        <select name="group_id">${groupOpts}</select>
                     </div>
-
-                    <div class="">
-                        <div class="text-center"><h5>parily</h5></div>
-                        <div class="px-4"><input id="parity" name="parily" class="form-control border-opcity-50" value="${meter.parily}"></div>
-                    </div>
-
-                    <div class="">
-                        <div class="text-center"><h5>Stop Bits</h5></div>
-                        <div class="px-4"><input id="stop_bits" name="stop_bits" type="number" class="form-control border-opcity-50" value="${meter.stop_bits}"></div>
+                    <div class="mcfg-field mcfg-field--check">
+                        <input id="meter-active" name="is_active" type="checkbox" ${Number(meter.is_active) === 1 ? 'checked' : ''}>
+                        <label for="meter-active">${_lang['active'] || 'Active'}</label>
                     </div>
                 </div>
             </div>
 
-            <div class="w-100 mt-2 d-flex">
-                <div class="w-25 text-end"><h5>Slave ID :</h5></div>
-                <div class="w-75 px-2"><input id="slave_id" name="slave_id" type="number" class="w-d-50 w-lg-25 form-control border-opcity-50" value="${meter.slave_id}"></div>
+            <div class="mcfg-section">
+                <p class="mcfg-section__title">${_lang['section_position'] || '3D Position'}</p>
+                <div class="mcfg-grid mcfg-grid--3">
+                    <div class="mcfg-field"><label>X</label><input name="x" type="number" value="${meter.x ?? ''}"></div>
+                    <div class="mcfg-field"><label>Y</label><input name="y" type="number" value="${meter.y ?? ''}"></div>
+                    <div class="mcfg-field"><label>Z</label><input name="z" type="number" value="${meter.z ?? ''}"></div>
+                </div>
             </div>
 
-            <div class="w-100 mt-2 d-flex">
-                <div class="w-25 text-end"><h5>Address :</h5></div>
-                <div class="w-75 px-2"><input id="address" name="address" class="w-d-50 w-lg-25 form-control border-opcity-50" value="${meter.address}"></div>
+            <div class="mcfg-section">
+                <p class="mcfg-section__title">${_lang['section_connection'] || 'Connection'}</p>
+                <div class="mcfg-grid">
+                    <div class="mcfg-field">
+                        <label>Protocol</label>
+                        <select id="select-protocol" name="select_protocol" onchange="switchProtocolFields()">
+                            <option value="tcp" ${meter.protocol === 'tcp' ? 'selected' : ''}>TCP</option>
+                            <option value="rs485" ${meter.protocol === 'rs485' ? 'selected' : ''}>RS485</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="conn-tcp" class="mcfg-grid" style="margin-top:.85rem">
+                    <div class="mcfg-field"><label>DNS</label><input name="dns" value="${meter.dns ?? ''}"></div>
+                    <div class="mcfg-field"><label>Port</label><input id="port" name="port" type="number" value="${meter.port ?? ''}"></div>
+                    <div class="mcfg-field"><label>IP Address</label><input id="ip-meter" name="ip" value="${meter.ip_address ?? ''}"></div>
+                    <div class="mcfg-field"><label>Submask</label><input name="submask" value="${meter.submask ?? ''}"></div>
+                </div>
+
+                <div id="conn-rs485" class="mcfg-grid" style="margin-top:.85rem">
+                    <div class="mcfg-field"><label>Serial Port</label><input id="serialport" name="serialport" value="${meter.serial_port ?? ''}"></div>
+                    <div class="mcfg-field"><label>Baud Rate</label><input id="buad_rate" name="buad_rate" value="${meter.buad_rate ?? ''}"></div>
+                    <div class="mcfg-field"><label>Data Bits</label><input id="data_bits" name="data_bits" type="number" value="${meter.data_bits ?? ''}"></div>
+                    <div class="mcfg-field"><label>Parity</label><input id="parity" name="parily" value="${meter.parily ?? ''}"></div>
+                    <div class="mcfg-field"><label>Stop Bits</label><input id="stop_bits" name="stop_bits" type="number" value="${meter.stop_bits ?? ''}"></div>
+                    <div class="mcfg-field"><label>Address</label><input id="address" name="address" value="${meter.address ?? ''}"></div>
+                </div>
+
+                <div class="mcfg-grid" style="margin-top:.85rem">
+                    <div class="mcfg-field"><label>${_lang['slave_id'] || 'Slave ID'}</label><input id="slave_id" name="slave_id" type="number" value="${meter.slave_id ?? ''}"></div>
+                    <div class="mcfg-field"><label>Quality</label><input id="quality" name="quality" type="number" value="${meter.quality ?? ''}"></div>
+                </div>
             </div>
 
-            <div class="w-100 mt-2 d-flex">
-                <div class="w-25 text-end"><h5>Quality :</h5></div>
-                <div class="w-75 px-2"><input id="quality" name="quality" type="number" class="w-d-50 w-lg-25 form-control border-opcity-50" value="${meter.quality}"></div>
-            </div>
-
-            <div class="w-100 mx-3">
-                <h5>Connect meter</h5>
+            <div class="mcfg-section">
+                <p class="mcfg-section__title">${_lang['section_test'] || 'Test connection'}</p>
                 <input id="btn-connect" class="btn btn-sm btn-primary" value="Connect" onclick="TestConnect()">
                 <label id="label-btn-connect" class="mx-3" for="btn-connect"></label>
                 <div id="detailmore" style="display:none;" class="clickable" onclick="openDetail()">Detail more...</div>
             </div>
 
-            <div class="w-100 px-3 py-3 d-flex justify-content-end align-items-center gap-2" style="border-top: 1px solid var(--border); margin-top: 1rem;">
-                <button type="button"
-                    onclick="loadDataMeter(selected_meter)"
-                    style="
-                        display: inline-flex; align-items: center; gap: 0.4rem;
-                        padding: 0.48rem 1.2rem; border-radius: 9px;
-                        border: 1.5px solid rgba(239,68,68,.4);
-                        background: transparent; color: #ef4444;
-                        font-size: 0.875rem; font-weight: 600; cursor: pointer;
-                        transition: background 180ms ease, border-color 180ms ease;
-                    "
-                    onmouseover="this.style.background='rgba(239,68,68,.07)'; this.style.borderColor='rgba(239,68,68,.7)'"
-                    onmouseout="this.style.background='transparent'; this.style.borderColor='rgba(239,68,68,.4)'">
+            <div class="mcfg-footer">
+                <button type="button" onclick="loadDataMeter(selected_meter)" class="mcfg-btn mcfg-btn--cancel">
                     <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
                     ${_lang['cancel']}
                 </button>
-                <button type="button"
-                    id="btn-save-meter"
-                    onclick="updateMeter()"
-                    style="
-                        display: inline-flex; align-items: center; gap: 0.4rem;
-                        padding: 0.48rem 1.35rem; border-radius: 9px;
-                        border: none;
-                        background: var(--primary, #8BAE66); color: #fff;
-                        font-size: 0.875rem; font-weight: 700; cursor: pointer;
-                        box-shadow: 0 2px 8px rgba(139,174,102,.35);
-                        transition: background 180ms ease, transform 180ms ease, box-shadow 180ms ease;
-                    "
-                    onmouseover="this.style.background='var(--primary-dark, #2d4416)'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 14px rgba(139,174,102,.45)'"
-                    onmouseout="this.style.background='var(--primary, #8BAE66)'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(139,174,102,.35)'">
+                <button type="button" id="btn-save-meter" onclick="updateMeter()" class="mcfg-btn mcfg-btn--save">
                     <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
                     ${_lang['save']}
                 </button>
             </div>
         `;
+                switchProtocolFields();
             }
             else if (document.getElementById("menu-config-2").classList.contains("active")) {
                 config.innerHTML = '';
@@ -587,48 +551,50 @@
                 let notiData = notifies.filter(notify => notify.meter_id == meter.id);
                 notiData.forEach(row => {
                     let div = document.createElement('div');
-                    div.className = 'p-2';
-                    div.style.width = '280px';
-                    div.style.height = '380px';
+                    div.className = 'noti-card';
                     div.innerHTML = `
-                        <div class="text-center border fs-5 rounded-top fw-bold align-content-center bg-blue-reverse position-relative" style="height:10%; ">
-                            <div class="w-90 ps-2" style=" display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical;  overflow: hidden; "> ${row.name} </div>
-                            <div class="position-absolute" style="top:2px; right:5px;" onclick="deleteNotify(${meter.id},${row.id})">
+                        <div class="noti-card__head">
+                            <svg class="noti-card__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                            <span class="noti-card__title" title="${row.name}">${row.name}</span>
+                            <button type="button" class="noti-card__del" onclick="deleteNotify(${meter.id},${row.id})" aria-label="delete">
                                 <i class="bi bi-trash3"></i>
-                            </div>
+                            </button>
                         </div>
-                        <div class="bg-white rounded-bottom shadow w-100 p-1 text-black">
+                        <div class="noti-card__body">
                             <input id="meter-${row.id}" type="hidden" value="${row.meter_id}"/>
                             <input id="name-${row.id}" type="hidden" value="${row.name}"/>
-                            <h6 class="ps-2"for="mark">${_lang['sign']}</h6>
-                            <select id="select-mark-${row.id}" class="form-select form-select-sm text-black">
-                                <option ${row.mark == '<' ? 'selected' : ''} value="<">${_lang['<']} (<)</option>
-                                <option ${row.mark == '>' ? 'selected' : ''} value=">">${_lang['>']} (>)</option>
-                                <option ${row.mark == '=' ? 'selected' : ''} value="=">${_lang['=']} (=)</option>
-                            </select>
-                            <h6 class="ps-2"for="value">${_lang['value']}</h6>
-                            <input id="value-${row.id}" class="form-control form-control-sm text-black" type="number" value="${row.value_condition}" placeholder="Number value">
-                            <h6 class="ps-2"for="token">${_lang['token']} ${_lang['line']}</h6>
-                            <input id="token-${row.id}" class="form-control form-control-sm text-black" type="text" value="${row.token_line}" placeholder="Line token here.">
-                            <h6 class="ps-2"for="email">${_lang['email']}</h6>
-                            <input id="email-${row.id}" class="form-control form-control-sm text-black" type="text" value="${row.email}" placeholder="Input email here.">
-                            <div class="w-100 py-2 px-3 d-flex justify-content-between">
-                                <input id="active-${row.id}" onclick="UpdateStatusNotify(${meter.id},${row.id},'active')" value="${row.is_active == 1 ? _lang['enabled'] : _lang['disabled']}" class="btn btn-sm text ${row.is_active == 1 ? 'bg-blue' : 'bg-red'} " style="width:40%;  ">
-                                <input id="update-${row.id}" onclick="UpdateStatusNotify(${meter.id},${row.id},'update')" value="${_lang['update']}" class="btn btn-sm bg-green text text-black" style="width:40%;">
+
+                            <label class="noti-label">${_lang['sign']}</label>
+                            <div class="noti-cond">
+                                <select id="select-mark-${row.id}" class="noti-input">
+                                    <option ${row.mark == '<' ? 'selected' : ''} value="<">${_lang['<']} (&lt;)</option>
+                                    <option ${row.mark == '>' ? 'selected' : ''} value=">">${_lang['>']} (&gt;)</option>
+                                    <option ${row.mark == '=' ? 'selected' : ''} value="=">${_lang['=']} (=)</option>
+                                </select>
+                                <input id="value-${row.id}" class="noti-input" type="number" value="${row.value_condition}" placeholder="${_lang['value']}">
+                            </div>
+
+                            <label class="noti-label">${_lang['token']} ${_lang['line']}</label>
+                            <input id="token-${row.id}" class="noti-input" type="text" value="${row.token_line}" placeholder="Line token">
+
+                            <label class="noti-label">${_lang['email']}</label>
+                            <input id="email-${row.id}" class="noti-input" type="text" value="${row.email}" placeholder="email">
+
+                            <div class="noti-actions">
+                                <input id="active-${row.id}" onclick="UpdateStatusNotify(${meter.id},${row.id},'active')" value="${row.is_active == 1 ? _lang['enabled'] : _lang['disabled']}" class="noti-btn ${row.is_active == 1 ? 'bg-blue' : 'bg-red'}" readonly>
+                                <input id="update-${row.id}" onclick="UpdateStatusNotify(${meter.id},${row.id},'update')" value="${_lang['update']}" class="noti-btn bg-green" readonly>
                             </div>
                         </div>
                     `;
                     mother.appendChild(div);
                 });
                 let blankdiv = document.createElement('div');
-                blankdiv.className = "p-2";
+                blankdiv.className = "noti-card--add";
                 blankdiv.id = "blankdiv";
-                blankdiv.style.width = "280px";
-                blankdiv.style.height = "380px";
                 blankdiv.innerHTML = `
-                    <div class="p-2 bg-white bg-opacity-10 w-100 rounded d-flex justify-content-center align-items-center" style="height:92%;" onclick="addNotify()">
-                    <input id="meterID" value="${meter.id}" type="hidden" />
-                    <i class="bi bi-plus-lg"></i>
+                    <div onclick="addNotify()">
+                        <input id="meterID" value="${meter.id}" type="hidden" />
+                        <i class="bi bi-plus-lg"></i>
                     </div>
                 `;
                 mother.appendChild(blankdiv);
@@ -637,8 +603,18 @@
         }
     }
 
+    function switchProtocolFields() {
+        const sel = document.getElementById('select-protocol');
+        if (!sel) return;
+        const p = sel.value;
+        const tcp = document.getElementById('conn-tcp');
+        const rs485 = document.getElementById('conn-rs485');
+        if (tcp) tcp.hidden = (p !== 'tcp');
+        if (rs485) rs485.hidden = (p !== 'rs485');
+    }
+
     function openDetail() {
-        alertMessages('info', "Information", outputText, 100000, true);
+        showEmsModal('info', 'connect', _lang['detail_more'] || 'Connection detail', outputText, 0);
     }
 
     async function UpdateStatusNotify(meter_id, notify_id, status) {
@@ -790,30 +766,37 @@
         let blankdiv = document.getElementById('blankdiv');
         const meterID = blankdiv.querySelector('#meterID').value;
         let div = document.createElement('div');
-        div.className = 'p-2';
-        div.style.width = '280px';
-        div.style.height = '380px';
+        div.className = 'noti-card';
         div.innerHTML = `
-            <div class="text-center border fs-5 rounded-top fw-bold align-content-center bg-blue-reverse" style="height:10%;">${_lang['nnotify']}</div>
-            <div class="bg-white rounded-bottom shadow w-100 p-1 text-black">
+            <div class="noti-card__head">
+                <svg class="noti-card__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+                <span class="noti-card__title">${_lang['nnotify']}</span>
+            </div>
+            <div class="noti-card__body">
                 <input id="meter-0" type="hidden" value="${meterID}"/>
-                <h6 class="ps-2"for="name">${_lang['name']}</h6>
-                <input id="name-0" class="form-control form-control-sm text-black" type="text" placeholder="Unknown">
-                <h6 class="ps-2"for="mark">${_lang['sign']}</h6>
-                <select id="select-mark-0" class="form-select form-select-sm text-black">
-                    <option value="<">${_lang['<']} (<)</option>
-                    <option value=">">${_lang['>']} (>)</option>
-                    <option value="=">${_lang['=']} (=)</option>
-                </select>
-                <h6 class="ps-2"for="value">${_lang['value']}</h6>
-                <input id="value-0" class="form-control form-control-sm text-black" type="number" placeholder="Number value">
-                <h6 class="ps-2"for="token">${_lang['token']} ${_lang['line']}</h6>
-                <input id="token-0" class="form-control form-control-sm text-black" type="text" placeholder="Line token here">
-                <h6 class="ps-2"for="email">${_lang['email']}</h6>
-                <input id="email-0" class="form-control form-control-sm text-black" type="text" placeholder="paste email here">
-                <div class="w-100 py-2 px-3 d-flex justify-content-between">
-                    <input id="active-0" value="${_lang['enabled']}" class="btn btn-sm text bg-blue" style="width:40%;">
-                    <input id="update-0" value="${_lang['save']}" onclick="UpdateStatusNotify(${meterID},0,'create')" class="btn btn-sm bg-green text text-black" style="width:40%;">
+
+                <label class="noti-label">${_lang['name']}</label>
+                <input id="name-0" class="noti-input" type="text" placeholder="${_lang['name']}">
+
+                <label class="noti-label">${_lang['sign']}</label>
+                <div class="noti-cond">
+                    <select id="select-mark-0" class="noti-input">
+                        <option value="<">${_lang['<']} (&lt;)</option>
+                        <option value=">">${_lang['>']} (&gt;)</option>
+                        <option value="=">${_lang['=']} (=)</option>
+                    </select>
+                    <input id="value-0" class="noti-input" type="number" placeholder="${_lang['value']}">
+                </div>
+
+                <label class="noti-label">${_lang['token']} ${_lang['line']}</label>
+                <input id="token-0" class="noti-input" type="text" placeholder="Line token">
+
+                <label class="noti-label">${_lang['email']}</label>
+                <input id="email-0" class="noti-input" type="text" placeholder="email">
+
+                <div class="noti-actions">
+                    <input id="active-0" value="${_lang['enabled']}" class="noti-btn bg-blue" readonly>
+                    <input id="update-0" value="${_lang['save']}" onclick="UpdateStatusNotify(${meterID},0,'create')" class="noti-btn bg-green" readonly>
                 </div>
             </div>
         `;

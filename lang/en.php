@@ -363,7 +363,7 @@ $lang = [
     "meterinfo" => "Meter Information",
     "energy_distribution" => "Energy Consumption Distribution",
     "energy_usage_graph_kw" => "Energy Usage Graph (kW)",
-    "electricity_cost_baht" => "Electricity Cost (THB)",
+    "electricity_cost_baht" => "Cumulative Electricity Cost (THB)",
     "last" => "Last",
     "dailyreport"=> "Daily Report",
     "demand" => "Demand",
@@ -489,4 +489,59 @@ $lang = [
     "delete_failed"         => "Delete Failed",
     "delete_error_desc"     => "An error occurred while deleting data.",
     "status_change_error"   => "An error occurred while changing status. Please try again.",
+
+    // ── Location / group selector (stepper) ──
+    "select_project_for_energy" => "Select a location or project to view energy data",
+    "select_group_for_energy"   => "Select a group to view energy data",
+    "search_location"           => "Search location...",
+    "search_group"              => "Search group...",
+    "step_location"             => "Location",
+    "step_group"                => "Group",
+    "no_location_found"         => "No location found",
+    "no_group_found"            => "No group found in this location",
+    "groups_unit"              => "groups",
+
+    // ── Edit / delete modal (used by management-* pages) ──
+    "edit_name"               => "Edit name",
+    "new_name"                => "New name",
+    "confirm_deletion"        => "Confirm deletion",
+    "confirm_delete_message"  => "Are you sure you want to delete this item? This action cannot be undone.",
+
+    // ── All meters page (allmeter) ──
+    "search"          => "Search",
+    "total_meters"    => "Total meters",
+    "sum_kw"          => "Total kW",
+    "sum_kwh"         => "Total kWh",
+    "active"          => "Active",
+    "inactive"        => "Inactive",
+    "group_power"     => "Power",
+    "group_energy"    => "Energy",
+    "group_voltage"   => "Voltage",
+    "group_current"   => "Current",
+    "group_other"     => "Other",
+    "no_meter_found"  => "No meter found",
+    "refresh_range_error" => "Please enter a refresh time between 1 and 60 seconds",
+
+    // ── Manage meters page (management-meters) ──
+    "search_meter"       => "Search meters...",
+    "section_general"    => "General",
+    "section_position"   => "3D Position",
+    "section_connection" => "Connection",
+    "section_test"       => "Test connection",
+    "meter_name"         => "Meter name",
+    "detail_more"        => "Connection detail",
+
+    // ── Manage users page (management-users) ──
+    "search_user"        => "Search users...",
+    "add_user"           => "Add user",
+    "add_user_title"     => "Add new user",
+    "role"               => "Role",
+    "role_admin"         => "Admin",
+    "role_user"          => "User",
+    "user_created"       => "User added",
+    "user_updated_ok"    => "User updated",
+    "user_deleted_ok"    => "User deleted",
+    "password_changed"   => "Password changed",
+    "password_mismatch"  => "New password and confirmation do not match",
+    "username_required"  => "Username and password are required",
     ];

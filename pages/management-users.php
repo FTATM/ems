@@ -35,10 +35,32 @@ if ($_SESSION['user']['is_admin'] == 0) {
                 <!-- Card -->
                 <div class="users-card">
 
-                    <!-- Card header -->
-                    <div class="users-card__header">
-                        <span class="users-card__title"><?= $lang['list_of_users'] ?></span>
-                        <span class="users-card__count" id="user-count">...</span>
+                    <!-- Toolbar -->
+                    <div class="users-toolbar">
+                        <div class="users-toolbar__left">
+                            <span class="users-card__title"><?= $lang['list_of_users'] ?></span>
+                            <span class="users-card__count" id="user-count">...</span>
+                        </div>
+                        <div class="users-toolbar__right">
+                            <div class="users-search">
+                                <input id="user-search" type="text" placeholder="<?= $lang['search_user'] ?>"
+                                    oninput="applyUserFilter()" autocomplete="off">
+                                <button type="button" id="user-search-clear" class="users-search__clear" hidden
+                                    onclick="clearUserSearch()" aria-label="<?= $lang['close'] ?>">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M18 6 6 18M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <button type="button" id="btn-add-user" class="btn-add-user" onclick="openAddUserModal()">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 5v14M5 12h14" />
+                                </svg>
+                                <?= $lang['add_user'] ?>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Table scroll wrapper -->
@@ -136,6 +158,40 @@ if ($_SESSION['user']['is_admin'] == 0) {
         </div>
     </div>
 
+    <!-- ── Modal เพิ่มผู้ใช้ ── -->
+    <div class="modal fade" id="addUserModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><?= $lang['add_user_title'] ?></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        aria-label="<?= $lang['close'] ?>"></button>
+                </div>
+                <div class="modal-body">
+                    <label for="add-username" class="form-label"><?= $lang['username'] ?></label>
+                    <input type="text" class="form-control" id="add-username" autocomplete="off">
+                    <label for="add-full_name" class="form-label"><?= $lang['full_name'] ?></label>
+                    <input type="text" class="form-control" id="add-full_name">
+                    <label for="add-phone" class="form-label"><?= $lang['phone'] ?></label>
+                    <input type="text" class="form-control" id="add-phone">
+                    <label for="add-email" class="form-label"><?= $lang['email'] ?></label>
+                    <input type="text" class="form-control" id="add-email">
+                    <label for="add-password" class="form-label"><?= $lang['password'] ?></label>
+                    <input type="password" class="form-control" id="add-password" autocomplete="new-password">
+                    <label for="add-id_card" class="form-label"><?= $lang['id_card'] ?></label>
+                    <input type="text" class="form-control" id="add-id_card">
+                    <label for="add-address" class="form-label"><?= $lang['address'] ?></label>
+                    <input type="text" class="form-control" id="add-address">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary"
+                        data-bs-dismiss="modal"><?= $lang['cancel'] ?></button>
+                    <button type="button" class="btn btn-primary" onclick="submitAddUser()"><?= $lang['save'] ?></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script id="theme-data" type="application/json">
     <?= json_encode($_SESSION['theme'], JSON_UNESCAPED_UNICODE); ?>
     </script>
@@ -144,21 +200,8 @@ if ($_SESSION['user']['is_admin'] == 0) {
     <?php include "../scripts/scriptjs-management-users.html"; ?>
 
     <script>
-    /* ── Update user count badge after table renders ── */
-    window.addEventListener('load', () => {
-        const observer = new MutationObserver(() => {
-            const rows = document.querySelectorAll('#table-user tbody tr');
-            const badge = document.getElementById('user-count');
-            if (badge && rows.length > 0) {
-                badge.textContent = rows.length + ' <?= $lang['list'] ?>';
-            }
-        });
-        const table = document.getElementById('table-user');
-        if (table) observer.observe(table, {
-            childList: true,
-            subtree: true
-        });
-    });
+    /* ── User count badge label (จำนวนรวมตั้งใน applyUserFilter ของ scriptjs) ── */
+    window.USER_COUNT_LABEL = '<?= $lang['list'] ?>';
     </script>
 
 </body>

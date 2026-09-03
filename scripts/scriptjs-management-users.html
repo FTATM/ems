@@ -1,293 +1,331 @@
-<script> 
+<script>
+const LANG = <?= json_encode($lang, JSON_UNESCAPED_UNICODE) ?>;
+
 let currentPage = 1;
-const  rowsPerPage = 10 ; 
-let user_data = [] ;
+const rowsPerPage = 10;
+let allUsers = [];   // ทั้งหมดจาก server
+let viewUsers = [];  // หลัง filter ด้วยช่องค้นหา
 
 async function fetchUserData() {
-    const response = await fetch('../config/fetch-user.php'); 
+    const response = await fetch('../config/fetch-user.php');
     const json = await response.json();
-    return json.data;
+    return json.data || [];
 }
-
 
 document.addEventListener("DOMContentLoaded", async () => {
-    user_data = await fetchUserData(); 
-    renderTablePage(user_data, currentPage) 
-    renderPagination(user_data.length, currentPage) ;
+    allUsers = await fetchUserData();
+    applyUserFilter();
+
+    const form = document.getElementById('changePasswordForm');
+    if (form) {
+        form.addEventListener('submit', (e) => { e.preventDefault(); submitChangePassword(); });
+    }
 });
 
-function renderTablePage(user_data, currentPage) {
+/* ── Search / filter ── */
+function applyUserFilter() {
+    const box = document.getElementById('user-search');
+    const raw = box ? box.value : '';
+    const term = raw.trim().toLowerCase();
+
+    const clearBtn = document.getElementById('user-search-clear');
+    if (clearBtn) clearBtn.hidden = raw.length === 0;
+
+    viewUsers = !term ? allUsers.slice() : allUsers.filter(u => {
+        return [u.username, u.full_name, u.email, u.phone, u.id_card, u.address]
+            .map(v => (v || '').toString().toLowerCase())
+            .join(' ')
+            .includes(term);
+    });
+
+    const maxPage = Math.max(1, Math.ceil(viewUsers.length / rowsPerPage));
+    if (currentPage > maxPage) currentPage = maxPage;
+
+    const badge = document.getElementById('user-count');
+    if (badge) badge.textContent = viewUsers.length + ' ' + (window.USER_COUNT_LABEL || '');
+
+    renderTablePage(viewUsers, currentPage);
+    renderPagination(viewUsers.length, currentPage);
+}
+
+function clearUserSearch() {
+    const box = document.getElementById('user-search');
+    if (box) box.value = '';
+    currentPage = 1;
+    applyUserFilter();
+    if (box) box.focus();
+}
+
+function initials(str) {
+    const parts = (str || '').trim().split(/\s+/).filter(Boolean).slice(0, 2);
+    if (!parts.length) return '?';
+    return parts.map(p => p[0]).join('').toUpperCase();
+}
+
+function esc(s) {
+    return (s ?? '').toString().replace(/[&<>"']/g, c => (
+        { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+    ));
+}
+
+/* ปิด modal + เก็บกวาด backdrop ที่บางครั้งค้าง (bootstrap 5 + jQuery 2.1.1 บนโปรเจกต์นี้) */
+function closeModal(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    bootstrap.Modal.getOrCreateInstance(el).hide();
+    setTimeout(() => {
+        if (!document.querySelector('.modal.show')) {
+            document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+        }
+    }, 400);
+}
+
+function renderTablePage(list, page) {
     const table = document.getElementById('table-user');
-    
     table.innerHTML = "";
 
-    // สร้างหัวตาราง (thead)
     const thead = document.createElement("thead");
-    const headerRow = document.createElement("tr") ;
-    
-    headerRow.innerHTML = `
-    <th class="text-white" style="width:8%; background-color:#001B5E;"><?= $lang['username'] ?></th>
-    <th class="text-white" style="width:13%; background-color:#001B5E;"><?= $lang['full_name'] ?></th>
-    <th class="text-white" style="width:10%; background-color:#001B5E;"><?= $lang['phone'] ?></th>
-    <th class="text-white" style="width:18%; background-color:#001B5E;"><?= $lang['email'] ?></th>
-    <th class="text-white" style="width:14%; background-color:#001B5E;"><?= $lang['id_card'] ?></th>
-    <th class="text-white" style="width:12%; background-color:#001B5E;"><?= $lang['address'] ?></th>
-    <th class="text-white" style="width:20%; background-color:#001B5E;"><?= $lang['actions'] ?></th>
-`;
-    thead.appendChild(headerRow) ;
-    table.appendChild(thead) ; 
+    thead.innerHTML = `
+        <tr>
+            <th>${esc(LANG.username || 'User')}</th>
+            <th>${esc(LANG.role || 'Role')}</th>
+            <th>${esc(LANG.phone || 'Phone')}</th>
+            <th>${esc(LANG.email || 'Email')}</th>
+            <th>${esc(LANG.id_card || 'ID Card')}</th>
+            <th>${esc(LANG.address || 'Address')}</th>
+            <th>${esc(LANG.actions || 'Actions')}</th>
+        </tr>`;
+    table.appendChild(thead);
 
-    // slice ข้อมูลเฉพาะหน้าปัจจุบัน
-    const start = (currentPage - 1) * rowsPerPage;
-    const end = start + rowsPerPage;
-    const pageData = user_data.slice(start, end);
+    const start = (page - 1) * rowsPerPage;
+    const pageData = list.slice(start, start + rowsPerPage);
 
-    // สร้าง tbody
-        const tbody = document.createElement("tbody");
-        pageData.forEach(row => {
-            const tr = document.createElement("tr");
+    const tbody = document.createElement("tbody");
 
-            tr.innerHTML = `
-            <td>${row.username}</td>
-            <td style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 90px;">${row.full_name}</td>
-            <td>${row.phone}</td>
-            <td>${row.email}</td>
-            <td>${row.id_card}</td>
-            <td style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100px;">${row.address}</td>
-            <td class="action-cell">
-    <button class="btn-action btn-action--edit" onclick="openEditModal(${row.id})" title="แก้ไข">
-        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
-             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-        </svg>
-        <?= $lang['edit'] ?>
-    </button>
-    <button class="btn-action btn-action--password" onclick="openChangedPasswordModal(${row.id})" title="เปลี่ยนรหัสผ่าน">
-        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
-             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-        </svg>
-        <?= $lang['password'] ?>
-    </button>
-    <button class="btn-action btn-action--delete" onclick="openDeleteModal(${row.id})" title="ลบ">
-        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
-             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="3 6 5 6 21 6"/>
-            <path d="M19 6l-1 14H6L5 6"/>
-            <path d="M10 11v6"/><path d="M14 11v6"/>
-            <path d="M9 6V4h6v2"/>
-        </svg>
-        <?= $lang['delete'] ?>
-    </button>
-</td>
-            `;
-            tbody.appendChild(tr);
-        });
-
+    if (!pageData.length) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--text-muted)">${esc(LANG.no_meter_found || 'No data')}</td></tr>`;
         table.appendChild(tbody);
-        
+        return;
+    }
+
+    pageData.forEach(row => {
+        const isAdmin = Number(row.is_admin) !== 0;
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>
+                <div class="user-cell">
+                    <span class="user-avatar">${esc(initials(row.full_name || row.username))}</span>
+                    <span class="user-cell__text">
+                        <span class="user-cell__name">${esc(row.full_name || '-')}</span>
+                        <span class="user-cell__handle">@${esc(row.username)}</span>
+                    </span>
+                </div>
+            </td>
+            <td><span class="${isAdmin ? 'badge-admin' : 'badge-user'}">${esc(isAdmin ? (LANG.role_admin || 'Admin') : (LANG.role_user || 'User'))}</span></td>
+            <td>${esc(row.phone || '-')}</td>
+            <td>${esc(row.email || '-')}</td>
+            <td>${esc(row.id_card || '-')}</td>
+            <td class="cell-truncate" title="${esc(row.address || '')}">${esc(row.address || '-')}</td>
+            <td class="action-cell">
+                <button class="btn-action btn-action--edit" onclick="openEditModal(${row.id})" title="${esc(LANG.edit || 'Edit')}" aria-label="${esc(LANG.edit || 'Edit')}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    </svg>
+                </button>
+                <button class="btn-action btn-action--password" onclick="openChangedPasswordModal(${row.id})" title="${esc(LANG.change_password || 'Password')}" aria-label="${esc(LANG.change_password || 'Password')}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                </button>
+                <button class="btn-action btn-action--delete" onclick="openDeleteModal(${row.id})" title="${esc(LANG.delete || 'Delete')}" aria-label="${esc(LANG.delete || 'Delete')}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6l-1 14H6L5 6"/>
+                        <path d="M10 11v6"/><path d="M14 11v6"/>
+                        <path d="M9 6V4h6v2"/>
+                    </svg>
+                </button>
+            </td>`;
+        tbody.appendChild(tr);
+    });
+
+    table.appendChild(tbody);
 }
 
-function getUser(id) {
-    let user = [];
-    user_data.forEach(row => {
-        if (row.id === id) {
-            user = row;
-        }
-    })
-    return user; 
-}
+function renderPagination(totalRows, page) {
+    const paginationDiv = document.getElementById("pagination");
+    paginationDiv.innerHTML = "";
 
-function renderPagination(totalRows, currentPage) {
-    const paginationDiv = document.getElementById("pagination") 
-    paginationDiv.innerHTML = "" ;
+    const totalPages = Math.ceil(totalRows / rowsPerPage);
+    if (totalPages <= 1) return;
 
-    const totalPages = Math.ceil(totalRows / rowsPerPage) ;
-
-    for(let i=1 ; i<= totalPages; i++ ){
-        const btn = document.createElement("button"); 
-        btn.className = `btn btn-sm text-white`; 
-        btn.style.backgroundColor = `${i === currentPage ? '#001B5E' : '#555555'}` ; 
+    for (let i = 1; i <= totalPages; i++) {
+        const btn = document.createElement("button");
+        btn.className = "btn btn-sm";
+        if (i === page) btn.classList.add('is-active');
         btn.textContent = i;
-
         btn.addEventListener("click", () => {
-            currentPage = i; // อัปเดตหน้าปัจจุบัน
-            renderTablePage(user_data, i)
-            renderPagination(user_data.length, i);
+            currentPage = i;
+            renderTablePage(viewUsers, i);
+            renderPagination(viewUsers.length, i);
         });
         paginationDiv.appendChild(btn);
-        
     }
 }
 
-function UpdatedActionUser(id,action,value) {
-   let form = new FormData();
-   form.append("id", id); 
-   form.append("action", action);  // full_name, phone, address inside => action[] 
-   form.append("value", value); 
-
-   fetch('../config/update-user.php', {
-            method: 'POST',
-            body: form
-        })
-            .then(response => response.json())  // แก้การเรียก .json() ให้ถูกต้อง
-            .then(data => {
-                if (data.success) {
-                    console.log("อัปเดตสำเร็จ:", data.message);
-                    fetchUserData().then(data => {
-                        user_data = data; // อัปเดตข้อมูลผู้ใช้
-                        
-                        renderTablePage(user_data, currentPage); // รีเฟรชตาราง
-                        renderPagination(user_data.length, currentPage); // รีเฟรชการแบ่งหน้า
-                    });
-
-                } else {
-                    console.error("เกิดข้อผิดพลาด:", data.message);
-                }
-            })
-            .catch(error => {
-                console.error("ข้อผิดพลาดในการเชื่อมต่อ:", error);
-            });
-}
- 
+/* ── Edit ── */
 function openEditModal(id) {
-   const userArr = Object.values(user_data);
-    const user = userArr.find(u => u.id == id);
-   console.log(typeof user);
-   console.log(typeof id, 'id:', id); 
-   
-   if(!user) return alert('not found user') ; 
-   document.getElementById('edit-id').value = user.id;
-   document.getElementById('edit-full_name').value = user.full_name; 
-   document.getElementById('edit-phone').value = user.phone
-   document.getElementById('edit-address').value = user.address;
+    const user = allUsers.find(u => u.id == id);
+    if (!user) return alertMessages('error', LANG.usermnm || 'User', 'Not found');
 
-   var modal = new bootstrap.Modal(document.getElementById('editModal'), {
-       keyboard: false
-   });
-   modal.show();
+    document.getElementById('edit-id').value = user.id;
+    document.getElementById('edit-full_name').value = user.full_name || '';
+    document.getElementById('edit-phone').value = user.phone || '';
+    document.getElementById('edit-address').value = user.address || '';
+
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('editModal'), { keyboard: false }).show();
 }
 
-function submitEdit() {
-    let id = document.getElementById('edit-id').value; 
-    let full_name = document.getElementById('edit-full_name').value; 
-    let phone = document.getElementById('edit-phone').value; 
-    let address = document.getElementById('edit-address').value; 
-
-    UpdatedActionUser(id, 'full_name', full_name) ;
-    UpdatedActionUser(id, 'phone', phone) ;
-    UpdatedActionUser(id, 'address', address) ;
-   // close modal
-  bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
+function postUpdateUser(id, action, value) {
+    const form = new FormData();
+    form.append("id", id);
+    form.append("action", action);
+    form.append("value", value);
+    return fetch('../config/update-user.php', { method: 'POST', body: form }).then(r => r.json());
 }
 
+async function submitEdit() {
+    const id = document.getElementById('edit-id').value;
+    const full_name = document.getElementById('edit-full_name').value;
+    const phone = document.getElementById('edit-phone').value;
+    const address = document.getElementById('edit-address').value;
+
+    try {
+        await Promise.all([
+            postUpdateUser(id, 'full_name', full_name),
+            postUpdateUser(id, 'phone', phone),
+            postUpdateUser(id, 'address', address),
+        ]);
+        allUsers = await fetchUserData();
+        applyUserFilter();
+        closeModal('editModal');
+        alertMessages('success', LANG.user_updated_ok || 'Updated', '', 1400);
+    } catch (e) {
+        console.error(e);
+        alertMessages('error', LANG.error || 'Error', e.message || '');
+    }
+}
+
+/* ── Add ── */
+function openAddUserModal() {
+    ['username', 'full_name', 'phone', 'email', 'password', 'id_card', 'address']
+        .forEach(f => { const el = document.getElementById('add-' + f); if (el) el.value = ''; });
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('addUserModal'), { keyboard: false }).show();
+}
+
+async function submitAddUser() {
+    const get = f => (document.getElementById('add-' + f)?.value || '').trim();
+    const username = get('username');
+    const password = document.getElementById('add-password')?.value || '';
+
+    if (!username || !password) {
+        return alertMessages('warning', LANG.add_user_title || 'Add user', LANG.username_required || 'Username and password are required');
+    }
+
+    const form = new FormData();
+    ['username', 'full_name', 'phone', 'email', 'id_card', 'address'].forEach(f => form.append(f, get(f)));
+    form.append('password', password);
+
+    try {
+        const res = await fetch('../config/create-user.php', { method: 'POST', body: form });
+        const data = await res.json();
+        if (data.success) {
+            allUsers = await fetchUserData();
+            applyUserFilter();
+            closeModal('addUserModal');
+            alertMessages('success', LANG.user_created || 'User added', '', 1400);
+        } else {
+            alertMessages('error', LANG.add_user_title || 'Add user', data.message || 'Error');
+        }
+    } catch (e) {
+        console.error(e);
+        alertMessages('error', LANG.error || 'Error', e.message || '');
+    }
+}
+
+/* ── Delete ── */
 function openDeleteModal(id) {
-   document.getElementById('delete-id').value = id; 
-    const userArr = Object.values(user_data);
-   const user = userArr.find(u => u.id == id);
-
-   if (!user) return alert('not found user');
-   var modal = new bootstrap.Modal(document.getElementById('deleteModal'), {
-       keyboard: false
-   });
-   modal.show();
+    const user = allUsers.find(u => u.id == id);
+    if (!user) return alertMessages('error', LANG.usermnm || 'User', 'Not found');
+    document.getElementById('delete-id').value = id;
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('deleteModal'), { keyboard: false }).show();
 }
 
-function submitDelete() {
-    let id = document.getElementById('delete-id').value;
-
-    let form = new FormData();
+async function submitDelete() {
+    const id = document.getElementById('delete-id').value;
+    const form = new FormData();
     form.append("id", id);
     form.append("action", "delete");
 
-    fetch('../config/delete-user.php', {
-        method: 'POST',
-        body: form
-    })
-    .then(res => res.json())
-    .then(data => {
+    try {
+        const res = await fetch('../config/delete-user.php', { method: 'POST', body: form });
+        const data = await res.json();
         if (data.success) {
-            // ลบออกจาก array ฝั่งหน้าเว็บ
-            user_data = user_data.filter(u => u.id != id);
-
-            // รีเฟรชตาราง
-            renderTablePage(user_data, currentPage);
-            renderPagination(user_data.length, currentPage);
-
-            bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
+            allUsers = allUsers.filter(u => u.id != id);
+            applyUserFilter();
+            closeModal('deleteModal');
+            alertMessages('success', LANG.user_deleted_ok || 'User deleted', '', 1400);
         } else {
-            alert(data.message);
+            alertMessages('error', LANG.confirm_deletion || 'Delete', data.message || 'Error');
         }
-    })
-    .catch(err => {
-        console.error(err);
-        alert("เกิดข้อผิดพลาด");
-    });
+    } catch (e) {
+        console.error(e);
+        alertMessages('error', LANG.error || 'Error', e.message || '');
+    }
 }
 
+/* ── Change password ── */
 function openChangedPasswordModal(id) {
-    document.getElementById('change-password-id').value = id; 
-    var modal = new bootstrap.Modal(document.getElementById('changePasswordModal'), {
-        keyboard: false
-    });
-    modal.show() ;
+    document.getElementById('change-password-id').value = id;
+    document.getElementById('change-password-new').value = '';
+    document.getElementById('change-password-confirm').value = '';
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('changePasswordModal'), { keyboard: false }).show();
 }
 
-function submitChangePassword() {
-    let id = document.getElementById('change-password-id').value;
-    let new_password = document.getElementById('change-password-new').value;
-    let confirm_password = document.getElementById('change-password-confirm').value;
+async function submitChangePassword() {
+    const id = document.getElementById('change-password-id').value;
+    const new_password = document.getElementById('change-password-new').value;
+    const confirm_password = document.getElementById('change-password-confirm').value;
 
     if (new_password !== confirm_password) {
-        return alert("New password and confirmation do not match");
+        return alertMessages('warning', LANG.change_password || 'Change password', LANG.password_mismatch || 'Passwords do not match');
     }
 
-    let form = new FormData();
+    const form = new FormData();
     form.append("user_id", id);
     form.append("new_password", new_password);
     form.append("confirm_password", confirm_password);
 
-    fetch('../config/change-password.php', {
-        method: 'POST',
-        body: form
-    })
-    .then(response => response.json())
-    .then(data => {
+    try {
+        const res = await fetch('../config/change-password.php', { method: 'POST', body: form });
+        const data = await res.json();
         if (data.success) {
-        Swal.fire({
-          icon: 'success',
-          title: 'เปลี่ยนรหัสผ่านสำเร็จ',
-          text: 'เปลี่ยนรหัสผ่านสำเร็จ',
-          showConfirmButton: false,
-          timer: 1500
-        }).then(() => {
-          window.location.href = 'users-management.php';
-          console.log('changePassword called');
-        });
-      } else {
-        Swal.fire({
-          icon: 'error',
-          title: 'ผิดพลาด',
-          text: data.message
-        });
-      }
-    })
-    .catch(error => {
-        console.error("Error:", error);
-        alert("เกิดข้อผิดพลาดในการเปลี่ยนรหัสผ่าน กรุณาลองใหม่อีกครั้ง\n" + error);
-    });
-}
-
-document.addEventListener("DOMContentLoaded", function() {
-    var form = document.getElementById('changePasswordForm');
-    if(form) {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            submitChangePassword();
-        });
+            closeModal('changePasswordModal');
+            alertMessages('success', LANG.password_changed || 'Password changed', '', 1400);
+        } else {
+            alertMessages('error', LANG.change_password || 'Change password', data.error || data.message || 'Error');
+        }
+    } catch (e) {
+        console.error(e);
+        alertMessages('error', LANG.error || 'Error', e.message || '');
     }
-});
-
+}
 </script>

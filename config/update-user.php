@@ -17,16 +17,17 @@ if (!$conn) {
 // ใช้ Ternary operator
 $id = $_POST['id'] ?? null;
 $value = $_POST['value'] ?? '';
-// $status = $_POST['status'] ?? ''; 
+$action = $_POST['action'] ?? '';
+// $status = $_POST['status'] ?? '';
 
-if (!$id || !$value) {
+if (!$id) {
     echo json_encode(['success' => false, 'message' => 'ข้อมูลไม่ครบถ้วน']);
     exit;
 }
 
 $fields = ['full_name', 'phone', 'address'];
-if (in_array($_POST['action'], $fields)) {
-    $sql = "UPDATE users SET {$_POST['action']} = ? WHERE id = ?";
+if (in_array($action, $fields, true)) {
+    $sql = "UPDATE users SET {$action} = ? WHERE id = ?";
     $stmt = $conn->prepare($sql);
     if ($stmt) {
         $stmt->bind_param("si", $value, $id);

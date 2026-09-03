@@ -1,3 +1,7 @@
+/* ================================================
+   allmeter.css — EMS "ทุกมิเตอร์" : KPI + ตารางจัดกลุ่ม
+   ================================================ */
+
 :root {
   --primary: #8BAE66;
   --primary-light: rgba(139, 174, 102, 0.12);
@@ -17,6 +21,8 @@
   --radius-badge: 999px;
   --transition: 200ms ease;
   --topbar-height: 56px;
+  --col-name-w: 160px;
+  --col-proto-w: 104px;
 }
 
 html.dark {
@@ -45,7 +51,7 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 0 1.75rem;
-  height: var(--topbar-height);
+  min-height: var(--topbar-height);
   background: var(--bg-card);
   border-bottom: 1.5px solid var(--border-color);
   box-shadow: var(--shadow-sm);
@@ -77,6 +83,7 @@ body {
   border: 1.5px solid var(--border-color);
   border-radius: 12px;
   padding: 0.35rem 0.9rem;
+  flex-shrink: 0;
 }
 
 .refresh-label {
@@ -114,6 +121,114 @@ body {
   to   { transform: rotate(0deg); }
 }
 
+/* ── Search box (ยก pattern จาก locations.css) ── */
+.allmeter-search {
+  position: relative;
+  flex: 1 1 auto;
+  max-width: 420px;
+}
+
+.allmeter-search::before {
+  content: 'search';
+  font-family: 'Material Icons Outlined';
+  position: absolute;
+  left: 0.9rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.15rem;
+  color: var(--text-body);
+  pointer-events: none;
+  z-index: 1;
+  line-height: 1;
+  transition: color 200ms ease;
+}
+
+.allmeter-search:focus-within::before { color: var(--primary); }
+
+/* specificity ต้องชนะ style.html `html:not(.dark) input:not(#group-search)` (1,1,2) */
+.allmeter-topbar .allmeter-search input#meter-search {
+  width: 100% !important;
+  padding: 0.5rem 1rem 0.5rem 2.6rem !important;
+  border-radius: 50px !important;
+  border: 1.5px solid var(--border-color) !important;
+  background-color: var(--bg-page) !important;
+  color: var(--text-card) !important;
+  -webkit-text-fill-color: var(--text-card) !important;
+  font-size: 0.9rem !important;
+  font-family: inherit !important;
+  outline: none !important;
+  transition: border-color 200ms ease, box-shadow 200ms ease, background 200ms ease !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+}
+
+.allmeter-topbar .allmeter-search input#meter-search::placeholder {
+  color: var(--text-body) !important;
+  -webkit-text-fill-color: var(--text-body) !important;
+  opacity: 1 !important;
+}
+
+.allmeter-topbar .allmeter-search input#meter-search:focus {
+  border-color: var(--primary) !important;
+  background-color: var(--bg-card) !important;
+  box-shadow: 0 0 0 3px var(--primary-light) !important;
+}
+
+/* ── KPI tiles ── */
+.allmeter-kpi {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  padding: 1.25rem 1.75rem 0;
+  flex-shrink: 0;
+}
+
+.kpi-tile {
+  background: var(--bg-card);
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-sm);
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.kpi-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text-heading);
+  line-height: 1.1;
+}
+
+.kpi-label {
+  font-size: 0.8rem;
+  color: var(--text-body);
+}
+
+.kpi-status {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.kpi-status-sep {
+  color: var(--text-body);
+  font-weight: 400;
+  margin: 0 0.15rem;
+}
+
+.kpi-dot {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.kpi-dot--on  { background: var(--primary); }
+.kpi-dot--off { background: #9ca3af; }
+
 /* ── Main Layout ── */
 .allmeter-main {
   padding: 1.75rem;
@@ -132,109 +247,122 @@ body {
   flex-direction: column;
 }
 
-/* ── Scrollable table wrapper with fixed height ── */
+/* ── Scrollable table wrapper ── */
 .allmeter-card .table-responsive {
-  max-height: calc(100svh - var(--topbar-height) - 56px - 1.75rem * 2 - 56px - 60px);
-  overflow-y: auto;
-  overflow-x: auto;
+  position: relative;
+  max-height: calc(100svh - 370px);
+  min-height: 220px;
+  overflow: auto;
   flex: 1;
-}
-
-/* Sticky thead inside scrollable area */
-.allmeter-table thead th,
-table#table-meter thead th {
-  position: sticky !important;
-  top: 0;
-  z-index: 2;
 }
 
 /* ── Table ── */
 .allmeter-table {
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   font-size: 0.875rem;
   color: var(--text-card);
 }
 
-.allmeter-table thead tr {
-  background: var(--bg-table-header) !important;
-  border-bottom: 2px solid var(--border-color);
-}
-
-.allmeter-table thead th,
-table#table-meter thead th {
-  padding: 0.875rem 1rem !important;
-  font-size: 0.85rem !important;
-  font-weight: 700 !important;
+/* NOTE: scripts/style.html has `table td { background-color: transparent !important }`
+   — ทุก background ของ cell จึงต้องใช้ !important + specificity #table-meter */
+#table-meter thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 0.7rem 1rem;
+  font-size: 0.82rem;
+  font-weight: 700;
   color: var(--text-th) !important;
   background-color: var(--bg-table-header) !important;
   white-space: nowrap;
-  border: none !important;
-  border-right: 1px solid var(--border-color) !important;
-}
-
-.allmeter-table thead th:last-child {
-  border-right: none;
-}
-
-.allmeter-table tbody tr {
   border-bottom: 1px solid var(--border-color);
-  transition: background var(--transition);
+  border-right: 1px solid var(--border-color);
+  text-align: center;
 }
 
-.allmeter-table tbody tr:last-child {
-  border-bottom: none;
+/* แถวที่ 2 ของหัวตาราง (metric) ค้างใต้แถวกลุ่ม */
+#table-meter thead tr:nth-child(2) th {
+  top: 38px;
+  font-weight: 600;
+  font-size: 0.78rem;
 }
 
-.allmeter-table tbody tr:nth-child(even) {
-  background: var(--bg-stripe);
+#table-meter thead th:last-child { border-right: none; }
+
+/* เส้นคั่นกลุ่ม */
+#table-meter th.am-group-start,
+#table-meter td.am-group-start {
+  border-left: 2px solid var(--border-color);
 }
 
-.allmeter-table tbody tr:hover {
-  background: var(--primary-light) !important;
-}
-
-.allmeter-table tbody td {
-  padding: 0.75rem 1rem;
-  border: none;
+/* ── Body ── */
+#table-meter tbody td {
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid var(--border-color);
   border-right: 1px solid var(--border-color);
   white-space: nowrap;
   vertical-align: middle;
+  color: var(--text-card);
+  background-color: var(--bg-card) !important;
 }
 
-html.dark #table-meter * {
-  color: #ffffff !important;
+#table-meter tbody td:last-child { border-right: none; }
+#table-meter tbody tr:last-child td { border-bottom: none; }
+#table-meter tbody tr:nth-child(even) td { background-color: var(--bg-stripe) !important; }
+#table-meter tbody tr:hover td { background-color: var(--primary-light) !important; }
+
+html.dark #table-meter tbody td,
+html.dark #table-meter thead th { color: #ffffff !important; }
+html.dark #table-meter .badge { color: inherit !important; }
+
+/* ── Sticky คอลัมน์ชื่อมิเตอร์ + protocol ── */
+#table-meter .am-col-name,
+#table-meter .am-col-proto {
+  position: sticky;
+  z-index: 3;
+  text-align: left;
 }
 
-html.dark .allmeter-table tbody td {
-  color: #ffffff !important;
+#table-meter .am-col-name  { left: 0; width: var(--col-name-w); min-width: var(--col-name-w); }
+#table-meter .am-col-proto {
+  left: var(--col-name-w);
+  width: var(--col-proto-w);
+  min-width: var(--col-proto-w);
 }
 
-html.dark .allmeter-table thead th {
-  color: #ffffff !important;
+/* occluder: กันข้อความคอลัมน์แรกที่เลื่อนโผล่พ้นขอบคอลัมน์ที่ freeze + เงาแบ่งชั้น */
+#table-meter .am-col-proto::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: -10px;
+  width: 10px;
+  background: inherit;
+  box-shadow: 6px 0 8px -4px rgba(0, 0, 0, 0.14);
 }
 
-.allmeter-table tbody td:last-child {
-  border-right: none;
-}
+#table-meter thead .am-col-name,
+#table-meter thead .am-col-proto { z-index: 5; }
 
 /* ── Protocol Badges ── */
 .allmeter-table .badge {
   display: inline-block;
-  padding: 0.25em 0.65em;
+  padding: 0.25em 0.7em;
   border-radius: var(--radius-badge);
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 600;
   letter-spacing: 0.02em;
+  text-transform: uppercase;
 }
 
-/* TCP badge */
 .badge-tcp {
   background: rgba(59, 130, 246, 0.12);
   color: #2563eb;
   border: 1px solid rgba(59, 130, 246, 0.3);
 }
 
-/* RS485 badge */
 .badge-rs485 {
   background: rgba(245, 158, 11, 0.12);
   color: #d97706;
@@ -243,17 +371,25 @@ html.dark .allmeter-table thead th {
 
 html.dark .badge-tcp {
   background: rgba(59, 130, 246, 0.18);
-  color: #93c5fd;
+  color: #93c5fd !important;
   border-color: rgba(59, 130, 246, 0.35);
 }
 
 html.dark .badge-rs485 {
   background: rgba(245, 158, 11, 0.18);
-  color: #fcd34d;
+  color: #fcd34d !important;
   border-color: rgba(245, 158, 11, 0.35);
 }
 
-/* ── Footer: pagination info + controls ── */
+/* ── Empty state ── */
+.allmeter-empty {
+  padding: 3rem 1rem;
+  text-align: center;
+  color: var(--text-body);
+  font-size: 0.95rem;
+}
+
+/* ── Footer: pagination ── */
 .allmeter-footer {
   display: flex;
   align-items: center;
@@ -270,17 +406,13 @@ html.dark .badge-rs485 {
   color: var(--text-body);
 }
 
-/* ── Pagination Controls ── */
 .allmeter-pagination {
   display: flex;
   gap: 0.35rem;
   align-items: center;
 }
 
-/* Pagination buttons generated by existing JS — override Bootstrap styling */
-#pagination .page-item .page-link,
-.allmeter-pagination button,
-.allmeter-pagination .page-link {
+.allmeter-pagination button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -295,10 +427,8 @@ html.dark .badge-rs485 {
   font-weight: 500;
   cursor: pointer;
   transition: all var(--transition);
-  text-decoration: none;
 }
 
-#pagination .page-item.active .page-link,
 .allmeter-pagination button.active {
   background: var(--primary);
   border-color: var(--primary);
@@ -306,60 +436,24 @@ html.dark .badge-rs485 {
   box-shadow: 0 2px 8px rgba(139, 174, 102, 0.4);
 }
 
-#pagination .page-item .page-link:hover,
-.allmeter-pagination button:hover {
+.allmeter-pagination button:hover:not(.active):not(:disabled) {
   border-color: var(--primary-border);
   color: var(--primary);
   background: var(--primary-light);
-}
-
-#pagination .page-item.active .page-link:hover {
-  background: var(--primary);
-  color: #fff;
-}
-
-/* ── Theme Toggle Button ── */
-.theme-toggle-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.25rem;
-  height: 2.25rem;
-  border-radius: 10px;
-  border: 1.5px solid var(--border-color);
-  background: var(--bg-card);
-  color: var(--text-body);
-  cursor: pointer;
-  transition: color var(--transition), border-color var(--transition),
-              background var(--transition), transform var(--transition);
-  flex-shrink: 0;
-}
-
-.theme-toggle-btn:hover {
-  color: var(--primary);
-  border-color: var(--primary-border);
-  background: var(--primary-light);
-  transform: rotate(15deg);
-}
-
-.theme-toggle-btn .material-icons-outlined {
-  font-size: 1.2rem;
 }
 
 /* ── Responsive ── */
+@media (max-width: 992px) {
+  .allmeter-kpi { grid-template-columns: repeat(2, 1fr); }
+}
+
 @media (max-width: 768px) {
   .allmeter-topbar {
     flex-wrap: wrap;
-    height: auto;
     padding: 0.75rem 1rem;
   }
-
-  .allmeter-main {
-    padding: 1rem;
-  }
-
-  .allmeter-topbar__refresh {
-    width: 100%;
-    justify-content: flex-end;
-  }
+  .allmeter-search { max-width: none; order: 3; width: 100%; }
+  .allmeter-main { padding: 1rem; }
+  .allmeter-kpi { padding: 1rem 1rem 0; }
+  .allmeter-card .table-responsive { max-height: calc(100svh - 420px); }
 }

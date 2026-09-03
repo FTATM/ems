@@ -1,172 +1,264 @@
 <script>
-    let meters = [];
-    let filteredMeters = [];
-    let filteredDataInMeters = [];
-    let types = [];
-    let locations = [];
-    let groups = [];
-    const rowsPerPage = 12;
-    let currentPage = 1;
-    let refreshIntervalId;
+/* ================================================================
+   scriptjs-allmeter.html — ทุกมิเตอร์ในกลุ่ม
+   KPI tiles + ตารางจัดกลุ่มคอลัมน์ (Power / Energy / Voltage / Current)
+   ================================================================ */
 
-    const typeMeterID = "<?=$_SESSION['tid'];?>";
-    const groupID = "<?=$_SESSION['gid'];?>";
+let meters = [];
+let types = [];
+let groupedTypes = [];
+let searchTerm = '';
+const rowsPerPage = 12;
+let currentPage = 1;
+let refreshIntervalId;
 
-    document.addEventListener("DOMContentLoaded", async () => {
-        await fetchAll();
-        await createTable();
-        await process();
-        await setRefreshTime();
+const typeMeterID = "<?= $_SESSION['tid']; ?>";
+const groupID = "<?= $_SESSION['gid']; ?>";
+
+document.addEventListener("DOMContentLoaded", async () => {
+    await loadTypes();
+    await refreshMeters();
+    createTable();
+    updateData(1);
+    setRefreshTime();
+});
+
+/* ── โหลดชนิดข้อมูล (กรอง is_deleted เอง — endpoint นี้ไม่กรองให้) ── */
+async function loadTypes() {
+    try {
+        const res = await fetch("../config/fetch-data_type.php");
+        const json = await res.json();
+        types = (json.data || [])
+            .filter(t => Number(t.is_deleted) === 0)
+            .sort((a, b) => Number(a.id) - Number(b.id));
+    } catch (e) {
+        console.error("โหลด data_type ไม่สำเร็จ:", e);
+        types = [];
+    }
+}
+
+/* ── โหลด/รีเฟรชค่ามิเตอร์ ── */
+async function refreshMeters() {
+    meters = await fetchRealtimeOfMeters(typeMeterID, groupID);
+    renderKPI();
+}
+
+/* ── รอบ refresh: ดึงใหม่ + วาดใหม่ โดยคงหน้า/ตัวกรองปัจจุบัน ── */
+async function process() {
+    await refreshMeters();
+    updateData(currentPage);
+}
+
+/* ── หาค่าตาม type_id (แก้บั๊กเดิมที่ index ด้วย t.id-1) ── */
+function valueByType(meter, typeId) {
+    const hit = (meter.data || []).find(d => String(d.type_id) === String(typeId));
+    if (!hit) return '—';
+    const v = hit.value;
+    return (v === null || v === undefined || v === '') ? '—' : v;
+}
+
+/* ── จัดกลุ่มชนิดข้อมูลจากชื่อ + กลุ่ม "อื่นๆ" กันตก ── */
+function groupKeyFor(name) {
+    const n = (name || '').trim();
+    if (/^voltage/i.test(n)) return 'group_voltage';
+    if (/^current/i.test(n)) return 'group_current';
+    if (/h$/i.test(n)) return 'group_energy';               // kWh, kVAh, kVARh
+    if (/^(kw|kva|kvar|pf|frequency)$/i.test(n)) return 'group_power';
+    return 'group_other';
+}
+
+function groupTypes(list) {
+    const order = ['group_power', 'group_energy', 'group_voltage', 'group_current', 'group_other'];
+    const buckets = {};
+    list.forEach(t => {
+        const k = groupKeyFor(t.name);
+        (buckets[k] = buckets[k] || []).push(t);
+    });
+    return order
+        .filter(k => buckets[k] && buckets[k].length)
+        .map(k => ({ key: k, label: (LANG && LANG[k]) || k, items: buckets[k] }));
+}
+
+/* ── สร้างหัวตาราง 2 แถว ── */
+function createTable() {
+    groupedTypes = groupTypes(types);
+    const thead = document.querySelector('#table-meter thead');
+    thead.innerHTML = '';
+
+    const r1 = document.createElement('tr');
+    const r2 = document.createElement('tr');
+
+    const thName = document.createElement('th');
+    thName.className = 'am-col-name';
+    thName.rowSpan = 2;
+    thName.textContent = (LANG && LANG.nmeters) || 'Meter';
+    r1.appendChild(thName);
+
+    const thProto = document.createElement('th');
+    thProto.className = 'am-col-proto';
+    thProto.rowSpan = 2;
+    thProto.textContent = (LANG && LANG.protocol) || 'Protocol';
+    r1.appendChild(thProto);
+
+    groupedTypes.forEach(g => {
+        const gh = document.createElement('th');
+        gh.className = 'am-group-head am-group-start';
+        gh.colSpan = g.items.length;
+        gh.textContent = g.label;
+        r1.appendChild(gh);
+
+        g.items.forEach((t, i) => {
+            const mh = document.createElement('th');
+            mh.className = 'text-center' + (i === 0 ? ' am-group-start' : '');
+            mh.textContent = t.name;
+            r2.appendChild(mh);
+        });
     });
 
-    async function fetchAll() {
-        let res_location = await fetch("../config/fetch-locations.php");
-        let json_location = await res_location.json();
-        locations = json_location.data;
+    thead.appendChild(r1);
+    thead.appendChild(r2);
+}
 
-        let res_group = await fetch("../config/fetch-groups.php");
-        let json_group = await res_group.json();
-        groups = json_group.data;
+/* ── แถวที่ผ่านตัวกรองค้นหา ── */
+function currentRows() {
+    const all = Object.values(meters);
+    if (!searchTerm) return all;
+    return all.filter(m =>
+        (m.name || '').toLowerCase().includes(searchTerm) ||
+        (m.ip_address || '').toLowerCase().includes(searchTerm)
+    );
+}
 
-        let responsetype = await fetch("../config/fetch-data_type.php");
-        let jsontype = await responsetype.json();
-        types = jsontype.data;
+/* ── วาดเนื้อตาราง + pagination ── */
+function updateData(page) {
+    currentPage = page;
+    const tbody = document.querySelector('#table-meter tbody');
+    const tableEl = document.getElementById('table-meter');
+    const emptyEl = document.getElementById('allmeter-empty');
+    tbody.innerHTML = '';
 
-        meters = await fetchRealtimeOfMeters(typeMeterID, groupID);
-        console.log(meters);
+    const rows = currentRows();
 
+    if (rows.length === 0) {
+        tableEl.style.display = 'none';
+        emptyEl.hidden = false;
+        renderPagination(0, 1);
+        return;
     }
+    tableEl.style.display = '';
+    emptyEl.hidden = true;
 
+    const start = (page - 1) * rowsPerPage;
+    const pageData = rows.slice(start, start + rowsPerPage);
 
-    async function process() {
-        // await filterDataInMeters();
-        await updateData(currentPage);
-    }
+    pageData.forEach(meter => {
+        const tr = document.createElement('tr');
 
+        const tdName = document.createElement('td');
+        tdName.className = 'am-col-name';
+        tdName.textContent = meter.name || '—';
+        tr.appendChild(tdName);
 
-    function createTable() {
-        const table = document.getElementById("table-meter");
-        const headerRow = table.querySelector('thead').querySelector('tr');
+        const tdProto = document.createElement('td');
+        tdProto.className = 'am-col-proto';
+        const p = (meter.protocol || '').toLowerCase();
+        const cls = p === 'tcp' ? 'badge badge-tcp' : (p === 'rs485' ? 'badge badge-rs485' : 'badge');
+        tdProto.innerHTML = `<span class="${cls}">${meter.protocol || '—'}</span>`;
+        tr.appendChild(tdProto);
 
-        types.forEach(col => {
-            const th = document.createElement("th");
-            th.style.whiteSpace = "nowrap";
-            th.className = "text-center";
-            th.style.color = 'white';
-            th.textContent = col.name;
-            headerRow.appendChild(th);
-        });
-
-        applyDarkModeColors();
-    }
-
-    async function updateData(page) {
-        currentPage = page;
-        const table = document.getElementById("table-meter");
-        table.querySelector('tbody').innerHTML = "";
-
-        const start = (page - 1) * rowsPerPage;
-        const end = start + rowsPerPage;
-        const pageData = Object.values(meters).slice(start, end);
-
-        pageData.forEach(meter => {
-            const tr = document.createElement("tr");
-            tr.innerHTML = `
-            <td>${meter.name}</td>
-            <td class="text-center text-nowrap">${meter.ip_address}</td>
-            <td class="text-center">${meter.port}</td>
-            <td class="text-center">${meter.protocol}</td>
-            `;
-
-            Object.values(types).forEach(t => {
-                let column = {};
-                if (meter.data.length > 0) {
-                    column = meter.data[Number(t.id) - 1];
-                }
-                const td = document.createElement("td");
-                td.className = "text-center";
-                td.innerHTML = column.value ? column.value : "-";
+        groupedTypes.forEach(g => {
+            g.items.forEach((t, i) => {
+                const td = document.createElement('td');
+                td.className = 'text-center' + (i === 0 ? ' am-group-start' : '');
+                td.textContent = valueByType(meter, t.id);
                 tr.appendChild(td);
             });
-            table.querySelector('tbody').appendChild(tr);
         });
 
-        renderPagination(Object.values(meters).length, page);
+        tbody.appendChild(tr);
+    });
 
-        // ✅ apply สีหลัง render เสร็จ
-        applyDarkModeColors();
+    renderPagination(rows.length, page);
+}
+
+/* ── KPI: คิดจากมิเตอร์ทั้งหมดในกลุ่ม (ไม่ตามตัวกรอง) ── */
+function renderKPI() {
+    const all = Object.values(meters);
+    const kwId = (types.find(t => (t.name || '').trim().toLowerCase() === 'kw') || {}).id;
+    const kwhId = (types.find(t => (t.name || '').trim().toLowerCase() === 'kwh') || {}).id;
+
+    const sumFor = (id) => {
+        if (id == null) return null;
+        return all.reduce((s, m) => {
+            const v = parseFloat(valueByType(m, id));
+            return s + (isFinite(v) ? v : 0);
+        }, 0);
+    };
+    const fmt = (n) => n == null ? '–' : n.toLocaleString(undefined, { maximumFractionDigits: 2 });
+
+    const active = all.filter(m => Number(m.is_active) === 1).length;
+
+    document.getElementById('kpi-total').textContent = all.length;
+    document.getElementById('kpi-sum-kw').textContent = fmt(sumFor(kwId));
+    document.getElementById('kpi-sum-kwh').textContent = fmt(sumFor(kwhId));
+    document.getElementById('kpi-active').textContent = active;
+    document.getElementById('kpi-inactive').textContent = all.length - active;
+}
+
+/* ── ค้นหา ── */
+function filterMeters() {
+    searchTerm = (document.getElementById('meter-search').value || '').trim().toLowerCase();
+    updateData(1);
+}
+
+/* ── Pagination (คงรูปแบบเดิม) ── */
+function renderPagination(totalRows, activePage) {
+    const paginationDiv = document.getElementById("pagination");
+    const infoDiv = document.getElementById("pagination-info");
+    paginationDiv.innerHTML = "";
+
+    if (totalRows === 0) {
+        infoDiv.textContent = '';
+        return;
     }
 
-    // ✅ ฟังก์ชัน set สีตัวอักษรใน table ด้วย inline style (ชนะ Bootstrap และ CSS ทุกอัน)
-    function applyDarkModeColors() {
-        const isDark = document.documentElement.classList.contains('dark');
-        const color = isDark ? '#ffffff' : '#111827';
-        document.querySelectorAll('#table-meter td, #table-meter th').forEach(el => {
-            // ยกเว้น th ที่มี backgroundColor เป็น #001B5E (data type headers) ให้คงสีขาวไว้เสมอ
-            if (el.style.backgroundColor === 'rgb(0, 27, 94)') {
-                el.style.color = '#ffffff';
-            } else {
-                el.style.color = color;
-            }
-        });
+    const totalPages = Math.ceil(totalRows / rowsPerPage);
+    const start = (activePage - 1) * rowsPerPage + 1;
+    const end = Math.min(activePage * rowsPerPage, totalRows);
+    infoDiv.textContent = `แสดง ${start} ถึง ${end} จากทั้งหมด ${totalRows} รายการ`;
+
+    const prevBtn = document.createElement("button");
+    prevBtn.innerHTML = `<span class="material-icons-outlined" style="font-size:1rem;line-height:1">chevron_left</span>`;
+    prevBtn.disabled = activePage === 1;
+    prevBtn.style.opacity = activePage === 1 ? '0.4' : '1';
+    prevBtn.addEventListener("click", () => { if (activePage > 1) updateData(activePage - 1); });
+    paginationDiv.appendChild(prevBtn);
+
+    for (let i = 1; i <= totalPages; i++) {
+        const btn = document.createElement("button");
+        btn.textContent = i;
+        if (i === activePage) btn.classList.add("active");
+        btn.addEventListener("click", () => { updateData(i); });
+        paginationDiv.appendChild(btn);
     }
 
-    function renderPagination(totalRows, activePage) {
-        const paginationDiv = document.getElementById("pagination");
-        const infoDiv = document.getElementById("pagination-info");
-        paginationDiv.innerHTML = "";
+    const nextBtn = document.createElement("button");
+    nextBtn.innerHTML = `<span class="material-icons-outlined" style="font-size:1rem;line-height:1">chevron_right</span>`;
+    nextBtn.disabled = activePage === totalPages;
+    nextBtn.style.opacity = activePage === totalPages ? '0.4' : '1';
+    nextBtn.addEventListener("click", () => { if (activePage < totalPages) updateData(activePage + 1); });
+    paginationDiv.appendChild(nextBtn);
+}
 
-        const totalPages = Math.ceil(totalRows / rowsPerPage);
-
-        // ── สรุปข้อมูล: แสดง X ถึง Y จากทั้งหมด Z รายการ ──
-        const start = (activePage - 1) * rowsPerPage + 1;
-        const end = Math.min(activePage * rowsPerPage, totalRows);
-        infoDiv.textContent = `แสดง ${start} ถึง ${end} จากทั้งหมด ${totalRows} รายการ`;
-
-        // ── ปุ่ม Previous ──
-        const prevBtn = document.createElement("button");
-        prevBtn.innerHTML = `<span class="material-icons-outlined" style="font-size:1rem;line-height:1">chevron_left</span>`;
-        prevBtn.disabled = activePage === 1;
-        prevBtn.style.opacity = activePage === 1 ? '0.4' : '1';
-        prevBtn.addEventListener("click", () => {
-            if (activePage > 1) updateData(activePage - 1);
-        });
-        paginationDiv.appendChild(prevBtn);
-
-        // ── ปุ่มหมายเลขหน้า ──
-        for (let i = 1; i <= totalPages; i++) {
-            const btn = document.createElement("button");
-            btn.textContent = i;
-            if (i === activePage) btn.classList.add("active");
-            btn.addEventListener("click", () => { updateData(i); });
-            paginationDiv.appendChild(btn);
-        }
-
-        // ── ปุ่ม Next ──
-        const nextBtn = document.createElement("button");
-        nextBtn.innerHTML = `<span class="material-icons-outlined" style="font-size:1rem;line-height:1">chevron_right</span>`;
-        nextBtn.disabled = activePage === totalPages;
-        nextBtn.style.opacity = activePage === totalPages ? '0.4' : '1';
-        nextBtn.addEventListener("click", () => {
-            if (activePage < totalPages) updateData(activePage + 1);
-        });
-        paginationDiv.appendChild(nextBtn);
+/* ── ตั้งเวลา refresh (1–60 วิ ให้ตรงกับข้อความ) ── */
+function setRefreshTime() {
+    const refreshTime = parseInt(document.getElementById('input-refresh').value, 10);
+    if (isNaN(refreshTime) || refreshTime < 1 || refreshTime > 60) {
+        alertMessages('error', (LANG && LANG.error) || 'Error',
+            (LANG && LANG.refresh_range_error) || 'Please enter a refresh time between 1 and 60 seconds');
+        return;
     }
-
-
-    function setRefreshTime() {
-        const inputRefresh = document.getElementById('input-refresh');
-        const refreshTime = parseInt(inputRefresh.value, 10);
-        if (isNaN(refreshTime) || refreshTime < 1 || refreshTime > 60) {
-            alertMessages('error', 'Error', 'Please enter a valid refresh time between 1 and 30 seconds.');
-            return;
-        }
-        clearInterval(refreshIntervalId);
-
-        console.log("Setting refresh time to:", refreshTime);
-
-        refreshIntervalId = setInterval(async () => {
-            await process();
-        }, refreshTime * 1000);
-    }
+    clearInterval(refreshIntervalId);
+    refreshIntervalId = setInterval(process, refreshTime * 1000);
+}
 </script>

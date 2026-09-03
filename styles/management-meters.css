@@ -86,8 +86,8 @@ body {
    ════════════════════════════════════════ */
 
 .meters-sidebar {
-  width: 210px;
-  min-width: 180px;
+  width: 300px;
+  min-width: 260px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
@@ -156,6 +156,102 @@ html.dark .meters-placeholder__icon-wrap {
   border-radius: 99px;
   padding: 0.15rem 0.55rem;
   border: 1px solid var(--primary-border);
+}
+
+/* ── Sidebar search ── */
+.meter-search {
+  width: 100%;
+  margin-top: 6px;
+  padding: 0.4rem 0.65rem;
+  font-size: 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-item);
+  background: var(--bg-page);
+  color: var(--text-body);
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.meter-search:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+/* ── Meter list rows (name + status dot + protocol badge) ── */
+#meter-list > div.meter-row {
+  display: flex !important;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.7rem !important;
+  height: auto !important;
+  border-radius: var(--radius-item);
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-body);
+  border: 1px solid transparent;
+  transition: background var(--transition), border-color var(--transition), color var(--transition);
+}
+#meter-list > div.meter-row:hover {
+  background: var(--primary-light);
+  border-color: var(--primary-border);
+}
+#meter-list > div.meter-row.is-selected {
+  background: var(--primary-light);
+  border-color: var(--primary-border);
+  color: var(--primary-dark);
+  font-weight: 700;
+}
+#meter-list > div.meter-row[hidden] {
+  display: none !important;
+}
+
+.meter-row__name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.status-dot--on {
+  background: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+.status-dot--off {
+  background: var(--text-muted);
+}
+
+.badge-proto {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 0.1rem 0.4rem;
+  border-radius: 99px;
+  flex-shrink: 0;
+}
+.badge-proto--tcp {
+  background: rgba(59, 130, 246, 0.13);
+  color: #1d4ed8;
+  border: 1px solid rgba(59, 130, 246, 0.35);
+}
+.badge-proto--rs485 {
+  background: rgba(139, 174, 102, 0.15);
+  color: var(--primary-dark);
+  border: 1px solid var(--primary-border);
+}
+html.dark .badge-proto--tcp,
+[data-theme="dark"] .badge-proto--tcp {
+  color: #93b4f8;
+}
+html.dark .badge-proto--rs485,
+[data-theme="dark"] .badge-proto--rs485 {
+  color: var(--primary);
 }
 
 /* Scrollable list */
@@ -433,73 +529,100 @@ html.dark .meters-placeholder__icon-wrap,
    CONFIG FORM — injected by loadDataMeter()
    ════════════════════════════════════════ */
 
-/* Field rows: .w-100.mt-2.d-flex */
-#config .w-100.mt-2.d-flex {
-  align-items: center;
-  margin-bottom: 0.1rem;
+/* ── Sectioned card ── */
+.mcfg-section {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-panel);
+  padding: 1.1rem 1.25rem;
+  margin-bottom: 1rem;
 }
 
-/* Label column h5 */
-#config .w-100.mt-2.d-flex > .w-25 h5,
-#config .w-100.mt-2.d-flex > .w-25 > h5 {
-  font-size: 0.82rem !important;
-  font-weight: 600 !important;
-  color: var(--text-muted) !important;
-  text-transform: none;
-  margin: 0 !important;
-  padding-right: 0.75rem;
-  line-height: 2.4;
-  white-space: nowrap;
+.mcfg-section__title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--primary-dark);
+  margin: 0 0 0.9rem;
 }
 
-/* All inputs & selects */
-#config .form-control,
-#config .form-select {
-  background: var(--bg-page) !important;
-  border: 1px solid var(--border) !important;
-  border-radius: 8px !important;
-  padding: 0.45rem 0.8rem !important;
-  font-size: 0.88rem !important;
-  color: var(--text-body) !important;
-  transition: border-color var(--transition), box-shadow var(--transition);
+html.dark .mcfg-section__title,
+[data-theme="dark"] .mcfg-section__title {
+  color: var(--primary);
+}
+
+/* ── Field grid ── */
+.mcfg-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.85rem 1.1rem;
+}
+
+.mcfg-grid--3 {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.mcfg-grid[hidden] {
+  display: none;
+}
+
+.mcfg-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.mcfg-field label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.mcfg-field input,
+.mcfg-field select {
+  background: var(--bg-page);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.45rem 0.7rem;
+  font-size: 0.85rem;
+  color: var(--text-body);
   outline: none;
+  width: 100%;
+  transition: border-color var(--transition), box-shadow var(--transition);
 }
 
-#config .form-control:focus,
-#config .form-select:focus {
-  border-color: var(--primary) !important;
-  box-shadow: 0 0 0 3px var(--primary-light) !important;
+.mcfg-field input:focus,
+.mcfg-field select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-light);
 }
 
-#config .form-control:disabled {
-  opacity: 0.5;
+.mcfg-field input:disabled {
+  opacity: 0.55;
   cursor: not-allowed;
 }
 
-/* Checkbox */
-#config .form-check {
+.mcfg-field--check {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+  align-self: end;
+  padding-bottom: 0.4rem;
+}
+
+.mcfg-field--check input {
   width: 1.1rem;
   height: 1.1rem;
   accent-color: var(--primary);
   cursor: pointer;
-  margin-top: 0.6rem;
 }
 
-/* Divider */
-#config hr {
-  border: none;
-  border-top: 1px solid var(--border);
-  margin: 1.25rem 0;
-}
-
-/* RS485 sub-col headers */
-#config .w-100.mt-2.d-flex .w-75 .text-center h5 {
-  font-size: 0.75rem !important;
-  font-weight: 700 !important;
-  color: var(--primary-dark) !important;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 0.3rem !important;
+.mcfg-field--check label {
+  font-size: 0.85rem;
+  color: var(--text-body);
+  cursor: pointer;
 }
 
 /* Connect section label */
@@ -543,46 +666,52 @@ html.dark .meters-placeholder__icon-wrap,
   display: inline-block;
 }
 
-/* Save / Cancel row */
-#config .w-100.text-end.my-2 {
-  display: flex !important;
-  justify-content: flex-end;
-  gap: 0.5rem;
-  padding-top: 0.75rem;
+/* ── Sticky action footer ── */
+.mcfg-footer {
+  position: sticky;
+  bottom: 0;
+  background: var(--bg-card);
   border-top: 1px solid var(--border);
-  margin-top: 1rem !important;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  padding: 0.9rem 0 0.2rem;
+  margin-top: 0.5rem;
 }
 
-#config input[onclick="updateMeter()"] {
-  background: var(--primary) !important;
-  border: none !important;
-  border-radius: 8px !important;
-  padding: 0.45rem 1.25rem !important;
-  font-size: 0.88rem !important;
-  font-weight: 600 !important;
-  color: #fff !important;
+.mcfg-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.48rem 1.3rem;
+  border-radius: 9px;
+  font-size: 0.875rem;
+  font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 1px 4px rgba(139,174,102,.25);
-  transition: background var(--transition), transform var(--transition);
+  transition: background var(--transition), transform var(--transition), box-shadow var(--transition);
 }
-#config input[onclick="updateMeter()"]:hover {
-  background: var(--primary-dark) !important;
+
+.mcfg-btn--cancel {
+  border: 1.5px solid rgba(239, 68, 68, 0.4);
+  background: transparent;
+  color: #ef4444;
+  font-weight: 600;
+}
+.mcfg-btn--cancel:hover {
+  background: rgba(239, 68, 68, 0.07);
+  border-color: rgba(239, 68, 68, 0.7);
+}
+
+.mcfg-btn--save {
+  border: none;
+  background: var(--primary);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(139, 174, 102, 0.35);
+}
+.mcfg-btn--save:hover {
+  background: var(--primary-dark);
   transform: translateY(-1px);
-}
-
-#config .btn-danger {
-  background: transparent !important;
-  border: 1px solid rgba(239,68,68,.4) !important;
-  border-radius: 8px !important;
-  padding: 0.45rem 1.25rem !important;
-  font-size: 0.88rem !important;
-  font-weight: 600 !important;
-  color: #ef4444 !important;
-  cursor: pointer;
-  transition: background var(--transition);
-}
-#config .btn-danger:hover {
-  background: rgba(239,68,68,.07) !important;
+  box-shadow: 0 4px 14px rgba(139, 174, 102, 0.45);
 }
 
 /* ════════════════════════════════════════
@@ -597,156 +726,176 @@ html.dark .meters-placeholder__icon-wrap,
   align-items: flex-start;
 }
 
-#list-notify > div {
-  width: 260px !important;
-  height: auto !important;
-  padding: 0 !important;
-  border-radius: var(--radius-panel) !important;
+/* ── Notify card ── */
+.noti-card {
+  width: 300px;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-panel);
   overflow: hidden;
-  box-shadow: 0 1px 6px rgba(0,0,0,.08);
-  border: 1px solid var(--border) !important;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
 }
 
-/* Card header */
-#list-notify .bg-blue-reverse,
-#list-notify [class*="rounded-top"] {
-  background: #001B5E !important;
-  color: #fff !important;
-  border-radius: 0 !important;
-  padding: 0.6rem 0.85rem !important;
-  font-size: 0.88rem !important;
-  font-weight: 600;
-  display: flex !important;
+.noti-card__head {
+  display: flex;
   align-items: center;
-  border: none !important;
-  min-height: 42px;
+  gap: 0.5rem;
+  padding: 0.7rem 0.85rem;
+  background: var(--primary-light);
+  border-bottom: 1px solid var(--border);
 }
 
-#list-notify .bi-trash3 {
-  color: rgba(255,255,255,.65);
+.noti-card__icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: var(--primary-dark);
+}
+html.dark .noti-card__icon,
+[data-theme="dark"] .noti-card__icon {
+  color: var(--primary);
+}
+
+.noti-card__title {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-heading);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.noti-card__del {
+  display: flex;
+  padding: 3px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
   cursor: pointer;
-  transition: color var(--transition);
+  line-height: 1;
+  transition: color var(--transition), background var(--transition);
 }
-#list-notify .bi-trash3:hover { color: #f87171; }
-
-/* Card body */
-#list-notify .bg-white.rounded-bottom {
-  background: var(--bg-card) !important;
-  border-radius: 0 !important;
-  border: none !important;
-  box-shadow: none !important;
-  padding: 0.85rem !important;
+.noti-card__del:hover {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
 }
 
-#list-notify h6 {
-  font-size: 0.73rem !important;
-  font-weight: 700 !important;
+.noti-card__body {
+  display: flex;
+  flex-direction: column;
+  padding: 0.9rem 0.95rem 1rem;
+}
+
+.noti-label {
+  font-size: 0.7rem;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--text-muted) !important;
-  margin: 0.5rem 0 0.2rem !important;
+  color: var(--text-muted);
+  margin: 0.6rem 0 0.28rem;
+}
+.noti-card__body > .noti-label:first-of-type {
+  margin-top: 0;
 }
 
-#list-notify .form-control,
-#list-notify .form-select {
+/* scoped + !important to beat scripts/style.html `input:not(#group-search)` override */
+#list-notify .noti-card .noti-input {
+  width: 100%;
   background: var(--bg-page) !important;
-  border: 1px solid var(--border) !important;
-  border-radius: 7px !important;
+  border: 1px solid var(--border);
+  border-radius: 7px;
   color: var(--text-body) !important;
-  font-size: 0.84rem !important;
-  padding: 0.38rem 0.65rem !important;
+  font-size: 0.84rem;
+  padding: 0.42rem 0.6rem;
+  outline: none;
   transition: border-color var(--transition), box-shadow var(--transition);
 }
-
-#list-notify .form-control:focus,
-#list-notify .form-select:focus {
-  border-color: var(--primary) !important;
-  box-shadow: 0 0 0 3px var(--primary-light) !important;
+#list-notify .noti-card .noti-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-light);
 }
 
-/* ── Enabled button — blue pill ── */
-#list-notify .btn.bg-blue,
-#list-notify input.bg-blue,
-#list-notify .bg-blue {
+.noti-cond {
+  display: grid;
+  grid-template-columns: 118px 1fr;
+  gap: 0.5rem;
+}
+
+.noti-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+#list-notify .noti-card .noti-btn {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+  border-radius: 7px;
+  border: 1.5px solid transparent;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.46rem 0.5rem;
+  cursor: pointer;
+  transition: background var(--transition), border-color var(--transition), color var(--transition);
+}
+#list-notify .noti-card .noti-btn.bg-blue {
   background: rgba(99, 130, 215, 0.15) !important;
   color: #3b5fc0 !important;
-  border: 1.5px solid rgba(99, 130, 215, 0.55) !important;
-  border-radius: 7px !important;
-  font-size: 0.8rem !important;
-  font-weight: 600 !important;
-  cursor: pointer;
-  transition: background var(--transition), border-color var(--transition), color var(--transition);
-  box-shadow: none !important;
+  border-color: rgba(99, 130, 215, 0.55);
 }
-#list-notify .btn.bg-blue:hover,
-#list-notify input.bg-blue:hover,
-#list-notify .bg-blue:hover {
-  background: rgba(99, 130, 215, 0.30) !important;
-  border-color: rgba(99, 130, 215, 0.80) !important;
-  color: #2b4aaa !important;
+#list-notify .noti-card .noti-btn.bg-blue:hover {
+  background: rgba(99, 130, 215, 0.3) !important;
 }
-
-/* ── Disabled button — red pill ── */
-#list-notify .btn.bg-red,
-#list-notify input.bg-red,
-#list-notify .bg-red {
+#list-notify .noti-card .noti-btn.bg-red {
   background: rgba(239, 68, 68, 0.12) !important;
   color: #dc2626 !important;
-  border: 1.5px solid rgba(239, 68, 68, 0.45) !important;
-  border-radius: 7px !important;
-  font-size: 0.8rem !important;
-  font-weight: 600 !important;
-  cursor: pointer;
-  transition: background var(--transition), border-color var(--transition), color var(--transition);
-  box-shadow: none !important;
+  border-color: rgba(239, 68, 68, 0.45);
 }
-#list-notify .btn.bg-red:hover,
-#list-notify input.bg-red:hover,
-#list-notify .bg-red:hover {
-  background: rgba(239, 68, 68, 0.25) !important;
-  border-color: rgba(239, 68, 68, 0.75) !important;
-  color: #b91c1c !important;
+#list-notify .noti-card .noti-btn.bg-red:hover {
+  background: rgba(239, 68, 68, 0.22) !important;
+}
+#list-notify .noti-card .noti-btn.bg-green {
+  background: var(--primary) !important;
+  color: #fff !important;
+  border-color: var(--primary-dark);
+}
+#list-notify .noti-card .noti-btn.bg-green:hover {
+  background: var(--primary-dark) !important;
+}
+html.dark #list-notify .noti-card .noti-btn.bg-blue,
+[data-theme="dark"] #list-notify .noti-card .noti-btn.bg-blue {
+  color: #93b4f8 !important;
 }
 
-/* ── Update / Save button — green pill ── */
-#list-notify .btn.bg-green,
-#list-notify input.bg-green,
-#list-notify .bg-green {
-  background: rgba(139, 174, 102, 0.15) !important;
-  color: var(--primary-dark) !important;
-  border: 1.5px solid rgba(139, 174, 102, 0.50) !important;
-  border-radius: 7px !important;
-  font-size: 0.8rem !important;
-  font-weight: 600 !important;
+/* ── Add notify card ── */
+.noti-card--add {
+  width: 300px;
+  min-height: 168px;
+  border: 2px dashed var(--primary-border);
+  border-radius: var(--radius-panel);
+  background: var(--primary-light);
+  color: var(--primary);
   cursor: pointer;
   transition: background var(--transition), border-color var(--transition);
-  box-shadow: none !important;
 }
-#list-notify .btn.bg-green:hover,
-#list-notify input.bg-green:hover,
-#list-notify .bg-green:hover {
-  background: rgba(139, 174, 102, 0.30) !important;
-  border-color: rgba(139, 174, 102, 0.80) !important;
+.noti-card--add:hover {
+  background: var(--primary-border);
+  border-color: var(--primary);
 }
-
-/* Add notify card */
-#blankdiv > div {
-  background: var(--primary-light) !important;
-  border: 2px dashed var(--primary-border) !important;
-  border-radius: var(--radius-panel) !important;
-  color: var(--primary) !important;
-  font-size: 1.75rem;
-  cursor: pointer;
+.noti-card--add > div {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 180px;
-  height: 100% !important;
-  transition: background var(--transition), border-color var(--transition);
-}
-#blankdiv > div:hover {
-  background: var(--primary-border) !important;
-  border-color: var(--primary) !important;
+  width: 100%;
+  height: 100%;
+  min-height: 164px;
+  font-size: 1.6rem;
 }
 
 /* ════════════════════════════════════════
@@ -769,4 +918,6 @@ html.dark .meters-placeholder__icon-wrap,
   .meters-sidebar  { width: 100%; height: auto; border-right: none; border-bottom: 1px solid var(--border); max-height: 180px; }
   #config          { padding: 1.25rem 1rem; }
   #list-notify > div { width: 100% !important; }
+  .mcfg-grid,
+  .mcfg-grid--3    { grid-template-columns: 1fr; }
 }
