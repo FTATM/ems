@@ -103,15 +103,124 @@ body {
   min-height: 0;
 }
 
-/* ── Card header ── */
-.users-card__header {
+/* ── Toolbar ── */
+.users-toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.1rem 1.5rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 1rem 1.5rem;
   border-bottom: 1.5px solid var(--border-card);
   background: var(--bg-card);
   flex-shrink: 0;
+}
+
+.users-toolbar__left {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  flex-shrink: 0;
+}
+
+.users-toolbar__right {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  flex: 1 1 auto;
+  min-width: 0;
+  justify-content: flex-end;
+}
+
+.users-search {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 460px;
+}
+
+.users-search::before {
+  content: '';
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 15px;
+  height: 15px;
+  pointer-events: none;
+  opacity: 0.55;
+  background: center / contain no-repeat
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M21 21l-4.3-4.3'/%3E%3C/svg%3E");
+}
+
+.users-toolbar .users-search input#user-search {
+  width: 100%;
+  background: var(--bg-page) !important;
+  color: var(--text-card) !important;
+  border: 1.5px solid var(--border-card);
+  border-radius: 9px;
+  padding: 0.5rem 2.2rem 0.5rem 2.25rem;
+  font-size: 0.85rem;
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.users-toolbar .users-search input#user-search::placeholder {
+  color: var(--text-muted);
+}
+
+.users-toolbar .users-search input#user-search:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.users-search__clear {
+  position: absolute;
+  right: 0.45rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition);
+}
+
+.users-search__clear:hover {
+  background: var(--primary-light);
+  color: var(--primary-dark);
+}
+
+.users-search__clear[hidden] {
+  display: none;
+}
+
+.btn-add-user {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 9px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--transition), transform var(--transition);
+}
+
+.btn-add-user:hover {
+  background: var(--primary-dark);
+  transform: translateY(-1px);
 }
 
 /* ── Table scroll wrapper ── */
@@ -269,9 +378,8 @@ body {
   color: var(--primary-dark) !important;
 }
 
-/* JS uses style.backgroundColor='#001B5E' for active — override */
-#pagination button[style*="001B5E"],
-#pagination button[style*="001b5e"] {
+/* active page */
+#pagination button.is-active {
   background-color: var(--primary) !important;
   border-color: var(--primary) !important;
   color: #fff !important;
@@ -383,28 +491,28 @@ body {
 }
 
 /* ── Badge / role pill ── */
-.badge-admin {
-  background: rgba(59,130,246,.12);
-  color: #2563eb;
-  border: 1px solid rgba(59,130,246,.25);
+.badge-admin,
+.badge-user {
+  display: inline-block;
+  white-space: nowrap;
   border-radius: 99px;
   font-size: 0.72rem;
   font-weight: 700;
   padding: 0.15rem 0.6rem;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.03em;
+}
+
+.badge-admin {
+  background: rgba(59,130,246,.12);
+  color: #2563eb;
+  border: 1px solid rgba(59,130,246,.25);
 }
 
 .badge-user {
   background: var(--primary-light);
   color: var(--primary-dark);
   border: 1px solid var(--primary-border);
-  border-radius: 99px;
-  font-size: 0.72rem;
-  font-weight: 700;
-  padding: 0.15rem 0.6rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
 }
 
 /* ── Skeleton shimmer ── */
@@ -421,18 +529,15 @@ body {
   #table-user thead tr th { padding: 0.65rem 0.75rem !important; }
 }
 
-/* ── Icon action buttons ── */
+/* ── Icon action buttons (icon-only) ── */
 .btn-action {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
+  justify-content: center;
   border-radius: 8px !important;
-  font-size: 0.8rem !important;
-  font-weight: 600 !important;
-  padding: 0.35rem 0.7rem !important;
+  padding: 0.4rem !important;
   border: 1.5px solid transparent !important;
   cursor: pointer;
-  white-space: nowrap;
   transition: background var(--transition), border-color var(--transition),
               color var(--transition), transform var(--transition);
 }
@@ -478,4 +583,62 @@ body {
   gap: 0.4rem;
   align-items: center;
   border-bottom: 1px solid var(--border-card) !important;
+}
+
+/* ── USER cell (avatar + name + @handle) ── */
+.user-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  background: var(--primary-light);
+  color: var(--primary-dark);
+  border: 1px solid var(--primary-border);
+}
+
+.user-cell__text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.user-cell__name {
+  font-weight: 600;
+  color: var(--text-card);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-cell__handle {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+}
+
+#table-user td.cell-truncate {
+  max-width: 160px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 640px) {
+  .users-toolbar { flex-direction: column; align-items: stretch; }
+  .users-toolbar__right { justify-content: space-between; }
+  .users-toolbar .users-search { flex: 1; }
+  .users-toolbar .users-search input#user-search { width: 100%; min-width: 0; }
+  #table-user th:nth-child(6),
+  #table-user td:nth-child(6) { display: none; }
 }

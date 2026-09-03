@@ -8,6 +8,7 @@
   let refreshIntervalId; // เก็บ interval id
   let firstLoading = true;
   let setShowMeter = 0;
+  const GAUGE_ARC_LEN = 263.9; // ความยาว arc ครึ่งวง r=84 (π·84)
 
   const model_name = "Q";
   const typeMeterID = "<?=$_SESSION['tid'] ?? 0;?>";
@@ -30,12 +31,11 @@
 
   async function fetchAll() {
     try {
-      let response = await fetch("../config/fetch-meters.php");
-      let json = await response.json();
-      // รองรับทั้ง array และ object keyed
-      meters = Array.isArray(json.data) ? json.data : Object.values(json.data ?? {});
-      console.log('[MAP] meters:', meters.length, meters);
-    } catch (e) { console.error('[MAP] fetch meters error:', e); meters = []; }
+      // realtime endpoint คืนมิเตอร์ (กรอง gid+tid ฝั่ง server) พร้อม data = [{type_id,value,create_date}, ...]
+      const realtime = await fetchRealtimeOfMeters(typeMeterID, groupID);
+      meters = (realtime && typeof realtime === 'object') ? Object.values(realtime) : [];
+      console.log('[MAP] meters(realtime):', meters.length, meters);
+    } catch (e) { console.error('[MAP] fetch realtime error:', e); meters = []; }
 
     try {
       let responsetype = await fetch("../config/fetch-data_type.php");
@@ -60,7 +60,13 @@
     await fetchAll();
     await filterData();
     await generateListGroups();
-    await gaugeJS();
+  }
+
+  // ค่าล่าสุดของ data_type หนึ่ง ๆ จาก meter.data (array ของ {type_id,value,create_date})
+  function latestValue(meter, typeId) {
+    const rows = (meter && Array.isArray(meter.data)) ? meter.data : [];
+    const hit = rows.find(d => String(d.type_id) === String(typeId));
+    return (hit && hit.value != null && hit.value !== '') ? hit.value : 0;
   }
 
   function filterData() {
@@ -90,17 +96,15 @@
   }
 
   function onClickTemplate(parent, meter) {
-    let lastIndex = meter?.data['7'].length - 1;
-    let is_Null = meter?.data['7'][lastIndex]?.value ? true : false;
     let MeterValue = {
-      "VoltageA": is_Null ? meter.data['7'][lastIndex].value : 0,
-      "VoltageB": is_Null ? meter.data['8'][lastIndex].value : 0,
-      "VoltageC": is_Null ? meter.data['9'][lastIndex].value : 0,
-      "CurrentA": is_Null ? meter.data['10'][lastIndex].value : 0,
-      "CurrentB": is_Null ? meter.data['11'][lastIndex].value : 0,
-      "CurrentC": is_Null ? meter.data['12'][lastIndex].value : 0,
-      "Pf": is_Null ? meter.data['17'][lastIndex].value : 0,
-      "frequency": is_Null ? meter.data['18'][lastIndex].value : 0,
+      "VoltageA": latestValue(meter, 7),
+      "VoltageB": latestValue(meter, 8),
+      "VoltageC": latestValue(meter, 9),
+      "CurrentA": latestValue(meter, 10),
+      "CurrentB": latestValue(meter, 11),
+      "CurrentC": latestValue(meter, 12),
+      "Pf": latestValue(meter, 17),
+      "frequency": latestValue(meter, 18),
     };
     parent.onclick = () => {
       let info = document.getElementById('infomation-meter');
@@ -229,8 +233,12 @@
     console.log("Setting refresh time to:", refreshTime);
 
     // ตั้ง interval ใหม่
-    refreshIntervalId = setInterval(() => {
-      process();
+    refreshIntervalId = setInterval(async () => {
+      await process();
+      // อัปเดต panel ซ้ายของมิเตอร์ที่เลือกอยู่ด้วยค่าล่าสุด
+      if (setShowMeter && filtermeters.some(m => String(m.id) === String(setShowMeter))) {
+        showValueOnView(setShowMeter);
+      }
     }, refreshTime * 1000);
   }
 
@@ -239,38 +247,39 @@
     hideAllBtn3DMeter();
     showBtn3DMeter(id);
     setActiveMeterItem(id);
-    const meter = filtermeters.find(m => m.id === id);
+
+    const meter = filtermeters.find(m => String(m.id) === String(id));
+    if (!meter) { console.warn('[MAP] meter not found:', id); return; }
+
     document.getElementById('name-meter').textContent = meter.name;
-    let lastIndex = meter?.data['7'].length - 1;
-    let is_Null = meter?.data['7'][lastIndex]?.value ? true : false;
-    let idsAndValues = {
-      "VoltageA": is_Null ? meter.data['7'][lastIndex].value : 0,
-      "VoltageB": is_Null ? meter.data['8'][lastIndex].value : 0,
-      "VoltageC": is_Null ? meter.data['9'][lastIndex].value : 0,
-      "CurrentA": is_Null ? meter.data['10'][lastIndex].value : 0,
-      "CurrentB": is_Null ? meter.data['11'][lastIndex].value : 0,
-      "CurrentC": is_Null ? meter.data['12'][lastIndex].value : 0,
-      "Pf": is_Null ? meter.data['17'][lastIndex].value : 0,
-      "frequency": is_Null ? meter.data['18'][lastIndex].value : 0,
+
+    const idsAndValues = {
+      "VoltageA": latestValue(meter, 7),
+      "VoltageB": latestValue(meter, 8),
+      "VoltageC": latestValue(meter, 9),
+      "CurrentA": latestValue(meter, 10),
+      "CurrentB": latestValue(meter, 11),
+      "CurrentC": latestValue(meter, 12),
+      "Pf": latestValue(meter, 17),
+      "frequency": latestValue(meter, 18),
     };
     Object.entries(idsAndValues).forEach(([key, value]) => {
-      let element = document.getElementById(key);
-      if (element) {
-        element.value = value;
-      }
+      const element = document.getElementById(key);
+      if (element) element.value = value;
     });
 
+    updateGauge(latestValue(meter, 1));
   }
 
   function showBtn3DMeter(mid) {
-    let btn = document.getElementById("btn3d-meter-" + mid);
-    btn.style.display = 'block';
+    const btn = document.getElementById("btn3d-meter-" + mid);
+    if (btn) btn.style.display = 'block';
   }
 
   function hideBtn3DMeter(mid) {
     if (mid === setShowMeter) return;
-    let btn = document.getElementById("btn3d-meter-" + mid);
-    btn.style.display = 'none';
+    const btn = document.getElementById("btn3d-meter-" + mid);
+    if (btn) btn.style.display = 'none';
   }
 
   function hideAllBtn3DMeter() {
@@ -283,55 +292,31 @@
     setShowMeter = id;
   }
 
-  function gaugeJS() {
-    var chart = JSC.chart('gauge-kW', {
-      legend_visible: false,
-      defaultTooltip_enabled: false,
-      xAxis_spacingPercentage: 0.4,
-      yAxis: [
-        {
-          id: 'ax2',
-          scale_range: [0, 850],
-          defaultTick: {
-            padding: 10,
-            enabled: false
-          },
-          customTicks: [0, 300, 600, 700, 800, 850],
-        }
-      ],
-      defaultSeries: {
-        type: 'gauge column roundcaps',
-        shape: {
-          label: {
-            text: '%max',
-            align: 'center',
-            verticalAlign: 'middle',
-            style_fontSize: 28
-          }
-        }
-      },
-      series: [
-        {
-          yAxis: 'ax2',
-          name: 'Temperatures',
-          palette: {
-            id: 'pal2',
-            pointValue: '{%yValue/850}',
-            colors: [
-              '#ffffd9',
-              '#edf8b0',
-              '#c7e9b4',
-              '#7fcdbb',
-              '#41b6c3',
-              '#1d91c0',
-              '#225ea8',
-              '#253494',
-              '#081d58'
-            ]
-          },
-          points: [['x', 320]]
-        }
-      ]
-    });
+  // สเกลสูงสุดแบบปัดขึ้นเลขกลม เผื่อหัวประมาณ 25%
+  function niceMax(v) {
+    if (!(v > 0)) return 10;
+    const target = v * 1.25;
+    const mag = Math.pow(10, Math.floor(Math.log10(target)));
+    const n = target / mag; // 1..10
+    const steps = [1, 1.5, 2, 3, 5, 7.5, 10];
+    const step = steps.find(s => n <= s + 1e-9) || 10;
+    return step * mag;
+  }
+
+  function fmtKw(n) {
+    return (Math.round(n * 100) / 100).toLocaleString('en-US');
+  }
+
+  function updateGauge(v) {
+    const val = parseFloat(v) || 0;
+    const max = niceMax(val);
+    const pct = max > 0 ? Math.min(1, Math.max(0, val / max)) : 0;
+
+    const arc = document.getElementById('gauge-arc');
+    const valEl = document.getElementById('gauge-value');
+    const maxEl = document.getElementById('gauge-max');
+    if (arc) arc.style.strokeDashoffset = String(GAUGE_ARC_LEN * (1 - pct));
+    if (valEl) valEl.textContent = fmtKw(val);
+    if (maxEl) maxEl.textContent = fmtKw(max);
   }
 </script>

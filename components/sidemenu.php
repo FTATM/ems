@@ -106,7 +106,7 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
         <li>
             <a href="../pages/map.php" class="sm-link <?= $current_page === 'map' ? 'active' : '' ?>">
                 <span class="sm-icon"><i class="bi bi-map"></i></span>
-                <?= $lang['overview'] ?> x
+                <?= $lang['overview'] ?>
             </a>
         </li>
 

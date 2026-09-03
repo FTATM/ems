@@ -365,7 +365,7 @@ $lang = [
     "meterinfo" => "ข้อมูลมิเตอร์",
     "energy_distribution" => "สัดส่วนการใช้พลังงาน",
     "energy_usage_graph_kw" => "กราฟการใช้พลังงาน (kW)",
-    "electricity_cost_baht" => "ค่าไฟฟ้า (บาท)",
+    "electricity_cost_baht" => "ค่าไฟฟ้าสะสม (บาท)",
     "last" => "ย้อนหลัง",
     "dailyreport"=> "รายงานประจำวัน",
     "demand" => "ค่าความต้องการ",
@@ -490,4 +490,59 @@ $lang = [
     "delete_failed"         => "ลบไม่สำเร็จ",
     "delete_error_desc"     => "เกิดข้อผิดพลาดในการลบข้อมูล",
     "status_change_error"   => "เกิดข้อผิดพลาดในการเปลี่ยนสถานะ กรุณาลองอีกครั้ง",
+
+    // ── หน้าเลือกสถานที่/กลุ่ม (stepper) ──
+    "select_project_for_energy" => "เลือกสถานที่หรือโปรเจคเพื่อดูข้อมูลพลังงาน",
+    "select_group_for_energy"   => "เลือกกลุ่มเพื่อดูข้อมูลพลังงาน",
+    "search_location"           => "ค้นหาสถานที่...",
+    "search_group"              => "ค้นหากลุ่ม...",
+    "step_location"             => "สถานที่",
+    "step_group"                => "กลุ่ม",
+    "no_location_found"         => "ไม่พบสถานที่",
+    "no_group_found"            => "ไม่พบกลุ่มในสถานที่นี้",
+    "groups_unit"              => "กลุ่ม",
+
+    // ── modal แก้ไข/ลบ (ใช้ในหน้า management-*) ──
+    "edit_name"               => "แก้ไขชื่อ",
+    "new_name"                => "ชื่อใหม่",
+    "confirm_deletion"        => "ยืนยันการลบ",
+    "confirm_delete_message"  => "คุณต้องการลบรายการนี้ใช่หรือไม่? การกระทำนี้ไม่สามารถย้อนกลับได้",
+
+    // ── หน้าทุกมิเตอร์ (allmeter) ──
+    "search"          => "ค้นหา",
+    "total_meters"    => "มิเตอร์ทั้งหมด",
+    "sum_kw"          => "รวม kW",
+    "sum_kwh"         => "รวม kWh",
+    "active"          => "ใช้งาน",
+    "inactive"        => "ไม่ใช้งาน",
+    "group_power"     => "กำลังไฟ",
+    "group_energy"    => "พลังงาน",
+    "group_voltage"   => "แรงดัน",
+    "group_current"   => "กระแส",
+    "group_other"     => "อื่นๆ",
+    "no_meter_found"  => "ไม่พบมิเตอร์",
+    "refresh_range_error" => "กรุณากรอกเวลารีเฟรชระหว่าง 1 ถึง 60 วินาที",
+
+    // ── หน้าจัดการมิเตอร์ (management-meters) ──
+    "search_meter"       => "ค้นหามิเตอร์...",
+    "section_general"    => "ทั่วไป",
+    "section_position"   => "ตำแหน่ง 3D",
+    "section_connection" => "การเชื่อมต่อ",
+    "section_test"       => "ทดสอบการเชื่อมต่อ",
+    "meter_name"         => "ชื่อมิเตอร์",
+    "detail_more"        => "รายละเอียดการเชื่อมต่อ",
+
+    // ── หน้าจัดการผู้ใช้ (management-users) ──
+    "search_user"        => "ค้นหาผู้ใช้...",
+    "add_user"           => "เพิ่มผู้ใช้",
+    "add_user_title"     => "เพิ่มผู้ใช้ใหม่",
+    "role"               => "สิทธิ์",
+    "role_admin"         => "ผู้ดูแล",
+    "role_user"          => "ผู้ใช้",
+    "user_created"       => "เพิ่มผู้ใช้สำเร็จ",
+    "user_updated_ok"    => "อัปเดตข้อมูลผู้ใช้สำเร็จ",
+    "user_deleted_ok"    => "ลบผู้ใช้สำเร็จ",
+    "password_changed"   => "เปลี่ยนรหัสผ่านสำเร็จ",
+    "password_mismatch"  => "รหัสผ่านใหม่กับยืนยันไม่ตรงกัน",
+    "username_required"  => "กรุณากรอกชื่อผู้ใช้และรหัสผ่าน",
     ];

@@ -513,14 +513,64 @@
         };
     }
 
-    function prepareLinearPrice(SelectedFilterMeter) {
-        const rawData = SelectedFilterMeter.data?.[2];
-        if (!rawData || !Array.isArray(rawData) || rawData.length === 0) return null;
-        const { powerData } = calculateElectricCost(rawData, 4);
+    /*
+     * calculateBillJS — port ตรงจาก config/fpdf.php calculateBill()
+     * อัตราขั้นบันได + ค่าบริการ 8.19 + Ft + VAT 7%  → ต้องให้ผลตรงกับบิล PDF
+     */
+    function calculateBillJS(consumption) {
+        const tiers = [
+            [15, 2.3488],
+            [10, 2.9882],
+            [10, 3.2405],
+            [65, 3.6237],
+            [50, 3.7171],
+            [Infinity, 4.2218],
+        ];
+        let remaining = Math.max(0, consumption);
+        let totalEnergy = 0;
+        for (const [limit, rate] of tiers) {
+            const use = Math.min(remaining, limit);
+            if (use <= 0) break;
+            totalEnergy += use * rate;
+            remaining -= use;
+        }
+        const serviceCharge = 8.19;
+        const fuelAdj = 0; // Ft — ตรงกับ fpdf.php (ปัจจุบัน 0)
+        const vat = (totalEnergy + serviceCharge + fuelAdj) * 0.07;
         return {
-            label: 'Price (฿)',
-            data: powerData.map(p => ({ x: p.x, y: p.y })),
-            color: getRandomColor(2)
+            totalEnergy,
+            serviceCharge,
+            vat,
+            total: totalEnergy + serviceCharge + fuelAdj + vat,
+        };
+    }
+
+    /*
+     * prepareCumulativeCost — เส้นค่าไฟ "สะสม" ตลอดช่วงที่เลือก
+     *   consumedKWh[i] = max(0, kWh_reading[i] - kWh_reading[0])   // = (ค่ามิเตอร์ตอนนี้ - ค่ามิเตอร์ต้นช่วง)
+     *   y[i] = calculateBillJS(consumedKWh[i]).total               // คิดขั้นบันได + ค่าบริการ + VAT
+     *   จุดสุดท้าย = ยอดบิลของช่วงที่เลือก (ตรงกับ config/fpdf.php calculateBill())
+     */
+    function prepareCumulativeCost(SelectedFilterMeter) {
+        const rawData = SelectedFilterMeter.data?.[2]; // type_id 2 = kWh (ค่าสะสมจากมิเตอร์)
+        if (!rawData || !Array.isArray(rawData) || rawData.length < 2) return null;
+
+        const startReading = parseFloat(rawData[0].value) || 0;
+
+        const data = rawData.map(row => {
+            const reading = parseFloat(row.value) || 0;
+            const consumed = Math.max(0, reading - startReading); // กันติดลบ (มิเตอร์รีเซ็ต / ข้อมูลย้อนลำดับ)
+            return {
+                x: new Date(row.create_date.replace(' ', 'T')),
+                y: parseFloat(calculateBillJS(consumed).total.toFixed(2)),
+            };
+        });
+
+        return {
+            label: 'ค่าไฟสะสม (฿)',
+            data,
+            color: getRandomColor(2),
+            fill: true,
         };
     }
 
@@ -534,19 +584,6 @@
             value: parseFloat(avg.toFixed(2)),
             color: getRandomColor(columnIndex)
         };
-    }
-
-    function calculateElectricCost(dataArray, pricePerKWh) {
-        let totalCost = 0;
-        let defaultkWh = dataArray[0].value;
-        const powerData = dataArray.map(row => {
-            const powerKWh = parseFloat(row.value - defaultkWh) * 120 || 0;
-            defaultkWh = row.value;
-            totalCost += powerKWh * pricePerKWh;
-            return { x: new Date(row.create_date.replace(' ', 'T')), y: powerKWh };
-        });
-        const averageCost = dataArray.length > 0 ? totalCost / dataArray.length : 0;
-        return { powerData, averageCost: averageCost.toFixed(2) };
     }
 
     function getLabelFromIndex(index) {
@@ -581,9 +618,9 @@
             .filter(Boolean);
         createPieChart('chart-Pie', 'สัดส่วนการใช้พลังงาน', pieItems);
 
-        // ── Price chart ──
-        const priceItem = prepareLinearPrice(selectedMeter);
-        createLinearChart('chart-linear-price', 'ค่าไฟฟ้า (บาท)', priceItem ? [priceItem] : []);
+        // ── Cumulative cost chart ──
+        const costItem = prepareCumulativeCost(selectedMeter);
+        createLinearChart('chart-linear-price', 'ค่าไฟฟ้าสะสม (บาท)', costItem ? [costItem] : []);
     }
 
     // ======== Chart.js render functions ========
@@ -601,7 +638,7 @@
             pointRadius: 0,
             pointHoverRadius: 4,
             tension: 0.3,
-            fill: false,
+            fill: ds.fill ?? false,
         }));
 
         _chartInstances[containerId] = new Chart(canvas, {

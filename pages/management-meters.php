@@ -28,6 +28,9 @@ checkSession();
                         <div class="meters-sidebar__header">
                             <span class="meters-sidebar__title"><?= $lang['list_of_all_meters'] ?></span>
                             <span class="meters-sidebar__count" id="meter-count">...</span>
+                            <input id="meter-search" type="text" class="meter-search"
+                                placeholder="<?= $lang['search_meter'] ?>" oninput="filterMeterList()"
+                                autocomplete="off">
                         </div>
 
                         <!-- JS uses id="meter-list" — preserved -->
