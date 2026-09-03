@@ -47,13 +47,13 @@ try:
             cursor = conn.cursor(dictionary=True)
 
             # ดึงข้อมูลจากตาราง notify
-            cursor.execute("SELECT * FROM notify")
+            cursor.execute("SELECT * FROM notify WHERE is_deleted = 0 AND is_active = 1")
             rows = cursor.fetchall() # ดึงข้อมูลมาเก็บในตัวแปรก่อนเพื่อลดภาระ cursor
 
             for meter in rows:
                 user_id = meter['token_line']
-                message = "สวัสดี! นี่คือข้อความจาก LINE OA"
-                
+                message = f"{meter['name']}\n\nDetected: {meter['mark']} {meter['value_condition']}"
+
                 # ใช้ LINE_TOKEN จาก config
                 send_line_oa(LINE_TOKEN, user_id, message)
 

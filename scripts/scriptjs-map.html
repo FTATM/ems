@@ -9,6 +9,7 @@
   let firstLoading = true;
   let setShowMeter = 0;
 
+  const model_name = "Q";
   const typeMeterID = "<?=$_SESSION['tid'] ?? 0;?>";
   const groupID = "<?=$_SESSION['gid'] ?? 0;?>";
 
@@ -34,25 +35,25 @@
       // รองรับทั้ง array และ object keyed
       meters = Array.isArray(json.data) ? json.data : Object.values(json.data ?? {});
       console.log('[MAP] meters:', meters.length, meters);
-    } catch(e) { console.error('[MAP] fetch meters error:', e); meters = []; }
+    } catch (e) { console.error('[MAP] fetch meters error:', e); meters = []; }
 
     try {
       let responsetype = await fetch("../config/fetch-data_type.php");
       let jsontype = await responsetype.json();
       types = jsontype.data ?? [];
-    } catch(e) { types = []; }
+    } catch (e) { types = []; }
 
     try {
       let responseLocation = await fetch("../config/fetch-locations.php");
       let jsonLocation = await responseLocation.json();
       locations = jsonLocation.data ?? [];
-    } catch(e) { locations = []; }
+    } catch (e) { locations = []; }
 
     try {
       let responsegroup = await fetch("../config/fetch-groups.php");
       let jsongroup = await responsegroup.json();
       groups = jsongroup.data ?? [];
-    } catch(e) { groups = []; }
+    } catch (e) { groups = []; }
   }
 
   async function process() {
@@ -178,14 +179,14 @@
       div.id = "listitem-" + m.id;
       div.innerHTML = `<span class="meter-list-item__icon"></span>
         <span class="meter-list-item__name">${m.name}</span>`;
-      div.onclick      = () => { setActiveMeterItem(m.id); showValueOnView(m.id); };
-      div.onmouseover  = () => showBtn3DMeter(m.id);
+      div.onclick = () => { setActiveMeterItem(m.id); showValueOnView(m.id); };
+      div.onmouseover = () => showBtn3DMeter(m.id);
       div.onmouseleave = () => hideBtn3DMeter(m.id);
       container.appendChild(div);
     });
   }
 
-  
+
   function setActiveMeterItem(id) {
     document.querySelectorAll('.meter-list-item').forEach(el => el.classList.remove('active'));
     const target = document.getElementById('listitem-' + id);
@@ -194,7 +195,7 @@
 
   function loadMeter(id) {
     const modelViewer = document.getElementById("myModel");
-    modelViewer.src = "../assets/Q.glb";
+    modelViewer.src = "../assets/" + model_name + ".glb";
 
     // let imageViewer = document.getElementById('3d-viewer');
     // imageViewer.innerHTML = `

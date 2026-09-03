@@ -100,7 +100,7 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
             <a href="../pages/report-electric.php"
                 class="sm-link <?= $current_page === 'report-electric' ? 'active' : '' ?>">
                 <span class="sm-icon"><i class="bi bi-lightning"></i></span>
-                <?= $lang['reportelec'] ?> x
+                <?= $lang['reportelec'] ?>
             </a>
         </li>
         <li>
