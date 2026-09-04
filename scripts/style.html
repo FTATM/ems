@@ -1,4 +1,97 @@
 <style>
+    /* =====================================================================
+       EMS "Aurora" DESIGN TOKENS  —  global, loaded on every page.
+       Change a brand colour here and it propagates through the shared
+       chrome (sidemenu, header, footer) and every rule below that uses
+       var(--ems-*). Per-page stylesheets can opt in the same way.
+       ===================================================================== */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap');
+
+    :root {
+        /* brand */
+        --ems-accent:        #2563EB;   /* blue — primary actions, active nav */
+        --ems-accent-strong: #1D4ED8;
+        --ems-accent-bright: #3B82F6;
+        --ems-accent-soft:   rgba(37, 99, 235,0.12);
+        --ems-accent-glow:   rgba(37, 99, 235,0.28);
+        --ems-accent-2:      #F59E0B;   /* amber — warnings, secondary accent   */
+        --ems-danger:        #E11D48;
+        --ems-success:       #16A34A;
+
+        /* surfaces (light) */
+        --ems-bg:        #EEF2F6;
+        --ems-surface:   #FFFFFF;
+        --ems-elevated:  #F7FAFC;
+        --ems-border:    #D9E0E7;
+        --ems-text:      #0F172A;
+        --ems-muted:     #586472;
+
+        --ems-text-secondary: #3D4F6B;   /* body/label text, between text and muted */
+        --ems-accent-border:  rgba(37, 99, 235, 0.40);
+
+        /* shape & depth */
+        --ems-radius-sm:   10px;
+        --ems-radius:      14px;
+        --ems-radius-lg:   20px;
+        --ems-radius-pill: 999px;
+        --ems-shadow:    0 1px 3px rgba(15,23,42,0.08), 0 10px 30px rgba(15,23,42,0.06);
+        --ems-shadow-lg: 0 12px 40px rgba(15,23,42,0.14);
+        --ems-ring:      0 0 0 3px var(--ems-accent-soft);
+        --ems-dur:       0.2s;
+        --ems-font:      'Inter', 'Noto Sans Thai', 'Sarabun', system-ui, sans-serif;
+
+        /* spacing scale — 4 · 8 · 12 · 16 · 24 · 32 */
+        --ems-space-1: 4px;
+        --ems-space-2: 8px;
+        --ems-space-3: 12px;
+        --ems-space-4: 16px;
+        --ems-space-5: 24px;
+        --ems-space-6: 32px;
+
+        /* layout widths — app shell + side panels */
+        --ems-rail-w:          64px;
+        --ems-rail-expanded-w: 340px;
+        --ems-panel-w-sm:      240px;
+        --ems-panel-w:         280px;
+        --ems-panel-w-lg:      320px;
+        --ems-header-h:        60px;
+
+        /* responsive breakpoint convention (Bootstrap): 768 / 992 / 1200 */
+    }
+
+    html.dark {
+        --ems-accent:        #3B82F6;
+        --ems-accent-strong: #2563EB;
+        --ems-accent-bright: #60A5FA;
+        --ems-accent-soft:   rgba(96, 165, 250,0.14);
+        --ems-accent-glow:   rgba(96, 165, 250,0.30);
+        --ems-accent-2:      #FBBF24;
+        --ems-text-secondary: #9FB2C9;
+        --ems-accent-border:  rgba(96, 165, 250, 0.35);
+
+        --ems-bg:        #0B0F14;
+        --ems-surface:   #141A21;
+        --ems-elevated:  #1C242E;
+        --ems-border:    #2A3542;
+        --ems-text:      #E6EDF3;
+        --ems-muted:     #8B98A5;
+
+        --ems-shadow:    0 1px 3px rgba(0,0,0,0.5), 0 12px 34px rgba(0,0,0,0.45);
+        --ems-shadow-lg: 0 18px 50px rgba(0,0,0,0.6);
+    }
+
+    body {
+        font-family: var(--ems-font);
+        background-color: var(--ems-bg);
+        color: var(--ems-text);
+    }
+
+    /* readable native scrollbars in both themes */
+    * { scrollbar-color: var(--ems-border) transparent; }
+    *::-webkit-scrollbar { width: 10px; height: 10px; }
+    *::-webkit-scrollbar-thumb { background: var(--ems-border); border-radius: 8px; }
+    *::-webkit-scrollbar-thumb:hover { background: var(--ems-accent); }
+
     .bg-green {
         background: linear-gradient(0deg, #62CE00, #A9E703);
     }
@@ -56,7 +149,8 @@
     }
 
     .active {
-        background-color: #001B5E;
+        background-color: var(--ems-accent);
+        color: #fff;
         font-size: large;
         font-weight: bolder;
     }
@@ -69,7 +163,7 @@
     }
 
     .bg {
-        background-color: #121212;
+        background-color: var(--ems-bg);
     }
 
     .background-blur {
@@ -142,17 +236,25 @@
 
     #card {
         width: 250px;
-        border: 1px solid #ccc;
-        border-radius: 2rem;
+        border: 1px solid var(--ems-border);
+        border-radius: var(--ems-radius-lg);
         text-align: center;
-        box-shadow: 2px 2px 7px #222;
-        padding: 10px;
+        background-color: var(--ems-surface);
+        box-shadow: var(--ems-shadow);
+        padding: 14px;
+        transition: transform var(--ems-dur), box-shadow var(--ems-dur), border-color var(--ems-dur);
+    }
+
+    #card:hover {
+        border-color: var(--ems-accent);
+        box-shadow: var(--ems-shadow-lg);
+        transform: translateY(-2px);
     }
 
     .choice:hover {
         opacity: 75%;
         cursor: pointer;
-        border: 1px solid white;
+        border: 1px solid var(--ems-accent);
     }
 
     .hotspot {
@@ -166,9 +268,9 @@
     }
 
     .menu:hover {
-        background-color: #001B5E;
+        background-color: var(--ems-accent-soft);
         cursor: pointer;
-        border: 1px solid white;
+        border: 1px solid var(--ems-accent);
     }
 
     .modal {
@@ -255,8 +357,8 @@ html.dark input[type="date"]::-webkit-calendar-picker-indicator {
     }
 
     #loading-spinner {
-        border: 8px solid #f3f3f3;
-        border-top: 8px solid #3498db;
+        border: 8px solid var(--ems-accent-soft);
+        border-top: 8px solid var(--ems-accent);
         border-radius: 50%;
         width: 60px;
         height: 60px;
@@ -385,20 +487,23 @@ html.dark select option {
         width: 100%;
     }
 
-table,
-table th,
-table td {
-    background-color: transparent !important;
+/* Legacy blanket table rules — scoped to :where() (zero specificity) and
+   excluding .ems-table so the new primitive wins without !important.
+   Delete once no legacy table depends on them. */
+:where(table:not(.ems-table)),
+:where(table:not(.ems-table)) th,
+:where(table:not(.ems-table)) td {
+    background-color: transparent;
 }
 
-html:not(.dark) table th,
-html:not(.dark) table td {
-    color: #000000 !important;
+html:not(.dark) :where(table:not(.ems-table)) th,
+html:not(.dark) :where(table:not(.ems-table)) td {
+    color: #000000;
 }
 
-html.dark table th,
-html.dark table td {
-    color: #ffffff !important;
+html.dark :where(table:not(.ems-table)) th,
+html.dark :where(table:not(.ems-table)) td {
+    color: #ffffff;
 }
 
     #table-user tr {
@@ -477,8 +582,8 @@ html.dark table td {
     }
 
     .text-menu:hover {
-        /* color: #222 !important; */
-        background-color: #b4b4b4;
+        background-color: var(--ems-accent-soft);
+        color: var(--ems-accent) !important;
     }
 
     .table-smaller {
@@ -499,16 +604,18 @@ html.dark table td {
     .toggle-button {
         padding: 4px 12px;
         margin: 5px;
-        border: 1px solid #ccc;
-        background-color: #f0f0f0;
+        border: 1px solid var(--ems-border);
+        background-color: var(--ems-elevated);
+        color: var(--ems-text);
         cursor: pointer;
-        border-radius: 5px;
+        border-radius: 999px;
+        transition: all var(--ems-dur);
     }
 
     .toggle-button.active {
-        background-color: #4CAF50;
+        background-color: var(--ems-accent);
         color: white;
-        border-color: #4CAF50;
+        border-color: var(--ems-accent);
     }
 
     .h-10 {
@@ -644,5 +751,56 @@ html.dark table td {
         position: absolute;
         background: rgba(0, 150, 255, 0.7);
         border: 1px solid white;
+    }
+
+    /* =====================================================================
+       Aurora shared component polish
+       ===================================================================== */
+    input:focus, select:focus, textarea:focus, .form-control:focus, .form-select:focus {
+        outline: none !important;
+        border-color: var(--ems-accent) !important;
+        box-shadow: var(--ems-ring) !important;
+    }
+
+    .btn-primary, .btn-success {
+        background-color: var(--ems-accent) !important;
+        border-color: var(--ems-accent) !important;
+        color: #fff !important;
+    }
+    .btn-primary:hover, .btn-success:hover {
+        background-color: var(--ems-accent-strong) !important;
+        border-color: var(--ems-accent-strong) !important;
+    }
+    .btn-outline-primary {
+        color: var(--ems-accent) !important;
+        border-color: var(--ems-accent) !important;
+    }
+    .btn-outline-primary:hover {
+        background-color: var(--ems-accent) !important;
+        color: #fff !important;
+    }
+
+    a { color: var(--ems-accent); }
+    a:hover { color: var(--ems-accent-strong); }
+
+    .text-primary { color: var(--ems-accent) !important; }
+    .bg-primary { background-color: var(--ems-accent) !important; }
+    .border-primary { border-color: var(--ems-accent) !important; }
+
+    /* generic card surfaces used across pages */
+    .card, .modal-content {
+        background-color: var(--ems-surface);
+        color: var(--ems-text);
+        border: 1px solid var(--ems-border);
+        border-radius: var(--ems-radius);
+    }
+
+    /* SweetAlert2 in dark mode */
+    html.dark .swal2-popup {
+        background: var(--ems-surface);
+        color: var(--ems-text);
+    }
+    .swal2-confirm.swal2-styled {
+        background-color: var(--ems-accent) !important;
     }
 </style>

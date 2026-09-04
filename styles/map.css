@@ -1,516 +1,426 @@
 /* ================================================
-   overview.css — EMS Overview / 3D Map UI
-   Matching EMS design system tokens
+   map.css — EMS Overview / 3D Map UI
+   Migrated to the EMS app-shell + --ems-* tokens.
+   Locked-viewport monitor page: toolbar + 3 columns
+   (left readout · 3D viewer · meter list), all fixed
+   height with their own inner scroll. ems-layout.css
+   releases the viewport lock at <=1100px.
    ================================================ */
 
-/* ── Root Tokens : Light Mode ── */
-:root {
-  --primary:        #8BAE66;
-  --primary-light:  rgba(139, 174, 102, 0.12);
-  --primary-border: rgba(139, 174, 102, 0.35);
-  --primary-dark:   #6a8f4b;
-
-  --bg-page:        #f0f7ee;
-  --bg-card:        #ffffff;
-  --bg-sidebar:     #ffffff;
-  --bg-icon:        #8BAE66;
-  --bg-header:      #001B5E;
-
-  --text-heading:         #1a2e14;
-  --text-body:            #374151;
-  --text-card:            #1f2937;
-  --text-muted:           #9ca3af;
-  --text-sidebar-header:  #1f2937;
-
-  --border:       #e5e7eb;
-  --border-card:  #e5e7eb;
-  --border-input: rgba(139, 174, 102, 0.30);
-  --border-active: var(--primary);
-
-  --shadow-sm:    0 2px 12px rgba(0,0,0,.07);
-  --shadow-md:    0 4px 20px rgba(80,120,50,.16), 0 2px 6px rgba(80,120,50,.08);
-  --shadow-panel: 0 2px 12px rgba(0,0,0,.07);
-
-  --radius-card:  12px;
-  --radius-panel: 12px;
-  --radius-sm:    10px;
-  --radius-xs:    8px;
-  --radius-item:  8px;
-  --transition:   180ms ease;
+/* ── Locked page frame (inside .ems-shell--locked .ems-shell__scroll) ──
+   Make the scroll container a flex column so .overview-page fills it
+   exactly — a plain height:100% resolves against the wrong ancestor here
+   and overflows by the header + footer height. Scoped with :has() so no
+   other migrated page is touched. */
+.ems-shell__scroll:has(> .overview-page) {
+    display: flex;
+    flex-direction: column;
 }
-
-/* ── Root Tokens : Dark Mode ── */
-html.dark, [data-theme="dark"] {
-  --bg-card:      #1c1c1f;
-  --bg-sidebar:   #1c1c1f;
-  --bg-page:      #09090b;
-  --bg-icon:      #8BAE66;
-  --primary:      #8BAE66;
-  --primary-dark: #6a8f4b;
-  --text-heading: #f4f4f5;
-  --text-body:    #d1d5db;
-  --text-card:    #e4e4e7;
-  --text-muted:   #6b7280;
-  --text-sidebar-header: #e4e4e7;
-  --border:       rgba(255,255,255,0.08);
-  --border-card:  rgba(255,255,255,0.08);
-  --border-input: rgba(139,174,102,0.20);
-  --shadow-sm:    0 2px 16px rgba(0,0,0,.35);
-  --shadow-panel: 0 2px 16px rgba(0,0,0,.35);
-  --shadow-md:    0 4px 16px rgba(0,0,0,.4);
-}
-
-/* ── Base ── */
-body {
-  background-color: var(--bg-page) !important;
-  font-family: 'Noto Sans Thai', 'Sarabun', sans-serif;
-  min-height: 100svh;
-  transition: background-color 0.3s ease;
+.overview-page {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--ems-space-4);
+    min-height: 0;
+    padding: var(--ems-space-5);
+    box-sizing: border-box;
 }
 
 /* ════════════════════════════════════════
-   LAYOUT
+   TOOLBAR
    ════════════════════════════════════════ */
-
-.overview-main {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-  padding: 1rem 1.25rem 0;
-  gap: 0.875rem;
+.overview-toolbar {
+    flex-shrink: 0;
+}
+.overview-toolbar__title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--ems-text);
+    letter-spacing: -0.01em;
+}
+.overview-toolbar__icon {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--ems-radius-sm);
+    background: var(--ems-accent-soft);
+    color: var(--ems-accent);
+    font-size: 15px;
 }
 
-/* ── Top bar ── */
-.overview-topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-panel);
-  box-shadow: var(--shadow-panel);
-  padding: 0.75rem 1.25rem;
-  flex-shrink: 0;
-  transition: background 0.3s ease, border-color 0.3s ease;
+/* ── Refresh control ── */
+.overview-refresh {
+    display: flex;
+    align-items: center;
+    gap: var(--ems-space-2);
+}
+.overview-refresh__spin {
+    color: var(--ems-accent);
+    animation: ems-spin 2.4s linear infinite;
+}
+.overview-refresh__label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--ems-muted);
+    white-space: nowrap;
+}
+.overview-refresh__input {
+    width: 60px;
+    height: 34px;
+    text-align: center;
+    background: var(--ems-surface);
+    border: 1px solid var(--ems-border);
+    border-radius: var(--ems-radius-sm);
+    color: var(--ems-text);
+    font: inherit;
+    font-size: 0.88rem;
+    outline: none;
+    -moz-appearance: textfield;
+    transition: border-color var(--ems-dur), box-shadow var(--ems-dur);
+}
+.overview-refresh__input::-webkit-outer-spin-button,
+.overview-refresh__input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+.overview-refresh__input:focus {
+    border-color: var(--ems-accent);
+    box-shadow: var(--ems-ring);
 }
 
-.overview-topbar__title {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--text-heading);
-  letter-spacing: -0.01em;
-}
-
-.overview-topbar__title svg {
-  color: var(--primary);
-  flex-shrink: 0;
-}
-
-.overview-topbar__refresh {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.overview-refresh-label {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--text-muted);
-  white-space: nowrap;
-}
-
-.overview-refresh-input {
-  width: 60px;
-  text-align: center;
-  background: var(--bg-page) !important;
-  border: 1px solid var(--border) !important;
-  border-radius: var(--radius-item) !important;
-  padding: 0.38rem 0.5rem !important;
-  font-size: 0.88rem !important;
-  font-family: inherit !important;
-  color: var(--text-body) !important;
-  outline: none;
-  transition: border-color var(--transition), box-shadow var(--transition), color var(--transition);
-  -moz-appearance: textfield;
-}
-
-/* Force dark text in light mode regardless of style.html overrides */
-html:not(.dark):not([data-theme="dark"]) #input-refresh.overview-refresh-input {
-  color: #111827 !important;
-}
-
-.overview-refresh-input::-webkit-outer-spin-button,
-.overview-refresh-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-
-.overview-refresh-input:focus {
-  border-color: var(--primary) !important;
-  box-shadow: 0 0 0 3px var(--primary-light) !important;
-}
-
-/* ── Body: three-column ── */
+/* ════════════════════════════════════════
+   BODY: three columns
+   ════════════════════════════════════════ */
 .overview-body {
-  display: flex;
-  flex: 1;
-  min-height: 0;
-  gap: 0.875rem;
-  padding-bottom: 1rem;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    gap: var(--ems-space-4);
 }
 
-/* ════════════════════════════════════════
-   SIDE PANELS
-   ════════════════════════════════════════ */
-
+/* ── Side panels (extend .ems-panel) ── */
 .overview-panel {
-  width: 260px;
-  min-width: 220px;
-  flex-shrink: 0;
-  background: var(--bg-sidebar);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-panel);
-  box-shadow: var(--shadow-panel);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  transition: background 0.3s ease, border-color 0.3s ease;
+    width: 264px;
+    flex-shrink: 0;
 }
-
 .overview-panel--left {
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding: 1.1rem 1rem;
-  gap: 0.6rem;
-  scrollbar-width: thin;
-  scrollbar-color: var(--primary-border) transparent;
+    min-width: 240px;
 }
-
-.overview-panel--left::-webkit-scrollbar       { width: 4px; }
-.overview-panel--left::-webkit-scrollbar-track { background: transparent; }
-.overview-panel--left::-webkit-scrollbar-thumb { background: var(--primary-border); border-radius: 99px; }
-
 .overview-panel--right {
-  overflow-y: auto;
-  padding: 0.75rem;
-  gap: 0.5rem;
-  scrollbar-width: thin;
-  scrollbar-color: var(--primary-border) transparent;
+    /* filled by generateListGroups() — .ems-panel already gives it
+       display:flex / column / overflow:hidden */
+    width: 264px;
 }
 
-.overview-panel--right::-webkit-scrollbar       { width: 4px; }
-.overview-panel--right::-webkit-scrollbar-track { background: transparent; }
-.overview-panel--right::-webkit-scrollbar-thumb { background: var(--primary-border); border-radius: 99px; }
-
-/* ── Meter name header ── */
+/* left-panel header */
+.overview-panel__head {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: var(--ems-space-3) var(--ems-space-4);
+    border-bottom: 1px solid var(--ems-border);
+}
+.overview-panel__head .bi {
+    color: var(--ems-accent);
+    font-size: 1rem;
+    flex-shrink: 0;
+}
 .overview-meter-name {
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: var(--text-heading);
-  text-align: center;
-  padding-bottom: 0.6rem;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 0.2rem;
-  letter-spacing: -0.01em;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--ems-text);
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* left-panel scroll region */
+.overview-panel__scroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: var(--ems-space-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--ems-space-3);
+    scrollbar-width: thin;
+    scrollbar-color: var(--ems-accent-border) transparent;
+}
+.overview-panel__scroll::-webkit-scrollbar { width: 4px; }
+.overview-panel__scroll::-webkit-scrollbar-track { background: transparent; }
+.overview-panel__scroll::-webkit-scrollbar-thumb {
+    background: var(--ems-accent-border);
+    border-radius: 99px;
 }
 
 /* ── Gauge wrapper (SVG arc) ── */
 .overview-gauge-wrap {
-  width: 100%;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-item);
-  background: var(--bg-page);
-  min-height: 116px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  padding: 0.55rem 0.5rem 0.35rem;
-  transition: border-color var(--transition), background 0.3s ease;
+    width: 100%;
+    border: 1px solid var(--ems-border);
+    border-radius: var(--ems-radius-sm);
+    background: var(--ems-elevated);
+    min-height: 116px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    padding: var(--ems-space-2) var(--ems-space-2) 6px;
 }
-
 .gauge-svg {
-  width: 100%;
-  max-width: 210px;
-  display: block;
-  overflow: visible;
+    width: 100%;
+    max-width: 210px;
+    display: block;
+    overflow: visible;
 }
-
 .gauge-track {
-  fill: none;
-  stroke: var(--border);
-  stroke-width: 13;
-  stroke-linecap: round;
+    fill: none;
+    stroke: var(--ems-border);
+    stroke-width: 13;
+    stroke-linecap: round;
 }
-
 .gauge-arc {
-  fill: none;
-  stroke: var(--primary);
-  stroke-width: 13;
-  stroke-linecap: round;
-  stroke-dasharray: 263.9;
-  stroke-dashoffset: 263.9; /* เริ่มว่าง — JS ตั้งค่าจริง */
-  transition: stroke-dashoffset 0.6s cubic-bezier(0.4, 0, 0.2, 1), stroke 0.3s ease;
+    fill: none;
+    stroke: var(--ems-accent);
+    stroke-width: 13;
+    stroke-linecap: round;
+    stroke-dasharray: 263.9;
+    stroke-dashoffset: 263.9; /* starts empty — JS sets the real value */
+    transition: stroke-dashoffset 0.6s cubic-bezier(0.4, 0, 0.2, 1), stroke 0.3s ease;
 }
-
 .gauge-value {
-  font-family: 'Noto Sans Thai', 'Sarabun', sans-serif;
-  font-size: 27px;
-  font-weight: 700;
-  fill: var(--text-heading);
+    font-family: var(--ems-font, 'Noto Sans Thai', sans-serif);
+    font-size: 27px;
+    font-weight: 700;
+    fill: var(--ems-text);
 }
-
 .gauge-unit {
-  font-family: 'Noto Sans Thai', 'Sarabun', sans-serif;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  fill: var(--text-muted);
+    font-family: var(--ems-font, 'Noto Sans Thai', sans-serif);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    fill: var(--ems-muted);
 }
-
 .gauge-end {
-  font-family: 'Noto Sans Thai', 'Sarabun', sans-serif;
-  font-size: 10px;
-  font-weight: 600;
-  fill: var(--text-muted);
+    font-family: var(--ems-font, 'Noto Sans Thai', sans-serif);
+    font-size: 10px;
+    font-weight: 600;
+    fill: var(--ems-muted);
 }
 
 /* ── Section label ── */
 .overview-section-label {
-  font-size: 0.72rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--primary);
-  padding: 0.3rem 0 0.1rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ems-accent);
+    padding-top: var(--ems-space-1);
 }
 
 /* ── Data rows ── */
 .overview-data-row {
-  display: flex;
-  gap: 0.4rem;
+    display: flex;
+    gap: var(--ems-space-2);
 }
-
-.overview-data-row--half {
-  gap: 0.4rem;
-}
-
 .overview-data-item {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
 }
-
 .overview-data-item__label {
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--ems-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
-
 .overview-data-input {
-  width: 100%;
-  background: var(--bg-page) !important;
-  border: 1px solid var(--border) !important;
-  border-radius: var(--radius-item) !important;
-  padding: 0.35rem 0.5rem !important;
-  font-size: 0.82rem !important;
-  font-family: inherit !important;
-  color: var(--text-body) !important;
-  font-weight: 600;
-  text-align: center;
-  outline: none;
-  cursor: default;
-  transition: border-color var(--transition), color var(--transition);
-}
-
-html:not(.dark):not([data-theme="dark"]) .overview-data-input {
-  color: #111827 !important;
+    width: 100%;
+    background: var(--ems-elevated);
+    border: 1px solid var(--ems-border);
+    border-radius: var(--ems-radius-sm);
+    padding: 6px 8px;
+    font: inherit;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--ems-text);
+    text-align: center;
+    outline: none;
+    cursor: default;
 }
 
 /* ════════════════════════════════════════
    CENTER: 3D VIEWER
    ════════════════════════════════════════ */
-
 .overview-viewer {
-  flex: 1;
-  min-width: 0;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-panel);
-  box-shadow: var(--shadow-panel);
-  position: relative;
-  overflow: hidden;
-  transition: background 0.3s ease, border-color 0.3s ease;
+    flex: 1;
+    min-width: 0;
+    background: var(--ems-surface);
+    border: 1px solid var(--ems-border);
+    border-radius: var(--ems-radius);
+    box-shadow: var(--ems-shadow);
+    position: relative;
+    overflow: hidden;
 }
 
 /* ── Popup info card ── */
 .overview-info-popup {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-item);
-  box-shadow: var(--shadow-md);
-  padding: 0.75rem 1rem;
-  font-size: 0.85rem;
-  color: var(--text-body);
-  min-width: 160px;
-  max-width: 240px;
-  backdrop-filter: blur(8px);
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background: var(--ems-surface);
+    border: 1px solid var(--ems-border);
+    border-radius: var(--ems-radius-sm);
+    box-shadow: var(--ems-shadow-lg, var(--ems-shadow));
+    padding: var(--ems-space-3) var(--ems-space-4);
+    font-size: 0.85rem;
+    color: var(--ems-text);
+    min-width: 170px;
+    max-width: 240px;
 }
 
 /* ════════════════════════════════════════
-   RIGHT PANEL — matches meters-sidebar exactly
+   RIGHT PANEL — content injected by generateListGroups()
    ════════════════════════════════════════ */
-
-/* Override panel--right layout */
-.overview-panel--right {
-  padding: 0 !important;
-  display: flex !important;
-  flex-direction: column !important;
-  overflow: hidden !important;
-}
-
-/* ── Header — mirrors .meters-sidebar__header ── */
 .listgroup-header {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  padding: 0.8rem 1rem;
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-  background: var(--bg-sidebar);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--ems-space-2);
+    padding: var(--ems-space-3) var(--ems-space-4);
+    border-bottom: 1px solid var(--ems-border);
+    flex-shrink: 0;
 }
-
 .listgroup-header__title {
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: var(--text-sidebar-header);
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--ems-text);
 }
-
 .listgroup-header__badge {
-  background: var(--primary-light);
-  border: 1px solid var(--primary-border);
-  color: var(--primary-dark);
-  font-size: 0.72rem;
-  font-weight: 700;
-  border-radius: 99px;
-  padding: 0.15rem 0.55rem;
-  white-space: nowrap;
-  flex-shrink: 0;
+    background: var(--ems-accent-soft);
+    border: 1px solid var(--ems-accent-border);
+    color: var(--ems-accent-strong);
+    font-size: 0.72rem;
+    font-weight: 700;
+    border-radius: var(--ems-radius-pill);
+    padding: 2px 9px;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
-html.dark .listgroup-header__badge,
-[data-theme="dark"] .listgroup-header__badge {
-  color: var(--primary);
-}
-
-/* ── Scrollable list — mirrors #meter-list ── */
 .listgroup-items {
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding: 0.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-  scrollbar-width: thin;
-  scrollbar-color: var(--primary-border) transparent;
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: var(--ems-space-2);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--ems-accent-border) transparent;
 }
-
-.listgroup-items::-webkit-scrollbar       { width: 4px; }
+.listgroup-items::-webkit-scrollbar { width: 4px; }
 .listgroup-items::-webkit-scrollbar-track { background: transparent; }
-.listgroup-items::-webkit-scrollbar-thumb { background: var(--primary-border); border-radius: 99px; }
+.listgroup-items::-webkit-scrollbar-thumb {
+    background: var(--ems-accent-border);
+    border-radius: 99px;
+}
 
-/* ── Each meter item — mirrors #meter-list .choice ── */
+/* ── Each meter item ── */
 .meter-list-item {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  padding: 0.5rem 0.75rem;
-  border-radius: var(--radius-item);
-  border: 1px solid transparent;
-  background: transparent;
-  cursor: pointer;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--text-body);
-  min-height: 38px;
-  line-height: 1.3;
-  user-select: none;
-  transition: background var(--transition), color var(--transition), border-color var(--transition);
-  animation: fadeInItem 0.2s ease both;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: var(--ems-radius-sm);
+    border: 1px solid transparent;
+    background: transparent;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--ems-text-secondary);
+    min-height: 38px;
+    line-height: 1.3;
+    user-select: none;
+    transition: background var(--ems-dur), color var(--ems-dur), border-color var(--ems-dur);
+    animation: ems-fade-up var(--ems-dur) ease both;
 }
-
-.meter-list-item:hover {
-  background: var(--primary-light) !important;
-  border-color: var(--primary-border) !important;
-  color: var(--primary-dark) !important;
-}
-
+.meter-list-item:hover,
 .meter-list-item.active {
-  background: var(--primary-light) !important;
-  border-color: var(--primary-border) !important;
-  color: var(--primary-dark) !important;
-  font-weight: 700 !important;
+    background: var(--ems-accent-soft);
+    border-color: var(--ems-accent-border);
+    color: var(--ems-accent-strong);
 }
-
-/* ── Icon circle — mirrors #meter-list .choice::before ── */
+.meter-list-item.active {
+    font-weight: 700;
+}
 .meter-list-item__icon {
-  width: 1.5rem;
-  height: 1.5rem;
-  min-width: 1.5rem;
-  flex-shrink: 0;
-  border-radius: 50%;
-  background-color: var(--primary-light);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='%238BAE66' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2a10 10 0 1 0 10 10'/%3E%3Cpath d='M12 12l4-4'/%3E%3Ccircle cx='12' cy='12' r='1' fill='%238BAE66'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: center;
-  border: 1px solid var(--primary-border);
-  display: block;
+    width: 1.5rem;
+    height: 1.5rem;
+    min-width: 1.5rem;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background-color: var(--ems-accent-soft);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='%232563EB' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2a10 10 0 1 0 10 10'/%3E%3Cpath d='M12 12l4-4'/%3E%3Ccircle cx='12' cy='12' r='1' fill='%232563EB'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    border: 1px solid var(--ems-accent-border);
+    display: block;
 }
-
 .meter-list-item__name {
-  flex: 1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  line-height: 1.3;
-}
-
-@keyframes fadeInItem {
-  from { opacity: 0; transform: translateX(-4px); }
-  to   { opacity: 1; transform: translateX(0); }
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.3;
 }
 
 /* ════════════════════════════════════════
-   ANIMATIONS
+   ENTRANCE ANIMATION
    ════════════════════════════════════════ */
-
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-.overview-topbar  { animation: fadeInUp 0.25s ease both; }
-.overview-panel   { animation: fadeInUp 0.3s ease both; }
-.overview-viewer  { animation: fadeInUp 0.3s ease 0.05s both; }
+.overview-toolbar { animation: ems-fade-up 0.25s ease both; }
+.overview-panel   { animation: ems-fade-up 0.3s ease both; }
+.overview-viewer  { animation: ems-fade-up 0.3s ease 0.05s both; }
 
 /* ════════════════════════════════════════
-   RESPONSIVE
+   RESPONSIVE — ems-layout releases the viewport lock <=1100px
    ════════════════════════════════════════ */
-
-@media (max-width: 900px) {
-  .overview-body        { flex-direction: column; }
-  .overview-panel       { width: 100%; min-width: unset; }
-  .overview-panel--left { max-height: 320px; }
+@media (max-width: 1100px) {
+    .overview-page {
+        height: auto;
+        padding: var(--ems-space-4);
+    }
+    .overview-body {
+        flex-direction: column;
+    }
+    .overview-panel,
+    .overview-panel--left,
+    .overview-panel--right {
+        width: 100%;
+        min-width: 0;
+    }
+    .overview-panel--left {
+        max-height: 340px;
+    }
+    .overview-panel--right {
+        min-height: 320px;
+    }
+    .overview-viewer {
+        min-height: 420px;
+    }
 }

@@ -151,10 +151,10 @@
         const numberColor = dark ? "#cccccc" : "#1f2937";
         const needleColor = dark ? "#ffffff" : "#1f2937";
         const plateColor = "rgba(0,0,0,0.0)";
-        const borderOuter = dark ? "#333" : "#c8d8b8";
-        const borderMid = dark ? "#222" : "#b0c898";
-        const borderInner = dark ? "#111" : "#98b880";
-        const valueBoxBg = "#2d4a1e";
+        const borderOuter = dark ? "#333" : "#cdd9f0";
+        const borderMid = dark ? "#222" : "#b3c6ea";
+        const borderInner = dark ? "#111" : "#95b2e3";
+        const valueBoxBg = "#1e3358";
 
         let majorTicks = [];
         for (let i = minValue; i <= maxValue; i += maxValue / step) {
@@ -179,7 +179,7 @@
                 animationRule: "linear",
                 colorPlate: plateColor,
                 colorMajorTicks: dark ? "#ffffff" : tickColor,
-                colorMinorTicks: dark ? "#bbbbbb" : "#7a9a6a",
+                colorMinorTicks: dark ? "#bbbbbb" : "#7189aa",
                 colorTitle: dark ? "#ffffff" : tickColor,
                 colorUnits: dark ? "#ffffff" : tickColor,
                 colorNumbers: dark ? "#ffffff" : numberColor,
@@ -187,14 +187,14 @@
                 colorNeedleEnd: needleColor,
                 needleWidth: 2,
                 needleCircleSize: 5,
-                colorNeedleCircleOuter: dark ? "#555" : "#6a8f4b",
-                colorNeedleCircleInnerEnd: dark ? "#111" : "#c8d8b8",
+                colorNeedleCircleOuter: dark ? "#555" : "#3f6fd1",
+                colorNeedleCircleInnerEnd: dark ? "#111" : "#cdd9f0",
                 colorBorderOuter: borderOuter,
-                colorBorderOuterEnd: dark ? "#333" : "#b0c898",
+                colorBorderOuterEnd: dark ? "#333" : "#b3c6ea",
                 colorBorderMiddle: borderMid,
-                colorBorderMiddleEnd: dark ? "#222" : "#98b880",
+                colorBorderMiddleEnd: dark ? "#222" : "#95b2e3",
                 colorBorderInner: borderInner,
-                colorBorderInnerEnd: dark ? "#111" : "#80a868",
+                colorBorderInnerEnd: dark ? "#111" : "#7ba0dc",
                 colorValueBoxBackground: valueBoxBg,
                 colorValueBoxShadow: false,
                 colorValueText: "#ffffff",

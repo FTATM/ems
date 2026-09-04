@@ -1,0 +1,420 @@
+/* =====================================================================
+   ems-layout.css  —  EMS central app-shell + layout primitives
+   Loaded by components/doc-open.php on every migrated page, right after
+   scripts/style.html (which provides the --ems-* design tokens).
+
+   Sections:
+     1. App shell            (.ems-shell / __main / __scroll, locked mode)
+     2. Layout primitives    (.ems-toolbar .ems-card .ems-panel .ems-pill
+                              .ems-btn .ems-table .ems-grid .ems-refresh
+                              .ems-skeleton .ems-fade-up)
+     3. Keyframes            (ems-shimmer / ems-fade-up / ems-spin)
+   ===================================================================== */
+
+/* ============================================================
+   1. APP SHELL
+   ============================================================ */
+
+.ems-shell {
+    display: flex;
+    min-height: 100svh;
+}
+
+.ems-shell__main {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    transition: margin-left var(--ems-dur);
+}
+
+.ems-shell__scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+/* default — page scrolls normally (list / form / report pages) */
+body:not(.ems-locked) .ems-shell__scroll {
+    overflow: visible;
+}
+
+/* NOTE: the docked mini-rail content offset (>=1200px) lives in
+   styles/sidemenu.css, which loads on every page (migrated or not) so
+   the rail pushes content correctly everywhere. */
+
+/* locked — hard viewport lock + one inner scroll region (monitor pages) */
+body.ems-locked {
+    height: 100svh;
+    overflow: hidden;
+}
+.ems-shell--locked {
+    height: 100svh;
+    overflow: hidden;
+}
+.ems-shell--locked .ems-shell__main {
+    height: 100svh;
+    overflow: hidden;
+}
+.ems-shell--locked .ems-shell__scroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+/* On small screens a locked monitor page's reflowed stack is taller than the
+   viewport — release the lock and let the page scroll natively. */
+@media (max-width: 1100px) {
+    body.ems-locked,
+    .ems-shell--locked,
+    .ems-shell--locked .ems-shell__main,
+    .ems-shell--locked .ems-shell__scroll {
+        height: auto;
+        overflow: visible;
+    }
+    .ems-shell--locked {
+        min-height: 100svh;
+    }
+}
+
+/* ============================================================
+   2. LAYOUT PRIMITIVES
+   ============================================================ */
+
+/* ---- Toolbar / filter bar -------------------------------------------- */
+.ems-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--ems-space-3);
+    padding: var(--ems-space-3) var(--ems-space-4);
+    background: var(--ems-surface);
+    border: 1px solid var(--ems-border);
+    border-radius: var(--ems-radius);
+    box-shadow: var(--ems-shadow);
+}
+.ems-toolbar--flush {
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
+    box-shadow: none;
+}
+.ems-toolbar__group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ems-space-1);
+    min-width: 0;
+}
+.ems-toolbar__label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ems-muted);
+    white-space: nowrap;
+}
+.ems-toolbar__divider {
+    align-self: stretch;
+    width: 1px;
+    background: var(--ems-border);
+}
+.ems-toolbar__spacer {
+    margin-left: auto;
+}
+
+/* ---- Select control ------------------------------------------------- */
+.ems-select {
+    height: 38px;
+    padding: 0 var(--ems-space-3);
+    border: 1px solid var(--ems-border);
+    border-radius: var(--ems-radius-sm);
+    background: var(--ems-surface);
+    color: var(--ems-text);
+    font: inherit;
+    min-width: 160px;
+}
+
+/* ---- Card --------------------------------------------------------- */
+.ems-card {
+    background: var(--ems-surface);
+    border: 1px solid var(--ems-border);
+    border-radius: var(--ems-radius);
+    box-shadow: var(--ems-shadow);
+    padding: var(--ems-space-4);
+}
+.ems-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--ems-space-3);
+    margin-bottom: var(--ems-space-3);
+}
+.ems-card__title {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--ems-text);
+}
+.ems-card--accent {
+    position: relative;
+    overflow: hidden;
+    padding-left: calc(var(--ems-space-4) + 4px);
+}
+.ems-card--accent::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 4px;
+    background: var(--ems-accent);
+}
+
+/* ---- Side panel -------------------------------------------------- */
+.ems-panel {
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    width: var(--ems-panel-w);
+    min-height: 0;
+    background: var(--ems-surface);
+    border: 1px solid var(--ems-border);
+    border-radius: var(--ems-radius);
+    box-shadow: var(--ems-shadow);
+    overflow: hidden;
+}
+.ems-panel--sm { width: var(--ems-panel-w-sm); }
+.ems-panel--lg { width: var(--ems-panel-w-lg); }
+.ems-panel__header {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: var(--ems-space-2);
+    padding: var(--ems-space-3) var(--ems-space-4);
+    border-bottom: 1px solid var(--ems-border);
+}
+.ems-panel__title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--ems-text);
+}
+.ems-panel__body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: var(--ems-space-2);
+}
+
+/* ---- Count / status pill --------------------------------------- */
+.ems-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35em;
+    padding: 2px 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.6;
+    border-radius: var(--ems-radius-pill);
+    background: var(--ems-accent-soft);
+    color: var(--ems-accent-strong);
+    border: 1px solid var(--ems-accent-border);
+}
+.ems-pill--muted {
+    background: var(--ems-elevated);
+    color: var(--ems-muted);
+    border-color: var(--ems-border);
+}
+.ems-pill--success {
+    background: rgba(22, 163, 74, 0.12);
+    color: var(--ems-success);
+    border-color: rgba(22, 163, 74, 0.35);
+}
+.ems-pill--danger {
+    background: rgba(225, 29, 72, 0.12);
+    color: var(--ems-danger);
+    border-color: rgba(225, 29, 72, 0.35);
+}
+
+/* ---- Buttons -------------------------------------------------- */
+.ems-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5em;
+    padding: 0.5rem 0.9rem;
+    font-family: inherit;
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1;
+    border: 1px solid transparent;
+    border-radius: var(--ems-radius-sm);
+    cursor: pointer;
+    text-decoration: none;
+    transition: background var(--ems-dur), color var(--ems-dur),
+                border-color var(--ems-dur), transform var(--ems-dur);
+}
+.ems-btn--primary {
+    background: var(--ems-accent);
+    color: #fff;
+}
+.ems-btn--primary:hover {
+    background: var(--ems-accent-strong);
+    color: #fff;
+    transform: translateY(-1px);
+}
+.ems-btn--ghost {
+    background: transparent;
+    border-color: var(--ems-border);
+    color: var(--ems-text);
+}
+.ems-btn--ghost:hover {
+    background: var(--ems-elevated);
+    color: var(--ems-text);
+}
+.ems-btn--danger {
+    background: var(--ems-danger);
+    color: #fff;
+}
+.ems-btn--danger:hover {
+    background: #be123c;
+    color: #fff;
+    transform: translateY(-1px);
+}
+.ems-btn--icon {
+    width: 38px;
+    height: 38px;
+    padding: 0;
+}
+.ems-btn--sm {
+    padding: 0.35rem 0.6rem;
+    font-size: 0.8rem;
+}
+.ems-btn:disabled,
+.ems-btn.is-disabled {
+    opacity: 0.55;
+    pointer-events: none;
+}
+
+/* ---- Table -------------------------------------------------- */
+.ems-table-wrap {
+    overflow: auto;
+    border: 1px solid var(--ems-border);
+    border-radius: var(--ems-radius);
+    background: var(--ems-surface);
+}
+.ems-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.875rem;
+    color: var(--ems-text);
+}
+.ems-table th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: var(--ems-elevated);
+    color: var(--ems-text);
+    font-weight: 700;
+    text-align: left;
+    padding: 0.6rem 0.75rem;
+    border-bottom: 1px solid var(--ems-border);
+    white-space: nowrap;
+}
+.ems-table td {
+    padding: 0.55rem 0.75rem;
+    border-bottom: 1px solid var(--ems-border);
+    color: var(--ems-text);
+}
+.ems-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+.ems-table tbody tr:hover td {
+    background: var(--ems-accent-soft);
+}
+.ems-table--stickycol th:nth-child(-n + 2),
+.ems-table--stickycol td:nth-child(-n + 2) {
+    position: sticky;
+    left: 0;
+    background: var(--ems-surface);
+    z-index: 1;
+}
+.ems-table--stickycol th:nth-child(-n + 2) {
+    z-index: 3;
+    background: var(--ems-elevated);
+}
+
+/* ---- Card grid -------------------------------------------------- */
+.ems-grid--cards {
+    display: grid;
+    gap: var(--ems-space-4);
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+}
+.ems-grid--cards.--sm {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+}
+.ems-grid--cards.--lg {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+}
+
+/* ---- Auto-refresh widget -------------------------------------- */
+.ems-refresh {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    color: var(--ems-muted);
+}
+.ems-refresh__icon {
+    display: inline-flex;
+    animation: ems-spin 2s linear infinite;
+}
+.ems-refresh__input {
+    width: 56px;
+    height: 32px;
+    text-align: center;
+    border: 1px solid var(--ems-border);
+    border-radius: var(--ems-radius-sm);
+    background: var(--ems-surface);
+    color: var(--ems-text);
+    font: inherit;
+}
+
+/* ---- Skeleton loader ---------------------------------------- */
+.ems-skeleton {
+    background: linear-gradient(
+        90deg,
+        var(--ems-elevated) 25%,
+        var(--ems-border) 37%,
+        var(--ems-elevated) 63%
+    );
+    background-size: 400% 100%;
+    animation: ems-shimmer 1.4s ease infinite;
+    border-radius: var(--ems-radius-sm);
+}
+.ems-skeleton--line {
+    height: 0.75rem;
+    margin: 0.4rem 0;
+}
+.ems-skeleton--block {
+    height: 100%;
+}
+
+/* ---- Entrance animation helper ----------------------------- */
+.ems-fade-up {
+    animation: ems-fade-up var(--ems-dur) ease both;
+}
+
+/* ============================================================
+   3. KEYFRAMES  (one canonical copy each)
+   ============================================================ */
+@keyframes ems-shimmer {
+    0%   { background-position: 100% 0; }
+    100% { background-position: 0 0; }
+}
+@keyframes ems-fade-up {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: none; }
+}
+@keyframes ems-spin {
+    to { transform: rotate(360deg); }
+}

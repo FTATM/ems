@@ -850,4 +850,15 @@
       })
   }
 
+  // สลับแท็บ รายวัน / รายเดือน — ทั้งสองพาเนลยังอยู่ใน DOM (แค่ซ่อน) จึงไม่กระทบการคำนวณ
+  function switchReportTab(tab) {
+    document.querySelectorAll('.report-tab').forEach(btn => {
+      btn.classList.toggle('is-active', btn.dataset.tab === tab);
+    });
+    const daily = document.getElementById('tab-daily');
+    const monthly = document.getElementById('tab-monthly');
+    if (daily) daily.hidden = (tab !== 'daily');
+    if (monthly) monthly.hidden = (tab !== 'monthly');
+  }
+
 </script>

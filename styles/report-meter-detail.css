@@ -39,16 +39,16 @@ body {
 }
 
 .filter-date-wrapper:hover {
-    border-color: #5d8a3c;
+    border-color: #3a63c4;
 }
 
 .filter-date-wrapper:focus-within {
-    border-color: #5d8a3c;
-    box-shadow: 0 0 0 2px rgba(93, 138, 60, 0.2);
+    border-color: #3a63c4;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
 }
 
 .filter-date-wrapper .bi-calendar3 {
-    color: #5d8a3c;
+    color: #3a63c4;
     font-size: 15px;
     flex-shrink: 0;
 }

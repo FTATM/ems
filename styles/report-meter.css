@@ -1,117 +1,98 @@
 /* ============================================
-   Report Meter Page Styles
-   style-report-meter.css
+   Report Meter Page — report-meter.css
+   Migrated to the EMS app-shell + --ems-* tokens.
+   Shell / theme / palette now come from ems-layout.css + style.html.
+   Daily / Monthly are tab panels; tables keep their old structure.
    ============================================ */
 
-/* --- Body Background --- */
-body {
-    background-color: #f5f5f5 !important;
-    font-family: 'Noto Sans Thai', 'Sarabun', sans-serif;
+/* ── Content wrapper (inside .ems-shell__scroll, page scrolls normally) ── */
+.page-content.report-page {
+    padding: var(--ems-space-5);
+    max-width: 1100px;
+    margin: 0 auto;
 }
 
-/* --- Filter Bar --- */
-.filter-bar {
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
-    padding: 16px 24px;
-    margin-bottom: 16px;
+/* ── Page hero ── */
+.report-hero {
+    margin-bottom: var(--ems-space-4);
+}
+.report-hero h2 {
     display: flex;
     align-items: center;
-    gap: 0;
+    gap: 10px;
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--ems-text);
 }
-
-.filter-item {
+.report-hero .hero-icon {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
     display: flex;
-    flex-direction: column;
-    gap: 4px;
-    flex: 1 1 0;
-    min-width: 0;
-    padding: 0 12px;
-    box-sizing: border-box;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--ems-radius-sm);
+    background: var(--ems-accent-soft);
+    color: var(--ems-accent);
+    font-size: 18px;
 }
 
-.filter-item:first-child {
-    padding-left: 0;
+/* ── Filter toolbar ── */
+.report-toolbar {
+    margin-bottom: var(--ems-space-4);
 }
-
-.filter-item:last-child {
-    padding-right: 0;
-}
-
-.filter-label {
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: #888;
+.report-toolbar__value {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 38px;
+    padding: 0 var(--ems-space-3);
+    border-radius: var(--ems-radius-sm);
+    background: var(--ems-accent-soft);
+    color: var(--ems-accent-strong);
+    font-size: 13px;
     font-weight: 600;
+    white-space: nowrap;
+}
+.report-toolbar__value .bi {
+    color: var(--ems-accent);
 }
 
-.filter-value {
+/* date field — visible box wrapping a hidden native date input */
+.report-date {
     display: flex;
     align-items: center;
     gap: 6px;
-    background: #e8f5e9;
-    border-radius: 6px;
-    padding: 6px 12px;
+    height: 38px;
+    min-width: 190px;
+    padding: 0 var(--ems-space-3);
+    border: 1px solid var(--ems-border);
+    border-radius: var(--ems-radius-sm);
+    background: var(--ems-surface);
+    color: var(--ems-text);
     font-size: 13px;
-    color: #2e7d32;
-    font-weight: 500;
-    width: 100%;
-    box-sizing: border-box;
-    min-width: 0;
-}
-
-.filter-value .bi {
-    color: #4caf50;
-}
-
-.filter-select {
-    border: 1px solid #d0d0d0;
-    border-radius: 6px;
-    padding: 6px 10px;
-    font-size: 13px;
-    color: #333;
-    background: #fff;
-    width: 100%;
-    min-width: 0;
-    box-sizing: border-box;
-}
-
-.filter-date {
-    border: 1px solid #d0d0d0;
-    border-radius: 6px;
-    padding: 6px 10px;
-    font-size: 13px;
-    color: #333;
-    background: #fff;
-    width: 100%;
-    min-width: 0;
-    box-sizing: border-box;
-}
-
-.filter-date-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    background: #fff;
-    border: 1px solid #d0d0d0;
-    border-radius: 6px;
-    padding: 6px 12px;
-    font-size: 13px;
-    color: #333;
     cursor: pointer;
-    width: 100%;
-    min-width: 0;
-    box-sizing: border-box;
     position: relative;
+    user-select: none;
+    transition: border-color var(--ems-dur), box-shadow var(--ems-dur);
 }
-
-.filter-date-wrapper .bi {
-    color: #4caf50;
+.report-date:hover {
+    border-color: var(--ems-accent);
+}
+.report-date:focus-within {
+    border-color: var(--ems-accent);
+    box-shadow: var(--ems-ring);
+}
+.report-date .bi {
+    color: var(--ems-accent);
     flex-shrink: 0;
 }
-
+#date-display {
+    flex: 1;
+    white-space: nowrap;
+    color: var(--ems-text) !important;   /* JS sets an inline colour; keep it theme-aware */
+}
 .filter-date-hidden {
     position: absolute;
     opacity: 0;
@@ -120,376 +101,195 @@ body {
     height: 0;
 }
 
-/* --- Reports Layout --- */
-.reports-wrapper {
+/* ── Tabs ── */
+.report-tabs {
     display: flex;
-    gap: 16px;
-    align-items: flex-start;
+    gap: var(--ems-space-1);
+    margin-bottom: var(--ems-space-4);
+    border-bottom: 1px solid var(--ems-border);
 }
-
-/* --- Report Card --- */
-.report-card {
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
-    padding: 24px;
-    flex: 1;
-}
-
-.report-card-header {
-    display: flex;
+.report-tab {
+    display: inline-flex;
     align-items: center;
-    gap: 10px;
-    margin-bottom: 20px;
-}
-
-.report-card-icon {
-    width: 36px;
-    height: 36px;
-    background: #e8f5e9;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #4caf50;
-    font-size: 18px;
-}
-
-.report-card-title {
-    font-size: 16px;
+    gap: 6px;
+    padding: 10px 18px;
+    border: none;
+    background: transparent;
+    font: inherit;
+    font-size: 14px;
     font-weight: 600;
-    color: #222;
-    margin: 0;
+    color: var(--ems-muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: color var(--ems-dur), border-color var(--ems-dur);
+}
+.report-tab:hover {
+    color: var(--ems-text);
+}
+.report-tab.is-active {
+    color: var(--ems-accent);
+    border-bottom-color: var(--ems-accent);
 }
 
-/* --- Section Title --- */
+/* ── Report panel / card ── */
+.report-panel {
+    animation: ems-fade-up var(--ems-dur) ease both;
+}
+.report-card {
+    padding: var(--ems-space-5);
+}
+
+/* ── Section title ── */
 .section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: var(--ems-space-4) 0 var(--ems-space-2);
     font-size: 13px;
     font-weight: 600;
-    color: #111 !important;
-    margin: 16px 0 8px 0;
+    color: var(--ems-text);
+}
+.section-title:first-of-type {
+    margin-top: 0;
+}
+.section-no {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    border-radius: 6px;
+    background: var(--ems-accent-soft);
+    color: var(--ems-accent);
+    font-size: 11px;
+    font-weight: 700;
 }
 
-/* --- Section Divider --- */
+/* ── Section divider ── */
 .section-divider {
     border: none;
-    border-top: 1px solid #eeeeee;
-    margin: 12px 0 0 0;
+    border-top: 1px solid var(--ems-border);
+    margin: var(--ems-space-3) 0 0;
 }
 
-/* --- Report Table --- */
+/* ── Report table ── */
 .report-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 12px;
     table-layout: fixed;
+    font-size: 12px;
 }
-
 .report-table .col-label {
     width: 18%;
 }
-
 .report-table .col-data {
     width: 16.4%;
 }
-
 .report-table th {
-    text-align: center;
-    color: #111 !important;
-    font-weight: 600;
     padding: 4px 6px;
-    border-bottom: 1px solid #e0e0e0;
+    text-align: center;
+    font-weight: 600;
+    color: var(--ems-muted);
+    border-bottom: 1px solid var(--ems-border);
     white-space: nowrap;
 }
-
+.report-table th.th-left {
+    text-align: left;
+}
 .report-table td {
     padding: 4px 6px;
     text-align: center;
     vertical-align: middle;
-    color: #111 !important;
+    color: var(--ems-text);
 }
 
+/* row labels — On peak / Off peak / Holiday / Max peak (report-meter-detail) */
 .report-table td.label-cell {
     text-align: left;
-    color: #111 !important;
     white-space: nowrap;
+    font-weight: 600;
+    color: var(--ems-text-secondary);
 }
-
-.report-table input[type="text"],
-.report-table input[type="date"] {
-    width: 100%;
-    min-width: 60px;
-    padding: 3px 6px;
-    font-size: 12px;
-    border: 1px solid #d0d0d0;
-    border-radius: 8px;
-    text-align: center;
-    background: #fff !important;
-    color: #111 !important;
-    box-sizing: border-box;
-}
-
-.report-table input.editable {
-    background: #f5f5f5 !important;
-    border-color: #bbb;
-}
-
-.report-table input[readonly] {
-    background: #fff !important;
-    color: #111 !important;
-}
-
-.report-table input.total-input {
-    font-weight: 700;
-    border-color: #5d8a3c;
-}
-
-.report-table th.th-left {
-    text-align: left;
-}
-
 .report-table td.sub-label {
     text-align: left;
     font-size: 11px;
-    color: #888 !important;
+    color: var(--ems-muted);
 }
-.maxpeak-row td {
-    padding-top: 6px;
-}
-
-.maxpeak-label {
-    text-align: left;
-    font-size: 11px;
-    color: #888;
+.report-table tr.maxpeak-row td {
+    padding-top: 8px;
 }
 
-/* --- Buttons --- */
-.btn-export {
-    background: #5d8a3c;
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    padding: 10px 24px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 20px;
-    float: right;
-}
-
-.btn-export:hover {
-    background: #4a7030;
-}
-
-.btn-print {
-    background: #6a994e;
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    padding: 10px 24px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 20px;
-    float: right;
-}
-
-.btn-print:hover {
-    background: #4a7030;
-}
-
-/* --- Footer Note --- */
-.footer-note {
-    margin-top: 12px;
+/* ── Table inputs ── */
+.report-table input[type="text"] {
+    width: 100%;
+    min-width: 60px;
+    padding: 4px 6px;
+    font: inherit;
     font-size: 12px;
-    color: #666;
-    padding: 8px 0;
+    text-align: center;
+    color: var(--ems-text);
+    background: var(--ems-surface);
+    border: 1px solid var(--ems-border);
+    border-radius: var(--ems-radius-sm);
+    box-sizing: border-box;
+    transition: border-color var(--ems-dur), box-shadow var(--ems-dur);
 }
-
-/* ============================================
-   Theme System
-   ============================================ */
-
-/* --- CSS Variables (Default: Green) --- */
-:root {
-    --theme-primary: #4caf50;
-    --theme-primary-dark: #2e7d32;
-    --theme-primary-btn: #5d8a3c;
-    --theme-primary-btn-hover: #4a7030;
-    --theme-primary-btn2: #6a994e;
-    --theme-bg-light: #e8f5e9;
-    --theme-text-accent: #2e7d32;
-    --theme-icon-color: #4caf50;
-    --theme-total-border: #5d8a3c;
+.report-table input[readonly] {
+    background: var(--ems-elevated);
+    color: var(--ems-text-secondary);
 }
-
-/* Dark Theme (Green Dark) — ใช้ html.dark ให้ตรงกับ sidemenu */
-html.dark {
-    --bg-page:            #18181b;
-    --bg-card:            #09090b;
-    --bg-filter:          #09090b;
-    --bg-info:            #09090b;
-    --bg-select:          #202a18;
-    --text-primary:       #deeacc;
-    --text-secondary:     #aec48a;
-    --text-muted:         #607048;
-    --text-label:         #7a9058;
-    --border:             #283820;
-    --border-focus:       #8BAE66;
-    --green:              #8BAE66;
-    --green-dark:         #6e9248;
-    --green-light:        #1c2a12;
-    --green-icon:         #8BAE66;
-    --green-glow:         rgba(139, 174, 102, 0.22);
-    --green-soft:         rgba(139, 174, 102, 0.09);
-    --shadow-card:        0 2px 14px rgba(0,0,0,0.45);
-    --shadow-filter:      0 1px 8px rgba(0,0,0,0.38);
-    --footer-bg:          #09090b;
-    --footer-text:        #4a6030;
-    --footer-border:      #202e16;
-
-    /* map theme variables ให้ใช้ palette ด้านบน */
-    --theme-primary:          #8BAE66;
-    --theme-primary-dark:     #6e9248;
-    --theme-primary-btn:      #6e9248;
-    --theme-primary-btn-hover:#5a7a38;
-    --theme-primary-btn2:     #8BAE66;
-    --theme-bg-light:         #1c2a12;
-    --theme-text-accent:      #aec48a;
-    --theme-icon-color:       #8BAE66;
-    --theme-total-border:     #8BAE66;
+/* some detail-page readonly cells carry Bootstrap .form-control — normalise height */
+.report-table input.form-control,
+.report-table input.form-control-sm {
+    height: auto;
+    line-height: 1.4;
+    box-shadow: none;
 }
-
-html.dark body {
-    background-color: var(--bg-page) !important;
-    color: var(--text-primary) !important;
+.report-table input.editable {
+    background: var(--ems-surface);
+    border-color: var(--ems-accent-border);
 }
-
-html.dark .filter-bar {
-    background: var(--bg-filter);
-    box-shadow: var(--shadow-filter);
+.report-table input.editable:focus {
+    outline: none;
+    border-color: var(--ems-accent);
+    box-shadow: var(--ems-ring);
 }
-
-html.dark .report-card {
-    background: var(--bg-card);
-    box-shadow: var(--shadow-card);
-}
-
-html.dark .report-card-title {
-    color: var(--text-primary) !important;
-}
-
-html.dark .section-title {
-    color: var(--text-secondary) !important;
-}
-
-html.dark .report-table th,
-html.dark .report-table td,
-html.dark .report-table td.label-cell {
-    color: var(--text-primary) !important;
-}
-
-html.dark .report-table td.sub-label,
-html.dark .maxpeak-label {
-    color: var(--text-muted) !important;
-}
-
-html.dark .report-table input[type="text"],
-html.dark .report-table input[type="date"] {
-    background: var(--bg-select) !important;
-    color: var(--text-primary) !important;
-    border-color: var(--border);
-}
-
-html.dark .report-table input.editable {
-    background: var(--bg-select) !important;
-    border-color: var(--border-focus);
-}
-
-html.dark .report-table input[readonly] {
-    background: var(--bg-card) !important;
-    color: var(--text-secondary) !important;
-}
-
-html.dark .report-table input.total-input {
-    border-color: var(--green);
-    color: var(--green) !important;
-}
-
-html.dark .section-divider {
-    border-color: var(--border);
-}
-
-html.dark .footer-note {
-    color: var(--footer-text);
-}
-
-html.dark .filter-label {
-    color: var(--text-label);
-}
-
-html.dark .filter-select,
-html.dark .filter-date {
-    background: var(--bg-select);
-    color: var(--text-primary);
-    border-color: var(--border);
-}
-
-html.dark .filter-date-wrapper {
-    background: var(--bg-select);
-    color: var(--text-primary);
-    border-color: var(--border);
-}
-
-html.dark .filter-date-wrapper .bi {
-    color: var(--green-icon);
-}
-
-html.dark #date-display {
-    color: var(--text-primary) !important;
-}
-
-html.dark .report-table th {
-    border-bottom-color: var(--border);
-}
-
-/* Apply variables to existing elements */
-.filter-value {
-    background: var(--theme-bg-light);
-    color: var(--theme-text-accent);
-}
-
-.filter-value .bi {
-    color: var(--theme-icon-color);
-}
-
-.report-card-icon {
-    background: var(--theme-bg-light);
-    color: var(--theme-primary);
-}
-
 .report-table input.total-input {
-    border-color: var(--theme-total-border);
+    font-weight: 700;
+    color: var(--ems-accent);
+    border-color: var(--ems-accent);
+    background: var(--ems-accent-soft);
 }
 
-.btn-export {
-    background: var(--theme-primary-btn);
+/* ── Card actions ── */
+.report-card-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: var(--ems-space-5);
 }
 
-.btn-export:hover {
-    background: var(--theme-primary-btn-hover);
+/* ── Footer note ── */
+.footer-note {
+    margin-top: var(--ems-space-4);
+    padding: var(--ems-space-2) 0;
+    font-size: 12px;
+    color: var(--ems-muted);
 }
 
-.btn-print {
-    background: var(--theme-primary-btn2);
-}
-
-.btn-print:hover {
-    background: var(--theme-primary-btn-hover);
+/* ── Responsive ── */
+@media (max-width: 768px) {
+    .page-content.report-page {
+        padding: var(--ems-space-4);
+    }
+    .report-card {
+        padding: var(--ems-space-4);
+    }
+    .report-table {
+        font-size: 11px;
+    }
+    .report-table input[type="text"] {
+        min-width: 44px;
+    }
 }

@@ -5,25 +5,25 @@
 
 /* ── Root Tokens : Light Mode ── */
 :root {
-  --primary:        #8BAE66;
-  --primary-light:  rgba(139, 174, 102, 0.12);
-  --primary-border: rgba(139, 174, 102, 0.40);
-  --primary-dark:   #6a8f4b;
+  --primary:        #2563EB;
+  --primary-light:  rgba(37, 99, 235, 0.12);
+  --primary-border: rgba(37, 99, 235, 0.40);
+  --primary-dark:   #3f6fd1;
 
-  --bg-page:        #f0f7ee;
+  --bg-page:        #eef2fb;
   --bg-card:        #ffffff;
-  --bg-icon:        #8BAE66;
-  --bg-header:      #001B5E;
+  --bg-icon:        #2563EB;
+  --bg-header:      #2563EB;
 
-  --text-heading:   #1a2e14;
-  --text-body:      #4d6b3a;
+  --text-heading:   #152238;
+  --text-body:      #3f5573;
   --text-card:      #1f2937;
   --text-muted:     #6b7280;
 
-  --border-card:    rgba(139, 174, 102, 0.20);
+  --border-card:    rgba(37, 99, 235, 0.20);
 
-  --shadow-sm: 0 1px 3px rgba(80,120,50,.10), 0 1px 2px rgba(80,120,50,.06);
-  --shadow-md: 0 4px 20px rgba(80,120,50,.16), 0 2px 6px rgba(80,120,50,.08);
+  --shadow-sm: 0 1px 3px rgba(37, 99, 235,.10), 0 1px 2px rgba(37, 99, 235,.06);
+  --shadow-md: 0 4px 20px rgba(37, 99, 235,.16), 0 2px 6px rgba(37, 99, 235,.08);
 
   --radius-card: 16px;
   --radius-icon: 12px;
@@ -34,13 +34,13 @@
 html.dark, [data-theme="dark"] {
   --bg-card:      #18181b;
   --bg-page:      #09090b;
-  --bg-icon:      #8BAE66;
-  --primary:      #8BAE66;
+  --bg-icon:      #2563EB;
+  --primary:      #2563EB;
   --text-heading: #f4f4f5;
   --text-body:    #a1a1aa;
   --text-card:    #e4e4e7;
   --text-muted:   #71717a;
-  --border-card:  rgba(139,174,102,0.15);
+  --border-card:  rgba(37, 99, 235,0.15);
   --shadow-sm: 0 1px 3px rgba(0,0,0,.3);
   --shadow-md: 0 4px 16px rgba(0,0,0,.4);
 }

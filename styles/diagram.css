@@ -5,29 +5,29 @@
 
 /* ── CSS Variables (standalone) ── */
 :root {
-  --dg-bg: #f0f7ee;
+  --dg-bg: #eef2fb;
   --dg-card: #ffffff;
-  --dg-border: #d8e4c8;
-  --dg-green: #8bae66;
-  --dg-green-dark: #6e9248;
-  --dg-green-light: #edf3e4;
-  --dg-green-glow: rgba(139, 174, 102, 0.18);
-  --dg-green-soft: rgba(139, 174, 102, 0.09);
-  --dg-text: #1c2214;
-  --dg-muted: #7a8f60;
-  --dg-shadow: 0 1px 8px rgba(139, 174, 102, 0.1);
+  --dg-border: #d5e0f0;
+  --dg-green: #2563EB;
+  --dg-green-dark: #3f6fd1;
+  --dg-green-light: #e8eef9;
+  --dg-green-glow: rgba(37, 99, 235, 0.18);
+  --dg-green-soft: rgba(37, 99, 235, 0.09);
+  --dg-text: #15223a;
+  --dg-muted: #5b6b86;
+  --dg-shadow: 0 1px 8px rgba(37, 99, 235, 0.1);
 }
 
 html.dark {
   --dg-bg: #18181b;
   --dg-card: #09090b;
-  --dg-border: #283820;
-  --dg-green: #8bae66;
-  --dg-green-dark: #6e9248;
-  --dg-green-light: #1c2a12;
-  --dg-green-glow: rgba(139, 174, 102, 0.22);
-  --dg-green-soft: rgba(139, 174, 102, 0.09);
-  --dg-text: #deeacc;
+  --dg-border: #2a3542;
+  --dg-green: #2563EB;
+  --dg-green-dark: #3f6fd1;
+  --dg-green-light: #152232;
+  --dg-green-glow: rgba(37, 99, 235, 0.22);
+  --dg-green-soft: rgba(37, 99, 235, 0.09);
+  --dg-text: #dbe4f2;
   --dg-muted: #607048;
   --dg-shadow: 0 2px 14px rgba(0, 0, 0, 0.45);
 }
@@ -38,7 +38,7 @@ body {
 
 /* ── Background (light mode only) ── */
 html:not(.dark) body {
-  background-color: #f0f7ee !important;
+  background-color: #eef2fb !important;
 }
 
 /* ── Info Bar (Location / Group) ── */

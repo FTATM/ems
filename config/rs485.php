@@ -1,5 +1,7 @@
 <?php
 // เรียกใช้ Python script
+require_once __DIR__ . '/python-bin.php';   // ems_python_bin() — reads PYTHON_BIN from .env
+
 $meter_id   = $_POST['meter_id']   ?? "";
 $serialport = $_POST['serialport'] ?? "";
 $buadrate   = $_POST['buadrate']   ?? "";
@@ -11,7 +13,26 @@ $address    = $_POST['address']    ?? "";
 $quality    = $_POST['quality']    ?? "";
 
 try {
-    $response = shell_exec("python ../connector/pymodbusrs485.py $meter_id $serialport $buadrate $databits $parity $stopbits $slaveid $address $quality 2>&1");
+    // Python interpreter comes from .env (PYTHON_BIN); defaults to the Windows
+    // "py" launcher, which is on the system PATH Apache sees (a bare "python"
+    // from a per-user install is not).
+    // Absolute script path + escaped args (these come straight from POST).
+    $script = __DIR__ . '/../connector/pymodbusrs485.py';
+    $cmd = sprintf(
+        '%s %s %s %s %s %s %s %s %s %s %s 2>&1',
+        ems_python_bin(),
+        escapeshellarg($script),
+        escapeshellarg($meter_id),
+        escapeshellarg($serialport),
+        escapeshellarg($buadrate),
+        escapeshellarg($databits),
+        escapeshellarg($parity),
+        escapeshellarg($stopbits),
+        escapeshellarg($slaveid),
+        escapeshellarg($address),
+        escapeshellarg($quality)
+    );
+    $response = shell_exec($cmd);
     $decoded = json_decode($response, true);
 
     if (json_last_error() === JSON_ERROR_NONE && isset($decoded['success'])) {

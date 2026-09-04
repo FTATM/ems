@@ -1,16 +1,16 @@
 :root {
-  --primary:        #8BAE66;
-  --primary-light:  rgba(139, 174, 102, 0.12);
-  --primary-border: rgba(139, 174, 102, 0.35);
-  --primary-dark:   #6a8f4b;
+  --primary:        #2563EB;
+  --primary-light:  rgba(37, 99, 235, 0.12);
+  --primary-border: rgba(37, 99, 235, 0.35);
+  --primary-dark:   #3f6fd1;
 
   --bg-page:        #f5f6f8;
   --bg-card:        #ffffff;
   --bg-gauge-grid:  #ffffff;
-  --bg-select:      #f2f5ee;
+  --bg-select:      #eef2f9;
 
-  --text-heading:   #1a2e14;
-  --text-body:      #4d6b3a;
+  --text-heading:   #152238;
+  --text-body:      #3f5573;
   --text-card:      #1f2937;
   --text-muted:     #6b7280;
   --text-label:     #374151;
@@ -33,8 +33,8 @@ html.dark, [data-theme="dark"] {
   --bg-page:        #111113;
   --bg-gauge-grid:  #1c1c1e;
   --bg-select:      #1a1a1a;
-  --primary:        #8BAE66;
-  --primary-dark:   #6a8f4b;
+  --primary:        #2563EB;
+  --primary-dark:   #3f6fd1;
   --text-heading:   #f4f4f5;
   --text-body:      #a1a1aa;
   --text-card:      #e4e4e7;
@@ -257,7 +257,7 @@ body {
 
 /* ── Each gauge card ── */
 .gauge-card {
-  background: #eef4e8 !important;
+  background: #eef2fb !important;
   border: 1px solid var(--primary-border) !important;
   border-radius: 10px !important;
   box-shadow: var(--shadow-sm) !important;

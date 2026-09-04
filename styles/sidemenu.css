@@ -1,46 +1,46 @@
 /* ==============================================
-   EMS SIDEMENU  —  #8BAE66 + White / Dark Mode
+   EMS SIDEMENU  —  Aurora (blue / slate) + Dark Mode
    ============================================== */
 
 /* ── Light ── */
 :root {
-  --sm-accent:       #8BAE66;
-  --sm-accent-dk:    #6b9040;
-  --sm-accent-glow:  rgba(139,174,102,0.22);
-  --sm-accent-soft:  rgba(139,174,102,0.13);
-  --sm-bg:           #ffffff;
-  --sm-bg-hover:     #f2f8ea;
-  --sm-border:       #deecc4;
-  --sm-text:         #2c3a1c;
-  --sm-muted:        #7a8f60;
-  --sm-label:        #a8bc88;
-  --sm-footer:       #f6faf0;
-  --sm-lang-bg:      #edf5e0;
-  --sm-lang-text:    #587038;
-  --sm-overlay:      rgba(60,90,20,0.18);
-  --sm-shadow:       4px 0 40px rgba(139,174,102,0.15), 2px 0 16px rgba(0,0,0,0.08);
-  --sm-width:        280px;
+  --sm-accent:       #2563EB;
+  --sm-accent-dk:    #1D4ED8;
+  --sm-accent-glow:  rgba(37, 99, 235,0.22);
+  --sm-accent-soft:  rgba(37, 99, 235,0.12);
+  --sm-bg:           #FFFFFF;
+  --sm-bg-hover:     #EEF2FB;
+  --sm-border:       #D9E0E7;
+  --sm-text:         #0F172A;
+  --sm-muted:        #586472;
+  --sm-label:        #94A3B2;
+  --sm-footer:       #F3F6FC;
+  --sm-lang-bg:      #E8EFFB;
+  --sm-lang-text:    #1D4ED8;
+  --sm-overlay:      rgba(15,23,42,0.28);
+  --sm-shadow:       4px 0 40px rgba(15,23,42,0.12), 2px 0 16px rgba(0,0,0,0.08);
+  --sm-width:        380px;
   --sm-dur:          0.3s;
   --sm-ease:         cubic-bezier(0.4,0,0.2,1);
 }
 
 /* ── Dark ── */
 html.dark {
-  --sm-accent:       #8BAE66;
-  --sm-accent-dk:    #a8cc78;
-  --sm-accent-glow:  rgba(139,174,102,0.28);
-  --sm-accent-soft:  rgba(139,174,102,0.16);
-  --sm-bg:           #192110;
-  --sm-bg-hover:     #22300f;
-  --sm-border:       rgba(139,174,102,0.14);
-  --sm-text:         #e4eed4;
-  --sm-muted:        #88a860;
-  --sm-label:        #526838;
-  --sm-footer:       #141c0a;
-  --sm-lang-bg:      rgba(139,174,102,0.09);
-  --sm-lang-text:    #9ec870;
-  --sm-overlay:      rgba(6,12,2,0.65);
-  --sm-shadow:       6px 0 48px rgba(0,0,0,0.6), 0 0 0 1px rgba(139,174,102,0.08);
+  --sm-accent:       #3B82F6;
+  --sm-accent-dk:    #60A5FA;
+  --sm-accent-glow:  rgba(96, 165, 250,0.30);
+  --sm-accent-soft:  rgba(96, 165, 250,0.14);
+  --sm-bg:           #141A21;
+  --sm-bg-hover:     #1C242E;
+  --sm-border:       #2A3542;
+  --sm-text:         #E6EDF3;
+  --sm-muted:        #8B98A5;
+  --sm-label:        #5C6B7A;
+  --sm-footer:       #0F141A;
+  --sm-lang-bg:      rgba(96, 165, 250,0.09);
+  --sm-lang-text:    #60A5FA;
+  --sm-overlay:      rgba(3,7,12,0.66);
+  --sm-shadow:       6px 0 48px rgba(0,0,0,0.6), 0 0 0 1px rgba(96, 165, 250,0.08);
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -154,7 +154,7 @@ body.sm-body-lock { overflow: hidden; }
   height: 3px;
   background: linear-gradient(90deg,
     var(--sm-accent-dk), var(--sm-accent),
-    #c4de94, var(--sm-accent), var(--sm-accent-dk));
+    var(--sm-accent-dk), var(--sm-accent), var(--sm-accent-dk));
   background-size: 300% 100%;
   animation: smStripe 5s linear infinite;
   z-index: 1;
@@ -179,7 +179,11 @@ body.sm-body-lock { overflow: hidden; }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 18px 16px;
+  /* Match the top header height exactly (same token) so the rail's logo block
+     and the sticky header line up — box-sizing:border-box keeps it fixed
+     regardless of the padding overrides below. */
+  height: var(--ems-header-h, 60px);
+  padding: 0 18px;
   border-bottom: 1px solid var(--sm-border);
   flex-shrink: 0;
   transition: border-color var(--sm-dur);
@@ -219,7 +223,7 @@ body.sm-body-lock { overflow: hidden; }
    ============================================== */
 .sm-close {
   width: 34px; height: 34px;
-  background: rgba(139,174,102,0.08);
+  background: var(--sm-accent-soft);
   border: 1px solid var(--sm-border);
   border-radius: 50%;
   color: var(--sm-accent);
@@ -434,9 +438,134 @@ body.sm-body-lock { overflow: hidden; }
   color: var(--sm-lang-text);
   transition: background 0.2s, color 0.2s;
 }
-.sm-lang-btn:hover { background: rgba(139,174,102,0.18); color: var(--sm-accent); }
+.sm-lang-btn:hover { background: var(--sm-accent-soft); color: var(--sm-accent); }
 .sm-lang-btn.active {
   background: var(--sm-accent);
   color: #fff;
   box-shadow: 0 2px 10px var(--sm-accent-glow);
+}
+
+/* ==============================================
+   HEADER BUTTONS  +  PIN  +  LABEL
+   ============================================== */
+.sm-header-btns {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.sm-label {
+  white-space: nowrap;
+  transition: opacity var(--sm-dur);
+}
+.sm-pin {
+  display: none;                 /* only shown when docked (>=1200) */
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--sm-border);
+  background: var(--sm-accent-soft);
+  color: var(--sm-accent);
+  font-size: 1rem;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, color 0.2s;
+  flex-shrink: 0;
+}
+.sm-pin:hover { background: var(--sm-accent); color: #fff; }
+.sm-pin[aria-pressed="true"] {
+  background: var(--sm-accent);
+  color: #fff;
+  box-shadow: 0 2px 10px var(--sm-accent-glow);
+}
+
+/* ==============================================
+   DOCKED MINI-RAIL  (desktop >= 1200px)
+   Below 1200px the sidebar stays the off-canvas drawer, unchanged.
+   ============================================== */
+@media (min-width: 1200px) {
+
+  /* drawer chrome is inert when docked */
+  .sm-overlay { display: none !important; }
+  body.sm-body-lock { overflow: auto; }
+  #sidebar_open { display: none; }        /* hamburger hidden when docked */
+  .sm-pin { display: inline-flex; }
+
+  /* the docked rail owns the branding — drop the duplicate logo in the header
+     (!important beats Bootstrap's .d-flex utility on the brand anchor) */
+  .ems-header .navbar-brand { display: none !important; }
+
+  /* content offset for the docked rail.
+     #main is the flex container on every shell (legacy Pattern A/B and the
+     new .ems-shell); padding-left insets all its flex children without the
+     width:100% / margin overflow problem. .ems-shell--nonav (locations.php
+     wizard, no sidemenu) opts out. Expansion on hover is an overlay — only
+     the pinned state widens this offset. */
+  #main {
+    padding-left: var(--ems-rail-w, 64px);
+    transition: padding-left var(--sm-dur) var(--sm-ease);
+  }
+  #main.ems-shell--nonav {
+    padding-left: 0;
+  }
+  body.sm-rail-pinned #main:not(.ems-shell--nonav) {
+    padding-left: var(--ems-rail-expanded-w, 280px);
+  }
+
+  /* the rail itself — sits just above the sticky header so it reads as one
+     continuous column and the expanded panel cleanly overlays content. */
+  .sm-sidebar {
+    transform: none !important;
+    visibility: visible !important;
+    width: var(--ems-rail-w, 64px);
+    z-index: 901;
+    box-shadow: none;
+    overflow: hidden;
+    transition: width var(--sm-dur) var(--sm-ease), box-shadow var(--sm-dur);
+  }
+
+  /* expand on hover / keyboard focus / pinned — OVERLAY, does not push content */
+  .sm-sidebar:hover,
+  .sm-sidebar:focus-within,
+  body.sm-rail-pinned .sm-sidebar {
+    width: var(--ems-rail-expanded-w, 260px);
+    box-shadow: var(--sm-shadow);
+  }
+
+  /* collapsed state = icon only.
+     Scoped under body:not(.sm-rail-pinned) so pinning simply stops these
+     rules from applying (no specificity fight, no invalid :not() lists). */
+  body:not(.sm-rail-pinned) .sm-sidebar:not(:hover):not(:focus-within) .sm-label,
+  body:not(.sm-rail-pinned) .sm-sidebar:not(:hover):not(:focus-within) .sm-logo-text,
+  body:not(.sm-rail-pinned) .sm-sidebar:not(:hover):not(:focus-within) .sm-logo-sub,
+  body:not(.sm-rail-pinned) .sm-sidebar:not(:hover):not(:focus-within) .sm-section,
+  body:not(.sm-rail-pinned) .sm-sidebar:not(:hover):not(:focus-within) .sm-arrow,
+  body:not(.sm-rail-pinned) .sm-sidebar:not(:hover):not(:focus-within) .sm-footer,
+  body:not(.sm-rail-pinned) .sm-sidebar:not(:hover):not(:focus-within) .sm-header-btns,
+  body:not(.sm-rail-pinned) .sm-sidebar:not(:hover):not(:focus-within) .sm-divider {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  body:not(.sm-rail-pinned) .sm-sidebar:not(:hover):not(:focus-within) .sm-header {
+    justify-content: center;
+    padding: 0;
+  }
+  body:not(.sm-rail-pinned) .sm-sidebar:not(:hover):not(:focus-within) .sm-link {
+    justify-content: center;
+    padding-left: 0;
+    padding-right: 0;
+    /* zero the flex gap too — the hidden .sm-label / .sm-arrow are width:0 but
+       `gap` still reserves 14px before each, which pushed links that have an
+       extra child (e.g. #smSystemToggle's chevron) off-centre. */
+    gap: 0;
+  }
+  body:not(.sm-rail-pinned) .sm-sidebar:not(:hover):not(:focus-within) .sm-subnav {
+    max-height: 0 !important;
+  }
 }

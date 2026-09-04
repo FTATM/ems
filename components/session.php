@@ -93,22 +93,27 @@ if (!isset($_SESSION['theme'])) {
     $_SESSION['theme'] = 'dark';
 }
 
+/* ==========================================================
+   EMS "Aurora" design palette — blue accent on cool slate.
+   These PHP vars are echoed inline on <body> and in pages.
+   The canonical token set lives in scripts/style.html (:root).
+   ========================================================== */
 if ($_SESSION['theme'] === 'dark') {
-    $bg = '#121212';
-    $bgsec = '#1e1e1e';
-    $secon = '#9e9e9e';
-    $text = '#ffffff'; 
-    $textMuted = '#ffffff';
-    $btnColor = '#424242';
-    $accentColor = '#81D4FA';
+    $bg = '#0B0F14';          // app background
+    $bgsec = '#141A21';       // panels / surfaces
+    $secon = '#8B98A5';       // secondary text
+    $text = '#E6EDF3';        // primary text
+    $textMuted = '#8B98A5';   // muted text
+    $btnColor = '#1C242E';    // neutral button surface
+    $accentColor = '#60A5FA'; // blue accent (bright, for dark bg)
 } else {
-    $bg = '#f9f9f9';
-    $bgsec = '#383838ff';
-    $secon = '#616161';
-    $text = '#0a0a0a'; 
-    $textMuted = '#888888';
-    $btnColor = '#303030ff';
-    $accentColor = '#03A9F4';
+    $bg = '#EEF2F6';
+    $bgsec = '#FFFFFF';
+    $secon = '#586472';
+    $text = '#0F172A';
+    $textMuted = '#586472';
+    $btnColor = '#E6EBF0';
+    $accentColor = '#2563EB'; // blue accent (deep, for light bg)
 }
 
 function buildthemeSwitchLink($targetheme)

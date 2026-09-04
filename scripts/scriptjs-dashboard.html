@@ -138,10 +138,10 @@
         ];
 
         const isDark = document.documentElement.classList.contains('dark');
-        const colorValue = isDark ? '#deeacc' : '#1c2214';
-        const colorMuted = isDark ? '#607048' : '#7a8f60';
-        const colorIcon = isDark ? '#607048' : '#7a8f60';
-        const colorBorder = isDark ? '#283820' : '#d8e4c8';
+        const colorValue = isDark ? '#dbe4f2' : '#1e293b';
+        const colorMuted = isDark ? '#64748b' : '#64748b';
+        const colorIcon = isDark ? '#64748b' : '#64748b';
+        const colorBorder = isDark ? '#243244' : '#dbe3ec';
 
         const cells = rows.map((row, idx) => {
             let valueHtml;
@@ -350,7 +350,7 @@
             height: '26px',
             minWidth: '26px',
             borderRadius: '6px',
-            background: isActive ? 'rgba(139,174,102,0.25)' : 'var(--bg-select)',
+            background: isActive ? 'rgba(37, 99, 235,0.25)' : 'var(--bg-select)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -410,7 +410,7 @@
             }
             btn.style.border = active ? '1.5px solid var(--green)' : '1.5px solid var(--border)';
             btn.style.background = active ? 'var(--green-light)' : 'var(--bg-card)';
-            iconDiv.style.background = active ? 'rgba(139,174,102,0.25)' : 'var(--bg-select)';
+            iconDiv.style.background = active ? 'rgba(37, 99, 235,0.25)' : 'var(--bg-select)';
             icon.style.color = active ? 'var(--green)' : 'var(--text-muted)';
             nameSpan.style.color = active ? 'var(--green-dark)' : 'var(--text-primary)';
 
@@ -441,19 +441,19 @@
         return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
     }
 
-    /* โทนสีเขียว */
+    /* โทนสีฟ้า (Aurora blue categorical ramp) */
     function getRandomColor(index) {
         const isDark = document.documentElement.classList.contains('dark');
         const colors = isDark ? [
-            "#8BAE66", "#A8C87A", "#6e9248", "#C2DC9A", "#5a7a3a",
-            "#B5D488", "#7FA055", "#D4EBB0", "#4d6832", "#9BC070",
-            "#E0F2C8", "#638C40", "#AECF80", "#3d5628", "#C8E4A0",
-            "#82A85E", "#B8D890", "#527838"
+            "#60A5FA", "#38BDF8", "#818CF8", "#2DD4BF", "#93C5FD",
+            "#3B82F6", "#7DD3FC", "#A5B4FC", "#22D3EE", "#2563EB",
+            "#0EA5E9", "#6366F1", "#5EEAD4", "#BFDBFE", "#4F46E5",
+            "#0891B2", "#94A3B8", "#1D4ED8"
         ] : [
-            "#6e9248", "#8BAE66", "#4d6832", "#A8C87A", "#3d5628",
-            "#7FA055", "#527838", "#B5D488", "#638C40", "#5a7a3a",
-            "#9BC070", "#405e28", "#C2DC9A", "#2e4820", "#AECF80",
-            "#6e9248", "#82A85E", "#344e1e"
+            "#2563EB", "#0EA5E9", "#4F46E5", "#0D9488", "#3B82F6",
+            "#0284C7", "#6366F1", "#0891B2", "#1D4ED8", "#38BDF8",
+            "#1E40AF", "#155E75", "#818CF8", "#0369A1", "#60A5FA",
+            "#334155", "#2DD4BF", "#1E3A8A"
         ];
         return colors[index % colors.length];
     }

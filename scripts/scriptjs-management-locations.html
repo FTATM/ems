@@ -20,9 +20,9 @@
         const thead = document.createElement("thead");
         const headerRow = document.createElement("tr");
         headerRow.innerHTML = `
-        <th class="text-white w-25" style="background-color:#001B5E;"><?=$lang['id'];?></th>
-        <th class="text-white w-50" style="background-color:#001B5E;"><?=$lang['name'];?></th>
-        <th class="text-white w-15" style="background-color:#001B5E;"><?=$lang['action'];?></th>
+        <th class="text-white w-25" style="background-color:#2563EB;"><?=$lang['id'];?></th>
+        <th class="text-white w-50" style="background-color:#2563EB;"><?=$lang['name'];?></th>
+        <th class="text-white w-15" style="background-color:#2563EB;"><?=$lang['action'];?></th>
         `;
 
 
@@ -63,7 +63,7 @@
         for (let i = 1; i <= totalPages; i++) {
             const btn = document.createElement("button");
             btn.className = `btn btn-sm text-white`;
-            btn.style.backgroundColor = `${i === currentPage ? '#001B5E' : '#555555'}`;
+            btn.style.backgroundColor = `${i === currentPage ? '#2563EB' : '#555555'}`;
 
             btn.textContent = i;
             btn.addEventListener("click", () => {

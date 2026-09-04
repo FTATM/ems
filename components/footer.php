@@ -13,18 +13,18 @@
 
 <style>
 body {
-    font-family: 'Noto Sans Thai', 'Sarabun', sans-serif;
+    font-family: var(--ems-font, 'Inter', 'Noto Sans Thai', 'Sarabun', sans-serif);
 }
 
 :root {
-    --footer-bg: #ffffff;
-    --footer-text: #888888;
-    --footer-border: #e5e7eb;
+    --footer-bg: var(--ems-surface, #ffffff);
+    --footer-text: var(--ems-muted, #586472);
+    --footer-border: var(--ems-border, #d9e0e7);
 }
 
 html.dark {
-    --footer-bg: #09090b;
-    --footer-text: #556055;
-    --footer-border: #2a332a;
+    --footer-bg: var(--ems-surface, #141a21);
+    --footer-text: var(--ems-muted, #8b98a5);
+    --footer-border: var(--ems-border, #2a3542);
 }
 </style>

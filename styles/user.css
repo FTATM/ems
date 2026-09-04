@@ -18,19 +18,19 @@
     --text-muted:      #888;
     --text-placeholder:#bbb;
     --text-role:       #666;
-    --text-role-checked:#4e7030;
+    --text-role-checked:#2f52ad;
     --text-cancel:     #555;
 
     --border:          #d0d0d0;
     --border-hover:    #aaa;
-    --border-section:  #edf3e4;
+    --border-section:  #e8eef9;
 
-    --green:           #8BAE66;
-    --green-dark:      #6e9248;
-    --green-light:     #edf3e4;
-    --green-icon:      #8BAE66;
-    --green-glow:      rgba(139, 174, 102, 0.18);
-    --green-glow-role: rgba(139, 174, 102, 0.15);
+    --green:           #2563EB;
+    --green-dark:      #3f6fd1;
+    --green-light:     #e8eef9;
+    --green-icon:      #2563EB;
+    --green-glow:      rgba(37, 99, 235, 0.18);
+    --green-glow-role: rgba(37, 99, 235, 0.15);
 
     --shadow-card:     0 1px 6px rgba(0, 0, 0, 0.08);
     --icon-color:      #aaa;
@@ -43,30 +43,30 @@ html.dark {
     --bg-input:        #181818;
     --bg-input-focus:  #181818;
     --bg-role:         #202818;
-    --bg-role-checked: #1c2a12;
-    --bg-cancel:       #202a18;
+    --bg-role-checked: #152232;
+    --bg-cancel:       #1c242e;
 
     --text-primary:    #e8f0e8;
     --text-secondary:  #c0ccc0;
     --text-muted:      #7a8a7a;
-    --text-placeholder:#4a6030;
+    --text-placeholder:#3d5470;
     --text-role:       #9aaa9a;
-    --text-role-checked:#aec87a;
+    --text-role-checked:#9fb8e4;
     --text-cancel:     #aabbaa;
 
-    --border:          #283820;
-    --border-hover:    #8BAE66;
-    --border-section:  #1e2e16;
+    --border:          #2a3542;
+    --border-hover:    #2563EB;
+    --border-section:  #161d27;
 
-    --green:           #8BAE66;
-    --green-dark:      #6e9248;
-    --green-light:     #1c2a12;
-    --green-icon:      #8BAE66;
-    --green-glow:      rgba(139, 174, 102, 0.22);
-    --green-glow-role: rgba(139, 174, 102, 0.18);
+    --green:           #2563EB;
+    --green-dark:      #3f6fd1;
+    --green-light:     #152232;
+    --green-icon:      #2563EB;
+    --green-glow:      rgba(37, 99, 235, 0.22);
+    --green-glow-role: rgba(37, 99, 235, 0.18);
 
     --shadow-card:     0 2px 12px rgba(0, 0, 0, 0.4);
-    --icon-color:      #4a6030;
+    --icon-color:      #3d5470;
 }
 
 /* ── Page Layout ── */

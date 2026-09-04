@@ -3,9 +3,9 @@
    ================================================ */
 
 :root {
-  --primary: #8BAE66;
-  --primary-light: rgba(139, 174, 102, 0.12);
-  --primary-border: rgba(139, 174, 102, 0.35);
+  --primary: #2563EB;
+  --primary-light: rgba(37, 99, 235, 0.12);
+  --primary-border: rgba(37, 99, 235, 0.35);
   --bg-card: #ffffff;
   --bg-page: #f8fafc;
   --bg-table-header: #f1f5f9;
@@ -433,7 +433,7 @@ html.dark .badge-rs485 {
   background: var(--primary);
   border-color: var(--primary);
   color: #fff;
-  box-shadow: 0 2px 8px rgba(139, 174, 102, 0.4);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
 }
 
 .allmeter-pagination button:hover:not(.active):not(:disabled) {

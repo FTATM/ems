@@ -4,80 +4,60 @@ if ($_SESSION['user']['is_admin'] == 0) {
     header("Location: ../pages/permission_denied.php?permission=denied");
     exit();
 }
+
+$EMS_PAGE_TITLE = $lang['usermnm'] . ' - EMS';
+$EMS_SHELL_LOCKED = true;            // data-table workbench — lock the viewport
+include '../components/doc-open.php';
 ?>
-
-<!DOCTYPE html>
-<html lang="<?= $langCode ?>">
-
-<?php include "../scripts/ref.html"; ?>
-<?php include "../scripts/style.html"; ?>
-
-<head>
-    <meta charset="UTF-8">
-    <title><?= $lang['usermnm'] ?> - EMS</title>
     <link rel="stylesheet" href="../styles/management-users.css">
-</head>
 
-<body style="height:100svh; overflow:hidden;">
-    <div id="main" class="d-flex" style="height:100svh; overflow:hidden;">
-        <?php include "../components/sidemenu.php"; ?>
-        <div class="w-100 d-flex flex-column" style="height:100svh; overflow:hidden;">
-            <?php include "../components/header.php"; ?>
+<?php include '../components/app-shell-open.php'; ?>
 
-            <main class="users-main">
+            <div class="users-page">
 
-                <!-- Hero -->
-                <div class="users-hero">
-                    <h2><?= $lang['usermnm'] ?></h2>
-                    <p><?= $lang['user_management_desc'] ?></p>
-                </div>
+                <!-- ── Hero toolbar ── -->
+                <div class="ems-toolbar users-hero">
+                    <span class="users-hero__title">
+                        <span class="users-hero__icon"><i class="bi bi-people-fill"></i></span>
+                        <?= $lang['usermnm'] ?>
+                    </span>
 
-                <!-- Card -->
-                <div class="users-card">
-
-                    <!-- Toolbar -->
-                    <div class="users-toolbar">
-                        <div class="users-toolbar__left">
-                            <span class="users-card__title"><?= $lang['list_of_users'] ?></span>
-                            <span class="users-card__count" id="user-count">...</span>
-                        </div>
-                        <div class="users-toolbar__right">
-                            <div class="users-search">
-                                <input id="user-search" type="text" placeholder="<?= $lang['search_user'] ?>"
-                                    oninput="applyUserFilter()" autocomplete="off">
-                                <button type="button" id="user-search-clear" class="users-search__clear" hidden
-                                    onclick="clearUserSearch()" aria-label="<?= $lang['close'] ?>">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M18 6 6 18M6 6l12 12" />
-                                    </svg>
-                                </button>
-                            </div>
-                            <button type="button" id="btn-add-user" class="btn-add-user" onclick="openAddUserModal()">
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M12 5v14M5 12h14" />
-                                </svg>
-                                <?= $lang['add_user'] ?>
-                            </button>
-                        </div>
+                    <div class="users-search">
+                        <i class="bi bi-search"></i>
+                        <input id="user-search" type="text" placeholder="<?= $lang['search_user'] ?>"
+                            oninput="applyUserFilter()" autocomplete="off">
+                        <button type="button" id="user-search-clear" class="users-search__clear" hidden
+                            onclick="clearUserSearch()" aria-label="<?= $lang['close'] ?>">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M18 6 6 18M6 6l12 12" />
+                            </svg>
+                        </button>
                     </div>
 
-                    <!-- Table scroll wrapper -->
+                    <div class="ems-toolbar__spacer"></div>
+
+                    <span class="ems-pill" id="user-count">...</span>
+
+                    <button type="button" id="btn-add-user" class="ems-btn ems-btn--primary"
+                        onclick="openAddUserModal()">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 5v14M5 12h14" />
+                        </svg>
+                        <?= $lang['add_user'] ?>
+                    </button>
+                </div>
+
+                <!-- ── Data-table card ── -->
+                <div class="ems-card users-card">
                     <div class="users-table-wrap">
                         <table id="table-user"></table>
                     </div>
-
+                    <div id="pagination"></div>
                 </div>
 
-                <!-- Pagination -->
-                <div id="pagination"></div>
-
-            </main>
-
-            <?php include "../components/footer.php"; ?>
-        </div>
-    </div>
+            </div><!-- /users-page -->
 
     <!-- ── Modal แก้ไขข้อมูล ── -->
     <div class="modal fade" id="editModal" tabindex="-1">
@@ -116,7 +96,7 @@ if ($_SESSION['user']['is_admin'] == 0) {
                         aria-label="<?= $lang['close'] ?>"></button>
                 </div>
                 <div class="modal-body">
-                    <p style="color:var(--text-card); margin:0;"><?= $lang['confirm_delete_message'] ?></p>
+                    <p style="margin:0;"><?= $lang['confirm_delete_message'] ?></p>
                     <input type="hidden" id="delete-id">
                 </div>
                 <div class="modal-footer">
@@ -192,10 +172,7 @@ if ($_SESSION['user']['is_admin'] == 0) {
         </div>
     </div>
 
-    <script id="theme-data" type="application/json">
-    <?= json_encode($_SESSION['theme'], JSON_UNESCAPED_UNICODE); ?>
-    </script>
-
+<?php include '../components/app-shell-close.php'; ?>
     <?php include "../scripts/scriptjs.html"; ?>
     <?php include "../scripts/scriptjs-management-users.html"; ?>
 
@@ -204,6 +181,4 @@ if ($_SESSION['user']['is_admin'] == 0) {
     window.USER_COUNT_LABEL = '<?= $lang['list'] ?>';
     </script>
 
-</body>
-
-</html>
+<?php include '../components/doc-close.php'; ?>

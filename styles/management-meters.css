@@ -1,923 +1,774 @@
-.si--meter-duotone {
-  display: inline-block;
-  width: 1.2em;
-  height: 1.2em;
-  --svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none'%3E%3Cpath fill='%23000' fill-opacity='0.16' fill-rule='evenodd' d='M19.806 20a9.77 9.77 0 0 0 2.13-5.037a9.7 9.7 0 0 0-.922-5.38a9.9 9.9 0 0 0-3.69-4.071A10.1 10.1 0 0 0 12 4c-1.884 0-3.73.524-5.324 1.512a9.9 9.9 0 0 0-3.69 4.07a9.7 9.7 0 0 0-.921 5.38A9.77 9.77 0 0 0 4.194 20z' clip-rule='evenodd'/%3E%3Cpath stroke='%23000' stroke-linecap='round' stroke-linejoin='round' stroke-width='1' d='M12.707 15.293L18 10m1.806 10a9.77 9.77 0 0 0 2.13-5.037a9.7 9.7 0 0 0-.922-5.38a9.9 9.9 0 0 0-3.69-4.071A10.1 10.1 0 0 0 12 4c-1.884 0-3.73.524-5.324 1.512a9.9 9.9 0 0 0-3.69 4.07a9.7 9.7 0 0 0-.921 5.38A9.77 9.77 0 0 0 4.194 20zM13 16a1 1 0 1 1-2 0a1 1 0 0 1 2 0'/%3E%3C/g%3E%3C/svg%3E");
-  background-color: currentColor;
-  -webkit-mask-image: var(--svg);
-  mask-image: var(--svg);
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  -webkit-mask-size: 100% 100%;
-  mask-size: 100% 100%;
-}
-/* ── Root Tokens ── */
-:root {
-  --primary:        #8BAE66;
-  --primary-light:  rgba(139, 174, 102, 0.12);
-  --primary-border: rgba(139, 174, 102, 0.35);
-  --primary-dark:   #2d4416;
+/* ================================================
+   management-meters.css — EMS Meter Config workbench
+   Migrated to the EMS app-shell + --ems-* tokens.
+   New layout: full-width hero toolbar + 2 columns
+   (meter list rail · config card with segmented tabs).
+   Locked viewport; ems-layout.css releases the lock
+   at <=1100px. No local :root / html.dark palette —
+   theme switches through the tokens in style.html.
+   ================================================ */
 
-  --bg-page:        #f0f7ee;
-  --bg-card:        #ffffff;
-  --bg-sidebar:     #ffffff;
-  --bg-header-tab:  #ffffff;
-
-  --text-heading:   #1a2e14;
-  --text-body:      #374151;
-  --text-muted:     #9ca3af;
-  --text-sidebar-header: #1f2937;
-
-  --border:         #e5e7eb;
-  --border-active:  var(--primary);
-
-  --shadow-panel: 0 2px 12px rgba(0,0,0,.07);
-
-  --radius-panel: 12px;
-  --radius-item:  8px;
-  --transition:   180ms ease;
-}
-
-html.dark, [data-theme="dark"] {
-  --bg-page:    #09090b;
-  --bg-card:    #1c1c1f;
-  --bg-sidebar: #1c1c1f;
-  --border:     rgba(255,255,255,0.08);
-  --text-heading: #f4f4f5;
-  --text-body:    #d1d5db;
-  --text-muted:   #6b7280;
-  --text-sidebar-header: #e4e4e7;
-  --shadow-panel: 0 2px 16px rgba(0,0,0,.35);
-}
-
-/* ── Base ── */
-body {
-  background: var(--bg-page) !important;
-  font-family: 'Noto Sans Thai', 'Sarabun', sans-serif;
-  height: 100svh;
-  overflow: hidden;
-}
-
-.meters-main {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  padding: 1.25rem 1.5rem;
-  overflow: hidden;
-  min-height: 0;
-}
-
-/* ── Outer wrapper — two separate cards ── */
-.meters-panel {
-  display: flex;
-  width: 100%;
-  flex: 1;
-  min-height: 0;
-  gap: 1rem;
-  background: transparent;
-  border: none;
-  box-shadow: none;
-  border-radius: 0;
-  overflow: visible;
-}
-
-/* ════════════════════════════════════════
-   SIDEBAR
-   ════════════════════════════════════════ */
-
-.meters-sidebar {
-  width: 300px;
-  min-width: 260px;
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  border-right: none;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-panel);
-  background: var(--bg-sidebar);
-  box-shadow: var(--shadow-panel);
-  overflow: hidden;
-  height: 100%;
-}
-
-/* ════════════════════════════════════════
-   DARK MODE — override Bootstrap inline classes
-   ════════════════════════════════════════ */
-
-html.dark #config,
-html.dark #list-notify {
-  color: var(--text-body);
-}
-
-/* bg-white ที่ถูก inject โดย JS */
-html.dark #list-notify .bg-white,
-html.dark #list-notify .bg-white.rounded-bottom {
-  background: var(--bg-card) !important;
-  color: var(--text-body) !important;
-}
-
-/* text-black ที่ติดมากับ input/select */
-html.dark #list-notify .text-black,
-html.dark #list-notify input.text-black,
-html.dark #list-notify select.text-black {
-  color: var(--text-body) !important;
-}
-
-/* placeholder icon wrap */
-html.dark .meters-placeholder__icon-wrap {
-  background: rgba(255,255,255,0.06);
-}
-
-/* Sidebar header row */
-.meters-sidebar__header {
+/* ── Locked page frame — make .ems-shell__scroll a flex column so the
+   page fills it exactly (plain height:100% resolves against the wrong
+   ancestor here). Scoped with :has() so no other migrated page is hit. */
+.ems-shell__scroll:has(> .meters-page) {
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    padding: 0.8rem 1rem;
-    border-bottom: 1px solid var(--border);
+}
+.meters-page {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--ems-space-4);
+    padding: var(--ems-space-5);
+    box-sizing: border-box;
+}
+
+/* ════════════════════════════════════════
+   HERO TOOLBAR
+   ════════════════════════════════════════ */
+.meters-hero {
     flex-shrink: 0;
-    background: var(--bg-sidebar);
+    gap: var(--ems-space-4);
 }
-
-.meters-sidebar__title {
-    font-size: 0.85rem;
-    align-self: flex-start;
+.meters-hero__title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1rem;
     font-weight: 700;
-    color: var(--text-sidebar-header);
-    width: 100%;
+    color: var(--ems-text);
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+}
+.meters-hero__icon {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--ems-radius-sm);
+    background: var(--ems-accent-soft);
+    color: var(--ems-accent);
+    font-size: 15px;
 }
 
-.meters-sidebar__count {
-  font-size: 0.72rem;
-  font-weight: 600;
-  align-self: flex-end;
-  background: var(--primary-light);
-  color: var(--primary-dark);
-  border-radius: 99px;
-  padding: 0.15rem 0.55rem;
-  border: 1px solid var(--primary-border);
+/* ── Search (moved out of the sidebar) ── */
+.meters-search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: min(360px, 40vw);
+    height: 38px;
+    padding: 0 var(--ems-space-3);
+    border: 1px solid var(--ems-border);
+    border-radius: var(--ems-radius-sm);
+    background: var(--ems-surface);
+    transition: border-color var(--ems-dur), box-shadow var(--ems-dur);
+}
+.meters-search:focus-within {
+    border-color: var(--ems-accent);
+    box-shadow: var(--ems-ring);
+}
+.meters-search .bi {
+    color: var(--ems-muted);
+    flex-shrink: 0;
+}
+.meters-search input {
+    flex: 1;
+    min-width: 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    font: inherit;
+    font-size: 0.85rem;
+    color: var(--ems-text);
+}
+.meters-search input::placeholder {
+    color: var(--ems-muted);
 }
 
-/* ── Sidebar search ── */
-.meter-search {
-  width: 100%;
-  margin-top: 6px;
-  padding: 0.4rem 0.65rem;
-  font-size: 0.8rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-item);
-  background: var(--bg-page);
-  color: var(--text-body);
-  outline: none;
-  transition: border-color var(--transition), box-shadow var(--transition);
-}
-.meter-search:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-light);
+/* ════════════════════════════════════════
+   BODY — 2 columns
+   ════════════════════════════════════════ */
+.meters-panel {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    gap: var(--ems-space-4);
 }
 
-/* ── Meter list rows (name + status dot + protocol badge) ── */
+/* ── Sidebar (extends .ems-panel) ── */
+.meters-sidebar {
+    width: 300px;
+    min-width: 260px;
+    flex-shrink: 0;
+}
+.meters-sidebar__head {
+    flex-shrink: 0;
+    padding: var(--ems-space-3) var(--ems-space-4);
+    border-bottom: 1px solid var(--ems-border);
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ems-muted);
+}
+
+/* ── Scrollable meter list ── */
+#meter-list {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: var(--ems-space-2);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--ems-accent-border) transparent;
+}
+#meter-list::-webkit-scrollbar        { width: 4px; }
+#meter-list::-webkit-scrollbar-track  { background: transparent; }
+#meter-list::-webkit-scrollbar-thumb  { background: var(--ems-accent-border); border-radius: 99px; }
+
+/* ── Meter row (name + status dot + protocol badge) — built by generateMeter() ── */
 #meter-list > div.meter-row {
-  display: flex !important;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.7rem !important;
-  height: auto !important;
-  border-radius: var(--radius-item);
-  cursor: pointer;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--text-body);
-  border: 1px solid transparent;
-  transition: background var(--transition), border-color var(--transition), color var(--transition);
+    display: flex !important;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.7rem !important;
+    height: auto !important;
+    border-radius: var(--ems-radius-sm);
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--ems-text-secondary);
+    border: 1px solid transparent;
+    transition: background var(--ems-dur), border-color var(--ems-dur), color var(--ems-dur);
 }
 #meter-list > div.meter-row:hover {
-  background: var(--primary-light);
-  border-color: var(--primary-border);
+    background: var(--ems-accent-soft);
+    border-color: var(--ems-accent-border);
+    color: var(--ems-accent-strong);
 }
 #meter-list > div.meter-row.is-selected {
-  background: var(--primary-light);
-  border-color: var(--primary-border);
-  color: var(--primary-dark);
-  font-weight: 700;
+    background: var(--ems-accent-soft);
+    border-color: var(--ems-accent-border);
+    color: var(--ems-accent-strong);
+    font-weight: 700;
 }
 #meter-list > div.meter-row[hidden] {
-  display: none !important;
+    display: none !important;
 }
 
 .meter-row__name {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .status-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
 }
 .status-dot--on {
-  background: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-light);
+    background: var(--ems-success);
+    box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.18);
 }
 .status-dot--off {
-  background: var(--text-muted);
+    background: var(--ems-muted);
 }
 
 .badge-proto {
-  font-size: 0.62rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  padding: 0.1rem 0.4rem;
-  border-radius: 99px;
-  flex-shrink: 0;
-}
-.badge-proto--tcp {
-  background: rgba(59, 130, 246, 0.13);
-  color: #1d4ed8;
-  border: 1px solid rgba(59, 130, 246, 0.35);
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    padding: 0.1rem 0.4rem;
+    border-radius: 99px;
+    flex-shrink: 0;
+    background: var(--ems-accent-soft);
+    color: var(--ems-accent-strong);
+    border: 1px solid var(--ems-accent-border);
 }
 .badge-proto--rs485 {
-  background: rgba(139, 174, 102, 0.15);
-  color: var(--primary-dark);
-  border: 1px solid var(--primary-border);
-}
-html.dark .badge-proto--tcp,
-[data-theme="dark"] .badge-proto--tcp {
-  color: #93b4f8;
-}
-html.dark .badge-proto--rs485,
-[data-theme="dark"] .badge-proto--rs485 {
-  color: var(--primary);
+    background: var(--ems-elevated);
+    color: var(--ems-muted);
+    border-color: var(--ems-border);
 }
 
-/* Scrollable list */
-#meter-list {
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding: 0.5rem 0.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-  scrollbar-width: thin;
-  scrollbar-color: var(--primary-border) transparent;
-}
-
-#meter-list::-webkit-scrollbar        { width: 4px; }
-#meter-list::-webkit-scrollbar-track  { background: transparent; }
-#meter-list::-webkit-scrollbar-thumb  { background: var(--primary-border); border-radius: 99px; }
-
-#meter-list > div {
-  padding: 0 !important;
-  margin-bottom: 0 !important;
-  height: auto !important;
-  display: block !important;
-}
-
-#meter-list > div > div,
-#meter-list .choice {
-  display: flex !important;
-  align-items: center;
-  gap: 0.6rem;
-  padding: 0.5rem 0.75rem !important;
-  border-radius: var(--radius-item) !important;
-  cursor: pointer;
-  font-size: 0.875rem !important;
-  font-weight: 500 !important;
-  color: var(--text-body) !important;
-  background: transparent !important;
-  border: 1px solid transparent !important;
-  height: auto !important;
-  min-height: 38px;
-  line-height: 1.3;
-  transition: background var(--transition), color var(--transition), border-color var(--transition);
-}
-
-/* meter icon (gauge icon from screenshot) via pseudo */
-#meter-list > div > div::before,
-#meter-list .choice::before {
-  content: '';
-  display: inline-flex;
-  width: 1.5rem;
-  height: 1.5rem;
-  min-width: 1.5rem;
-  border-radius: 50%;
-  background-color: var(--primary-light);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='%238BAE66' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2a10 10 0 1 0 10 10'/%3E%3Cpath d='M12 12l4-4'/%3E%3Ccircle cx='12' cy='12' r='1' fill='%238BAE66'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: center;
-  border: 1px solid var(--primary-border);
-  flex-shrink: 0;
-}
-
-#meter-list > div:hover > div,
-#meter-list > div:hover .choice {
-  background: var(--primary-light) !important;
-  color: var(--primary-dark) !important;
-  border-color: var(--primary-border) !important;
-}
-
-/* active state — set by JS via loadDataMeter click */
-#meter-list > div.meter-active > div,
-#meter-list > div.meter-active .choice {
-  background: var(--primary-light) !important;
-  color: var(--primary-dark) !important;
-  border-color: var(--primary-border) !important;
-  font-weight: 700 !important;
-}
-
-/* ── Skeleton ── */
+/* ── Skeleton (initial load placeholder) ── */
 .meter-skeleton {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  padding: 0.5rem 0.75rem;
-  border-radius: var(--radius-item);
-  pointer-events: none;
-  min-height: 38px;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--ems-radius-sm);
+    pointer-events: none;
+    min-height: 38px;
 }
 .meter-skeleton__icon {
-  width: 1.5rem;
-  height: 1.5rem;
-  min-width: 1.5rem;
-  border-radius: 50%;
-  background: var(--border);
-  animation: shimmer 1.4s infinite linear;
+    width: 1.5rem;
+    height: 1.5rem;
+    min-width: 1.5rem;
+    border-radius: 50%;
+    background: var(--ems-border);
+    animation: mm-shimmer 1.4s infinite linear;
 }
 .meter-skeleton__name {
-  height: 0.8em;
-  width: 60%;
-  background: var(--border);
-  border-radius: 5px;
-  animation: shimmer 1.4s infinite linear;
+    height: 0.8em;
+    width: 60%;
+    background: var(--ems-border);
+    border-radius: 5px;
+    animation: mm-shimmer 1.4s infinite linear;
 }
-
-@keyframes shimmer {
-  0%,100% { opacity: 1; }
-  50%      { opacity: 0.4; }
+@keyframes mm-shimmer {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.4; }
 }
 
 /* ════════════════════════════════════════
-   CONTENT AREA — RIGHT SIDE
+   CONTENT CARD (extends .ems-card) — 70:30 split
    ════════════════════════════════════════ */
-
 .meters-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  min-width: 0;
-  background: transparent;
-  border: none;
-  border-radius: 0;
-  box-shadow: none;
-  gap: 0.75rem;
+    flex: 1;
+    min-width: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: row;
+    overflow: hidden;
 }
 
-/* ── Tab bar — bottom border only ── */
-.meters-tabs {
-  display: flex;
-  background: transparent;
-  border: none;
-  border-bottom: 1px solid var(--border);
-  border-radius: 0;
-  box-shadow: none;
-  flex-shrink: 0;
-  padding: 0;
-  gap: 0;
-  width: 100%;
-  overflow: hidden;
+/* ── Panes ── */
+.meters-pane {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+}
+.meters-pane--general {
+    flex: 7 1 0;
+}
+.meters-pane--notify {
+    flex: 3 1 0;
+    border-left: 1px solid var(--ems-border);
+    background: var(--ems-bg);
 }
 
-#menu-config-1,
-#menu-config-2 {
-  flex: 1;
-  text-align: center;
-  justify-content: center;
-  position: relative;
-  padding: 0.85rem 1rem;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--text-muted);
-  cursor: pointer;
-  border-bottom: 3px solid transparent;
-  margin-bottom: -1px;
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  user-select: none;
-  white-space: nowrap;
-  background: transparent;
-  transition: color var(--transition);
+/* ── Pane header (#menu-config-1 / #menu-config-2 kept for the JS contract).
+   The shim toggles .active on these while rendering, so pin every property
+   that scripts/style.html's global .active rule would otherwise change —
+   id+class specificity beats it and keeps both headers identical. */
+#menu-config-1.meters-pane__head,
+#menu-config-2.meters-pane__head {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: var(--ems-space-3) var(--ems-space-4);
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    background: var(--ems-elevated);
+    color: var(--ems-accent-strong);
+    border-bottom: 1px solid var(--ems-border);
+    pointer-events: none;          /* purely a header now — the shim drives both panes */
+    user-select: none;
+    white-space: nowrap;
+}
+.meters-pane__head svg {
+    width: 1.1em;
+    height: 1.1em;
+    flex-shrink: 0;
 }
 
-/* ── Hover: light mode → #2d4416, dark mode → primary green ── */
-#menu-config-1:hover,
-#menu-config-2:hover {
-  color: #2d4416 !important;
-  background: transparent !important;
-  border-color: transparent !important;
-  box-shadow: none !important;
-}
-
-html.dark #menu-config-1:hover,
-html.dark #menu-config-2:hover,
-[data-theme="dark"] #menu-config-1:hover,
-[data-theme="dark"] #menu-config-2:hover {
-  color: var(--primary) !important;
-}
-
-#menu-config-1.active,
-#menu-config-2.active {
-  color: var(--primary-dark);
-  border-bottom: none;
-  position: relative;
-}
-
-#menu-config-1.active::after,
-#menu-config-2.active::after {
-  content: '';
-  position: absolute;
-  bottom: -1px;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: var(--primary);
-  border-radius: 4px 4px 0 0;
-}
-
-/* ── Config body — separate card below tabs ── */
+/* ── General pane body ── */
 #meter-form {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  min-height: 0;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-panel);
-  box-shadow: var(--shadow-panel);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 0;
 }
-
 #config {
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding: 2rem 2.5rem;
-  color: var(--text-body);
-  height: 100%;
-  scrollbar-width: thin;
-  scrollbar-color: var(--primary-border) transparent;
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: var(--ems-space-5);
+    min-height: 0;
+    color: var(--ems-text);
+    scrollbar-width: thin;
+    scrollbar-color: var(--ems-accent-border) transparent;
 }
-
 #config::-webkit-scrollbar        { width: 5px; }
 #config::-webkit-scrollbar-track  { background: transparent; }
-#config::-webkit-scrollbar-thumb  { background: var(--primary-border); border-radius: 99px; }
+#config::-webkit-scrollbar-thumb  { background: var(--ems-accent-border); border-radius: 99px; }
 
-/* ── Placeholder ── */
+/* ── Notify pane body ── */
+#notify-pane {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: var(--ems-space-4);
+    min-height: 0;
+    scrollbar-width: thin;
+    scrollbar-color: var(--ems-accent-border) transparent;
+}
+#notify-pane::-webkit-scrollbar        { width: 5px; }
+#notify-pane::-webkit-scrollbar-track  { background: transparent; }
+#notify-pane::-webkit-scrollbar-thumb  { background: var(--ems-accent-border); border-radius: 99px; }
+
+.notify-empty {
+    padding: var(--ems-space-4) var(--ems-space-2);
+    font-size: 0.85rem;
+    line-height: 1.6;
+    color: var(--ems-muted);
+    text-align: center;
+}
+
+/* ── Placeholder (empty state) ── */
 .meters-placeholder {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  min-height: 380px;
-  gap: 1.25rem;
-  color: var(--text-muted);
-  text-align: center;
-  padding: 3rem 1rem;
-  user-select: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: 380px;
+    gap: 1.25rem;
+    color: var(--ems-muted);
+    text-align: center;
+    padding: 3rem 1rem;
+    user-select: none;
 }
-
 .meters-placeholder__icon-wrap {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  background: #f3f4f6;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: var(--ems-elevated);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
-
-html.dark .meters-placeholder__icon-wrap,
-[data-theme="dark"] .meters-placeholder__icon-wrap {
-  background: rgba(255,255,255,0.06);
-}
-
 .meters-placeholder svg { opacity: 0.45; }
-
 .meters-placeholder h5 {
-  font-size: 1.35rem;
-  font-weight: 700;
-  color: var(--text-heading);
-  margin: 0;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--ems-text);
+    margin: 0;
 }
-
 .meters-placeholder p {
-  font-size: 0.92rem;
-  color: var(--text-muted);
-  max-width: 340px;
-  line-height: 1.6;
-  margin: 0;
+    font-size: 0.92rem;
+    color: var(--ems-muted);
+    max-width: 340px;
+    line-height: 1.6;
+    margin: 0;
 }
 
 /* ════════════════════════════════════════
    CONFIG FORM — injected by loadDataMeter()
    ════════════════════════════════════════ */
-
-/* ── Sectioned card ── */
 .mcfg-section {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-panel);
-  padding: 1.1rem 1.25rem;
-  margin-bottom: 1rem;
+    background: var(--ems-surface);
+    border: 1px solid var(--ems-border);
+    border-radius: var(--ems-radius);
+    padding: 1.1rem 1.25rem;
+    margin-bottom: 1rem;
 }
-
 .mcfg-section__title {
-  font-size: 0.78rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--primary-dark);
-  margin: 0 0 0.9rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ems-accent-strong);
+    margin: 0 0 0.9rem;
 }
 
-html.dark .mcfg-section__title,
-[data-theme="dark"] .mcfg-section__title {
-  color: var(--primary);
-}
-
-/* ── Field grid ── */
 .mcfg-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.85rem 1.1rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.85rem 1.1rem;
 }
-
 .mcfg-grid--3 {
-  grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
 }
-
 .mcfg-grid[hidden] {
-  display: none;
+    display: none;
 }
 
 .mcfg-field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-  min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    min-width: 0;
 }
-
 .mcfg-field label {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--text-muted);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--ems-muted);
 }
-
 .mcfg-field input,
 .mcfg-field select {
-  background: var(--bg-page);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 0.45rem 0.7rem;
-  font-size: 0.85rem;
-  color: var(--text-body);
-  outline: none;
-  width: 100%;
-  transition: border-color var(--transition), box-shadow var(--transition);
+    background: var(--ems-elevated);
+    border: 1px solid var(--ems-border);
+    border-radius: var(--ems-radius-sm);
+    padding: 0.45rem 0.7rem;
+    font-size: 0.85rem;
+    color: var(--ems-text);
+    outline: none;
+    width: 100%;
+    transition: border-color var(--ems-dur), box-shadow var(--ems-dur);
 }
-
 .mcfg-field input:focus,
 .mcfg-field select:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-light);
+    border-color: var(--ems-accent);
+    box-shadow: var(--ems-ring);
 }
-
 .mcfg-field input:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
+    opacity: 0.55;
+    cursor: not-allowed;
 }
-
 .mcfg-field--check {
-  flex-direction: row;
-  align-items: center;
-  gap: 0.5rem;
-  align-self: end;
-  padding-bottom: 0.4rem;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+    align-self: end;
+    padding-bottom: 0.4rem;
 }
-
 .mcfg-field--check input {
-  width: 1.1rem;
-  height: 1.1rem;
-  accent-color: var(--primary);
-  cursor: pointer;
+    width: 1.1rem;
+    height: 1.1rem;
+    accent-color: var(--ems-accent);
+    cursor: pointer;
 }
-
 .mcfg-field--check label {
-  font-size: 0.85rem;
-  color: var(--text-body);
-  cursor: pointer;
+    font-size: 0.85rem;
+    color: var(--ems-text);
+    cursor: pointer;
 }
 
 /* Connect section label */
 #config .w-100.mx-3 h5 {
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: var(--text-muted);
-  margin-bottom: 0.5rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--ems-muted);
+    margin-bottom: 0.5rem;
 }
 
 /* Connect button */
 #btn-connect {
-  background: var(--primary) !important;
-  border: none !important;
-  border-radius: 8px !important;
-  padding: 0.42rem 1rem !important;
-  font-size: 0.86rem !important;
-  font-weight: 600 !important;
-  color: #fff !important;
-  cursor: pointer;
-  box-shadow: 0 1px 4px rgba(139,174,102,.30);
-  transition: background var(--transition), transform var(--transition);
+    background: var(--ems-accent) !important;
+    border: none !important;
+    border-radius: var(--ems-radius-sm) !important;
+    padding: 0.42rem 1rem !important;
+    font-size: 0.86rem !important;
+    font-weight: 600 !important;
+    color: #fff !important;
+    cursor: pointer;
+    box-shadow: 0 1px 4px rgba(37, 99, 235, .30);
+    transition: background var(--ems-dur), transform var(--ems-dur);
 }
 #btn-connect:hover {
-  background: var(--primary-dark) !important;
-  transform: translateY(-1px);
+    background: var(--ems-accent-strong) !important;
+    transform: translateY(-1px);
 }
-
 #label-btn-connect {
-  font-size: 0.88rem;
-  font-weight: 600;
+    font-size: 0.88rem;
+    font-weight: 600;
 }
-
 #detailmore {
-  font-size: 0.8rem;
-  color: var(--primary);
-  cursor: pointer;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-  margin-top: 0.2rem;
-  display: inline-block;
+    font-size: 0.8rem;
+    color: var(--ems-accent);
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    margin-top: 0.2rem;
+    display: inline-block;
 }
 
-/* ── Sticky action footer ── */
+/* ── Sticky action footer (inside #config) ── */
 .mcfg-footer {
-  position: sticky;
-  bottom: 0;
-  background: var(--bg-card);
-  border-top: 1px solid var(--border);
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.6rem;
-  padding: 0.9rem 0 0.2rem;
-  margin-top: 0.5rem;
+    position: sticky;
+    bottom: 0;
+    background: var(--ems-surface);
+    border-top: 1px solid var(--ems-border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.6rem;
+    padding: 0.9rem 0 0.2rem;
+    margin-top: 0.5rem;
 }
-
 .mcfg-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.48rem 1.3rem;
-  border-radius: 9px;
-  font-size: 0.875rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background var(--transition), transform var(--transition), box-shadow var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.48rem 1.3rem;
+    border-radius: var(--ems-radius-sm);
+    font-size: 0.875rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background var(--ems-dur), transform var(--ems-dur), box-shadow var(--ems-dur);
 }
-
 .mcfg-btn--cancel {
-  border: 1.5px solid rgba(239, 68, 68, 0.4);
-  background: transparent;
-  color: #ef4444;
-  font-weight: 600;
+    border: 1.5px solid rgba(225, 29, 72, 0.4);
+    background: transparent;
+    color: var(--ems-danger);
+    font-weight: 600;
 }
 .mcfg-btn--cancel:hover {
-  background: rgba(239, 68, 68, 0.07);
-  border-color: rgba(239, 68, 68, 0.7);
+    background: rgba(225, 29, 72, 0.08);
+    border-color: rgba(225, 29, 72, 0.7);
 }
-
 .mcfg-btn--save {
-  border: none;
-  background: var(--primary);
-  color: #fff;
-  box-shadow: 0 2px 8px rgba(139, 174, 102, 0.35);
+    border: none;
+    background: var(--ems-accent);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
 }
 .mcfg-btn--save:hover {
-  background: var(--primary-dark);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(139, 174, 102, 0.45);
+    background: var(--ems-accent-strong);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.45);
 }
 
 /* ════════════════════════════════════════
    NOTIFY TAB — injected cards
    ════════════════════════════════════════ */
-
 #list-notify {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  padding: 0.25rem;
-  align-items: flex-start;
+    display: flex;
+    flex-direction: column;      /* narrow 30% pane — stack cards vertically */
+    flex-wrap: nowrap;
+    gap: 0.85rem;
+    padding: 0.1rem;
+    align-items: stretch;
+    /* JS gives it Bootstrap "h-100 d-flex" — h-100 pins it to the pane height
+       so the cards overflow it invisibly and #notify-pane never gets a
+       scrollbar. Let it grow with its content instead. */
+    height: auto !important;
+    min-height: 0;
 }
 
-/* ── Notify card ── */
 .noti-card {
-  width: 300px;
-  display: flex;
-  flex-direction: column;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-panel);
-  overflow: hidden;
-  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    background: var(--ems-surface);
+    border: 1px solid var(--ems-border);
+    border-radius: var(--ems-radius);
+    overflow: hidden;
+    box-shadow: var(--ems-shadow);
 }
-
 .noti-card__head {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.7rem 0.85rem;
-  background: var(--primary-light);
-  border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.7rem 0.85rem;
+    background: var(--ems-accent-soft);
+    border-bottom: 1px solid var(--ems-border);
 }
-
 .noti-card__icon {
-  width: 16px;
-  height: 16px;
-  flex-shrink: 0;
-  color: var(--primary-dark);
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    color: var(--ems-accent-strong);
 }
-html.dark .noti-card__icon,
-[data-theme="dark"] .noti-card__icon {
-  color: var(--primary);
-}
-
 .noti-card__title {
-  flex: 1;
-  min-width: 0;
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: var(--text-heading);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+    flex: 1;
+    min-width: 0;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--ems-text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
-
 .noti-card__del {
-  display: flex;
-  padding: 3px;
-  border: none;
-  border-radius: 6px;
-  background: transparent;
-  color: var(--text-muted);
-  cursor: pointer;
-  line-height: 1;
-  transition: color var(--transition), background var(--transition);
+    display: flex;
+    padding: 3px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--ems-muted);
+    cursor: pointer;
+    line-height: 1;
+    transition: color var(--ems-dur), background var(--ems-dur);
 }
 .noti-card__del:hover {
-  color: #ef4444;
-  background: rgba(239, 68, 68, 0.1);
+    color: var(--ems-danger);
+    background: rgba(225, 29, 72, 0.1);
 }
-
 .noti-card__body {
-  display: flex;
-  flex-direction: column;
-  padding: 0.9rem 0.95rem 1rem;
+    display: flex;
+    flex-direction: column;
+    padding: 0.9rem 0.95rem 1rem;
 }
-
 .noti-label {
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text-muted);
-  margin: 0.6rem 0 0.28rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ems-muted);
+    margin: 0.6rem 0 0.28rem;
 }
 .noti-card__body > .noti-label:first-of-type {
-  margin-top: 0;
+    margin-top: 0;
 }
 
 /* scoped + !important to beat scripts/style.html `input:not(#group-search)` override */
 #list-notify .noti-card .noti-input {
-  width: 100%;
-  background: var(--bg-page) !important;
-  border: 1px solid var(--border);
-  border-radius: 7px;
-  color: var(--text-body) !important;
-  font-size: 0.84rem;
-  padding: 0.42rem 0.6rem;
-  outline: none;
-  transition: border-color var(--transition), box-shadow var(--transition);
+    width: 100%;
+    background: var(--ems-elevated) !important;
+    border: 1px solid var(--ems-border);
+    border-radius: 7px;
+    color: var(--ems-text) !important;
+    font-size: 0.84rem;
+    padding: 0.42rem 0.6rem;
+    outline: none;
+    transition: border-color var(--ems-dur), box-shadow var(--ems-dur);
 }
 #list-notify .noti-card .noti-input:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-light);
+    border-color: var(--ems-accent);
+    box-shadow: var(--ems-ring);
 }
 
 .noti-cond {
-  display: grid;
-  grid-template-columns: 118px 1fr;
-  gap: 0.5rem;
+    display: grid;
+    grid-template-columns: 118px 1fr;
+    gap: 0.5rem;
 }
-
 .noti-actions {
-  display: flex;
-  gap: 0.5rem;
-  margin-top: 1rem;
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
 }
 
 #list-notify .noti-card .noti-btn {
-  flex: 1;
-  min-width: 0;
-  text-align: center;
-  border-radius: 7px;
-  border: 1.5px solid transparent;
-  font-size: 0.8rem;
-  font-weight: 700;
-  padding: 0.46rem 0.5rem;
-  cursor: pointer;
-  transition: background var(--transition), border-color var(--transition), color var(--transition);
+    flex: 1;
+    min-width: 0;
+    text-align: center;
+    border-radius: 7px;
+    border: 1.5px solid transparent;
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 0.46rem 0.5rem;
+    cursor: pointer;
+    transition: background var(--ems-dur), border-color var(--ems-dur), color var(--ems-dur);
 }
 #list-notify .noti-card .noti-btn.bg-blue {
-  background: rgba(99, 130, 215, 0.15) !important;
-  color: #3b5fc0 !important;
-  border-color: rgba(99, 130, 215, 0.55);
+    background: var(--ems-accent-soft) !important;
+    color: var(--ems-accent-strong) !important;
+    border-color: var(--ems-accent-border);
 }
 #list-notify .noti-card .noti-btn.bg-blue:hover {
-  background: rgba(99, 130, 215, 0.3) !important;
+    background: var(--ems-accent-border) !important;
 }
 #list-notify .noti-card .noti-btn.bg-red {
-  background: rgba(239, 68, 68, 0.12) !important;
-  color: #dc2626 !important;
-  border-color: rgba(239, 68, 68, 0.45);
+    background: rgba(225, 29, 72, 0.12) !important;
+    color: var(--ems-danger) !important;
+    border-color: rgba(225, 29, 72, 0.45);
 }
 #list-notify .noti-card .noti-btn.bg-red:hover {
-  background: rgba(239, 68, 68, 0.22) !important;
+    background: rgba(225, 29, 72, 0.22) !important;
 }
 #list-notify .noti-card .noti-btn.bg-green {
-  background: var(--primary) !important;
-  color: #fff !important;
-  border-color: var(--primary-dark);
+    background: var(--ems-accent) !important;
+    color: #fff !important;
+    border-color: var(--ems-accent-strong);
 }
 #list-notify .noti-card .noti-btn.bg-green:hover {
-  background: var(--primary-dark) !important;
-}
-html.dark #list-notify .noti-card .noti-btn.bg-blue,
-[data-theme="dark"] #list-notify .noti-card .noti-btn.bg-blue {
-  color: #93b4f8 !important;
+    background: var(--ems-accent-strong) !important;
 }
 
-/* ── Add notify card ── */
+/* ── Add-notify card ── */
 .noti-card--add {
-  width: 300px;
-  min-height: 168px;
-  border: 2px dashed var(--primary-border);
-  border-radius: var(--radius-panel);
-  background: var(--primary-light);
-  color: var(--primary);
-  cursor: pointer;
-  transition: background var(--transition), border-color var(--transition);
+    width: 100%;
+    min-height: 84px;
+    border: 2px dashed var(--ems-accent-border);
+    border-radius: var(--ems-radius);
+    background: var(--ems-accent-soft);
+    color: var(--ems-accent);
+    cursor: pointer;
+    transition: background var(--ems-dur), border-color var(--ems-dur);
 }
 .noti-card--add:hover {
-  background: var(--primary-border);
-  border-color: var(--primary);
+    background: var(--ems-accent-border);
+    border-color: var(--ems-accent);
 }
 .noti-card--add > div {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  min-height: 164px;
-  font-size: 1.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    min-height: 80px;
+    font-size: 1.6rem;
 }
 
 /* ════════════════════════════════════════
    ANIMATION
    ════════════════════════════════════════ */
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateX(-6px); }
-  to   { opacity: 1; transform: translateX(0); }
+@keyframes mm-fadeIn {
+    from { opacity: 0; transform: translateX(-6px); }
+    to   { opacity: 1; transform: translateX(0); }
 }
-
-#meter-list > div { animation: fadeIn 0.2s ease both; }
+#meter-list > div { animation: mm-fadeIn 0.2s ease both; }
 
 /* ════════════════════════════════════════
    RESPONSIVE
    ════════════════════════════════════════ */
 
+/* ems-layout.css releases the viewport lock at <=1100px */
+@media (max-width: 1100px) {
+    .meters-page {
+        height: auto;
+        padding: var(--ems-space-4);
+    }
+    .meters-panel {
+        flex-direction: column;
+    }
+    .meters-sidebar {
+        width: 100%;
+        min-width: 0;
+        height: auto;
+        max-height: 300px;
+    }
+    .meters-content {
+        flex-direction: column;      /* stack the 70:30 panes */
+        min-height: 480px;
+    }
+    .meters-pane--general {
+        flex: 0 0 auto;
+        min-height: 420px;
+    }
+    .meters-pane--notify {
+        flex: 0 0 auto;
+        min-height: 260px;
+        border-left: none;
+        border-top: 1px solid var(--ems-border);
+    }
+}
+
 @media (max-width: 680px) {
-  .meters-panel    { flex-direction: column; }
-  .meters-sidebar  { width: 100%; height: auto; border-right: none; border-bottom: 1px solid var(--border); max-height: 180px; }
-  #config          { padding: 1.25rem 1rem; }
-  #list-notify > div { width: 100% !important; }
-  .mcfg-grid,
-  .mcfg-grid--3    { grid-template-columns: 1fr; }
+    .meters-hero {
+        gap: var(--ems-space-2);
+    }
+    .meters-search {
+        width: 100%;
+        order: 3;
+    }
+    #list-notify > div {
+        width: 100% !important;
+    }
+    .mcfg-grid,
+    .mcfg-grid--3 {
+        grid-template-columns: 1fr;
+    }
+    #config {
+        padding: 1.25rem 1rem;
+    }
 }

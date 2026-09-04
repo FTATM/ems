@@ -9,29 +9,29 @@
     --bg-card:       #ffffff;
     --bg-filter:     #ffffff;
     --bg-info:       #ffffff;
-    --bg-select:     #f2f5ee;
+    --bg-select:     #eef2f9;
 
-    --text-primary:  #1c2214;
+    --text-primary:  #15223a;
     --text-secondary:#3d4f2a;
-    --text-muted:    #7a8f60;
-    --text-label:    #5a6e42;
+    --text-muted:    #5b6b86;
+    --text-label:    #3d5470;
 
-    --border:        #d8e4c8;
-    --border-focus:  #8BAE66;
+    --border:        #d5e0f0;
+    --border-focus:  #2563EB;
 
-    --green:         #8BAE66;
-    --green-dark:    #6e9248;
-    --green-light:   #edf3e4;
-    --green-icon:    #8BAE66;
-    --green-glow:    rgba(139, 174, 102, 0.18);
-    --green-soft:    rgba(139, 174, 102, 0.09);
+    --green:         #2563EB;
+    --green-dark:    #3f6fd1;
+    --green-light:   #e8eef9;
+    --green-icon:    #2563EB;
+    --green-glow:    rgba(37, 99, 235, 0.18);
+    --green-soft:    rgba(37, 99, 235, 0.09);
 
-    --shadow-card:   0 1px 8px rgba(139, 174, 102, 0.10);
-    --shadow-filter: 0 1px 6px rgba(139, 174, 102, 0.08);
+    --shadow-card:   0 1px 8px rgba(37, 99, 235, 0.10);
+    --shadow-filter: 0 1px 6px rgba(37, 99, 235, 0.08);
 
     --footer-bg:     #ffffff;
-    --footer-text:   #7a8f60;
-    --footer-border: #d8e4c8;
+    --footer-text:   #5b6b86;
+    --footer-border: #d5e0f0;
 }
 
 /* ── CSS Variables: Dark Mode ── */
@@ -40,29 +40,29 @@ html.dark {
     --bg-card:       #09090b;
     --bg-filter:     #09090b;
     --bg-info:       #09090b;
-    --bg-select:     #202a18;
+    --bg-select:     #1c242e;
 
-    --text-primary:  #deeacc;
-    --text-secondary:#aec48a;
+    --text-primary:  #dbe4f2;
+    --text-secondary:#9fb8e4;
     --text-muted:    #ffffff;
     --text-label:    #acbe91;
 
-    --border:        #283820;
-    --border-focus:  #8BAE66;
+    --border:        #2a3542;
+    --border-focus:  #2563EB;
 
-    --green:         #8BAE66;
-    --green-dark:    #6e9248;
-    --green-light:   #1c2a12;
-    --green-icon:    #8BAE66;
-    --green-glow:    rgba(139, 174, 102, 0.22);
-    --green-soft:    rgba(139, 174, 102, 0.09);
+    --green:         #2563EB;
+    --green-dark:    #3f6fd1;
+    --green-light:   #152232;
+    --green-icon:    #2563EB;
+    --green-glow:    rgba(37, 99, 235, 0.22);
+    --green-soft:    rgba(37, 99, 235, 0.09);
 
     --shadow-card:   0 2px 14px rgba(0,0,0,0.45);
     --shadow-filter: 0 1px 8px rgba(0,0,0,0.38);
 
     --footer-bg:     #09090b;
-    --footer-text:   #4a6030;
-    --footer-border: #202e16;
+    --footer-text:   #3d5470;
+    --footer-border: #1a212b;
 }
 
 /* ── Layout ── */
@@ -479,7 +479,7 @@ html.dark .info-grid-value { color: #ffffff !important; }
 }
 
 .info-status-badge.info-status--on {
-    background: rgba(139, 174, 102, 0.18);
+    background: rgba(37, 99, 235, 0.18);
     color: var(--green);
     border: 1px solid var(--green);
 }
@@ -500,12 +500,12 @@ html.dark .info-grid-value { color: #ffffff !important; }
 
 .info-status--on .info-status-dot {
     animation: pulse-dot 1.8s infinite;
-    box-shadow: 0 0 0 2px rgba(139, 174, 102, 0.3);
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.3);
 }
 
 @keyframes pulse-dot {
-    0%, 100% { box-shadow: 0 0 0 2px rgba(139, 174, 102, 0.3); }
-    50%       { box-shadow: 0 0 0 5px rgba(139, 174, 102, 0); }
+    0%, 100% { box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.3); }
+    50%       { box-shadow: 0 0 0 5px rgba(37, 99, 235, 0); }
 }
 
 /* ══════════════════════════════════════════════
@@ -571,7 +571,7 @@ html.dark .info-grid-value { color: #ffffff !important; }
     border-color:     var(--green) !important;
 }
 html.dark .tov-btn.active {
-    background-color: rgba(139,174,102,0.12) !important;
+    background-color: rgba(37, 99, 235,0.12) !important;
 }
 .tov-btn--wide {
     flex-direction: row !important;
@@ -629,7 +629,7 @@ html.dark .tov-btn.active {
 }
 
 html.dark .tov-btn.active {
-    background: rgba(139, 174, 102, 0.12);
+    background: rgba(37, 99, 235, 0.12);
 }
 
 .tov-btn:active {
@@ -650,7 +650,7 @@ html.dark .tov-btn.active {
 }
 
 .tov-btn.active .tov-icon {
-    background: rgba(139, 174, 102, 0.25);
+    background: rgba(37, 99, 235, 0.25);
 }
 
 .tov-icon .bi {
@@ -775,8 +775,25 @@ html.dark .tov-btn.active .tov-name {
 
 /* ── Responsive ── */
 @media (max-width: 1100px) {
+    /* Release the desktop viewport lock — the reflowed single-column stack is
+       taller than the screen, so let the whole page scroll natively. */
+    body,
+    #main,
+    .dashboard-wrapper,
+    .dashboard-content {
+        height: auto;
+        overflow: visible;
+    }
+    #main {
+        min-height: 100svh;
+    }
+    .dashboard-content {
+        min-height: 0;
+    }
+
     .dash-charts-grid {
         grid-template-columns: 1fr;
+        grid-template-rows: none;     /* rows size to content, not 1fr 1fr */
     }
     .dash-card--pie,
     .dash-card--line,
@@ -785,8 +802,23 @@ html.dark .tov-btn.active .tov-name {
         grid-column: 1;
         grid-row: auto;
     }
+    /* give cards + chart hosts a real height so charts actually render */
+    .dash-card,
+    .dash-side-card {
+        min-height: 340px;
+    }
+    #chart-Pie,
+    #chart-linear,
+    #chart-linear-price {
+        min-height: 280px !important;
+    }
     .dash-body {
         flex-direction: column;
+    }
+    .dash-body-left,
+    .dash-charts-grid {
+        min-height: 0;
+        overflow: visible;
     }
     .dash-right-panel {
         width: 100%;

@@ -2,117 +2,100 @@
 include '../components/session.php';
 checkLogin();
 checkSession();
+
+$EMS_PAGE_TITLE = $lang['report'] . ' - EMS';
+$EMS_SHELL_LOCKED = true;            // monitor page — lock the viewport
+include '../components/doc-open.php';
 ?>
-
-<!DOCTYPE html>
-<html lang="<?= $langCode ?>">
-
-<?php include "../scripts/ref.html"; ?>
-<?php include "../scripts/style.html"; ?>
-
-<head>
-    <meta charset="UTF-8">
-    <title><?= $lang['report'] ?> - EMS</title>
-    <link rel="stylesheet" href="../styles/dashboard.css">
     <link rel="stylesheet" href="../styles/report-electric.css">
-</head>
 
-<body>
-    <div id="main">
-        <?php include "../components/sidemenu.php"; ?>
+<?php include '../components/app-shell-open.php'; ?>
 
-        <div class="dashboard-wrapper">
-            <?php include "../components/header.php"; ?>
+            <div class="report-electric">
 
-            <div class="dashboard-content">
-
-                <!-- ── Filter Bar ── -->
-                <div class="dash-filter-bar">
-
-                    <div class="dash-filter-group">
-                        <span class="dash-filter-label"><?= $lang['meter'] ?></span>
-                        <select id="select-meters" class="dash-select" onchange="loadingChart()">
+                <!-- ── Filter toolbar ── -->
+                <div class="ems-toolbar report-toolbar">
+                    <div class="ems-toolbar__group">
+                        <span class="ems-toolbar__label"><?= $lang['meter'] ?></span>
+                        <select id="select-meters" class="ems-select" onchange="loadingChart()">
                             <option>No value</option>
                         </select>
                     </div>
 
-                    <div class="dash-divider"></div>
+                    <div class="ems-toolbar__divider"></div>
 
-                    <div class="dash-filter-group">
-                        <span class="dash-filter-label"><?= $lang['from'] ?></span>
-                        <div class="filter-date-wrapper"
-                            onclick="document.getElementById('datetime-from').showPicker()">
+                    <div class="ems-toolbar__group">
+                        <span class="ems-toolbar__label"><?= $lang['from'] ?></span>
+                        <div class="report-date" onclick="document.getElementById('datetime-from').showPicker()">
                             <i class="bi bi-calendar3"></i>
                             <span id="date-from-display" class="filter-date-display">30 กันยายน 2568</span>
                             <input id="datetime-from" type="date" class="filter-date-hidden" value="2026-03-26"
-                                onchange="updateToDisplay(); changeSelectMeter()">
-                        </div>
-                    </div>
-
-                    <div class="dash-divider"></div>
-
-                    <div class="dash-filter-group">
-                        <span class="dash-filter-label"><?= $lang['to'] ?></span>
-                        <div class="filter-date-wrapper" onclick="document.getElementById('datetime-to').showPicker()">
-                            <i class="bi bi-calendar3"></i>
-                            <span id="date-to-display" class="filter-date-display">30 ตุลาคม 2568</span>
-                            <input id="datetime-to" type="date" class="filter-date-hidden" value="2026-03-27"
                                 onchange="updateFromDisplay(); changeSelectMeter()">
                         </div>
                     </div>
 
-                    <div class="dash-divider"></div>
+                    <div class="ems-toolbar__divider"></div>
+
+                    <div class="ems-toolbar__group">
+                        <span class="ems-toolbar__label"><?= $lang['to'] ?></span>
+                        <div class="report-date" onclick="document.getElementById('datetime-to').showPicker()">
+                            <i class="bi bi-calendar3"></i>
+                            <span id="date-to-display" class="filter-date-display">30 ตุลาคม 2568</span>
+                            <input id="datetime-to" type="date" class="filter-date-hidden" value="2026-03-27"
+                                onchange="updateToDisplay(); changeSelectMeter()">
+                        </div>
+                    </div>
+
+                    <div class="ems-toolbar__divider"></div>
 
                     <!-- Email + Export -->
-                    <div class="dash-filter-group dash-filter-group--export">
-                        <span class="dash-filter-label"><?= $lang['export'] ?></span>
-                        <div class="report-export-row">
-                            <input class="dash-text-input" id="email" type="email"
+                    <div class="ems-toolbar__group report-export-group">
+                        <span class="ems-toolbar__label"><?= $lang['export'] ?></span>
+                        <div class="report-export">
+                            <input class="report-email" id="email" type="email"
                                 placeholder="<?= $lang['emailaddress'] ?>">
-                            <button class="report-btn report-btn--csv" onclick="sendExportToEmail('csv')">
+                            <button class="ems-btn ems-btn--ghost ems-btn--sm" onclick="sendExportToEmail('csv')">
                                 <i class="bi bi-filetype-csv"></i> CSV
                             </button>
-                            <button id="excel" class="report-btn report-btn--xl" onclick="sendExportToEmail('excel')">
+                            <button id="excel" class="ems-btn ems-btn--primary ems-btn--sm"
+                                onclick="sendExportToEmail('excel')">
                                 <i class="bi bi-file-earmark-excel"></i> Excel
                             </button>
                         </div>
                     </div>
-
                 </div>
 
                 <!-- ── Body ── -->
                 <div class="report-body">
 
                     <!-- Chart Card -->
-                    <div class="dash-card report-chart-card">
-                        <div class="dash-card-header">
-                            <div class="dash-card-title">
+                    <div class="ems-card report-chart-card">
+                        <div class="report-card-head">
+                            <span class="report-card-title">
                                 <i class="bi bi-graph-up-arrow"></i>
                                 <?= $lang['preview'] ?>
-                            </div>
+                            </span>
                         </div>
-                        <div class="dash-card-body">
+                        <div class="report-card-body">
                             <div id="linear-chart" style="width:100%;height:100%;"></div>
                         </div>
                     </div>
 
                     <!-- Table Card -->
-                    <div class="dash-card report-table-card">
-                        <div class="dash-card-header report-table-header">
-                            <div class="dash-card-title">
-                                <i class="bi bi-table"></i><?= $lang['table'] ?>
-                            </div>
+                    <div class="ems-card report-table-card">
+                        <div class="report-card-head report-table-head">
+                            <span class="report-card-title">
+                                <i class="bi bi-table"></i> <?= $lang['table'] ?>
+                            </span>
                             <div class="report-table-controls">
-                                <div class="report-check-wrap">
+                                <label class="report-check-wrap">
                                     <input id="is-table-all-value" type="checkbox" class="report-checkbox"
                                         onchange="ReloadTable()">
-                                    <label for="is-table-all-value"
-                                        class="report-check-label"><?= $lang['showall'] ?></label>
-                                </div>
-                                <div class="dash-filter-group"
-                                    style="flex-direction:row;align-items:center;gap:8px;padding:0;flex:unset;">
-                                    <span class="dash-filter-label"><?= $lang['rows'] ?></span>
-                                    <select id="select-table-show" class="dash-select" style="width:80px;"
+                                    <span class="report-check-label"><?= $lang['showall'] ?></span>
+                                </label>
+                                <div class="report-rows-ctl">
+                                    <span class="ems-toolbar__label"><?= $lang['rows'] ?></span>
+                                    <select id="select-table-show" class="ems-select ems-select--sm"
                                         onchange="ReloadTable()">
                                         <option selected value="5">5</option>
                                         <option value="10">10</option>
@@ -124,7 +107,7 @@ checkSession();
                             </div>
                         </div>
                         <div class="report-table-scroll">
-                            <table class="report-table" id="table-data">
+                            <table class="report-grid" id="table-data">
                                 <thead></thead>
                                 <tbody></tbody>
                             </table>
@@ -134,13 +117,9 @@ checkSession();
                 </div>
                 <!-- end report-body -->
 
-            </div>
-            <!-- end dashboard-content -->
+            </div><!-- /.report-electric -->
 
-            <?php include "../components/footer.php"; ?>
-        </div>
-    </div>
-
+<?php include '../components/app-shell-close.php'; ?>
     <?php include "../scripts/scriptjs.html"; ?>
     <?php include "../scripts/scriptjs-report.html"; ?>
     <script>
@@ -176,7 +155,4 @@ checkSession();
         updateToDisplay();
     });
     </script>
-
-</body>
-
-</html>
+<?php include '../components/doc-close.php'; ?>

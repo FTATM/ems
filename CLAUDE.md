@@ -47,7 +47,25 @@ Included by every page. Responsibilities:
 - Auth guards: `checkLogin()` (redirects to login, then checks `checktoken()`), `check()`, `checkSession()`. **Many pages currently have these calls commented out.**
 - The filter chain lives in the session: `$_SESSION['lid']` (location) → `['gid']` (group) → `['tid']` / `['tmid']` (meter type/meter). `checkSession()` enforces the chain by redirecting to the relevant management page. Helpers `setLocation()`, `setGroup()`, `setTypeMeter()`.
 - i18n: `?lang=th|en` query param stored in `$_SESSION['lang']`; loads `lang/<code>.php` which defines the `$lang` associative array used as `<?= $lang['key'] ?>` throughout, and passed to JS as `const LANG`. **New UI strings must be added to both `lang/th.php` and `lang/en.php`.**
-- Theming: `?theme=dark|light` stored in session; sets PHP color vars (`$bg`, `$bgsec`, `$text`, `$accentColor`, …) used inline in pages. Independently, client JS toggles `localStorage['theme']` and a `dark` class on `<html>`/`<body>`.
+- Theming: `?theme=dark|light` stored in session; sets PHP color vars (`$bg`, `$bgsec`, `$text`, `$accentColor`, …) used inline in pages. Independently, client JS toggles `localStorage['theme']` and a `dark` class on `<html>`/`<body>`. The PHP vars are set from the **Aurora** palette (see below).
+
+### Design system — "Aurora" (blue on slate)
+
+The app's visual identity is centralised so a brand change means editing a handful of files, not every stylesheet.
+
+- **Canonical tokens:** `scripts/style.html` (included in `<head>` of every page via each `pages/X.php`). Its opening `<style>` block defines CSS custom properties on `:root` and `html.dark`:
+  - Brand: `--ems-accent` (blue — primary buttons, active nav, links, focus rings), `--ems-accent-strong`, `--ems-accent-bright`, `--ems-accent-soft` / `--ems-accent-glow` (translucent fills), `--ems-accent-2` (amber, secondary/warnings), `--ems-danger`, `--ems-success`.
+  - Surfaces: `--ems-bg`, `--ems-surface`, `--ems-elevated`, `--ems-border`, `--ems-text`, `--ems-muted`.
+  - Shape/depth: `--ems-radius-sm|--ems-radius|--ems-radius-lg`, `--ems-shadow`, `--ems-shadow-lg`, `--ems-ring`, `--ems-dur`, `--ems-font` (`Inter` + `Noto Sans Thai`, imported at the top of `style.html`).
+  - The same file also restyles shared widgets (`.active`, `.menu`, `#card`, `.toggle-button`, `#loading-spinner`), Bootstrap `.btn-primary`/`.btn-outline-primary`, links, `.card`/`.modal-content`, focus states, scrollbars, and SweetAlert2 in dark mode — all via `var(--ems-*)`.
+- **PHP palette:** `components/session.php` (dark + light branches) sets `$bg/$bgsec/$secon/$text/$textMuted/$btnColor/$accentColor` to Aurora hex values, echoed inline on `<body>` and in some pages. Keep these in sync with the tokens.
+- **Shared chrome:** `styles/sidemenu.css` (its own `--sm-*` tokens — Aurora values), `components/header.php` (sticky, token-driven `<style>` + `var(--ems-accent)` inline), `components/footer.php` (`--footer-*` aliased to `--ems-*`).
+- **Login:** `styles/login.css` is standalone; its `:root` (`--primary`, `--bg-dark`, …) carries Aurora values directly.
+- **Per-page stylesheets** (`styles/dashboard.css`, `allmeter.css`, `gauge.css`, …): the whole old green palette — brand accent **and** the green-tinted page/panel backgrounds, headings, borders, and shadows that each file defined in its own `:root` block (`--bg-page`, `--text-heading`, `--primary-dark`, …) — has been recoloured to the Aurora blue/slate family. Files still hard-code these values (not `var(--ems-*)`) and still own their spacing/layout. Semantic status greens (`#22c55e`, `#2e7d32`, online/success) were deliberately left. When touching a file, migrate remaining literals to `var(--ems-*)`.
+- **Chart palettes:** dataset colours for Chart.js / CanvasJS live in `scripts/scriptjs-*.html`, not CSS. The active dashboard/report/meter scripts were swept to blue; other chart scripts may still carry old colours.
+- **To re-skin the app:** change the values in `scripts/style.html` `:root` / `html.dark`, then mirror them in `components/session.php`, `styles/sidemenu.css` `--sm-*`, and `styles/login.css` `:root`.
+
+> **Planned:** a full layout redesign of every `pages/X.php` is coming. Treat the current per-page HTML structure and `styles/*.css` layout rules as throwaway; the token layer in `scripts/style.html` (colours, radius, shadow, spacing, font) is the part meant to survive and should be what new layouts build on.
 
 ### Auth
 

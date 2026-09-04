@@ -30,47 +30,46 @@
 }
 
 body {
-    font-family: 'Noto Sans Thai', 'Sarabun', sans-serif;
+    font-family: var(--ems-font, 'Inter', 'Noto Sans Thai', 'Sarabun', sans-serif);
 }
 
-/* Dark mode styles for header */
-html.dark .navbar {
-    background-color: #18181b !important;
-    border-color: #27272a !important;
+/* Aurora header — token driven, works in light & dark */
+header.ems-header {
+    position: sticky;
+    top: 0;
+    z-index: 900;
 }
-
-html.dark .navbar-brand div[style*="1a1a1a"] {
-    color: #f4f4f5 !important;
+.ems-header .navbar {
+    background-color: var(--ems-surface) !important;
+    border-bottom: 1px solid var(--ems-border) !important;
+    backdrop-filter: saturate(1.4) blur(4px);
+    /* Pin to the shared header-height token so it matches the sidebar's
+       .sm-header exactly (keeps the docked rail and the sticky header aligned). */
+    min-height: var(--ems-header-h, 60px);
 }
-
-html.dark .navbar-brand div[style*="6c757d"] {
-    color: #a1a1aa !important;
+.ems-header .navbar-brand div[style*="1a1a1a"],
+.ems-header .username-text {
+    color: var(--ems-text) !important;
 }
-
-html.dark #theme-toggle-btn {
-    color: #8BAE66 !important;
+.ems-header .navbar-brand div[style*="6c757d"] {
+    color: var(--ems-muted) !important;
 }
-
-.username-text {
-    color: #1a1a1a;
-}
-
-html.dark .username-text {
-    color: #f4f4f5 !important;
+#theme-toggle-btn {
+    color: var(--ems-accent) !important;
 }
 </style>
 
-<header class="fw-medium border-bottom shadow-sm">
-    <nav class="navbar navbar-expand-lg navbar-light bg-white px-3 py-2">
+<header class="ems-header fw-medium shadow-sm">
+    <nav class="navbar navbar-expand-lg px-3 py-2">
 
         <!-- ซ้าย: hamburger + logo -->
         <div class="d-flex align-items-center gap-2">
-            <button id="sidebar_open" class="btn p-0 border-0" style="color: #8BAE66;">
+            <button id="sidebar_open" class="btn p-0 border-0" style="color: var(--ems-accent);">
                 <i class="bi bi-list fs-3"></i>
             </button>
             <a class="navbar-brand d-flex align-items-center gap-2 mb-0" href="../pages/dashboard.php">
                 <div class="rounded d-flex align-items-center justify-content-center"
-                    style="width:45px; height:45px; background-color:#8BAE66;">
+                    style="width:45px; height:45px; background-color:var(--ems-accent);">
                     <span class="cbi--solar-battery" style="color:white; width:1.8em; height:1.8em;"></span>
                 </div>
                 <div class="lh-1">
@@ -85,7 +84,7 @@ html.dark .username-text {
 
             <!-- Dark Mode Toggle -->
             <button id="theme-toggle-btn" class="btn p-0 border-0" title="Toggle dark mode" onclick="toggleDarkMode()"
-                style="color:#8BAE66; line-height:1;">
+                style="color:var(--ems-accent); line-height:1;">
                 <i class="bi bi-moon-fill fs-5" id="icon-moon"></i>
                 <i class="bi bi-sun-fill fs-5" id="icon-sun" style="display:none;"></i>
             </button>
@@ -93,9 +92,9 @@ html.dark .username-text {
             <?php if (!isset($_SESSION['user_id'])): ?>
             <!-- ยังไม่ได้ Login -->
             <a class="nav-link px-3 py-1 d-flex align-items-center gap-2" href="../pages/login.php"
-                style="border: 1.5px solid #8BAE66; border-radius: 20px; color: #8BAE66; font-weight: 600; transition: all 0.2s;"
-                onmouseover="this.style.backgroundColor='#8BAE66'; this.style.color='white';"
-                onmouseout="this.style.backgroundColor='transparent'; this.style.color='#8BAE66';">
+                style="border: 1.5px solid var(--ems-accent); border-radius: 20px; color: var(--ems-accent); font-weight: 600; transition: all 0.2s;"
+                onmouseover="this.style.backgroundColor='var(--ems-accent)'; this.style.color='white';"
+                onmouseout="this.style.backgroundColor='transparent'; this.style.color='var(--ems-accent)';">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                     <path
                         d="M11 7L9.6 8.4l2.6 2.6H2v2h10.2l-2.6 2.6L11 17l5-5l-5-5zm9 12h-8v2h8c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-8v2h8v14z" />
@@ -106,10 +105,10 @@ html.dark .username-text {
             <!-- Avatar + ชื่อ (คลิกไปหน้า user.php) -->
             <div class="d-flex align-items-center gap-2 text-decoration-none" title="My Profile">
                 <div class="rounded-circle d-flex align-items-center justify-content-center"
-                    style="width:36px; height:36px; background-color:#e8eee0; cursor:pointer; transition: background-color 0.2s;"
-                    onmouseover="this.style.backgroundColor='#d0dcc0';"
-                    onmouseout="this.style.backgroundColor='#e8eee0';">
-                    <i class="bi bi-person-fill" style="color:#8BAE66; font-size:1.1rem;"></i>
+                    style="width:36px; height:36px; background-color:var(--ems-accent-soft); cursor:pointer; transition: background-color 0.2s;"
+                    onmouseover="this.style.backgroundColor='var(--ems-accent-glow)';"
+                    onmouseout="this.style.backgroundColor='var(--ems-accent-soft)';">
+                    <i class="bi bi-person-fill" style="color:var(--ems-accent); font-size:1.1rem;"></i>
                 </div>
                 <span style="font-weight:600; color:#1a1a1a; line-height:1.1;" class="username-text">
                     <?= htmlspecialchars($_SESSION['username'] ?? $_SESSION['name'] ?? 'Admin') ?>
@@ -117,7 +116,7 @@ html.dark .username-text {
                 </a>
                 <!-- Logout -->
                 <a href="../pages/logout.php" class="btn p-0 border-0" title="Logout">
-                    <i class="bi bi-box-arrow-right fs-4" style="color:#8BAE66;"></i>
+                    <i class="bi bi-box-arrow-right fs-4" style="color:var(--ems-accent);"></i>
                 </a>
                 <?php endif; ?>
 
