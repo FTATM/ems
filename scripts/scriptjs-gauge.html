@@ -12,18 +12,36 @@
     const groupID = "<?=$_SESSION['gid'];?>";
 
     document.addEventListener("DOMContentLoaded", async () => {
+        showGridSkeleton();
         await fetchAll();
-        await generateOption('select-meters', Object.values(meters), true);
+        generateOption('select-meters', Object.values(meters), true);
         setMeterID();
-        await generateGauge();
+        renderHero();
+        await generateGauge();               // innerHTML='' clears the skeleton tiles
         await process();
-        await setRefreshTime();
+        setRefreshTime();
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) clearInterval(refreshIntervalId);
+            else setRefreshTime();
+        });
     });
 
     async function process() {
-        meterWithData = await fetchRealtimeOfMeters(typeMeterID, groupID);
+        meterWithData = await fetchRealtimeOfMeters(typeMeterID, groupID, minutesFromSelect());
         updateDataInGauge();
+        renderHeroUpdated();
         setRefreshTime();
+    }
+
+    // "1" = now/live -> 0 (endpoint returns the single latest row per type)
+    // "0" = all time -> very large window
+    // else -> that many minutes back
+    function minutesFromSelect() {
+        const v = document.getElementById('select-filter-value')?.value ?? '1';
+        if (v === '1') return 0;
+        if (v === '0') return 525600 * 20;
+        return parseInt(v, 10) || 0;
     }
 
     async function fetchAll() {
@@ -47,32 +65,33 @@
         listGauge.innerHTML = '';
 
         Object.values(types).forEach((t) => {
-            // Wrapper card div
             let card = document.createElement('div');
             card.className = 'gauge-card';
+            card.dataset.typeId = t.id;
 
-            // Title label above gauge
             let titleEl = document.createElement('div');
             titleEl.className = 'gauge-card__title';
             titleEl.textContent = t.name;
             card.appendChild(titleEl);
 
-            // Canvas
             let canvas = document.createElement('canvas');
             canvas.id = 'gauge_' + t.id;
             card.appendChild(canvas);
 
+            let valueEl = document.createElement('div');
+            valueEl.className = 'gauge-card__value';
+            valueEl.dataset.typeId = t.id;
+            valueEl.textContent = '0.00';
+            card.appendChild(valueEl);
+
             listGauge.appendChild(card);
 
             const max = parseInt(t.maxvaluecolumn);
-
-            // ใส่ค่าล่าสุดจาก DB ตั้งแต่แรก ไม่ต้องรอ refresh
             gaugeGenerate('gauge_' + t.id, t.name, t.name, 0, 0, max * 1.2 || 200, 5);
         });
 
         await generateDataList();
-
-
+        updateGaugeCount();
     }
 
     async function generateDataList() {
@@ -80,11 +99,10 @@
         if (!sidebarBody) return;
         sidebarBody.innerHTML = '';
 
-        // ดึง type key ที่ meter ปัจจุบันมีข้อมูลจริง
+        // type key ที่ meter ปัจจุบันมีข้อมูลจริง (หรือทั้งหมดถ้าว่าง)
         const selectedMeter = Object.values(meterWithData).find(m => m.id === parseInt(MeterID));
         const activeKeys = selectedMeter ? Object.keys(selectedMeter.data) : [];
 
-        // แสดงเฉพาะ type ที่มีใน meter นี้ (หรือทั้งหมดถ้า activeKeys ว่าง)
         const showTypes = activeKeys.length > 0
             ? activeKeys.map(k => types.find(t => String(t.id) === String(k))).filter(Boolean)
             : types;
@@ -110,138 +128,128 @@
         });
     }
 
-
-    async function updateDataInGauge() {
+    function updateDataInGauge() {
         const selectedMeter = meterWithData[MeterID];
-        console.log(selectedMeter);
+        if (!selectedMeter || !selectedMeter.data) {
+            document.querySelectorAll('.gauge-card').forEach(c => c.classList.add('is-stale'));
+            setHeroStatus(false);
+            return;
+        }
 
-        Object.values(selectedMeter.data).forEach((values) => {
-            let lastValue = 0;
-            if (values) {
-                lastValue = parseFloat(values?.value) || 0;
-            }
+        const seen = new Set();
+        Object.values(selectedMeter.data).forEach((row) => {
+            const id = String(row.type_id);
+            if (seen.has(id)) return;          // first row per type = most recent (DESC)
+            seen.add(id);
+            const val = parseFloat(row?.value) || 0;
 
-            // อัปเดต sidebar input — ค้นหา type ด้วย String comparison
-            const inputEl = document.getElementById('type-' + values.type_id);
-            if (inputEl) inputEl.value = lastValue.toFixed(2);
+            const inp = document.getElementById('type-' + id);                     // sidebar input
+            if (inp) inp.value = val.toFixed(2);
+            const tv = document.querySelector('.gauge-card__value[data-type-id="' + id + '"]'); // tile readout
+            if (tv) tv.textContent = val.toFixed(2);
 
-            // อัปเดต gauge — ค้นหา type จาก types array ด้วย id ที่ตรงกัน
-            const typeObj = types.find(t => String(t.id) === String(values.type_id));
-            if (typeObj) {
-                gaugeGenerate('gauge_' + typeObj.id, typeObj.name, typeObj.name, lastValue);
-            }
+            const typeObj = types.find(t => String(t.id) === id);
+            if (typeObj) gaugeGenerate('gauge_' + typeObj.id, typeObj.name, typeObj.name, val);
         });
+
+        document.querySelectorAll('.gauge-card').forEach(card => {
+            card.classList.toggle('is-stale', !seen.has(String(card.dataset.typeId)));
+        });
+        setHeroStatus(seen.size > 0);
     }
 
-    function isDarkMode() {
-        return document.documentElement.classList.contains('dark') ||
-            document.documentElement.getAttribute('data-theme') === 'dark';
+    // ── Theme-aware gauge palette (read from the --ems-* tokens at draw time) ──
+    function gaugeTheme() {
+        const cs = getComputedStyle(document.documentElement);
+        const v = n => cs.getPropertyValue(n).trim();
+        return {
+            tick:   v('--ems-text-secondary') || v('--ems-muted'),
+            minor:  v('--ems-border'),
+            number: v('--ems-text-secondary') || v('--ems-text'),
+            needle: v('--ems-text'),
+            hub:    v('--ems-accent'),
+            border: v('--ems-border'),
+            danger: v('--ems-danger'),
+            plate:  'rgba(0,0,0,0)',
+        };
     }
 
-    function gaugeGenerate(id, title, unitname, value = 0, minValue = 0, maxValue = 200, step = 5, width = 155, height = 155) {
+    function gaugeGenerate(id, title, unitname, value = 0, minValue = 0, maxValue = 200, step = 5, width = 170, height = 170) {
         if (!id || !unitname) {
             console.error(`ID:${id} or unitname:${unitname} are required for gauge generation.`);
             return;
         }
 
-        const dark = isDarkMode();
+        if (gaugeInstances[id]) {
+            gaugeInstances[id].value = value;
+            return;
+        }
 
-        // สีตัวอักษรและเข็ม — เข้มในโหมดสว่าง, ขาวในโหมดมืด
-        const tickColor = dark ? "#cccccc" : "#2d2d2d";
-        const numberColor = dark ? "#cccccc" : "#1f2937";
-        const needleColor = dark ? "#ffffff" : "#1f2937";
-        const plateColor = "rgba(0,0,0,0.0)";
-        const borderOuter = dark ? "#333" : "#cdd9f0";
-        const borderMid = dark ? "#222" : "#b3c6ea";
-        const borderInner = dark ? "#111" : "#95b2e3";
-        const valueBoxBg = "#1e3358";
+        const T = gaugeTheme();
 
         let majorTicks = [];
         for (let i = minValue; i <= maxValue; i += maxValue / step) {
             majorTicks.push(parseFloat(i).toFixed(1).toString());
         }
 
-        if (!gaugeInstances[id]) {
-            gaugeInstances[id] = new RadialGauge({
-                renderTo: id,
-                title: '',
-                width: width,
-                height: height,
-                minValue: minValue,
-                maxValue: maxValue,
-                majorTicks: majorTicks,
-                minorTicks: 2,
-                highlights: [
-                    { from: maxValue * 0.67, to: maxValue, color: "rgba(200, 50, 50, .75)" }
-                ],
-                value: value,
-                animationDuration: 900,
-                animationRule: "linear",
-                colorPlate: plateColor,
-                colorMajorTicks: dark ? "#ffffff" : tickColor,
-                colorMinorTicks: dark ? "#bbbbbb" : "#7189aa",
-                colorTitle: dark ? "#ffffff" : tickColor,
-                colorUnits: dark ? "#ffffff" : tickColor,
-                colorNumbers: dark ? "#ffffff" : numberColor,
-                colorNeedle: needleColor,
-                colorNeedleEnd: needleColor,
-                needleWidth: 2,
-                needleCircleSize: 5,
-                colorNeedleCircleOuter: dark ? "#555" : "#3f6fd1",
-                colorNeedleCircleInnerEnd: dark ? "#111" : "#cdd9f0",
-                colorBorderOuter: borderOuter,
-                colorBorderOuterEnd: dark ? "#333" : "#b3c6ea",
-                colorBorderMiddle: borderMid,
-                colorBorderMiddleEnd: dark ? "#222" : "#95b2e3",
-                colorBorderInner: borderInner,
-                colorBorderInnerEnd: dark ? "#111" : "#7ba0dc",
-                colorValueBoxBackground: valueBoxBg,
-                colorValueBoxShadow: false,
-                colorValueText: "#ffffff",
-                colorValueTextShadow: "rgba(0,0,0,0.4)",
-                fontNumbersSize: 16,
-                fontValueSize: 30,
-            }).draw();
-        } else {
-            gaugeInstances[id].value = value;
-        }
+        // Option B (not used): make tiles fluid via a debounced ResizeObserver
+        // calling gaugeInstances[id].update({ width, height }) on the tile.
+        gaugeInstances[id] = new RadialGauge({
+            renderTo: id,
+            title: '',
+            width: width,
+            height: height,
+            minValue: minValue,
+            maxValue: maxValue,
+            majorTicks: majorTicks,
+            minorTicks: 2,
+            highlights: [
+                { from: maxValue * 0.67, to: maxValue, color: T.danger }
+            ],
+            value: value,
+            valueBox: false,
+            animationDuration: 900,
+            animationRule: "linear",
+            colorPlate: T.plate,
+            colorMajorTicks: T.tick,
+            colorMinorTicks: T.minor,
+            colorTitle: T.tick,
+            colorUnits: T.tick,
+            colorNumbers: T.number,
+            colorNeedle: T.needle,
+            colorNeedleEnd: T.needle,
+            needleWidth: 2,
+            needleCircleSize: 5,
+            colorNeedleCircleOuter: T.hub,
+            colorNeedleCircleInnerEnd: T.border,
+            colorBorderOuter: T.border,
+            colorBorderOuterEnd: T.border,
+            colorBorderMiddle: T.border,
+            colorBorderMiddleEnd: T.border,
+            colorBorderInner: T.border,
+            colorBorderInnerEnd: T.border,
+            fontNumbersSize: 16,
+        }).draw();
     }
 
-    /* ── Re-render gauges เมื่อ theme เปลี่ยน ── */
+    /* ── Rebuild every gauge when the theme changes (fresh gaugeTheme() colours) ── */
     function reRenderAllGauges() {
-        // ล้าง instance เก่าทั้งหมด เพื่อให้ gaugeGenerate สร้างใหม่พร้อมสีใหม่
         Object.keys(gaugeInstances).forEach(id => {
             try { gaugeInstances[id].destroy(); } catch (e) { }
             delete gaugeInstances[id];
         });
-        // วาด gauge ใหม่ทั้งหมดด้วยค่าปัจจุบัน
-        const meterID = document.getElementById('select-meters')?.value;
-        if (!meterID) return;
-        let selectedMeter = Object.values(meters).find(m => m.id === parseInt(meterID));
-        if (!selectedMeter) return;
-        Object.entries(selectedMeter.data).forEach(([key, value]) => {
-            let typeSelect = types.find(t => t.id === key);
-            if (!typeSelect) return;
-            let lastValue = parseFloat(value[value.length - 1]?.value) || 0;
-            let max = 0;
-            value.forEach(row => { let v = parseFloat(row.value); max = v > max ? v : max; });
-            gaugeGenerate('gauge_' + typeSelect.id, typeSelect.name, typeSelect.name, lastValue, 0, max * 1.2 || 200, 5);
-        });
+        generateGauge();          // rebuilds tiles + instances
+        updateDataInGauge();      // re-applies values from cached meterWithData
     }
 
-    /* ── MutationObserver จับการเปลี่ยน class/attribute บน <html> ── */
+    /* ── MutationObserver: <html> class flips (server writes class="dark") ── */
     (function () {
-        const observer = new MutationObserver(mutations => {
-            mutations.forEach(m => {
-                if (
-                    (m.attributeName === 'class' || m.attributeName === 'data-theme') &&
-                    typeof gaugeInstances !== 'undefined'
-                ) {
-                    reRenderAllGauges();
-                }
-            });
+        let raf = 0;
+        const observer = new MutationObserver(() => {
+            cancelAnimationFrame(raf);
+            raf = requestAnimationFrame(reRenderAllGauges);
         });
-        observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'data-theme'] });
+        observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
     })();
 
     function setRefreshTime() {
@@ -255,5 +263,69 @@
         refreshIntervalId = setInterval(() => {
             process();
         }, refreshTime * 1000);
+    }
+
+    /* ── UI helpers ── */
+    function onMeterChange() {
+        setMeterID();
+        renderHero();
+        if (!meterWithData || !Object.keys(meterWithData).length) { process(); return; }
+        generateDataList();               // resync the sidebar rows to this meter
+        updateDataInGauge();
+        renderHeroUpdated();
+    }
+
+    function onTimeChange() {
+        process();                        // re-fetch with the new window
+    }
+
+    function renderHero() {
+        const sel = document.getElementById('select-meters');
+        const name = sel && sel.selectedIndex > 0 ? sel.options[sel.selectedIndex].text : '—';
+        setText('gauge-hero-meter', name);
+        setText('gauge-hero-loc', getNameLocation(groupID));
+        setText('gauge-hero-grp', getNameGroup(groupID));
+    }
+
+    function renderHeroUpdated() {
+        const sm = meterWithData && meterWithData[MeterID];
+        let latest = 0;
+        if (sm && sm.data) {
+            Object.values(sm.data).forEach(r => {
+                const t = new Date(String(r.create_date).replace(/\//g, '-').replace(' ', 'T')).getTime();
+                if (t > latest) latest = t;
+            });
+        }
+        setText('gauge-hero-updated', latest ? formatDateTime(new Date(latest)) : '—');
+        const ms = (parseInt(document.getElementById('input-refresh').value, 10) || 15) * 1000;
+        setHeroStatus(latest > 0 && (Date.now() - latest) < Math.max(ms * 3, 120000));
+    }
+
+    function setHeroStatus(online) {
+        const pill = document.getElementById('gauge-hero-status');
+        if (!pill) return;
+        pill.classList.toggle('is-stale', !online);
+        pill.classList.toggle('ems-pill--muted', !online);
+        setText('gauge-hero-status-text', online ? LANG.livefeed : LANG.offline);
+    }
+
+    function updateGaugeCount() {
+        setText('gauge-count', document.querySelectorAll('.gauge-card').length);
+    }
+
+    function showGridSkeleton() {
+        const g = document.getElementById('list-gauge');
+        if (!g) return;
+        g.innerHTML = Array.from({ length: 8 }).map(() => `
+            <div class="gauge-skel-tile">
+              <div class="ems-skeleton ems-skeleton--line" style="width:55%"></div>
+              <div class="ems-skeleton gauge-skel-tile__disc"></div>
+              <div class="ems-skeleton ems-skeleton--line" style="width:40%"></div>
+            </div>`).join('');
+    }
+
+    function setText(id, v) {
+        const el = document.getElementById(id);
+        if (el) el.textContent = v;
     }
 </script>

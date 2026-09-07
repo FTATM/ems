@@ -50,7 +50,13 @@
         // แบ่งเป็นแถวละ 8 ตัว
         const itemsPerRow = 8;
 
-        Object.values(meters).forEach((m, index) => {
+        // เติม slot ว่างให้ครบแถวละ 8 (ขั้นต่ำ 8 ตัว) เพื่อให้ layout ไม่เพี้ยน
+        // เช่น มีจริง 5 ตัว -> เติมเป็น 8 / มีจริง 14 ตัว -> เติมเป็น 16 (2 แถว)
+        const realMeters = Object.values(meters);
+        const totalSlots = Math.max(itemsPerRow, Math.ceil(realMeters.length / itemsPerRow) * itemsPerRow);
+        const slots = Array.from({ length: totalSlots }, (_, i) => realMeters[i] || null);
+
+        slots.forEach((m, index) => {
             if (index % itemsPerRow === 0) {
                 let row = document.createElement('div');
                 row.className = "mx-3 bg-diagram-body d-flex align-items-end justify-content-end"; // จัดเรียง meter ในแถว
@@ -60,6 +66,100 @@
                     </div>
                 `;
                 list.appendChild(row);
+            }
+
+            // slot ว่าง (เติมให้ครบแถว) — โชว์ตัวเครื่องมิเตอร์เปล่า ไม่มีค่า ไม่คลิก ไม่มีสถานะ
+            if (!m) {
+                const blank = (n) => Array.from({ length: n }, () => `<div class="slot-number">&nbsp;</div>`).join("");
+
+                let wrapper = document.createElement('div');
+                wrapper.style.width = "150px";
+                wrapper.style.height = "170px";
+                wrapper.style.marginRight = index === (Math.floor(index / itemsPerRow) * 8) + 3 ? "120px" : "0px";
+                wrapper.style.overflow = "hidden";
+                wrapper.style.display = "inline-block";
+
+                let div = document.createElement('div');
+                div.className = "d-flex flex-column p-2 rounded";
+                div.style.width = "320px";
+                div.style.height = "360px";
+                div.style.backgroundColor = "#EFEFEF";
+                div.style.transform = "scale(0.45)";
+                div.style.transformOrigin = "top left";
+                div.style.opacity = "0.55";
+
+                div.innerHTML = `
+                    <div class="w-100 h-100 px-3 rounded" style="background-color:#858585;">
+                        <div class="w-100 h-100 px-1 py-3 rounded position-relative" style="background-color:#666666;">
+                            <div class="position-absolute rounded-circle bg-secondary p-2" style="top:20px; right:10px; opacity:0.4;">
+                            </div>
+                            <div class="w-100 h-100 p-2 d-flex flex-column rounded" style="background-color:#EFEFEF;">
+                                <div class="w-100 mb-1 d-flex justify-content-center align-content-center">
+                                    <div class="w-100 d-flex justify-content-center align-items-center">
+                                        <div class="w-75 d-flex justify-content-end">${blank(8)}</div>
+                                        <div class="text-black ms-2 w-25">kW</div>
+                                    </div>
+                                </div>
+                                <div class="w-100 mb-1 d-flex justify-content-center align-content-center">
+                                    <div class="w-100 d-flex justify-content-center align-items-center">
+                                        <div class="w-75 d-flex justify-content-end">${blank(8)}</div>
+                                        <div class="text-black ms-2 w-25">kW·h</div>
+                                    </div>
+                                </div>
+                                <div class="w-100 h-25 text-black text-center">
+                                    <div class="stop-line"></div>
+                                </div>
+                                <div class="w-100 mb-3 d-flex justify-content-center align-content-center">
+                                    <div class="w-50 d-flex flex-column justify-content-center align-items-center">
+                                        <div class="text-black w-25">A-N</div>
+                                        <div class="w-75 d-flex justify-content-end">
+                                            ${blank(6)}
+                                            <div class="text-black ms-1 w-25">V</div>
+                                        </div>
+                                    </div>
+                                    <div class="w-50 d-flex flex-column justify-content-center align-items-center">
+                                        <div class="text-black w-25">A-B</div>
+                                        <div class="w-75 d-flex justify-content-end">
+                                            ${blank(6)}
+                                            <div class="text-black ms-1 w-25">V</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="w-100 mb-1 d-flex justify-content-center align-content-center">
+                                    <div class="w-100 d-flex justify-content-center align-items-center">
+                                        <div class="w-75 d-flex justify-content-end">
+                                            <div class="text-black w-25">Cur-A</div>
+                                            ${blank(6)}
+                                        </div>
+                                        <div class="text-black ms-1 w-25">A</div>
+                                    </div>
+                                </div>
+                                <div class="w-100 mb-1 d-flex justify-content-center align-content-center">
+                                    <div class="w-100 d-flex justify-content-center align-items-center">
+                                        <div class="w-75 d-flex justify-content-end">
+                                            <div class="text-black w-25">PF</div>
+                                            ${blank(6)}
+                                        </div>
+                                        <div class="text-black ms-1 w-25"></div>
+                                    </div>
+                                </div>
+                                <div class="w-100 mb-1 d-flex justify-content-center align-content-center">
+                                    <div class="w-100 d-flex justify-content-center align-items-center">
+                                        <div class="w-75 d-flex justify-content-end">
+                                            <div class="text-black w-25">Fq</div>
+                                            ${blank(6)}
+                                        </div>
+                                        <div class="text-black ms-1 w-25">Hz</div>
+                                    </div>
+                                </div>
+                                <div class="text-black text-center fw-bold fs-5">&nbsp;</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                wrapper.appendChild(div);
+                document.getElementById(`row-${Math.floor(index / itemsPerRow)}`).appendChild(wrapper);
+                return;
             }
 
             const dataMap = Object.fromEntries(

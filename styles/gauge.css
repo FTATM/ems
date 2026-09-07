@@ -1,399 +1,361 @@
-:root {
-  --primary:        #2563EB;
-  --primary-light:  rgba(37, 99, 235, 0.12);
-  --primary-border: rgba(37, 99, 235, 0.35);
-  --primary-dark:   #3f6fd1;
+/* ============================================================
+   Gauge Page — styles/gauge.css
+   Migrated to the EMS app-shell + --ems-* tokens (no local palette).
+   Locked viewport monitor page; ems-layout.css releases the lock
+   at <=1100px. Theme switches entirely through scripts/style.html.
 
-  --bg-page:        #f5f6f8;
-  --bg-card:        #ffffff;
-  --bg-gauge-grid:  #ffffff;
-  --bg-select:      #eef2f9;
+   Layout inside .gauge-page (vertical stack):
+     1) .gauge-hero      context strip (flex-shrink:0)
+     2) .gauge-toolbar   filter bar (flex-shrink:0)
+     3) .gauge-body      row — .gauge-grid-card (fills) + .gauge-side panel
+   ============================================================ */
 
-  --text-heading:   #152238;
-  --text-body:      #3f5573;
-  --text-card:      #1f2937;
-  --text-muted:     #6b7280;
-  --text-label:     #374151;
-
-  --border-card:    #e5e7eb;
-  --border-input:   #d1d5db;
-
-  --shadow-sm: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.04);
-  --shadow-md: 0 4px 16px rgba(0,0,0,.10), 0 2px 6px rgba(0,0,0,.06);
-
-  --radius-card:  14px;
-  --radius-sm:     8px;
-  --radius-input:  8px;
-  --transition:   180ms ease;
+/* ── Locked page frame ── */
+.ems-shell__scroll:has(> .gauge-page) {
+    display: flex;
+    flex-direction: column;
+}
+.gauge-page {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--ems-space-4);
+    padding: var(--ems-space-5);
+    box-sizing: border-box;
 }
 
-/* ── Root Tokens : Dark Mode ── */
-html.dark, [data-theme="dark"] {
-  --bg-card:        #1c1c1e;
-  --bg-page:        #111113;
-  --bg-gauge-grid:  #1c1c1e;
-  --bg-select:      #1a1a1a;
-  --primary:        #2563EB;
-  --primary-dark:   #3f6fd1;
-  --text-heading:   #f4f4f5;
-  --text-body:      #a1a1aa;
-  --text-card:      #e4e4e7;
-  --text-label:     #d1d5db;
-  --text-muted:     #71717a;
-  --border-card:    #2d2d30;
-  --border-input:   #3f3f46;
-  --shadow-sm: 0 1px 3px rgba(0,0,0,.3);
-  --shadow-md: 0 4px 16px rgba(0,0,0,.4);
+/* No color/background on #input-refresh — scripts/style.html:285-293
+   already forces a correct, theme-aware transparent input in both themes. */
+#input-refresh {
+    -moz-appearance: textfield;
+}
+#input-refresh::-webkit-inner-spin-button,
+#input-refresh::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
 }
 
-/* ── Base ── */
-body {
-  background-color: var(--bg-page) !important;
-  font-family: 'Noto Sans Thai', 'Sarabun', sans-serif;
-  min-height: 100svh;
-  transition: background-color 0.3s ease;
+/* ============================================================
+   ROW 1 — Context hero
+   ============================================================ */
+.gauge-hero {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--ems-space-4);
+    flex-wrap: wrap;
+    animation: ems-fade-up var(--ems-dur) ease both;
+}
+.gauge-hero__main {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+}
+.gauge-hero__meter {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--ems-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.gauge-hero__crumb {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.78rem;
+    color: var(--ems-muted);
+    flex-wrap: wrap;
+}
+.gauge-hero__crumb .bi {
+    color: var(--ems-accent);
+}
+.gauge-hero__sep {
+    opacity: 0.5;
+}
+.gauge-hero__meta {
+    display: flex;
+    align-items: center;
+    gap: var(--ems-space-3);
+    flex-shrink: 0;
+    flex-wrap: wrap;
+}
+.gauge-hero__updated {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.78rem;
+    color: var(--ems-muted);
+    white-space: nowrap;
+}
+.gauge-hero__status {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+.gauge-hero__dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: currentColor;
+    box-shadow: 0 0 7px currentColor;
+    animation: gauge-blink 1.6s ease-in-out infinite;
+}
+.gauge-hero__status.is-stale .gauge-hero__dot {
+    animation: none;
 }
 
-/* ── Page wrapper ── */
-.gauge-main {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 1.25rem 1.5rem 0;
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-  min-height: 0;
-  scrollbar-width: thin;
-  scrollbar-color: var(--primary-border) transparent;
+/* ============================================================
+   ROW 2 — Toolbar
+   ============================================================ */
+.gauge-toolbar {
+    flex-shrink: 0;
+}
+.gauge-refresh {
+    gap: var(--ems-space-2);
+}
+.gauge-refresh__label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--ems-muted);
+    white-space: nowrap;
 }
 
-.gauge-main::-webkit-scrollbar       { width: 5px; }
-.gauge-main::-webkit-scrollbar-track { background: transparent; }
-.gauge-main::-webkit-scrollbar-thumb { background: var(--primary-border); border-radius: 99px; }
-
-/* ── Controls Card ── */
-.gauge-controls {
-  width: 100%;
-  max-width: 1320px;
-  background: var(--bg-card);
-  border-radius: var(--radius-card);
-  border: 1px solid var(--border-card);
-  box-shadow: var(--shadow-sm);
-  padding: 1rem 1.5rem;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1.5rem;
-  align-items: flex-end;
-  margin-bottom: 1rem;
-  flex-shrink: 0;
-  transition: background 0.3s ease, border-color 0.3s ease;
-}
-
-.gauge-controls__group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-
-.gauge-controls__group--meter {
-  flex: 2;
-  min-width: 200px;
-}
-
-.gauge-controls__group--time {
-  flex: 1.5;
-  min-width: 160px;
-}
-
-.gauge-controls__label {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  font-size: 0.72rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  color: var(--text-muted);
-}
-
-.gauge-controls__label svg {
-  color: var(--primary);
-  flex-shrink: 0;
-}
-
-/* ── Select ── */
-.gauge-select {
-  background: var(--bg-card) !important;
-  border: 1px solid var(--border-input) !important;
-  border-radius: var(--radius-input) !important;
-  padding: 0.5rem 2.2rem 0.5rem 0.85rem !important;
-  font-size: 0.875rem !important;
-  font-family: 'Noto Sans Thai', 'Sarabun', sans-serif;
-  color: var(--text-card) !important;
-  cursor: pointer;
-  outline: none;
-  transition: border-color var(--transition), box-shadow var(--transition);
-  width: 100%;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") !important;
-  background-repeat: no-repeat !important;
-  background-position: right 0.75rem center !important;
-}
-
-.gauge-select:focus {
-  border-color: var(--primary) !important;
-  box-shadow: 0 0 0 3px var(--primary-light) !important;
-}
-.gauge-select:hover { border-color: #9ca3af !important; }
-
-#select-meters {
-  padding-left: 2rem !important;
-  background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3E%3Ccircle cx='4' cy='4' r='4' fill='%238BAE66'/%3E%3C/svg%3E"),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") !important;
-  background-position: left 0.75rem center, right 0.75rem center !important;
-  background-repeat: no-repeat !important;
-}
-
-/* ── Divider ── */
-.dash-divider {
-  width: 1px;
-  height: 40px;
-  background: var(--border-card);
-  flex-shrink: 0;
-  align-self: center;
-}
-
-/* ── Refresh — matches allmeter style ── */
-.gauge-refresh-wrap {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: var(--bg-select);
-  border: 1.5px solid var(--border-input);
-  border-radius: 12px;
-  padding: 0.35rem 0.9rem;
-  flex-shrink: 0;
-  align-self: center;
-}
-
-.gauge-refresh-spin {
-  color: var(--primary);
-  font-size: 1.15rem;
-  animation: gauge-spin 2.5s linear infinite;
-}
-
-@keyframes gauge-spin {
-  from { transform: rotate(360deg); }
-  to   { transform: rotate(0deg); }
-}
-
-.gauge-refresh-label {
-  font-size: 0.875rem;
-  color: var(--text-body);
-  white-space: nowrap;
-}
-
-.gauge-refresh-input {
-  width: 52px;
-  padding: 0.2rem 0.4rem;
-  border-radius: 8px;
-  border: 1.5px solid var(--border-input);
-  background: var(--bg-card);
-  color: var(--text-card);
-  font-size: 0.9rem;
-  text-align: center;
-  outline: none;
-  transition: border-color var(--transition), box-shadow var(--transition);
-  -moz-appearance: textfield;
-}
-
-.gauge-refresh-input::-webkit-outer-spin-button,
-.gauge-refresh-input::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-.gauge-refresh-input:focus {
-  border-color: var(--primary-border);
-  box-shadow: 0 0 0 3px var(--primary-light);
-}
-
-/* ── Body layout ── */
+/* ============================================================
+   ROW 3 — Body (gauge grid card + value panel)
+   ============================================================ */
 .gauge-body {
-  width: 100%;
-  max-width: 1320px;
-  display: flex;
-  gap: 1rem;
-  flex: 1;
-  min-height: 0;        /* CRITICAL — lets children scroll */
-  padding-bottom: 1.5rem;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    gap: var(--ems-space-4);
+    overflow: hidden;
 }
 
-/* ── Gauge grid — green bg + scroll inside ── */
+.gauge-grid-card {
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: ems-fade-up var(--ems-dur) ease both;
+}
+.gauge-grid-card__head {
+    flex-shrink: 0;
+}
+
 .gauge-grid {
-  flex: 1;
-  background: var(--bg-gauge-grid);
-  border: 1px solid var(--border-card);
-  border-radius: var(--radius-card);
-  box-shadow: var(--shadow-sm);
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-  gap: 0.5rem;
-  align-content: start;
-  min-width: 0;
-  min-height: 0;
-  padding: 0.65rem;
-  overflow-y: auto;
-  overflow-x: hidden;
-  scrollbar-width: thin;
-  scrollbar-color: var(--primary-border) transparent;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: var(--ems-space-3);
+    align-content: start;
+    padding: var(--ems-space-2) 2px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--ems-accent-border) transparent;
+}
+.gauge-grid::-webkit-scrollbar {
+    width: 6px;
+}
+.gauge-grid::-webkit-scrollbar-track {
+    background: transparent;
+}
+.gauge-grid::-webkit-scrollbar-thumb {
+    background: var(--ems-accent-border);
+    border-radius: 99px;
 }
 
-.gauge-grid::-webkit-scrollbar       { width: 6px; }
-.gauge-grid::-webkit-scrollbar-track { background: transparent; }
-.gauge-grid::-webkit-scrollbar-thumb { background: var(--primary-border); border-radius: 99px; }
-
-/* ── Each gauge card ── */
+/* ── Gauge tile ── */
 .gauge-card {
-  background: #eef2fb !important;
-  border: 1px solid var(--primary-border) !important;
-  border-radius: 10px !important;
-  box-shadow: var(--shadow-sm) !important;
-  padding: 0.5rem 0.4rem 0.35rem !important;
-  margin: 0 !important;
-  transition: box-shadow var(--transition), transform var(--transition), border-color var(--transition) !important;
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: center !important;
-  justify-content: center !important;
-  width: 100% !important;
-  box-sizing: border-box !important;
-  cursor: default;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 6px;
+    box-sizing: border-box;
+    padding: var(--ems-space-3);
+    background: var(--ems-surface);
+    border: 1px solid var(--ems-border);
+    border-top: 3px solid var(--ems-accent);
+    border-radius: var(--ems-radius-sm);
+    transition: background var(--ems-dur), transform var(--ems-dur),
+                box-shadow var(--ems-dur), border-color var(--ems-dur);
+    animation: ems-fade-up var(--ems-dur) ease both;
 }
-
 .gauge-card:hover {
-  box-shadow: var(--shadow-md) !important;
-  border-color: var(--primary-border) !important;
-  transform: translateY(-2px) !important;
+    background: var(--ems-elevated);
+    transform: translateY(-2px);
+    box-shadow: var(--ems-shadow);
 }
-html.dark .gauge-card,
-[data-theme="dark"] .gauge-card {
-  background: #111111 !important;
-  border-color: #333333 !important;
+.gauge-card.is-stale {
+    opacity: 0.5;
 }
-
-
 .gauge-card__title {
-  font-family: 'Noto Sans Thai', 'Sarabun', sans-serif;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--text-label);
-  margin-bottom: 0.1rem;
-  text-align: center;
-  letter-spacing: 0.01em;
+    max-width: 100%;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ems-muted);
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.gauge-card canvas {
+    display: block;
+}
+.gauge-card__value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--ems-text);
 }
 
-/* ── Sidebar ── */
-.gauge-sidebar {
-  width: 230px;
-  min-width: 200px;
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  background: var(--bg-card);
-  border: 1px solid var(--border-card);
-  border-radius: var(--radius-card);
-  box-shadow: var(--shadow-sm);
-  overflow: hidden;
-  min-height: 0;
+/* ── Value panel (uses .ems-panel .ems-panel--sm) ── */
+.gauge-side__dot {
+    width: 10px;
+    height: 10px;
+    border-radius: var(--ems-radius-sm);
+    background: var(--ems-accent);
+    flex-shrink: 0;
 }
-
-.gauge-sidebar__header {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.9rem 1rem 0.75rem;
-  border-bottom: 1px solid var(--border-card);
-  flex-shrink: 0;
+.gauge-side .ems-panel__body {
+    scrollbar-width: thin;
+    scrollbar-color: var(--ems-accent-border) transparent;
 }
-
-.gauge-sidebar__dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 3px;
-  background: var(--primary);
-  flex-shrink: 0;
+.gauge-side .ems-panel__body::-webkit-scrollbar {
+    width: 4px;
 }
-
-.gauge-sidebar__title {
-  font-family: 'Noto Sans Thai', 'Sarabun', sans-serif;
-  font-size: 0.78rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--text-label);
+.gauge-side .ems-panel__body::-webkit-scrollbar-thumb {
+    background: var(--ems-accent-border);
+    border-radius: 99px;
 }
-
-.gauge-sidebar__body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 0.5rem 0;
-  min-height: 0;
-  scrollbar-width: thin;
-  scrollbar-color: var(--primary-border) transparent;
-}
-
-.gauge-sidebar__body::-webkit-scrollbar       { width: 4px; }
-.gauge-sidebar__body::-webkit-scrollbar-thumb { background: var(--primary-border); border-radius: 99px; }
-
 .gauge-data-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.35rem 1rem;
-  gap: 0.5rem;
-  transition: background var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: var(--ems-radius-sm);
+    transition: background var(--ems-dur);
 }
-
-.gauge-data-row:hover { background: var(--primary-light); }
-
+.gauge-data-row:hover {
+    background: var(--ems-accent-soft);
+}
 .gauge-data-label {
-  font-family: 'Noto Sans Thai', 'Sarabun', sans-serif;
-  font-size: 0.8rem;
-  color: var(--text-label);
-  font-weight: 500;
-  white-space: nowrap;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--ems-text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
-
 .gauge-data-value {
-  background: var(--bg-page) !important;
-  border: 1px solid var(--border-input) !important;
-  border-radius: 6px !important;
-  padding: 0.2rem 0.5rem !important;
-  font-size: 0.78rem !important;
-  font-family: 'Courier New', monospace !important;
-  font-weight: 600 !important;
-  color: var(--text-card) !important;
-  text-align: right;
-  width: 70px;
-  flex-shrink: 0;
-  pointer-events: none;
-  outline: none;
+    width: 74px;
+    flex-shrink: 0;
+    padding: 0.2rem 0.5rem;
+    border: 1px solid var(--ems-border);
+    border-radius: 6px;
+    background: var(--ems-elevated);
+    color: var(--ems-text);
+    font-family: 'Courier New', monospace;
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-align: right;
+    pointer-events: none;
+    outline: none;
 }
 
-/* ── Responsive ── */
-@media (max-width: 900px) {
-  .gauge-body    { flex-direction: column; }
-  .gauge-sidebar { width: 100%; min-width: unset; }
-  .gauge-sidebar__body { display: flex; flex-wrap: wrap; padding: 0.5rem; }
-  .gauge-data-row { width: 50%; }
+/* ── Skeleton tiles (reuse .ems-skeleton + @keyframes ems-shimmer) ── */
+.gauge-skel-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: var(--ems-space-3);
+    border: 1px solid var(--ems-border);
+    border-radius: var(--ems-radius-sm);
+    background: var(--ems-surface);
+}
+.gauge-skel-tile__disc {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
 }
 
-@media (max-width: 600px) {
-  .gauge-controls { padding: 0.75rem 1rem; gap: 0.75rem; }
-  .gauge-controls__group--meter,
-  .gauge-controls__group--time { min-width: 120px; flex: 1 1 100%; }
-  .gauge-refresh-wrap { width: 100%; justify-content: center; }
+/* ============================================================
+   Animations
+   ============================================================ */
+@keyframes gauge-blink {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%      { opacity: .25; transform: scale(.6); }
+}
+
+/* ============================================================
+   Responsive — mirrors the ems-layout.css lock release at <=1100px
+   ============================================================ */
+@media (max-width: 1100px) {
+    .gauge-page {
+        height: auto;
+        padding: var(--ems-space-4);
+    }
+    .gauge-body {
+        flex-direction: column;
+        overflow: visible;
+    }
+    .gauge-grid-card,
+    .gauge-side {
+        flex: 0 0 auto;
+    }
+    .gauge-grid-card {
+        min-height: 420px;
+    }
+    .gauge-side {
+        width: 100%;
+    }
+    .gauge-grid {
+        overflow: visible;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    }
+    .gauge-side .ems-panel__body {
+        display: flex;
+        flex-wrap: wrap;
+    }
+    .gauge-side .gauge-data-row {
+        width: 50%;
+    }
+}
+@media (max-width: 768px) {
+    .gauge-page {
+        padding: var(--ems-space-3);
+    }
+    .ems-toolbar__divider {
+        display: none;
+    }
+    .gauge-toolbar {
+        gap: var(--ems-space-2);
+    }
+    .gauge-toolbar .ems-toolbar__group {
+        flex: 1 1 150px;
+    }
+    .gauge-toolbar .ems-select {
+        min-width: 0;
+        width: 100%;
+    }
+    .gauge-refresh {
+        flex: 1 1 100%;
+    }
+    .gauge-side .gauge-data-row {
+        width: 100%;
+    }
 }

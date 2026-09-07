@@ -2,65 +2,57 @@
 include '../components/session.php';
 checkLogin();
 checkSession();
+
+$EMS_PAGE_TITLE   = $lang['gauge'] . ' - EMS';
+$EMS_SHELL_LOCKED = true;            // monitor page — lock the viewport, one inner scroll
+include '../components/doc-open.php';
 ?>
-
-<!DOCTYPE html>
-<html lang="<?= $langCode ?>">
-
-<?php include "../scripts/ref.html"; ?>
-<?php include "../scripts/style.html"; ?>
-
-<head>
-    <meta charset="UTF-8">
-    <title><?= $lang['allmeter'] ?> - EMS</title>
     <link rel="stylesheet" href="../styles/gauge.css">
-    <style>
-    html:not(.dark):not([data-theme="dark"]) #input-refresh {
-        color: #111827 !important;
-    }
-    </style>
-</head>
+    <script>const LANG = <?= json_encode($lang, JSON_UNESCAPED_UNICODE) ?>;</script>
 
-<body>
-    <div id="main" class="d-flex flex-column" style="height:100svh; overflow:hidden;">
-        <?php include "../components/header.php"; ?>
-        <div class="w-100 d-flex flex-column" style="flex: 1 1 auto; min-height: 0; overflow:hidden;">
-            <?php include "../components/sidemenu.php"; ?>
+<?php include '../components/app-shell-open.php'; ?>
 
-            <main class="gauge-main">
+            <div class="gauge-page">
 
-                <!-- Controls Card -->
-                <div class="gauge-controls">
+                <!-- ── Context hero ── -->
+                <section class="ems-card gauge-hero">
+                    <div class="gauge-hero__main">
+                        <span class="gauge-hero__meter" id="gauge-hero-meter">—</span>
+                        <span class="gauge-hero__crumb">
+                            <i class="bi bi-geo-alt-fill"></i> <span id="gauge-hero-loc">—</span>
+                            <span class="gauge-hero__sep">/</span>
+                            <i class="bi bi-collection-fill"></i> <span id="gauge-hero-grp">—</span>
+                        </span>
+                    </div>
+                    <div class="gauge-hero__meta">
+                        <span class="gauge-hero__updated">
+                            <i class="bi bi-clock-history"></i>
+                            <?= $lang['lastupdate'] ?>: <span id="gauge-hero-updated">—</span>
+                        </span>
+                        <span class="ems-pill gauge-hero__status" id="gauge-hero-status">
+                            <span class="gauge-hero__dot"></span>
+                            <span id="gauge-hero-status-text"><?= $lang['livefeed'] ?></span>
+                        </span>
+                    </div>
+                </section>
 
-                    <!-- Select Meter -->
-                    <div class="gauge-controls__group gauge-controls__group--meter">
-                        <label class="gauge-controls__label" for="select-meters">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
-                                stroke-linejoin="round">
-                                <circle cx="12" cy="12" r="2" />
-                                <path
-                                    d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
-                            </svg>
-                            <?= $lang['selectmeter'] ?>
-                        </label>
-                        <select id="select-meters" class="gauge-select" onchange="checkTimeChange()"></select>
+                <!-- ── Filter toolbar ── -->
+                <div class="ems-toolbar gauge-toolbar">
+
+                    <div class="ems-toolbar__group">
+                        <span class="ems-toolbar__label">
+                            <i class="bi bi-speedometer2"></i> <?= $lang['selectmeter'] ?>
+                        </span>
+                        <select id="select-meters" class="ems-select" onchange="onMeterChange()"></select>
                     </div>
 
-                    <!-- Data Last Time -->
-                    <div class="gauge-controls__group gauge-controls__group--time">
-                        <label class="gauge-controls__label" for="select-filter-value">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
-                                stroke-linejoin="round">
-                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                                <line x1="16" y1="2" x2="16" y2="6" />
-                                <line x1="8" y1="2" x2="8" y2="6" />
-                                <line x1="3" y1="10" x2="21" y2="10" />
-                            </svg>
-                            <?= $lang['datalasttime'] ?>
-                        </label>
-                        <select id="select-filter-value" class="gauge-select" onchange="checkTimeChange()">
+                    <div class="ems-toolbar__divider"></div>
+
+                    <div class="ems-toolbar__group">
+                        <span class="ems-toolbar__label">
+                            <i class="bi bi-clock-history"></i> <?= $lang['datalasttime'] ?>
+                        </span>
+                        <select id="select-filter-value" class="ems-select" onchange="onTimeChange()">
                             <option selected value="1"><?= $lang['now'] ?> (<?= $lang['live'] ?>)</option>
                             <option value="5"><?= $lang['last'] ?> 5 <?= $lang['minutes'] ?></option>
                             <option value="10"><?= $lang['last'] ?> 10 <?= $lang['minutes'] ?></option>
@@ -79,44 +71,43 @@ checkSession();
                         </select>
                     </div>
 
-                    <div class="dash-divider"></div>
+                    <div class="ems-toolbar__spacer"></div>
 
-                    <!-- Refresh -->
-                    <div class="gauge-refresh-wrap">
-                        <span class="material-icons-outlined gauge-refresh-spin">sync</span>
-                        <span class="gauge-refresh-label"><?= $lang['refreshevery'] ?></span>
-                        <input type="number" id="input-refresh" class="gauge-refresh-input" value="15" min="1" max="60"
-                            onchange="setRefreshTime()">
-                        <span class="gauge-refresh-label"><?= $lang['seconds'] ?></span>
-                    </div>
-
-                </div><!-- /.gauge-controls -->
-
-                <!-- Content area -->
-                <div class="gauge-body">
-                    <div id="list-gauge" class="gauge-grid relative "></div>
-
-                    <!-- Sidebar -->
-                    <div id="list-data" class="gauge-sidebar">
-                        <div class="gauge-sidebar__header">
-                            <span class="gauge-sidebar__dot"></span>
-                            <span class="gauge-sidebar__title"><?= $lang['alltype'] ?></span>
-                        </div>
-                        <div class="gauge-sidebar__body" id="sidebar-body"></div>
+                    <div class="ems-refresh gauge-refresh">
+                        <span class="ems-refresh__icon"><i class="bi bi-arrow-repeat"></i></span>
+                        <span class="gauge-refresh__label"><?= $lang['refreshevery'] ?></span>
+                        <input type="number" id="input-refresh" class="ems-refresh__input" value="15" min="1"
+                            max="60" onchange="setRefreshTime()">
+                        <span class="gauge-refresh__label"><?= $lang['seconds'] ?></span>
                     </div>
                 </div>
 
-            </main>
-            <?php include "../components/footer.php"; ?>
-        </div>
-    </div>
+                <!-- ── Body: gauge grid + value panel ── -->
+                <div class="gauge-body">
 
-    <script id="theme-data" type="application/json">
-    <?= json_encode($_SESSION['theme'], JSON_UNESCAPED_UNICODE); ?>
-    </script>
+                    <section class="ems-card gauge-grid-card">
+                        <div class="ems-card__header gauge-grid-card__head">
+                            <span class="ems-card__title">
+                                <i class="bi bi-grid-3x3-gap-fill"></i> <?= $lang['gauge'] ?>
+                            </span>
+                            <span class="ems-pill ems-pill--muted" id="gauge-count">0</span>
+                        </div>
+                        <div id="list-gauge" class="gauge-grid"></div>
+                    </section>
 
+                    <aside class="ems-panel ems-panel--sm gauge-side" id="list-data">
+                        <div class="ems-panel__header">
+                            <span class="gauge-side__dot"></span>
+                            <span class="ems-panel__title"><?= $lang['alltype'] ?></span>
+                        </div>
+                        <div class="ems-panel__body" id="sidebar-body"></div>
+                    </aside>
+
+                </div><!-- /.gauge-body -->
+
+            </div><!-- /.gauge-page -->
+
+<?php include '../components/app-shell-close.php'; ?>
     <?php include "../scripts/scriptjs.html"; ?>
     <?php include "../scripts/scriptjs-gauge.html"; ?>
-</body>
-
-</html>
+<?php include '../components/doc-close.php'; ?>
