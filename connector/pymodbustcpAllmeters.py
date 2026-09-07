@@ -7,7 +7,7 @@ import time
 import threading
 from config import DB_CONFIG, LINE_TOKEN, CHAT_LINE_TOKEN  # ดึง Config มาใช้งาน
 from function import LINE_OA
-from pymodbus.client.sync import ModbusTcpClient
+from pymodbus.client.sync import ModbusTcpClient, ModbusSerialClient
 from pymodbus.exceptions import ConnectionException
 
 # =========================
@@ -22,12 +22,84 @@ DELAY_BETWEEN_READ = 0.05
 
 semaphore = threading.Semaphore(MAX_THREADS)
 
+# RS485 shares one physical bus per serial_port across possibly many meters
+# (different slave_id on the same COM port) — serialize access per port so
+# concurrent threads never open/read the same port at once.
+serial_port_locks = {}
+serial_port_locks_guard = threading.Lock()
+
+BASE_FLOAT_REGISTERS = {
+    "kW": 3059,
+    "kWh": 2699,
+    "kVA": 3075,
+    "kVAh": 2695,
+    "kVAR": 3067,
+    "kVARh": 2687,
+    "Voltage A-N": 3027,
+    "Voltage B-N": 3029,
+    "Voltage C-N": 3031,
+    "Current A": 2999,
+    "Current B": 3001,
+    "Current C": 3003,
+    "Current avg": 3005,
+    "Voltage A_B": 3019,
+    "Voltage B_C": 3021,
+    "Voltage C_A": 3023,
+    "Pf": 3191,
+    "Frequency": 3109,
+}
+
+
+def get_serial_port_lock(port_name):
+    with serial_port_locks_guard:
+        return serial_port_locks.setdefault(port_name, threading.Lock())
+
 
 # =========================
 # Utility
 # =========================
 def hex_to_float(hex_val):
     return struct.unpack("<f", struct.pack("<I", hex_val))[0]
+
+
+def normalize_parity(value):
+    """Map DB parity strings to the single-char code pymodbus expects."""
+    v = str(value or "").strip().lower()
+    if v in ("e", "even"):
+        return "E"
+    if v in ("o", "odd"):
+        return "O"
+    return "N"  # covers 'n', 'none', the stored default 'node', and anything unrecognized
+
+
+def to_int(value, default=None):
+    try:
+        return int(str(value).strip())
+    except (TypeError, ValueError):
+        return default
+
+
+def validate_rs485_fields(meter):
+    """Returns (ok, coerced_fields, error_message)."""
+    serial_port = str(meter.get("serial_port") or "").strip()
+    if not serial_port:
+        return False, {}, "blank serial_port"
+
+    fields = {
+        "baudrate": to_int(meter.get("buad_rate")),
+        "databits": to_int(meter.get("data_bits")),
+        "stopbits": to_int(meter.get("stop_bits")),
+        "slave_id": to_int(meter.get("slave_id")),
+        "quality": to_int(meter.get("quality")),
+        "address": to_int(meter.get("address"), default=0),
+    }
+    missing = [name for name in ("baudrate", "databits", "stopbits", "slave_id", "quality") if fields[name] is None]
+    if missing:
+        return False, {}, f"invalid/missing fields: {', '.join(missing)}"
+
+    fields["serial_port"] = serial_port
+    fields["parity"] = normalize_parity(meter.get("parily"))
+    return True, fields, None
 
 
 def read_float_register(client, start_address, quantity=2, slaveid=1):
@@ -54,6 +126,54 @@ def safe_read(client, addr, quantity, slave):
 
 
 # =========================
+# Protocol readers
+# =========================
+def read_tcp_meter(meter):
+    """Returns (data, error). data is None on connect failure."""
+    client = ModbusTcpClient(meter["ip_address"], meter["port"], timeout=3)
+    if not client.connect():
+        return None, "connect fail"
+    try:
+        data = {}
+        for label, addr in BASE_FLOAT_REGISTERS.items():
+            value = safe_read(client, addr, meter["quality"], meter["slave_id"])
+            data[label] = value if value is not None else "Error"
+            time.sleep(DELAY_BETWEEN_READ)  # 🔥 ลดการยิงถี่
+        return data, None
+    finally:
+        client.close()
+
+
+def read_rs485_meter(meter):
+    """Returns (data, error). data is None on validation/connect failure."""
+    ok, f, err = validate_rs485_fields(meter)
+    if not ok:
+        return None, err
+
+    with get_serial_port_lock(f["serial_port"]):
+        client = ModbusSerialClient(
+            method="rtu",
+            port=f["serial_port"],
+            baudrate=f["baudrate"],
+            bytesize=f["databits"],
+            parity=f["parity"],
+            stopbits=f["stopbits"],
+            timeout=1,
+        )
+        if not client.connect():
+            return None, f"connect fail ({f['serial_port']})"
+        try:
+            data = {}
+            for label, base_addr in BASE_FLOAT_REGISTERS.items():
+                value = safe_read(client, base_addr + f["address"], f["quality"], f["slave_id"])
+                data[label] = value if value is not None else "Error"
+                time.sleep(DELAY_BETWEEN_READ)  # 🔥 ลดการยิงถี่
+            return data, None
+        finally:
+            client.close()
+
+
+# =========================
 # Thread worker
 # =========================
 def process_meter(meter):
@@ -61,45 +181,23 @@ def process_meter(meter):
     with semaphore:  # 🔥 จำกัดจำนวน thread
 
         try:
-            client = ModbusTcpClient(meter["ip_address"], meter["port"], timeout=3)
+            protocol = str(meter.get("protocol") or "").strip().lower()
 
-            if not client.connect():
-                print(f"❌ ID {meter['id']} connect fail")
+            if protocol == "tcp":
+                data, err = read_tcp_meter(meter)
+            elif protocol == "rs485":
+                data, err = read_rs485_meter(meter)
+            else:
+                print(f"⚠️ ID {meter['id']} unknown protocol '{meter.get('protocol')}', skipping")
                 with counter_lock:
                     count_failed_connect += 1
                 return
 
-            data = {}
-
-            float_registers = {
-                "kW": 3059,
-                "kWh": 2699,
-                "kVA": 3075,
-                "kVAh": 2695,
-                "kVAR": 3067,
-                "kVARh": 2687,
-                "Voltage A-N": 3027,
-                "Voltage B-N": 3029,
-                "Voltage C-N": 3031,
-                "Current A": 2999,
-                "Current B": 3001,
-                "Current C": 3003,
-                "Current avg": 3005,
-                "Voltage A_B": 3019,
-                "Voltage B_C": 3021,
-                "Voltage C_A": 3023,
-                "Pf": 3191,
-                "Frequency": 3109,
-            }
-
-            for label, addr in float_registers.items():
-                value = safe_read(client, addr, meter["quality"], meter["slave_id"])
-
-                data[label] = value if value is not None else "Error"
-
-                time.sleep(DELAY_BETWEEN_READ)  # 🔥 ลดการยิงถี่
-
-            client.close()
+            if data is None:
+                print(f"❌ ID {meter['id']} ({protocol}) {err}")
+                with counter_lock:
+                    count_failed_connect += 1
+                return
 
             # === payload ===
             timestamp = datetime.now().isoformat()
