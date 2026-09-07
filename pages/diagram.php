@@ -15,10 +15,10 @@ checkSession();
 </head>
 
 <body style="background-color: <?= $bg ?>; color: <?= $text ?>!important; min-height: 100svh;">
-    <div id="main" class="d-flex" style="min-height: 100svh;">
-        <?php include "../components/sidemenu.php"; ?>
-        <div class="w-100 d-flex flex-column" style="min-height: 100svh;">
-            <?php include "../components/header.php"; ?>
+    <div id="main" class="d-flex flex-column" style="min-height: 100svh;">
+        <?php include "../components/header.php"; ?>
+        <div class="w-100 d-flex flex-column" style="flex: 1 1 auto; min-height: 0;">
+            <?php include "../components/sidemenu.php"; ?>
             <div class="flex-grow-1">
                 <div
                     class="bg-secondary bg-opacity-25 d-flex flex-wrap mx-3 mt-3 gap-3 align-items-center py-2 diag-info-bar">

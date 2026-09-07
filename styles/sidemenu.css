@@ -53,6 +53,23 @@ body {
 body.sm-body-lock { overflow: hidden; }
 
 /* ==============================================
+   SHELL LAYOUT — header.php on top, nav + content below
+   Applies on every page that includes sidemenu.php, whatever the page's
+   own wrapper markup/class is called (.dashboard-wrapper, .ems-shell__main,
+   .page-wrapper, .phasor-main-col, or an unclassed wrapper div) — this only
+   needs to stack #main's two real children (header.php, then that wrapper),
+   at every breakpoint (mobile drawer included: the sidebar itself is
+   position:fixed and doesn't occupy flex space either way).
+   ============================================== */
+#main {
+    display: flex;
+    flex-direction: column;
+}
+#main > header.ems-header {
+    flex-shrink: 0;
+}
+
+/* ==============================================
    HAMBURGER BUTTON
    ============================================== */
 .sm-hamburger {
@@ -97,7 +114,9 @@ body.sm-body-lock { overflow: hidden; }
    ============================================== */
 .sm-overlay {
   position: fixed;
-  inset: 0;
+  /* start below the sticky header so opening the drawer never dims/covers it */
+  top: var(--ems-header-h, 60px);
+  left: 0; right: 0; bottom: 0;
   z-index: 998;
   background: var(--sm-overlay);
   backdrop-filter: blur(6px) saturate(1.4);
@@ -119,7 +138,9 @@ body.sm-body-lock { overflow: hidden; }
    ============================================== */
 .sm-sidebar {
   position: fixed;
-  top: 0; left: 0; bottom: 0;
+  /* start below the sticky header so the drawer slides in under it, not over it */
+  top: var(--ems-header-h, 60px);
+  left: 0; bottom: 0;
   z-index: 999;
   width: var(--sm-width);
   background: var(--sm-bg);
@@ -178,44 +199,15 @@ body.sm-body-lock { overflow: hidden; }
 .sm-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  /* Match the top header height exactly (same token) so the rail's logo block
-     and the sticky header line up — box-sizing:border-box keeps it fixed
-     regardless of the padding overrides below. */
+  justify-content: flex-end;
+  /* Match the top header height exactly (same token) so the rail row and the
+     sticky header line up — box-sizing:border-box keeps it fixed regardless
+     of the padding overrides below. */
   height: var(--ems-header-h, 60px);
   padding: 0 18px;
   border-bottom: 1px solid var(--sm-border);
   flex-shrink: 0;
   transition: border-color var(--sm-dur);
-}
-.sm-logo-wrap {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.sm-logo-icon {
-  width: 40px; height: 40px;
-  background: linear-gradient(135deg, var(--sm-accent), var(--sm-accent-dk));
-  border-radius: 11px;
-  display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 3px 14px var(--sm-accent-glow);
-  flex-shrink: 0;
-}
-.sm-logo-icon i { color: #ffffff; font-size: 18px; }
-.sm-logo-text {
-  font-family: 'Orbitron', monospace;
-  font-size: 15px;
-  font-weight: 700;
-  letter-spacing: 2px;
-  color: var(--sm-accent);
-  line-height: 1.1;
-}
-.sm-logo-sub {
-  font-size: 10px;
-  color: var(--sm-label);
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  margin-top: 2px;
 }
 
 /* ==============================================
@@ -491,29 +483,33 @@ body.sm-body-lock { overflow: hidden; }
   #sidebar_open { display: none; }        /* hamburger hidden when docked */
   .sm-pin { display: inline-flex; }
 
-  /* the docked rail owns the branding — drop the duplicate logo in the header
-     (!important beats Bootstrap's .d-flex utility on the brand anchor) */
-  .ems-header .navbar-brand { display: none !important; }
-
   /* content offset for the docked rail.
-     #main is the flex container on every shell (legacy Pattern A/B and the
-     new .ems-shell); padding-left insets all its flex children without the
-     width:100% / margin overflow problem. .ems-shell--nonav (locations.php
-     wizard, no sidemenu) opts out. Expansion on hover is an overlay — only
-     the pinned state widens this offset. */
-  #main {
+     header.php is now a direct child of #main, full-width, ABOVE the row
+     that holds the rail + page content — so the offset must land on that
+     row (whatever it's called per page: .dashboard-wrapper, .ems-shell__main,
+     .page-wrapper, .phasor-main-col, or an unclassed wrapper div), not on
+     #main itself (that would indent the header too). header.php also emits
+     its own <style> (before <header>) and <script> (after it) as siblings,
+     so this can't be "the very next sibling" (+) — it has to skip those
+     non-rendering tags too (~ :not(script):not(style)) to reach the row.
+     .ems-shell--nonav (locations.php wizard, no sidemenu) opts out.
+     Expansion on hover is an overlay — only the pinned state widens this
+     offset. */
+  #main > header.ems-header ~ *:not(script):not(style) {
     padding-left: var(--ems-rail-w, 64px);
     transition: padding-left var(--sm-dur) var(--sm-ease);
   }
-  #main.ems-shell--nonav {
+  #main.ems-shell--nonav > header.ems-header ~ *:not(script):not(style) {
     padding-left: 0;
   }
-  body.sm-rail-pinned #main:not(.ems-shell--nonav) {
+  body.sm-rail-pinned #main:not(.ems-shell--nonav) > header.ems-header ~ *:not(script):not(style) {
     padding-left: var(--ems-rail-expanded-w, 280px);
   }
 
-  /* the rail itself — sits just above the sticky header so it reads as one
-     continuous column and the expanded panel cleanly overlays content. */
+  /* the rail itself — starts below the sticky header (same top offset as the
+     off-canvas drawer) so its hover-expanded width (up to 260px, z-index 901)
+     never slides over the header, which now spans the full page width above
+     it. The rail only ever overlays page content below the header line. */
   .sm-sidebar {
     transform: none !important;
     visibility: visible !important;
@@ -536,8 +532,6 @@ body.sm-body-lock { overflow: hidden; }
      Scoped under body:not(.sm-rail-pinned) so pinning simply stops these
      rules from applying (no specificity fight, no invalid :not() lists). */
   body:not(.sm-rail-pinned) .sm-sidebar:not(:hover):not(:focus-within) .sm-label,
-  body:not(.sm-rail-pinned) .sm-sidebar:not(:hover):not(:focus-within) .sm-logo-text,
-  body:not(.sm-rail-pinned) .sm-sidebar:not(:hover):not(:focus-within) .sm-logo-sub,
   body:not(.sm-rail-pinned) .sm-sidebar:not(:hover):not(:focus-within) .sm-section,
   body:not(.sm-rail-pinned) .sm-sidebar:not(:hover):not(:focus-within) .sm-arrow,
   body:not(.sm-rail-pinned) .sm-sidebar:not(:hover):not(:focus-within) .sm-footer,

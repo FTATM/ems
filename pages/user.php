@@ -39,9 +39,9 @@ if (!empty($_GET['id'])) {
 
 <body style="background-color: <?= $bg ?>; color: <?= $text ?>!important;">
     <div id="main">
-        <?php include "../components/sidemenu.php"; ?>
+        <?php include "../components/header.php"; ?>
         <div class="page-wrapper">
-            <?php include "../components/header.php"; ?>
+            <?php include "../components/sidemenu.php"; ?>
 
             <div class="page-content">
 

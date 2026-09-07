@@ -13,10 +13,10 @@ include '../components/session.php';
 </head>
 
 <body>
-    <div id="main" class="d-flex" style="height:100svh; overflow:hidden;">
-        <?php include "../components/sidemenu.php"; ?>
-        <div class="w-100 d-flex flex-column" style="height:100svh; overflow:hidden;">
-            <?php include "../components/header.php"; ?>
+    <div id="main" class="d-flex flex-column" style="height:100svh; overflow:hidden;">
+        <?php include "../components/header.php"; ?>
+        <div class="w-100 d-flex flex-column" style="flex: 1 1 auto; min-height: 0; overflow:hidden;">
+            <?php include "../components/sidemenu.php"; ?>
 
             <main class="mndidb-main">
 

@@ -24,15 +24,6 @@
 .report-toolbar .ems-toolbar__group {
     justify-content: center;
 }
-.report-export-group {
-    flex: 1.6;
-}
-.report-export {
-    display: flex;
-    align-items: center;
-    gap: var(--ems-space-2);
-    width: 100%;
-}
 .report-email {
     flex: 1;
     min-width: 0;
@@ -116,19 +107,46 @@
 }
 
 .report-chart-card,
-.report-table-card {
+.report-table-card,
+.report-export-card {
     padding: 0;
     display: flex;
     flex-direction: column;
     min-height: 0;
     overflow: hidden;
 }
-.report-chart-card {
+.report-table-card {
+    flex: 1;
+}
+
+/* ── Chart + Export row (80:20) ── */
+.report-chart-row {
+    display: flex;
+    gap: var(--ems-space-4);
     height: 320px;
     flex-shrink: 0;
 }
-.report-table-card {
+.report-chart-row .report-chart-card {
+    flex: 8 1 0;
+}
+.report-export-card {
+    flex: 2 1 0;
+    min-width: 180px;
+}
+.report-export-body {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--ems-space-3);
+    padding: var(--ems-space-4);
+    overflow-y: auto;
+}
+.report-export-body .report-email {
+    width: 100%;
+}
+.report-export-body .ems-btn {
+    width: 100%;
+    justify-content: center;
 }
 
 /* ── Card head ── */
@@ -282,7 +300,7 @@
         height: auto;
         padding: var(--ems-space-4);
     }
-    .report-chart-card {
+    .report-chart-row {
         height: 260px;
     }
     .report-table-card {
@@ -290,10 +308,29 @@
     }
 }
 @media (max-width: 768px) {
-    .report-export-group {
+    .report-chart-row {
+        flex-direction: column;
+        height: auto;
+    }
+    .report-chart-row .report-chart-card {
+        height: 260px;
+        flex: none;
+    }
+    .report-export-card {
+        flex: none;
+        min-width: 0;
+    }
+    .report-export-body {
+        flex-direction: row;
+        flex-wrap: wrap;
+        overflow-y: visible;
+    }
+    .report-export-body .report-email {
+        width: auto;
         flex: 1 1 100%;
     }
-    .report-export {
-        flex-wrap: wrap;
+    .report-export-body .ems-btn {
+        width: auto;
+        flex: 1;
     }
 }

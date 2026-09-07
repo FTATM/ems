@@ -21,10 +21,10 @@ include '../components/session.php';
 
 <body style="background-color: <?= $bg ?>; color: <?= $text ?>">
     <div id="main">
-        <?php include "../components/sidemenu.php"; ?>
+        <?php include "../components/header.php"; ?>
 
         <div class="dashboard-wrapper">
-            <?php include "../components/header.php"; ?>
+            <?php include "../components/sidemenu.php"; ?>
 
             <div class="dashboard-content">
 

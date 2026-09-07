@@ -206,11 +206,12 @@
         }
     }
 
-    async function fetchRealtimeOfMeters(tid, gid) {
+    async function fetchRealtimeOfMeters(tid, gid, minutes = 0) {
 
         let formfilter = new FormData();
         formfilter.append("tid", tid);
         formfilter.append("gid", gid);
+        if (minutes > 0) formfilter.append("minutes", minutes);
 
         try {
             const res = await fetch("../config/fetch-meters-filter-realtime.php", {

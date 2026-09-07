@@ -22,13 +22,13 @@ try { if (localStorage.getItem('theme') === 'dark') document.documentElement.cla
 </head>
 
 <body style="min-height: 100svh;">
-    <div id="main" class="d-flex" style="min-height: 100svh;">
+    <div id="main" class="d-flex flex-column" style="min-height: 100svh;">
 
-        <?php include "../components/sidemenu.php"; ?>
+        <?php include "../components/header.php"; ?>
 
-        <div class="w-100 d-flex flex-column" style="min-height: 100svh;">
+        <div class="w-100 d-flex flex-column" style="min-height: 0; flex: 1 1 auto;">
 
-            <?php include "../components/header.php"; ?>
+            <?php include "../components/sidemenu.php"; ?>
 
             <!-- ─── Page Header Bar ─── -->
             <div class="allmeter-topbar">

@@ -2,51 +2,31 @@
 include '../components/session.php';
 checkLogin();
 checkSession();
+
+$EMS_PAGE_TITLE = $lang['gvoltage'] . ' - EMS';
+$EMS_SHELL_LOCKED = true;            // monitor page — lock the viewport
+include '../components/doc-open.php';
 ?>
-
-<!DOCTYPE html>
-<html lang="<?= $langCode ?>">
-
-<?php include "../scripts/ref.html"; ?>
-<?php include "../scripts/style.html"; ?>
-
-<head>
-    <meta charset="UTF-8">
-    <title><?= $lang['allmeter'] ?> - EMS</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="stylesheet" href="../styles/phasor.css">
-    <style>
-    /* ─── layout only — colours handled by phasor.css variables ─── */
-    .gauge-layout {
-        padding: 0;
-        margin-top: .75rem;
-    }
-    </style>
-</head>
+    <script>const LANG = <?= json_encode($lang, JSON_UNESCAPED_UNICODE) ?>;</script>
 
-<body>
-    <div id="main" class="d-flex">
-        <?php include "../components/sidemenu.php"; ?>
-        <div class="w-100 d-flex flex-column phasor-main-col">
-            <?php include "../components/header.php"; ?>
-            <div class="w-100 d-flex flex-column phasor-content-wrap">
+<?php include '../components/app-shell-open.php'; ?>
 
-                <!-- ══ FILTER BAR ══ -->
-                <div class="dash-filter-bar"
-                    style="border-radius:0; border-left:none; border-right:none; margin-bottom:0;">
+            <div class="phasor-page">
 
-                    <!-- Meter -->
-                    <div class="dash-filter-group">
-                        <span class="dash-filter-label"><?= $lang['meter'] ?? 'Meter' ?></span>
-                        <select id="select-meters" class="dash-select" onchange="filterMeters()"></select>
+                <!-- ── Filter toolbar ── -->
+                <div class="ems-toolbar phasor-toolbar">
+
+                    <div class="ems-toolbar__group">
+                        <span class="ems-toolbar__label"><?= $lang['meter'] ?? 'Meter' ?></span>
+                        <select id="select-meters" class="ems-select" onchange="filterMeters()"></select>
                     </div>
 
-                    <div class="dash-divider"></div>
+                    <div class="ems-toolbar__divider"></div>
 
-                    <!-- Time range -->
-                    <div class="dash-filter-group">
-                        <span class="dash-filter-label"><?= $lang['datalasttime'] ?></span>
-                        <select id="select-time" class="dash-select" onchange="filterMeters()">
+                    <div class="ems-toolbar__group">
+                        <span class="ems-toolbar__label"><?= $lang['datalasttime'] ?></span>
+                        <select id="select-time" class="ems-select" onchange="filterMeters()">
                             <option selected value="now"><?= $lang['now'] ?> (<?= $lang['live'] ?>)</option>
                             <option value="5"><?= $lang['last'] ?> 5 <?= $lang['minutes'] ?></option>
                             <option value="10"><?= $lang['last'] ?> 10 <?= $lang['minutes'] ?></option>
@@ -65,63 +45,52 @@ checkSession();
                         </select>
                     </div>
 
-                    <div class="dash-divider"></div>
+                    <div class="ems-toolbar__spacer"></div>
 
-                    <!-- Refresh -->
-                    <div class="dash-refresh-wrap">
-                        <div class="phasor-refresh-box">
-                            <span class="material-icons-outlined phasor-refresh-spin">sync</span>
-                            <span class="phasor-refresh-label"><?= $lang['refreshevery'] ?></span>
-                            <input type="number" id="input-refresh" class="phasor-refresh-input" value="30" min="1"
-                                max="60" onchange="setRefreshTime()">
-                            <span class="phasor-refresh-label"><?= $lang['seconds'] ?></span>
-                        </div>
+                    <div class="ems-refresh phasor-refresh">
+                        <span class="ems-refresh__icon"><i class="bi bi-arrow-repeat"></i></span>
+                        <span class="phasor-refresh__label"><?= $lang['refreshevery'] ?></span>
+                        <input type="number" id="input-refresh" class="ems-refresh__input" value="30" min="1"
+                            max="60" onchange="setRefreshTime()">
+                        <span class="phasor-refresh__label"><?= $lang['seconds'] ?></span>
                     </div>
                 </div>
 
-                <div class="w-100 px-3 d-flex flex-column phasor-gauge-wrap">
-
-                    <!-- ══ GAUGE LAYOUT (แทน div#list-gauge เดิม) ══ -->
-                    <div class="gauge-layout">
-
-                        <!-- LEFT: Single gauge with 6 needles -->
-                        <div class="gauge-left-panel">
-                            <div class="gauge-panel-header">
-                                <div>
-                                    <div class="gauge-panel-title"><?= $lang['voltageintegratedgauge'] ?></div>
-                                    <div class="gauge-panel-subtitle">
-                                        <?= $lang['realtime_phase_to_neutral_and_phase_to_phase'] ?></div>
-                                </div>
-                                <div class="live-feed-badge"><span class="live-dot"></span><?= $lang['livefeed'] ?>
-                                </div>
-                            </div>
-                            <div class="big-gauge-wrap">
-                                <canvas id="big-gauge-canvas" width="440" height="440"></canvas>
-                                <canvas id="current-gauge-canvas" width="440" height="440"></canvas>
-                            </div>
-                            <div class="avg-display">
-                                <span class="avg-value" id="avg-voltage-display">0.0</span>
-                                <span class="avg-label">AVG VAC</span>
-                            </div>
-                            <div class="phase-legend" id="phase-legend"></div>
+                <!-- ── Gauge hero ── -->
+                <section class="ems-card phasor-hero">
+                    <div class="ems-card__header phasor-hero__head">
+                        <div class="phasor-hero__titles">
+                            <span class="ems-card__title phasor-hero__title">
+                                <i class="bi bi-speedometer2"></i>
+                                <?= $lang['voltageintegratedgauge'] ?>
+                            </span>
+                            <span class="phasor-hero__subtitle">
+                                <?= $lang['realtime_phase_to_neutral_and_phase_to_phase'] ?>
+                            </span>
                         </div>
+                        <span class="ems-pill phasor-live">
+                            <span class="phasor-live__dot"></span><?= $lang['livefeed'] ?>
+                        </span>
+                    </div>
 
-                        <!-- RIGHT: Metric cards -->
-                        <div class="gauge-right-panel" id="metric-cards"></div>
+                    <div class="phasor-hero__gauge">
+                        <canvas id="big-gauge-canvas"></canvas>
+                    </div>
 
-                    </div><!-- /.gauge-layout -->
+                    <div class="phasor-avg">
+                        <span class="phasor-avg__value" id="avg-voltage-display">0.0</span>
+                        <span class="phasor-avg__label"><?= $lang['avg'] ?> VAC</span>
+                    </div>
 
-                </div><!-- /px-3 -->
+                    <div class="phase-legend" id="phase-legend"></div>
+                </section>
 
-                <?php include "../components/footer.php"; ?>
+                <!-- ── Phase metric cards ── -->
+                <div class="phasor-metrics" id="metric-cards"></div>
 
-            </div><!-- /phasor-content-wrap -->
-        </div>
-    </div>
+            </div><!-- /.phasor-page -->
 
+<?php include '../components/app-shell-close.php'; ?>
     <?php include "../scripts/scriptjs.html"; ?>
     <?php include "../scripts/scriptjs-phasor.html"; ?>
-</body>
-
-
-</html>
+<?php include '../components/doc-close.php'; ?>

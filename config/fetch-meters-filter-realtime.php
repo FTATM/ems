@@ -10,6 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $tid = (int)($_POST['tid'] ?? 0);
     $gid = (int)($_POST['gid'] ?? 0);
+    $minutes = (int)($_POST['minutes'] ?? 0);
 
     if ($tid === 0 && $gid === 0) {
         echo json_encode([
@@ -49,11 +50,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // 🔹 loop data_type ใหม่ทุกครั้ง
             foreach ($data_types as $type) {
 
-                $sql_data = "SELECT value, create_date
-                             FROM meter_data
-                             WHERE meter_id = ? AND type_value_id = ? ORDER BY create_date DESC LIMIT 1";
-                $stmt2 = $conn->prepare($sql_data);
-                $stmt2->bind_param('ii', $meter_id, $type['id']);
+                if ($minutes > 0) {
+                    // ย้อนหลัง $minutes นาที (จำกัดแถวต่อ data_type กัน payload บวม)
+                    $sql_data = "SELECT value, create_date
+                                 FROM meter_data
+                                 WHERE meter_id = ? AND type_value_id = ?
+                                   AND create_date >= (NOW() - INTERVAL ? MINUTE)
+                                 ORDER BY create_date DESC LIMIT 2000";
+                    $stmt2 = $conn->prepare($sql_data);
+                    $stmt2->bind_param('iii', $meter_id, $type['id'], $minutes);
+                } else {
+                    // เดิม: แถวล่าสุดแถวเดียว (ค่า realtime ปกติ)
+                    $sql_data = "SELECT value, create_date
+                                 FROM meter_data
+                                 WHERE meter_id = ? AND type_value_id = ? ORDER BY create_date DESC LIMIT 1";
+                    $stmt2 = $conn->prepare($sql_data);
+                    $stmt2->bind_param('ii', $meter_id, $type['id']);
+                }
                 $stmt2->execute();
                 $data = $stmt2->get_result();
 
