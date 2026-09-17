@@ -28,6 +28,16 @@ checkSession();
                         <div class="meters-sidebar__header">
                             <span class="meters-sidebar__title"><?= $lang['list_of_all_meters'] ?></span>
                             <span class="meters-sidebar__count" id="meter-count">...</span>
+
+                            <!-- สถานะตัวเก็บข้อมูล (Windows service) — เติมโดย refreshCollectorStatus() -->
+                            <div id="collector-status" class="collector-status" title="">
+                                <span class="collector-status__dot"></span>
+                                <span class="collector-status__text"><?= $lang['collector_checking'] ?></span>
+                            </div>
+
+                            <button type="button" class="btn btn-sm btn-primary w-100 mb-2" onclick="openNewMeterForm()">
+                                <i class="bi bi-plus-lg"></i> <?= $lang['add_meter'] ?>
+                            </button>
                             <input id="meter-search" type="text" class="meter-search"
                                 placeholder="<?= $lang['search_meter'] ?>" oninput="filterMeterList()"
                                 autocomplete="off">

@@ -1,0 +1,356 @@
+<script>
+/* ── จัดการรุ่นมิเตอร์ (device profile) และ register map ของแต่ละรุ่น ──
+
+   ยี่ห้อ/รุ่นต่างกัน วางค่าเดียวกันไว้คนละ register คนละ word order คนละตัวคูณ
+   และบางรุ่นตอบที่ input register (FC4) แทน holding register (FC3)
+   หน้านี้คือที่เดียวที่กำหนดเรื่องพวกนี้ — ทั้ง service และปุ่ม Test อ่านจากที่นี่ */
+
+const _lang = JSON.parse(document.getElementById('lang-data').textContent || '{}');
+
+const ENCODINGS = [
+    { value: 'float32_be', label: 'float32 (high word first)' },
+    { value: 'float32_le', label: 'float32 (low word first)' },
+    { value: 'uint32_be',  label: 'uint32 (high word first)' },
+    { value: 'uint16',     label: 'uint16' },
+    { value: 'int16',      label: 'int16 (signed)' },
+];
+
+let models = [];
+let meterTypes = [];
+let selectedModel = null;
+let dataTypes = [];
+let rows = [];          // register map ที่กำลังแก้อยู่ (ยังไม่บันทึก)
+
+document.addEventListener('DOMContentLoaded', init);
+
+async function init() {
+    meterTypes = await fetchJson('../config/fetch-meter-type.php', 'data');
+    await reloadModels();
+}
+
+async function fetchJson(url, key) {
+    try {
+        const response = await fetch(url);
+        const json = await response.json();
+        return key ? (json[key] || []) : json;
+    } catch (e) {
+        alertMessages('error', _lang['error'] || 'Error', String(e), 4000, true);
+        return key ? [] : null;
+    }
+}
+
+async function reloadModels(keepSelectedId) {
+    models = await fetchJson('../config/fetch-meter-models.php', 'data');
+    renderModelList();
+    if (keepSelectedId) {
+        const still = models.find(m => m.id === keepSelectedId);
+        if (still) loadModel(still);
+    }
+}
+
+function renderModelList() {
+    const list = document.getElementById('model-list');
+    const count = document.getElementById('model-count');
+    list.innerHTML = '';
+    if (count) count.textContent = models.length + ' ' + (_lang['list'] || 'items');
+
+    models.forEach(model => {
+        const row = document.createElement('div');
+        row.className = 'meter-row';
+        row.dataset.id = model.id;
+        if (selectedModel && selectedModel.id === model.id) row.classList.add('is-selected');
+
+        // register_count = 0 คือ profile ที่ยังใช้เก็บข้อมูลไม่ได้ ต้องเห็นชัด
+        const incomplete = model.register_count === 0;
+        row.innerHTML = `
+            <span class="status-dot status-dot--${incomplete ? 'off' : 'on'}"></span>
+            <span class="meter-row__name">${escapeHtml(modelLabel(model))}</span>
+            <span class="model-meta">${model.register_count} reg · ${model.meter_count} ${_lang['unit_meters'] || 'meters'}</span>
+        `;
+        row.onclick = () => loadModel(model);
+        list.appendChild(row);
+    });
+}
+
+function modelLabel(model) {
+    return model.brand ? `${model.brand} ${model.name}` : model.name;
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text == null ? '' : String(text);
+    return div.innerHTML;
+}
+
+async function loadModel(model) {
+    const detail = await fetchJson('../config/fetch-register-map.php?model_id=' + encodeURIComponent(model.id));
+    if (!detail || !detail.success) {
+        alertMessages('error', _lang['error'] || 'Error', (detail && detail.message) || '', 4000, true);
+        return;
+    }
+    selectedModel = detail.model;
+    dataTypes = detail.data_types;
+    rows = detail.registers.map(r => ({ ...r }));
+    renderModelList();
+    renderEditor();
+}
+
+function openNewModelForm() {
+    selectedModel = { id: 0, name: '', brand: '', meter_type_id: meterTypes.length ? meterTypes[0].id : 1, note: '' };
+    rows = [];
+    if (!dataTypes.length) {
+        // ยังไม่เคยโหลดรุ่นไหนเลย จึงยังไม่มีรายการชนิดข้อมูล
+        fetchJson('../config/fetch-data_type.php', 'data').then(list => {
+            dataTypes = (list || []).map(d => ({ id: Number(d.id), name: d.name }));
+            renderEditor();
+        });
+    }
+    renderModelList();
+    renderEditor();
+}
+
+function renderEditor() {
+    const box = document.getElementById('model-config');
+    const isNew = !selectedModel.id;
+
+    const typeOpts = meterTypes.map(t =>
+        `<option value="${t.id}" ${String(t.id) === String(selectedModel.meter_type_id) ? 'selected' : ''}>${escapeHtml(t.name)}</option>`
+    ).join('');
+
+    box.innerHTML = `
+        <div class="mcfg-section">
+            <p class="mcfg-section__title">${isNew ? (_lang['new_model'] || 'New model') : escapeHtml(modelLabel(selectedModel))}</p>
+            <div class="mcfg-grid">
+                <div class="mcfg-field">
+                    <label>${_lang['model_brand'] || 'Brand'}</label>
+                    <input id="model-brand" value="${escapeHtml(selectedModel.brand)}" placeholder="Schneider">
+                </div>
+                <div class="mcfg-field">
+                    <label>${_lang['model_name'] || 'Model name'}</label>
+                    <input id="model-name" value="${escapeHtml(selectedModel.name)}" placeholder="PM2100">
+                </div>
+                <div class="mcfg-field">
+                    <label>${_lang['meter_type'] || 'Meter type'}</label>
+                    <select id="model-type">${typeOpts}</select>
+                </div>
+            </div>
+            <div class="mcfg-field" style="margin-top:.85rem">
+                <label>${_lang['model_note'] || 'Note'}</label>
+                <input id="model-note" value="${escapeHtml(selectedModel.note)}"
+                       placeholder="${_lang['model_note_hint'] || 'Datasheet reference, firmware version, quirks...'}">
+            </div>
+        </div>
+
+        <div class="mcfg-section">
+            <p class="mcfg-section__title">${_lang['register_map'] || 'Register map'}</p>
+            <p class="mcfg-hint">${_lang['register_map_hint'] || 'Each row maps one measurement to the register it lives at on this model.'}</p>
+            ${isNew ? `<p class="mcfg-hint">${_lang['save_model_first'] || 'Save the model first, then add its registers.'}</p>` : `
+            <div class="regmap">
+                <div class="regmap__head">
+                    <span>${_lang['reg_value'] || 'Value'}</span>
+                    <span>${_lang['reg_address'] || 'Register'}</span>
+                    <span>FC</span>
+                    <span>${_lang['reg_words'] || 'Words'}</span>
+                    <span>${_lang['reg_encoding'] || 'Encoding'}</span>
+                    <span>${_lang['reg_scale'] || 'Scale'}</span>
+                    <span></span>
+                </div>
+                <div id="regmap-rows"></div>
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-primary mt-2" onclick="addRow()">
+                + ${_lang['reg_add'] || 'Add register'}
+            </button>`}
+        </div>
+
+        <div class="mcfg-footer">
+            ${isNew ? '' : `
+            <button type="button" class="mcfg-btn mcfg-btn--cancel" onclick="cloneModel()">
+                ${_lang['model_clone'] || 'Duplicate'}
+            </button>
+            <button type="button" class="mcfg-btn mcfg-btn--cancel" onclick="deleteModel()">
+                ${_lang['delete'] || 'Delete'}
+            </button>`}
+            <button type="button" class="mcfg-btn mcfg-btn--save" onclick="saveAll()">
+                ${_lang['save'] || 'Save'}
+            </button>
+        </div>
+    `;
+
+    if (!isNew) renderRows();
+}
+
+function renderRows() {
+    const box = document.getElementById('regmap-rows');
+    if (!box) return;
+    box.innerHTML = '';
+
+    rows.forEach((row, index) => {
+        // ชนิดข้อมูลหนึ่งอย่างใช้ได้ครั้งเดียวต่อรุ่น — ซ่อนตัวที่ถูกใช้ไปแล้ว
+        // ไม่งั้นจะบันทึกไม่ผ่านตอนกด Save แล้วต้องมาไล่หาว่าซ้ำตรงไหน
+        const taken = new Set(rows.filter((_, i) => i !== index).map(r => Number(r.data_type_id)));
+        const typeOpts = dataTypes
+            .filter(d => !taken.has(d.id) || d.id === Number(row.data_type_id))
+            .map(d => `<option value="${d.id}" ${d.id === Number(row.data_type_id) ? 'selected' : ''}>${escapeHtml(d.name)}</option>`)
+            .join('');
+
+        const encOpts = ENCODINGS.map(e =>
+            `<option value="${e.value}" ${e.value === row.encoding ? 'selected' : ''}>${e.label}</option>`
+        ).join('');
+
+        // ช่องพิมพ์ใช้ oninput ไม่ใช่ onchange — onchange ยิงตอน blur เท่านั้น
+        // ค่าที่เพิ่งพิมพ์แล้วกด Save ทันทีจึงอาจไม่ถูกเก็บ
+        // ส่วน select ใช้ onchange ได้ เพราะยิงทันทีที่เลือก
+        const line = document.createElement('div');
+        line.className = 'regmap__row';
+        line.innerHTML = `
+            <select onchange="updateRow(${index}, 'data_type_id', this.value)">${typeOpts}</select>
+            <input type="number" value="${row.register}" oninput="updateRow(${index}, 'register', this.value)">
+            <select onchange="updateRow(${index}, 'function_code', this.value)">
+                <option value="3" ${Number(row.function_code) === 3 ? 'selected' : ''}>3</option>
+                <option value="4" ${Number(row.function_code) === 4 ? 'selected' : ''}>4</option>
+            </select>
+            <input type="number" min="1" max="4" value="${row.word_count}" oninput="updateRow(${index}, 'word_count', this.value)">
+            <select onchange="updateRow(${index}, 'encoding', this.value)">${encOpts}</select>
+            <input type="number" step="0.0001" value="${row.scale}" oninput="updateRow(${index}, 'scale', this.value)">
+            <button type="button" class="regmap__del" title="${_lang['delete'] || 'Delete'}" onclick="removeRow(${index})">&times;</button>
+        `;
+        box.appendChild(line);
+    });
+
+    if (!rows.length) {
+        box.innerHTML = `<p class="mcfg-hint" style="padding:.6rem 0">${_lang['reg_empty'] || 'No registers yet — this model cannot be polled until at least one is added.'}</p>`;
+    }
+}
+
+function updateRow(index, field, value) {
+    rows[index][field] = value;
+    // เปลี่ยนชนิดข้อมูลแล้วต้อง render ใหม่ เพื่อให้ตัวเลือกที่ว่างอยู่ในแถวอื่นถูกต้อง
+    if (field === 'data_type_id') renderRows();
+}
+
+function addRow() {
+    const taken = new Set(rows.map(r => Number(r.data_type_id)));
+    const next = dataTypes.find(d => !taken.has(d.id));
+    if (!next) {
+        alertMessages('warning', _lang['reg_all_used'] || 'All measurements mapped', '', 2500);
+        return;
+    }
+    rows.push({
+        data_type_id: next.id,
+        register: 0,
+        word_count: 2,
+        function_code: 3,
+        encoding: 'float32_be',
+        scale: 1,
+    });
+    renderRows();
+}
+
+function removeRow(index) {
+    rows.splice(index, 1);
+    renderRows();
+}
+
+async function saveAll() {
+    const name = document.getElementById('model-name').value.trim();
+    if (!name) {
+        alertMessages('warning', _lang['model_name_required'] || 'Model name is required', '', 2500);
+        return;
+    }
+
+    const form = new FormData();
+    if (selectedModel.id) form.append('id', selectedModel.id);
+    form.append('name', name);
+    form.append('brand', document.getElementById('model-brand').value.trim());
+    form.append('meter_type_id', document.getElementById('model-type').value);
+    form.append('note', document.getElementById('model-note').value.trim());
+
+    const saved = await postJson('../config/save-meter-model.php', form);
+    if (!saved || !saved.success) {
+        alertMessages('error', _lang['error'] || 'Error', (saved && saved.message) || '', 4000, true);
+        return;
+    }
+
+    const modelId = saved.id;
+
+    // บันทึกรุ่นสำเร็จแล้วค่อยบันทึก register map — ถ้าขั้นนี้ล้มเหลว รุ่นยังอยู่
+    // ผู้ใช้แก้แล้วกดใหม่ได้ ไม่ต้องกรอกทั้งฟอร์มใหม่
+    if (selectedModel.id) {
+        const mapForm = new FormData();
+        mapForm.append('model_id', modelId);
+        mapForm.append('registers', JSON.stringify(rows.map(r => ({
+            data_type_id: Number(r.data_type_id),
+            register: Number(r.register),
+            word_count: Number(r.word_count),
+            function_code: Number(r.function_code),
+            encoding: r.encoding,
+            scale: Number(r.scale),
+        }))));
+
+        const mapSaved = await postJson('../config/save-register-map.php', mapForm);
+        if (!mapSaved || !mapSaved.success) {
+            alertMessages('error', _lang['error'] || 'Error', (mapSaved && mapSaved.message) || '', 5000, true);
+            return;
+        }
+    }
+
+    alertMessages('success', _lang['save_success'] || 'Saved', '', 1800);
+    selectedModel = null;
+    await reloadModels(modelId);
+}
+
+async function cloneModel() {
+    const form = new FormData();
+    form.append('id', selectedModel.id);
+    const result = await postJson('../config/clone-meter-model.php', form);
+    if (!result || !result.success) {
+        alertMessages('error', _lang['error'] || 'Error', (result && result.message) || '', 4000, true);
+        return;
+    }
+    alertMessages('success', _lang['model_cloned'] || 'Duplicated', result.copied + ' registers', 2000);
+    selectedModel = null;
+    await reloadModels(result.id);
+}
+
+async function deleteModel() {
+    // alertMessages() ไม่ได้คืน promise ของ Swal จึงใช้ยืนยันไม่ได้ เรียก Swal ตรง
+    const confirmed = await Swal.fire({
+        icon: 'warning',
+        title: _lang['confirm_delete_model'] || 'Delete this model?',
+        text: modelLabel(selectedModel),
+        showCancelButton: true,
+        confirmButtonText: _lang['delete'] || 'Delete',
+        cancelButtonText: _lang['cancel'] || 'Cancel',
+        confirmButtonColor: '#ef4444',
+    });
+    if (!confirmed.isConfirmed) return;
+
+    const form = new FormData();
+    form.append('id', selectedModel.id);
+    const result = await postJson('../config/delete-meter-model.php', form);
+    if (!result || !result.success) {
+        // เคสที่พบบ่อยคือยังมีมิเตอร์ใช้รุ่นนี้อยู่ — บอกจำนวนให้ชัด
+        const detail = result && result.meter_count
+            ? `${result.meter_count} ${_lang['unit_meters'] || 'meters'}`
+            : '';
+        alertMessages('error', (result && result.message) || (_lang['error'] || 'Error'), detail, 4000, true);
+        return;
+    }
+    alertMessages('success', _lang['delete_success'] || 'Deleted', '', 1800);
+    selectedModel = null;
+    rows = [];
+    await reloadModels();
+    document.getElementById('model-config').innerHTML =
+        `<div class="meters-placeholder"><h5>${_lang['select_model'] || 'Select a model'}</h5></div>`;
+}
+
+async function postJson(url, formData) {
+    try {
+        const response = await fetch(url, { method: 'POST', body: formData });
+        return await response.json();
+    } catch (e) {
+        alertMessages('error', _lang['error'] || 'Error', String(e), 4000, true);
+        return null;
+    }
+}
+</script>

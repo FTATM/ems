@@ -1,33 +1,21 @@
-import requests
-import json
+"""LINE alerts for the `notify` table.
+
+WARNING — this script does not do what its name suggests. It pushes a LINE
+message for *every* active notify row on *every* 60s cycle: it never compares
+`mark` / `value_condition` against the meter's actual readings, so there is no
+threshold logic at all and no de-duplication. Treat it as a stub. It is kept
+here only so the existing notify rows aren't orphaned; fixing it is a separate
+piece of work from the collector rewrite.
+
+Config and the LINE helper now come from the ems package rather than from the
+deleted connector/config.py and connector/function.py.
+"""
+
 import mysql.connector
 import time
-from config import DB_CONFIG, LINE_TOKEN # ดึง Config มาใช้งาน
 
-def send_line_oa(token: str, user_id: str, message: str):
-    url = "https://api.line.me/v2/bot/message/push"
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {token}"
-    }
-    data = {
-        "to": user_id,
-        "messages": [
-            {
-                "type": "text",
-                "text": message
-            }
-        ]
-    }
-
-    try:
-        response = requests.post(url, headers=headers, data=json.dumps(data))
-        if response.status_code == 200:
-            print(f"ส่งข้อความหา {user_id} เรียบร้อย")
-        else:
-            print(f"ส่งข้อความไม่สำเร็จ: {response.status_code} {response.text}")
-    except Exception as e:
-        print(f"เกิดข้อผิดพลาดในการส่ง LINE: {e}")
+from ems.settings import DB_CONFIG, LINE_TOKEN
+from ems.notify import push as send_line_oa
 
 # ฟังก์ชันสำหรับสร้างการเชื่อมต่อใหม่
 def get_db_connection():

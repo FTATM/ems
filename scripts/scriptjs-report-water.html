@@ -1,0 +1,172 @@
+<script>
+    let locations = [];
+    let groups = [];
+    let types = [];
+    let meters = [];
+    let allRows = []; // ทุก reading ของทุกมิเตอร์น้ำในกลุ่ม ในช่วงวันที่เลือก
+    const typeMeterID = "2"; // Water
+    const groupID = "<?= $_SESSION['gid']; ?>";
+
+    document.addEventListener("DOMContentLoaded", async () => {
+        setDefaultDates();
+        await fetchAll();
+
+        if (!meters || meters.length === 0) {
+            document.getElementById('ov-empty').hidden = false;
+            document.getElementById('ov-body').style.display = 'none';
+            document.querySelector('.dash-filter-bar').style.display = 'none';
+            setInformation();
+            return;
+        }
+
+        setInformation();
+        populateMeterSelect();
+        await loadReport();
+    });
+
+    function setDefaultDates() {
+        const end = new Date();
+        const start = new Date();
+        start.setDate(start.getDate() - 7);
+        const fmt = (d) => d.toISOString().slice(0, 10);
+        document.getElementById('date-start').value = fmt(start);
+        document.getElementById('date-end').value = fmt(end);
+    }
+
+    async function fetchAll() {
+        locations = (await (await fetch("../config/fetch-locations.php")).json()).data;
+        groups = (await (await fetch("../config/fetch-groups.php")).json()).data;
+        types = (await (await fetch("../config/fetch-data_type.php")).json()).data;
+        meters = await fetchMeters(typeMeterID, groupID);
+    }
+
+    function setInformation() {
+        document.getElementById('location').innerHTML = getNameLocation(groupID);
+        document.getElementById('group').innerHTML = getNameGroup(groupID);
+    }
+
+    function populateMeterSelect() {
+        const select = document.getElementById('select-meters');
+        select.innerHTML = `<option value="">== ${LANG.all} ==</option>` +
+            meters.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
+    }
+
+    function findTypeId(pattern) {
+        const found = types.find(t => pattern.test(t.name || ''));
+        return found ? String(found.id) : null;
+    }
+
+    /* ── โหลดข้อมูลทุกมิเตอร์น้ำในกลุ่ม สำหรับช่วงวันที่เลือก แล้วกรองตามมิเตอร์ที่เลือก (ถ้ามี) ── */
+    async function loadReport() {
+        const startVal = document.getElementById('date-start').value;
+        const endVal = document.getElementById('date-end').value;
+        const startdate = startVal ? `${startVal} 00:00:00` : '';
+        const lastdate = endVal ? `${endVal} 23:59:59` : 'NOW()';
+
+        const flowId = findTypeId(/^flow/i);
+        const velId = findTypeId(/^velocity/i);
+        const posId = findTypeId(/positive.*cumulative/i);
+        const negId = findTypeId(/negative.*cumulative/i);
+
+        showLoading();
+        allRows = [];
+
+        for (const meter of meters) {
+            const form = new FormData();
+            form.append('id', meter.id);
+            form.append('tid', typeMeterID);
+            form.append('gid', groupID);
+            form.append('startdate', startdate);
+            form.append('lastdate', lastdate);
+
+            const res = await fetch('../config/fetch-meter-filterById.php', { method: 'POST', body: form });
+            const json = await res.json();
+            const meterData = json.data?.[meter.id]?.data ?? {};
+
+            const byTime = {};
+            [[flowId, 'flow'], [velId, 'velocity'], [posId, 'poscum'], [negId, 'negcum']].forEach(([tid, key]) => {
+                (tid ? (meterData[tid] || []) : []).forEach(r => {
+                    if (!byTime[r.create_date]) byTime[r.create_date] = { meter_id: meter.id, meter_name: meter.name, create_date: r.create_date };
+                    byTime[r.create_date][key] = r.value;
+                });
+            });
+
+            Object.values(byTime).forEach(row => allRows.push(row));
+        }
+
+        allRows.sort((a, b) => new Date(b.create_date) - new Date(a.create_date));
+        hideLoading();
+        renderTable();
+    }
+
+    function currentFilteredRows() {
+        const meterId = document.getElementById('select-meters').value;
+        return meterId ? allRows.filter(r => String(r.meter_id) === String(meterId)) : allRows;
+    }
+
+    function renderTable() {
+        const rows = currentFilteredRows();
+        const body = document.getElementById('rw-table-body');
+        const fmt = v => v != null ? Number(v).toLocaleString(undefined, { maximumFractionDigits: 2 }) : '—';
+
+        document.getElementById('rw-summary').innerHTML =
+            `<span class="rw-summary__count"><i class="bi bi-list-ul"></i> ${rows.length} ${LANG.rows ?? 'rows'}</span>`;
+
+        if (!rows.length) {
+            body.innerHTML = `<tr><td colspan="6" class="ov-nodata-cell">${LANG.no_data_for_meter ?? 'No data yet'}</td></tr>`;
+            return;
+        }
+
+        body.innerHTML = rows.slice(0, 500).map(r => `
+            <tr>
+                <td>${r.meter_name}</td>
+                <td>${r.create_date}</td>
+                <td>${fmt(r.flow)}</td>
+                <td>${fmt(r.velocity)}</td>
+                <td>${fmt(r.poscum)}</td>
+                <td>${fmt(r.negcum)}</td>
+            </tr>`).join('');
+    }
+
+    /* ── Export: ใช้ SheetJS (โหลดไว้แล้วใน scriptjs.html) ── */
+    function exportRowsForSheet() {
+        return currentFilteredRows().map(r => ({
+            [LANG.nmeters]: r.meter_name,
+            [LANG.datalasttime]: r.create_date,
+            [LANG.group_flow]: r.flow ?? '',
+            [LANG.group_velocity]: r.velocity ?? '',
+            [LANG.positive_cumulative]: r.poscum ?? '',
+            [LANG.negative_cumulative]: r.negcum ?? '',
+        }));
+    }
+
+    function reportFileName(ext) {
+        const start = document.getElementById('date-start').value;
+        const end = document.getElementById('date-end').value;
+        return `water-report_${start}_to_${end}.${ext}`;
+    }
+
+    function exportExcel() {
+        const rows = exportRowsForSheet();
+        if (!rows.length) {
+            alertMessages('warning', '', LANG.no_data_for_meter ?? 'No data', 2000);
+            return;
+        }
+        const ws = XLSX.utils.json_to_sheet(rows);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Water Report');
+        XLSX.writeFile(wb, reportFileName('xlsx'));
+    }
+
+    function exportCsv() {
+        const rows = exportRowsForSheet();
+        if (!rows.length) {
+            alertMessages('warning', '', LANG.no_data_for_meter ?? 'No data', 2000);
+            return;
+        }
+        const ws = XLSX.utils.json_to_sheet(rows);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Water Report');
+        XLSX.writeFile(wb, reportFileName('csv'), { bookType: 'csv' });
+    }
+</script>

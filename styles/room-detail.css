@@ -1,0 +1,146 @@
+/* ============================================
+   Room Detail Page Styles — room-detail.css
+   Loaded alongside overview-room.css (shares its tokens)
+   ============================================ */
+
+.rd-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-shrink: 0;
+}
+
+.rd-breadcrumb__sep { color: var(--text-muted); opacity: 0.6; }
+
+.rd-breadcrumb__current {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.4rem;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    color: var(--text-heading);
+}
+.rd-breadcrumb__current .bi { color: var(--primary); font-size: 1.2rem; }
+
+.rd-grid {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.rd-card {
+    background: var(--bg-card);
+    border: 1.5px solid var(--border-card);
+    border-radius: 14px;
+    padding: 1rem 1.2rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.rd-card__title {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-heading);
+    margin-bottom: 0.75rem;
+}
+.rd-card__title .bi { color: var(--primary); }
+
+.rd-info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.85rem;
+}
+.rd-info-grid > div > div {
+    color: var(--text-card);
+    font-weight: 600;
+}
+
+.rd-tenant__name {
+    font-weight: 700;
+    color: var(--text-card);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 0.4rem;
+}
+.rd-tenant__name .bi { color: var(--primary); font-size: 1.2rem; }
+
+.rd-tenant__meta {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    font-size: 0.82rem;
+    color: var(--text-body);
+    margin-bottom: 0.3rem;
+}
+
+.rd-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.85rem;
+    margin-bottom: 1.2rem;
+}
+
+.rd-stat {
+    background: var(--bg-card);
+    border: 1.5px solid var(--border-card);
+    border-radius: 12px;
+    padding: 0.85rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.rd-stat__label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+}
+
+.rd-stat__value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-heading);
+}
+
+.rd-stat--ok .rd-stat__value { color: var(--ok); }
+.rd-stat--warn .rd-stat__value { color: var(--busy); }
+
+/* ── Page-level split: rd (ซ้าย, ข้อมูล/การ์ด/สรุปยอด) 70% : ov (ขวา, ตารางประวัติ) 30% ──
+   ใช้ fr ตามธรรมเนียมเดิมของไฟล์นี้ (ดู .rd-grid ด้านบน) ไม่ใช้ % เพื่อให้สัดส่วนคงที่
+   โดยไม่ต้องคิดเผื่อ gap/padding เอง */
+.rd-split {
+    display: grid;
+    grid-template-columns: 7fr 3fr;
+    gap: 1rem;
+    align-items: start;   /* แต่ละฝั่งสูงตามเนื้อหาจริง ไม่ยืดเท่ากัน — จำเป็นสำหรับ sticky ด้านล่าง */
+}
+
+.rd-split__main,
+.rd-split__side {
+    min-width: 0;   /* กัน grid item ดันความกว้างเกินเมื่อเนื้อหาข้างในบังคับความกว้างขั้นต่ำ (เช่นตาราง) */
+}
+
+.rd-split__side {
+    position: sticky;
+    top: 0;   /* .ov-content คือ scroll container ที่ใกล้ที่สุด (overflow-y:auto) จึง sticky ได้ทันทีโดยไม่ต้องพึ่ง JS */
+}
+
+@media (max-width: 800px) {
+    .rd-grid { grid-template-columns: 1fr; }
+    .rd-stats { grid-template-columns: 1fr; }
+    .rd-info-grid { grid-template-columns: 1fr; }
+}
+
+/* breakpoint แยกจากด้านบน (900 ไม่ใช่ 800): อันบนคือยุบการ์ดคู่ในแถวเดียวกัน
+   อันนี้คือยุบทั้งเลย์เอาต์หน้า ต้องยุบเร็วกว่าไม่ให้คอลัมน์ขวาแคบจนตารางอ่านไม่ออก */
+@media (max-width: 900px) {
+    .rd-split { grid-template-columns: 1fr; }
+    .rd-split__side { position: static; }   /* ปิด sticky ตอนคอลัมน์เดียว ไม่งั้นฝั่งขวาจะค้างทับเนื้อหา */
+}

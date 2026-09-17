@@ -1,0 +1,524 @@
+<script>
+    function statusInfo(status) {
+        const s = (status || '').toLowerCase();
+        if (s === 'empty' || s === 'available') return { cls: 'room-status--empty', label: LANG.room_status_empty };
+        if (s === 'maintenance') return { cls: 'room-status--maintenance', label: LANG.room_status_maintenance };
+        if (s === 'occupied') return { cls: 'room-status--occupied', label: LANG.room_status_occupied };
+        return { cls: 'room-status--occupied', label: status || '—' };
+    }
+
+    function fmtMoney(n) {
+        return n == null ? '—' : Number(n).toLocaleString(undefined, { maximumFractionDigits: 2 }) + ' ฿';
+    }
+
+    function goBack() {
+        window.location.href = 'overview-room.php';
+    }
+
+    let buildingId = null;
+    let currentRoom = null;
+    let currentContracts = [];
+    let currentBills = [];
+    let currentPayments = [];
+    let allUsers = [];
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        await loadRoomData(true);
+    });
+
+    async function loadRoomData(first = false) {
+        const form = new FormData();
+        form.append('id', ROOM_ID);
+        const res = await fetch('../config/fetch-room-detail.php', { method: 'POST', body: form });
+        const data = await res.json();
+
+        if (first) document.getElementById('rd-loading').hidden = true;
+
+        if (!data.success) {
+            document.getElementById('rd-room-name').textContent = data.message || 'Error';
+            return;
+        }
+
+        buildingId = data.room.building_id;
+        document.getElementById('rd-body').hidden = false;
+        render(data);
+        await renderMeterAssignments();
+    }
+
+    function render(data) {
+        const room = data.room;
+        currentRoom = room;
+        currentContracts = data.contracts || [];
+        const st = statusInfo(room.status);
+
+        document.getElementById('rd-room-name').innerHTML =
+            `<i class="bi bi-door-closed-fill"></i> ${room.name || '—'} <span class="room-status-badge ${st.cls}">${st.label}</span>`;
+
+        document.getElementById('rd-room-info').innerHTML = `
+            <div><span class="ov-label">${LANG.room_type}</span><div>${room.type || '—'}</div></div>
+            <div><span class="ov-label">${LANG.room_size}</span><div>${room.size_sqm ? room.size_sqm + ' m²' : '—'}</div></div>
+            <div><span class="ov-label">${LANG.room_price}</span><div>${fmtMoney(room.price_per_month)}</div></div>
+            <div>
+                <span class="ov-label">${LANG.room_status}</span>
+                <select class="form-select form-select-sm" id="rd-status-select" onchange="updateRoomStatus(this.value)">
+                    ${['empty', 'occupied', 'maintenance'].map(s => {
+                        const info = statusInfo(s);
+                        return `<option value="${s}" ${room.status === s ? 'selected' : ''}>${info.label}</option>`;
+                    }).join('')}
+                </select>
+            </div>
+        `;
+
+        const activeContract = (data.contracts || []).find(c => (c.status || '').toLowerCase() === 'active') || data.contracts[0];
+        document.getElementById('rd-tenant-info').innerHTML = activeContract ? `
+            <div class="rd-tenant">
+                <div class="rd-tenant__name"><i class="bi bi-person-circle"></i> ${activeContract.full_name || '—'}</div>
+                <div class="rd-tenant__meta">
+                    ${activeContract.phone ? `<span><i class="bi bi-telephone"></i> ${activeContract.phone}</span>` : ''}
+                    ${activeContract.email ? `<span><i class="bi bi-envelope"></i> ${activeContract.email}</span>` : ''}
+                </div>
+                <div class="rd-tenant__meta">
+                    <span><i class="bi bi-calendar-range"></i> ${activeContract.start_date || '—'} → ${activeContract.end_date || '—'}</span>
+                </div>
+            </div>
+        ` : `<p class="ov-nodata">${LANG.room_no_tenant}</p>`;
+
+        const t = data.totals || {};
+        document.getElementById('rd-stats').innerHTML = `
+            <div class="rd-stat">
+                <span class="rd-stat__label">${LANG.room_latest_bill} — ${LANG.total_amount || 'Total'}</span>
+                <span class="rd-stat__value">${fmtMoney(t.total_billed)}</span>
+            </div>
+            <div class="rd-stat rd-stat--ok">
+                <span class="rd-stat__label">${LANG.status} : Paid</span>
+                <span class="rd-stat__value">${fmtMoney(t.total_paid)}</span>
+            </div>
+            <div class="rd-stat rd-stat--warn">
+                <span class="rd-stat__label">${LANG.status} : Unpaid</span>
+                <span class="rd-stat__value">${fmtMoney(t.total_outstanding)}</span>
+            </div>
+        `;
+
+        document.getElementById('rd-contracts-body').innerHTML = (data.contracts && data.contracts.length)
+            ? data.contracts.map(c => `
+                <tr>
+                    <td>${c.full_name || '—'}${c.phone ? ` <span class="ov-muted">(${c.phone})</span>` : ''}</td>
+                    <td>${c.start_date || '—'} → ${c.end_date || '—'}</td>
+                    <td>${c.status || '—'}</td>
+                </tr>`).join('')
+            : `<tr><td colspan="3" class="ov-nodata-cell">${LANG.room_no_tenant}</td></tr>`;
+
+        const printLink = document.getElementById('rd-print-bill-link');
+        if (t.latest_cycle) {
+            printLink.href = `bills.php?room_id=${ROOM_ID}&start=${t.latest_cycle.startbill_date}&end=${t.latest_cycle.endbill_date}`;
+            printLink.hidden = false;
+        } else {
+            printLink.hidden = true;
+        }
+
+        currentBills = data.bills || [];
+        document.getElementById('rd-bills-body').innerHTML = currentBills.length
+            ? currentBills.map(b => {
+                const isPaid = (b.paymentstatus || '').toLowerCase() === 'paid';
+                const cls = isPaid ? 'room-status--empty' : (b.paymentstatus === 'Partially Paid' ? 'room-status--maintenance' : 'room-status--occupied');
+                return `
+                <tr>
+                    <td>${b.type || '—'}</td>
+                    <td>${b.startbill_date || '—'} → ${b.endbill_date || '—'}</td>
+                    <td>${fmtMoney(b.totalamount)}</td>
+                    <td><span class="room-status-badge ${cls}">${b.paymentstatus || '—'}</span></td>
+                    <td>${isPaid ? '' : `<button type="button" class="btn-icon-sm" title="${LANG.record_payment}" onclick="openPaymentModal(${b.id})"><i class="bi bi-cash-coin"></i></button>`}</td>
+                </tr>`;
+            }).join('')
+            : `<tr><td colspan="5" class="ov-nodata-cell">${LANG.room_no_bill}</td></tr>`;
+
+        currentPayments = data.payments || [];
+        document.getElementById('rd-payments-body').innerHTML = (data.payments && data.payments.length)
+            ? data.payments.map(p => `
+                <tr>
+                    <td>${p.payment_date || '—'}</td>
+                    <td>${fmtMoney(p.amount_paid)}</td>
+                    <td>${p.note || p.payment_method || '—'}</td>
+                </tr>`).join('')
+            : `<tr><td colspan="3" class="ov-nodata-cell">${LANG.room_no_bill}</td></tr>`;
+    }
+
+    async function updateRoomStatus(status) {
+        const form = new FormData();
+        form.append('action', 'status');
+        form.append('id', ROOM_ID);
+        form.append('value', status);
+        const res = await fetch('../config/update-room.php', { method: 'POST', body: form });
+        const data = await res.json();
+        if (!data.success) {
+            alertMessages('error', '', data.message, 3000, true);
+        }
+    }
+
+    /* ── จัดการผู้เช่า/สัญญา ── */
+    function activeContract() {
+        return currentContracts.find(c => (c.status || '').toLowerCase() === 'active') || null;
+    }
+
+    async function openTenantModal() {
+        const active = activeContract();
+        const body = document.getElementById('tenant-modal-body');
+        const submitBtn = document.getElementById('tenant-modal-submit-btn');
+
+        if (active) {
+            document.getElementById('tenantModalLabel').textContent = LANG.manage_tenant;
+            body.innerHTML = `
+                <div class="mb-3">
+                    <label class="form-label">${LANG.room_tenant}</label>
+                    <input type="text" class="form-control" id="tn-full-name" value="${active.full_name || ''}">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">${LANG.phone}</label>
+                    <input type="text" class="form-control" id="tn-phone" value="${active.phone || ''}">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">${LANG.address}</label>
+                    <textarea class="form-control" id="tn-address" rows="2">${active.address || ''}</textarea>
+                </div>
+                <hr>
+                <div class="mb-3">
+                    <label class="form-label">${LANG.contract_end_date}</label>
+                    <input type="date" class="form-control" id="tn-end-date" value="${active.end_date || ''}">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">${LANG.contract_status}</label>
+                    <select class="form-select" id="tn-status">
+                        <option value="active">${LANG.contract_status_active}</option>
+                        <option value="ended">${LANG.contract_status_ended}</option>
+                    </select>
+                </div>
+            `;
+            submitBtn.onclick = () => submitEditTenant(active);
+        } else {
+            document.getElementById('tenantModalLabel').textContent = LANG.assign_tenant;
+
+            if (!allUsers.length) {
+                const res = await fetch('../config/fetch-user.php');
+                const json = await res.json();
+                allUsers = json.data || [];
+            }
+            const userOpts = allUsers.map(u =>
+                `<option value="${u.id}">${u.full_name || u.username} (${u.phone || '-'})</option>`
+            ).join('');
+
+            const today = new Date().toISOString().slice(0, 10);
+            const nextYear = new Date();
+            nextYear.setFullYear(nextYear.getFullYear() + 1);
+
+            body.innerHTML = `
+                <div class="mb-3">
+                    <label class="form-label">${LANG.pick_existing_tenant}</label>
+                    <select class="form-select" id="tn-existing-user">
+                        <option value="">— ${LANG.select || 'Select'} —</option>
+                        ${userOpts}
+                    </select>
+                </div>
+                <p class="ov-muted" style="text-align:center; margin:0.5rem 0;">${LANG.or_new_tenant}</p>
+                <div class="mb-3">
+                    <label class="form-label">${LANG.room_tenant} *</label>
+                    <input type="text" class="form-control" id="tn-full-name">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">${LANG.phone}</label>
+                    <input type="text" class="form-control" id="tn-phone">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">${LANG.email}</label>
+                    <input type="text" class="form-control" id="tn-email">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">${LANG.id_card}</label>
+                    <input type="text" class="form-control" id="tn-id-card">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">${LANG.address}</label>
+                    <textarea class="form-control" id="tn-address" rows="2"></textarea>
+                </div>
+                <hr>
+                <div class="mb-3">
+                    <label class="form-label">${LANG.contract_start_date}</label>
+                    <input type="date" class="form-control" id="tn-start-date" value="${today}">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">${LANG.contract_end_date}</label>
+                    <input type="date" class="form-control" id="tn-end-date" value="${nextYear.toISOString().slice(0, 10)}">
+                </div>
+            `;
+            submitBtn.onclick = submitAssignTenant;
+        }
+
+        new bootstrap.Modal(document.getElementById('tenantModal')).show();
+    }
+
+    async function submitAssignTenant() {
+        const existingUserId = document.getElementById('tn-existing-user').value;
+        const fullName = document.getElementById('tn-full-name').value.trim();
+
+        if (!existingUserId && !fullName) {
+            alertMessages('error', '', LANG.room_tenant, 2500);
+            return;
+        }
+
+        const form = new FormData();
+        form.append('room_id', ROOM_ID);
+        if (existingUserId) form.append('user_id', existingUserId);
+        form.append('full_name', fullName);
+        form.append('phone', document.getElementById('tn-phone').value.trim());
+        form.append('email', document.getElementById('tn-email').value.trim());
+        form.append('id_card', document.getElementById('tn-id-card').value.trim());
+        form.append('address', document.getElementById('tn-address').value.trim());
+        form.append('start_date', document.getElementById('tn-start-date').value);
+        form.append('end_date', document.getElementById('tn-end-date').value);
+
+        const res = await fetch('../config/create-tenant.php', { method: 'POST', body: form });
+        const data = await res.json();
+        bootstrap.Modal.getInstance(document.getElementById('tenantModal')).hide();
+
+        if (data.success) {
+            await loadRoomData(false);
+        } else {
+            alertMessages('error', '', data.message, 3000, true);
+        }
+    }
+
+    async function submitEditTenant(active) {
+        const fullName = document.getElementById('tn-full-name').value.trim();
+        const phone = document.getElementById('tn-phone').value.trim();
+        const address = document.getElementById('tn-address').value.trim();
+        const endDate = document.getElementById('tn-end-date').value;
+        const status = document.getElementById('tn-status').value;
+
+        await Promise.all([
+            updateUserField(active.user_id, 'full_name', fullName),
+            updateUserField(active.user_id, 'phone', phone),
+            updateUserField(active.user_id, 'address', address),
+        ]);
+
+        const cform = new FormData();
+        cform.append('id', active.id);
+        cform.append('end_date', endDate);
+        cform.append('status', status);
+        const cres = await fetch('../config/update-contract.php', { method: 'POST', body: cform });
+        const cdata = await cres.json();
+
+        bootstrap.Modal.getInstance(document.getElementById('tenantModal')).hide();
+
+        if (cdata.success) {
+            await loadRoomData(false);
+        } else {
+            alertMessages('error', '', cdata.message, 3000, true);
+        }
+    }
+
+    async function updateUserField(userId, action, value) {
+        const form = new FormData();
+        form.append('id', userId);
+        form.append('action', action);
+        form.append('value', value);
+        return fetch('../config/update-user.php', { method: 'POST', body: form });
+    }
+
+    /* ── แก้ไขห้อง: ชื่อ/ประเภท/ขนาด/ราคา/หมายเหตุ ── */
+    function openEditRoomModal() {
+        if (!currentRoom) return;
+        document.getElementById('er-name').value = currentRoom.name || '';
+        document.getElementById('er-type').value = currentRoom.type || '';
+        document.getElementById('er-size').value = currentRoom.size_sqm ?? '';
+        document.getElementById('er-price').value = currentRoom.price_per_month ?? '';
+        document.getElementById('er-note').value = currentRoom.note || '';
+        new bootstrap.Modal(document.getElementById('editRoomModal')).show();
+    }
+
+    async function submitEditRoom() {
+        const name = document.getElementById('er-name').value.trim();
+        if (!name) return;
+
+        const form = new FormData();
+        form.append('action', 'edit');
+        form.append('id', ROOM_ID);
+        form.append('name', name);
+        form.append('type', document.getElementById('er-type').value.trim());
+        form.append('size_sqm', document.getElementById('er-size').value);
+        form.append('price_per_month', document.getElementById('er-price').value);
+        form.append('note', document.getElementById('er-note').value.trim());
+
+        const res = await fetch('../config/update-room.php', { method: 'POST', body: form });
+        const data = await res.json();
+        bootstrap.Modal.getInstance(document.getElementById('editRoomModal')).hide();
+
+        if (data.success) {
+            await loadRoomData(false);
+        } else {
+            alertMessages('error', '', data.message, 3000, true);
+        }
+    }
+
+    /* ── มิเตอร์ที่ผูกกับห้องนี้: ไฟฟ้า (tid=1) + น้ำ (tid=2) ── */
+    let currentAssigned = { 1: null, 2: null }; // typeId -> meter_id ที่ผูกอยู่ตอนนี้ (ไว้ยกเลิกเมื่อเปลี่ยน/ล้าง)
+
+    async function renderMeterAssignments() {
+        if (!buildingId) return;
+
+        const [elecMeters, waterMeters] = await Promise.all([
+            fetchMeters('1', buildingId),
+            fetchMeters('2', buildingId),
+        ]);
+
+        currentAssigned[1] = fillMeterSelect('rd-meter-elec', elecMeters);
+        currentAssigned[2] = fillMeterSelect('rd-meter-water', waterMeters);
+    }
+
+    /* คืนค่า meter_id ที่ผูกกับห้องนี้อยู่ (ถ้ามี) */
+    function fillMeterSelect(selectId, meterList) {
+        const select = document.getElementById(selectId);
+        if (!select) return null;
+
+        // แสดงเฉพาะมิเตอร์ที่ยังไม่ผูกห้องใด หรือผูกกับห้องนี้อยู่แล้ว
+        const available = (meterList || []).filter(m => !m.room_id || String(m.room_id) === String(ROOM_ID));
+        const assigned = (meterList || []).find(m => String(m.room_id) === String(ROOM_ID));
+
+        select.innerHTML = `<option value="">— ${LANG.select || 'Select'} —</option>` +
+            available.map(m => `<option value="${m.id}" ${assigned && String(assigned.id) === String(m.id) ? 'selected' : ''}>${m.name}</option>`).join('');
+
+        return assigned ? assigned.id : null;
+    }
+
+    async function assignMeter(typeId, meterId) {
+        const previouslyAssigned = currentAssigned[typeId];
+
+        // ถ้ามีมิเตอร์อื่นผูกห้องนี้อยู่ก่อน และเปลี่ยนเป็นตัวใหม่/ล้างค่า ต้องยกเลิกตัวเดิมก่อน
+        if (previouslyAssigned && String(previouslyAssigned) !== String(meterId)) {
+            const unassignForm = new FormData();
+            unassignForm.append('meter_id', previouslyAssigned);
+            unassignForm.append('room_id', '');
+            await fetch('../config/assign-room-meter.php', { method: 'POST', body: unassignForm });
+        }
+
+        if (meterId) {
+            const form = new FormData();
+            form.append('meter_id', meterId);
+            form.append('room_id', ROOM_ID);
+            const res = await fetch('../config/assign-room-meter.php', { method: 'POST', body: form });
+            const data = await res.json();
+            if (!data.success) {
+                alertMessages('error', '', data.message, 3000, true);
+            }
+        }
+
+        await renderMeterAssignments();
+    }
+
+    /* ── บันทึกการชำระเงิน ── */
+    function openPaymentModal(billId) {
+        const bill = currentBills.find(b => Number(b.id) === Number(billId));
+        if (!bill) return;
+
+        const alreadyPaid = currentPayments
+            .filter(p => Number(p.bill_id) === Number(billId))
+            .reduce((s, p) => s + Number(p.amount_paid || 0), 0);
+        const remaining = Math.max(0, Number(bill.totalamount) - alreadyPaid);
+
+        document.getElementById('pay-bill-id').value = billId;
+        document.getElementById('pay-bill-summary').textContent =
+            `${bill.type} (${bill.startbill_date} → ${bill.endbill_date}) — ${LANG.total_amount || 'Total'}: ${fmtMoney(bill.totalamount)}`;
+        document.getElementById('pay-amount').value = remaining.toFixed(2);
+        document.getElementById('pay-date').value = new Date().toISOString().slice(0, 10);
+        document.getElementById('pay-method').value = 'cash';
+        document.getElementById('pay-note').value = '';
+
+        new bootstrap.Modal(document.getElementById('paymentModal')).show();
+    }
+
+    async function submitPayment() {
+        const billId = document.getElementById('pay-bill-id').value;
+        const amount = document.getElementById('pay-amount').value;
+        const date = document.getElementById('pay-date').value;
+
+        if (!amount || Number(amount) <= 0 || !date) {
+            alertMessages('error', '', LANG.payment_amount, 2500);
+            return;
+        }
+
+        const form = new FormData();
+        form.append('bill_id', billId);
+        form.append('amount_paid', amount);
+        form.append('payment_date', date);
+        form.append('payment_method', document.getElementById('pay-method').value);
+        form.append('note', document.getElementById('pay-note').value.trim());
+
+        const res = await fetch('../config/record-payment.php', { method: 'POST', body: form });
+        const data = await res.json();
+        bootstrap.Modal.getInstance(document.getElementById('paymentModal')).hide();
+
+        if (data.success) {
+            await loadRoomData(false);
+        } else {
+            alertMessages('error', '', data.message, 3000, true);
+        }
+    }
+
+    /* ── ออกบิล ── */
+    function openGenerateBillModal() {
+        document.getElementById('gb-result').innerHTML = '';
+        const end = new Date();
+        const start = new Date();
+        start.setDate(1);
+        const fmt = d => d.toISOString().slice(0, 10);
+        document.getElementById('gb-start-date').value = fmt(start);
+        document.getElementById('gb-end-date').value = fmt(end);
+        new bootstrap.Modal(document.getElementById('generateBillModal')).show();
+    }
+
+    async function submitGenerateBill() {
+        const start = document.getElementById('gb-start-date').value;
+        const end = document.getElementById('gb-end-date').value;
+        const resultEl = document.getElementById('gb-result');
+        const btn = document.getElementById('gb-submit-btn');
+
+        if (!start || !end) {
+            resultEl.innerHTML = `<p class="ov-nodata">${LANG.from} / ${LANG.to}</p>`;
+            return;
+        }
+
+        btn.disabled = true;
+        resultEl.innerHTML = `<div class="dash-skeleton"><div class="dash-skeleton-line" style="width:70%"></div></div>`;
+
+        const form = new FormData();
+        form.append('room_id', ROOM_ID);
+        form.append('start_date', start);
+        form.append('end_date', end);
+
+        const res = await fetch('../config/generate-room-bill.php', { method: 'POST', body: form });
+        const data = await res.json();
+        btn.disabled = false;
+
+        if (!data.success) {
+            resultEl.innerHTML = `<p class="ov-nodata">${data.message || 'Error'}</p>`;
+            return;
+        }
+
+        resultEl.innerHTML = `
+            <table class="ov-table" style="margin-top:0.5rem;">
+                <thead><tr><th>${LANG.room_type}</th><th>${LANG.room_price}</th><th>${LANG.status}</th></tr></thead>
+                <tbody>
+                    ${data.lines.map(l => `
+                        <tr>
+                            <td>${l.type}</td>
+                            <td>${l.created ? fmtMoney(l.totalamount) : '—'}</td>
+                            <td>${l.created
+                                ? `<span class="room-status-badge room-status--empty">${LANG.save || 'OK'}</span>`
+                                : `<span class="ov-muted">${l.reason || '—'}</span>`}</td>
+                        </tr>`).join('')}
+                </tbody>
+            </table>
+            <p style="margin-top:0.6rem; font-weight:700;">${LANG.total_amount || 'Total'}: ${fmtMoney(data.grand_total)}</p>
+        `;
+
+        await loadRoomData(false);
+    }
+</script>

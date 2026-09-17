@@ -28,3 +28,13 @@ function calculateBill($consumption)
     $total = $totalEnergy + $serviceCharge + $fuelAdj + $vat;
     return ['breakdown' => $breakdown, 'totalEnergy' => $totalEnergy, 'serviceCharge' => $serviceCharge, 'vat' => $vat, 'total' => $total];
 }
+
+/*
+ * calculateWaterBill — อัตราคงที่ต่อหน่วย (ไม่ใช่ขั้นบันได เหมือนไฟฟ้า)
+ * total = จำนวนหน่วยที่ใช้ x ราคาต่อหน่วย
+ */
+function calculateWaterBill($consumption, $unitPrice)
+{
+    $total = max(0, $consumption) * $unitPrice;
+    return ['unitPrice' => $unitPrice, 'consumption' => $consumption, 'total' => $total];
+}

@@ -1,0 +1,254 @@
+<script>
+/* ================================================================
+   scriptjs-allmeter-water.html — ทุกมิเตอร์น้ำในกลุ่ม
+   KPI tiles + ตารางแสดงเฉพาะคอลัมน์ที่เกี่ยวกับน้ำ (Flow / Velocity / Cumulative)
+   ================================================================ */
+
+let meters = [];
+let types = [];
+let groupedTypes = [];
+let searchTerm = '';
+const rowsPerPage = 12;
+let currentPage = 1;
+let refreshIntervalId;
+
+const typeMeterID = "2"; // Water
+const groupID = "<?= $_SESSION['gid']; ?>";
+
+document.addEventListener("DOMContentLoaded", async () => {
+    await loadTypes();
+    await refreshMeters();
+    createTable();
+    updateData(1);
+    setRefreshTime();
+});
+
+/* ── โหลดชนิดข้อมูลที่เกี่ยวกับน้ำเท่านั้น ── */
+async function loadTypes() {
+    try {
+        const res = await fetch("../config/fetch-data_type.php");
+        const json = await res.json();
+        types = (json.data || [])
+            .filter(t => Number(t.is_deleted) === 0)
+            .filter(t => /flow|velocity|cumulative/i.test(t.name || ''))
+            .sort((a, b) => Number(a.id) - Number(b.id));
+    } catch (e) {
+        console.error("โหลด data_type ไม่สำเร็จ:", e);
+        types = [];
+    }
+}
+
+/* ── โหลด/รีเฟรชค่ามิเตอร์ ── */
+async function refreshMeters() {
+    meters = await fetchRealtimeOfMeters(typeMeterID, groupID);
+    renderKPI();
+}
+
+async function process() {
+    await refreshMeters();
+    updateData(currentPage);
+}
+
+function valueByType(meter, typeId) {
+    const hit = (meter.data || []).find(d => String(d.type_id) === String(typeId));
+    if (!hit) return '—';
+    const v = hit.value;
+    return (v === null || v === undefined || v === '') ? '—' : v;
+}
+
+function groupKeyFor(name) {
+    const n = (name || '').trim();
+    if (/^flow/i.test(n)) return 'group_flow';
+    if (/^velocity/i.test(n)) return 'group_velocity';
+    if (/cumulative/i.test(n)) return 'group_cumulative';
+    return 'group_other';
+}
+
+function groupTypes(list) {
+    const order = ['group_flow', 'group_velocity', 'group_cumulative', 'group_other'];
+    const buckets = {};
+    list.forEach(t => {
+        const k = groupKeyFor(t.name);
+        (buckets[k] = buckets[k] || []).push(t);
+    });
+    return order
+        .filter(k => buckets[k] && buckets[k].length)
+        .map(k => ({ key: k, label: (LANG && LANG[k]) || k, items: buckets[k] }));
+}
+
+function createTable() {
+    groupedTypes = groupTypes(types);
+    const thead = document.querySelector('#table-meter thead');
+    thead.innerHTML = '';
+
+    const r1 = document.createElement('tr');
+    const r2 = document.createElement('tr');
+
+    const thName = document.createElement('th');
+    thName.className = 'am-col-name';
+    thName.rowSpan = 2;
+    thName.textContent = (LANG && LANG.nmeters) || 'Meter';
+    r1.appendChild(thName);
+
+    const thProto = document.createElement('th');
+    thProto.className = 'am-col-proto';
+    thProto.rowSpan = 2;
+    thProto.textContent = (LANG && LANG.protocol) || 'Protocol';
+    r1.appendChild(thProto);
+
+    groupedTypes.forEach(g => {
+        const gh = document.createElement('th');
+        gh.className = 'am-group-head am-group-start';
+        gh.colSpan = g.items.length;
+        gh.textContent = g.label;
+        r1.appendChild(gh);
+
+        g.items.forEach((t, i) => {
+            const mh = document.createElement('th');
+            mh.className = 'text-center' + (i === 0 ? ' am-group-start' : '');
+            mh.textContent = t.name;
+            r2.appendChild(mh);
+        });
+    });
+
+    thead.appendChild(r1);
+    thead.appendChild(r2);
+}
+
+function currentRows() {
+    const all = Object.values(meters);
+    if (!searchTerm) return all;
+    return all.filter(m =>
+        (m.name || '').toLowerCase().includes(searchTerm) ||
+        (m.ip_address || '').toLowerCase().includes(searchTerm)
+    );
+}
+
+function updateData(page) {
+    currentPage = page;
+    const tbody = document.querySelector('#table-meter tbody');
+    const tableEl = document.getElementById('table-meter');
+    const emptyEl = document.getElementById('allmeter-empty');
+    tbody.innerHTML = '';
+
+    const rows = currentRows();
+
+    if (rows.length === 0) {
+        tableEl.style.display = 'none';
+        emptyEl.hidden = false;
+        renderPagination(0, 1);
+        return;
+    }
+    tableEl.style.display = '';
+    emptyEl.hidden = true;
+
+    const start = (page - 1) * rowsPerPage;
+    const pageData = rows.slice(start, start + rowsPerPage);
+
+    pageData.forEach(meter => {
+        const tr = document.createElement('tr');
+
+        const tdName = document.createElement('td');
+        tdName.className = 'am-col-name';
+        tdName.innerHTML = `<a href="meter-detail-water.php?id=${meter.id}" class="am-meter-link">${meter.name || '—'}</a>`;
+        tr.appendChild(tdName);
+
+        const tdProto = document.createElement('td');
+        tdProto.className = 'am-col-proto';
+        const p = (meter.protocol || '').toLowerCase();
+        const cls = p === 'tcp' ? 'badge badge-tcp' : (p === 'rs485' ? 'badge badge-rs485' : 'badge');
+        tdProto.innerHTML = `<span class="${cls}">${meter.protocol || '—'}</span>`;
+        tr.appendChild(tdProto);
+
+        groupedTypes.forEach(g => {
+            g.items.forEach((t, i) => {
+                const td = document.createElement('td');
+                td.className = 'text-center' + (i === 0 ? ' am-group-start' : '');
+                td.textContent = valueByType(meter, t.id);
+                tr.appendChild(td);
+            });
+        });
+
+        tbody.appendChild(tr);
+    });
+
+    renderPagination(rows.length, page);
+}
+
+function renderKPI() {
+    const all = Object.values(meters);
+    const flowId = (types.find(t => /^flow/i.test(t.name || '')) || {}).id;
+    const posCumId = (types.find(t => /positive.*cumulative/i.test(t.name || '')) || {}).id;
+
+    const sumFor = (id) => {
+        if (id == null) return null;
+        return all.reduce((s, m) => {
+            const v = parseFloat(valueByType(m, id));
+            return s + (isFinite(v) ? v : 0);
+        }, 0);
+    };
+    const fmt = (n) => n == null ? '–' : n.toLocaleString(undefined, { maximumFractionDigits: 2 });
+
+    const active = all.filter(m => Number(m.is_active) === 1).length;
+
+    document.getElementById('kpi-total').textContent = all.length;
+    document.getElementById('kpi-sum-flow').textContent = fmt(sumFor(flowId));
+    document.getElementById('kpi-sum-cumulative').textContent = fmt(sumFor(posCumId));
+    document.getElementById('kpi-active').textContent = active;
+    document.getElementById('kpi-inactive').textContent = all.length - active;
+}
+
+function filterMeters() {
+    searchTerm = (document.getElementById('meter-search').value || '').trim().toLowerCase();
+    updateData(1);
+}
+
+function renderPagination(totalRows, activePage) {
+    const paginationDiv = document.getElementById("pagination");
+    const infoDiv = document.getElementById("pagination-info");
+    paginationDiv.innerHTML = "";
+
+    if (totalRows === 0) {
+        infoDiv.textContent = '';
+        return;
+    }
+
+    const totalPages = Math.ceil(totalRows / rowsPerPage);
+    const start = (activePage - 1) * rowsPerPage + 1;
+    const end = Math.min(activePage * rowsPerPage, totalRows);
+    infoDiv.textContent = `${LANG.showall || 'Showing'} ${start}-${end} / ${totalRows}`;
+
+    const prevBtn = document.createElement("button");
+    prevBtn.innerHTML = `<span class="material-icons-outlined" style="font-size:1rem;line-height:1">chevron_left</span>`;
+    prevBtn.disabled = activePage === 1;
+    prevBtn.style.opacity = activePage === 1 ? '0.4' : '1';
+    prevBtn.addEventListener("click", () => { if (activePage > 1) updateData(activePage - 1); });
+    paginationDiv.appendChild(prevBtn);
+
+    for (let i = 1; i <= totalPages; i++) {
+        const btn = document.createElement("button");
+        btn.textContent = i;
+        if (i === activePage) btn.classList.add("active");
+        btn.addEventListener("click", () => { updateData(i); });
+        paginationDiv.appendChild(btn);
+    }
+
+    const nextBtn = document.createElement("button");
+    nextBtn.innerHTML = `<span class="material-icons-outlined" style="font-size:1rem;line-height:1">chevron_right</span>`;
+    nextBtn.disabled = activePage === totalPages;
+    nextBtn.style.opacity = activePage === totalPages ? '0.4' : '1';
+    nextBtn.addEventListener("click", () => { if (activePage < totalPages) updateData(activePage + 1); });
+    paginationDiv.appendChild(nextBtn);
+}
+
+function setRefreshTime() {
+    const refreshTime = parseInt(document.getElementById('input-refresh').value, 10);
+    if (isNaN(refreshTime) || refreshTime < 1 || refreshTime > 60) {
+        alertMessages('error', (LANG && LANG.error) || 'Error',
+            (LANG && LANG.refresh_range_error) || 'Please enter a refresh time between 1 and 60 seconds');
+        return;
+    }
+    clearInterval(refreshIntervalId);
+    refreshIntervalId = setInterval(process, refreshTime * 1000);
+}
+</script>

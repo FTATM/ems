@@ -1,0 +1,51 @@
+/* ============================================
+   Water Report Page Styles — report-water.css
+   Loaded alongside overview-water.css + meter-detail-water.css
+   ============================================ */
+
+#ov-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.rw-export-group {
+    display: flex;
+    gap: 6px;
+}
+
+.rw-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    border: 1px solid var(--border);
+    background: var(--bg-select);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 180ms ease;
+    white-space: nowrap;
+}
+.rw-btn:hover { border-color: var(--green); }
+
+.rw-btn--primary {
+    background: var(--green);
+    border-color: var(--green);
+    color: #fff;
+}
+.rw-btn--primary:hover { filter: brightness(1.08); }
+
+.rw-summary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.rw-summary__count {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}

@@ -311,11 +311,94 @@
     let groups = [];
     let selected_meter = [];
     let types = [];
+    let meterTypes = [];
+    let meterModels = [];
     let notifies = [];
     let outputText = '';
+    let isCreatingMeter = false;
+    let collectorHealth = {};
     document.addEventListener("DOMContentLoaded", async () => {
         process();
+        refreshCollectorStatus();
+        // The collector polls once a minute; checking four times as often keeps
+        // the badge responsive without hammering the endpoint.
+        setInterval(refreshCollectorStatus, 15000);
     });
+
+    /* ── สถานะตัวเก็บข้อมูล ──
+       ดูจาก heartbeat ที่ service เขียนลง collector_status ทุกรอบ ไม่ได้ไล่ดู
+       process เพราะเมื่อรันเป็น Windows Service จะอยู่คนละ account กับ Apache */
+    async function refreshCollectorStatus() {
+        const box = document.getElementById('collector-status');
+        if (!box) return;
+
+        let json;
+        try {
+            const response = await fetch("../config/fetch-collector-status.php");
+            json = await response.json();
+        } catch (e) {
+            return; // ปล่อยให้แสดงค่าเดิมไว้ ดีกว่ากะพริบทุกครั้งที่เน็ตสะดุด
+        }
+        if (!json || !json.success) return;
+
+        collectorHealth = json.health || {};
+
+        const failed = (json.failing || []).length;
+        let state, text;
+
+        if (!json.last_cycle_at) {
+            state = 'off';
+            text = _lang['collector_never_ran'] || 'Collector has never run';
+        } else if (!json.is_running) {
+            state = 'off';
+            text = (_lang['collector_stopped'] || 'Collector stopped')
+                 + ' — ' + (_lang['collector_last_cycle'] || 'last poll') + ' '
+                 + formatAge(json.seconds_since_cycle);
+        } else if (failed > 0) {
+            state = 'warn';
+            text = failed + ' ' + (_lang['collector_failed_meters'] || 'meter(s) unreachable');
+        } else {
+            state = 'on';
+            text = (_lang['collector_running'] || 'Collector running')
+                 + ' — ' + json.meters_ok + ' OK';
+        }
+
+        box.className = 'collector-status collector-status--' + state;
+        box.querySelector('.collector-status__text').textContent = text;
+        box.title = (json.failing || [])
+            .map(f => `${f.name} (#${f.meter_id}): ${f.last_error}`)
+            .join('\n');
+
+        applyHealthDots();
+    }
+
+    function formatAge(seconds) {
+        if (seconds === null || seconds === undefined) return '-';
+        if (seconds < 90) return seconds + ' ' + (_lang['collector_seconds_ago'] || 's ago');
+        const minutes = Math.round(seconds / 60);
+        if (minutes < 90) return minutes + ' min';
+        return Math.round(minutes / 60) + ' h';
+    }
+
+    /* จุดสีที่บอกผลการอ่านล่าสุดของแต่ละมิเตอร์ แยกจากจุด is_active ที่บอกว่า
+       "ตั้งค่าให้เก็บข้อมูลไหม" — สองอย่างนี้คนละเรื่องกัน */
+    function applyHealthDots() {
+        document.querySelectorAll('#meter-list .meter-row').forEach(row => {
+            const dot = row.querySelector('.health-dot');
+            if (!dot) return;
+            const info = collectorHealth[row.dataset.id];
+            if (!info) {
+                dot.className = 'health-dot health-dot--unknown';
+                dot.title = '';
+                return;
+            }
+            const failing = Number(info.consecutive_failures) > 0;
+            dot.className = 'health-dot health-dot--' + (failing ? 'bad' : 'good');
+            dot.title = failing
+                ? `${info.last_error} (${info.consecutive_failures}x)`
+                : (info.last_error || '') || `OK ${info.last_ok_at || ''}`;
+        });
+    }
     async function process() {
         //showLoading();
         await fetchAll();
@@ -327,6 +410,8 @@
         meters = await fetchMetersData();
         groups = await fetchGroups();
         types = await fetchTypes();
+        meterTypes = await fetchMeterTypes();
+        meterModels = await fetchMeterModels();
         notifies = await fetchnotify();
 
         console.log(meters);
@@ -347,57 +432,108 @@
         let json = await response.json();
         return json.data;
     }
+    async function fetchMeterTypes() {
+        let response = await fetch("../config/fetch-meter-type.php");
+        let json = await response.json();
+        return json.data || [];
+    }
+    async function fetchMeterModels() {
+        let response = await fetch("../config/fetch-meter-models.php");
+        let json = await response.json();
+        return json.data || [];
+    }
     async function fetchnotify() {
         let response = await fetch("../config/fetch-notify.php");
         let json = await response.json();
         return json.data;
     }
 
+    function meterTypeOptions(selectedId) {
+        return (meterTypes || []).map(t =>
+            `<option value="${t.id}" ${String(t.id) === String(selectedId) ? 'selected' : ''}>${t.name}</option>`
+        ).join('');
+    }
+
+    /* ── รุ่นมิเตอร์ (device profile) ──
+       รุ่นเป็นตัวกำหนดว่าค่าแต่ละตัวอยู่ register ไหน อ่านด้วย function code อะไร
+       word order แบบไหน และคูณด้วยเท่าไร — ต่างยี่ห้อไม่ตรงกันเลย
+       แสดงเฉพาะรุ่นที่ตรงกับชนิดมิเตอร์ที่เลือกไว้ */
+    function meterModelOptions(meterTypeId, selectedId) {
+        const matching = (meterModels || []).filter(m =>
+            String(m.meter_type_id) === String(meterTypeId));
+
+        // ว่างไว้ได้ แต่ถ้าไม่เลือกจะเก็บข้อมูลไม่ได้ จึงบอกให้ชัดว่าต้องเลือก
+        let html = `<option value="">— ${_lang['model_none'] || 'No model (cannot be polled)'} —</option>`;
+        html += matching.map(m => {
+            const label = m.brand ? `${m.brand} ${m.name}` : m.name;
+            const regs = `${m.register_count} reg`;
+            return `<option value="${m.id}" ${String(m.id) === String(selectedId) ? 'selected' : ''}>${label} (${regs})</option>`;
+        }).join('');
+        return html;
+    }
+
+    /* ชนิดมิเตอร์เปลี่ยน = รายการรุ่นที่ใช้ได้เปลี่ยนตาม และรุ่นเดิมที่เลือกไว้
+       อาจไม่ใช่ของชนิดนี้แล้ว จึงต้อง render ใหม่ */
+    function refreshModelOptions() {
+        const typeSelect = document.getElementById('meter-type-select');
+        const modelSelect = document.getElementById('meter-model-select');
+        if (!typeSelect || !modelSelect) return;
+        const current = modelSelect.value;
+        modelSelect.innerHTML = meterModelOptions(typeSelect.value, current);
+    }
+
+    /* ── ซ่อนช่อง 3D Position (ใช้วางตำแหน่งบนแผนผังไฟฟ้า/แผนที่ — ไม่เกี่ยวกับมิเตอร์น้ำ) เมื่อเลือกชนิดมิเตอร์เป็นน้ำ ── */
+    function toggleSectionsByType() {
+        const select = document.getElementById('meter-type-select');
+        if (!select) return;
+
+        // ฟอร์มเพิ่มมิเตอร์ใหม่ไม่มีส่วน 3D Position จึงต้องเช็คแยก ไม่ใช่ return
+        // ทิ้งทั้งฟังก์ชัน ไม่งั้นรายการรุ่นจะไม่ถูกอัปเดตตามชนิดที่เลือก
+        const posSection = document.getElementById('position-section');
+        if (posSection) {
+            const selectedType = (meterTypes || []).find(t => String(t.id) === String(select.value));
+            const isWater = selectedType && /water/i.test(selectedType.name || '');
+            posSection.style.display = isWater ? 'none' : '';
+        }
+
+        refreshModelOptions();
+    }
+
+    /* ── ทดสอบการเชื่อมต่อ ──
+       ส่งแค่ meter_id ไป endpoint เดียว แล้วให้ฝั่ง collector อ่าน config จาก
+       ตาราง meter เอง เดิมยิงไป ../config/<protocol>.php ซึ่งผูกค่าใน <select>
+       เข้ากับชื่อไฟล์ PHP และส่งค่าจากฟอร์มดิบ ๆ เข้า shell_exec
+       ผลพลอยได้: ทดสอบด้วยโค้ดชุดเดียวกับที่ service ใช้เก็บข้อมูลจริง */
     async function TestConnect() {
-        let select = document.getElementById("select-protocol");
         let id = document.getElementById("meter-id");
-        let ip = document.getElementById("ip-meter");
-        let port = document.getElementById("port");
-        let serialport = document.getElementById("serialport");
-        let buad_rate = document.getElementById("buad_rate");
-        let data_bits = document.getElementById("data_bits");
-        let parity = document.getElementById("parity");
-        let stop_bits = document.getElementById("stop_bits");
-        let slave_id = document.getElementById("slave_id");
-        let address = document.getElementById("address");
-        let quality = document.getElementById("quality");
         let labelStatusConnect = document.getElementById("label-btn-connect");
         let detailmore = document.getElementById("detailmore");
+
+        if (!id || !id.value) {
+            showEmsModal('error', 'connect',
+                _lang['connect_failed'] || 'เชื่อมต่อไม่สำเร็จ',
+                _lang['test_save_first'] || 'กรุณาบันทึกมิเตอร์ก่อนทดสอบการเชื่อมต่อ', 5000);
+            return;
+        }
+
         detailmore.style.display = "block";
         labelStatusConnect.textContent = "Loading...";
         labelStatusConnect.style.color = "white";
 
         let form = new FormData();
-        if (select.value === 'tcp') {
-            form.append('meter_id', id.value);
-            form.append('ip', ip.value);
-            form.append('port', port.value);
-            form.append('quality', quality.value);
-            form.append('slaveid', slave_id.value);
-        }
-        else {
-            form.append('meter_id', id.value);
-            form.append('serialport', serialport.value);
-            form.append('buadrate', buad_rate.value);
-            form.append('databits', data_bits.value);
-            form.append('parity', parity.value);
-            form.append('stopbits', stop_bits.value);
-            form.append('slaveid', slave_id.value);
-            form.append('address', address.value);
-            form.append('quality', quality.value);
-        }
-        let response = await fetch(`../config/${select.value}.php`, {
+        form.append('meter_id', id.value);
+
+        let response = await fetch("../config/test-meter.php", {
             method: "POST",
             body: form
         });
 
         let json = await response.json();
-        outputText = json.message + "\n" + json.output;
+        // output เป็น object เมื่อสำเร็จ — เดิมต่อสตริงตรง ๆ จึงได้ "[object Object]"
+        let detail = (typeof json.output === 'string')
+            ? json.output
+            : JSON.stringify(json.output, null, 2);
+        outputText = json.message + "\n" + detail;
         labelStatusConnect.textContent = json.success ? "Connected" : "Failed";
         labelStatusConnect.style.color = json.success ? "green" : "red";
 
@@ -426,6 +562,7 @@
             row.innerHTML = `
                 <span class="status-dot status-dot--${on ? 'on' : 'off'}"></span>
                 <span class="meter-row__name">${meter.name}</span>
+                <span class="health-dot health-dot--unknown"></span>
                 <span class="badge-proto badge-proto--${proto}">${proto === 'rs485' ? 'RS485' : 'TCP'}</span>
             `;
             row.onclick = () => {
@@ -437,6 +574,7 @@
             list.appendChild(row);
         });
         filterMeterList();
+        applyHealthDots();
     }
 
     function filterMeterList() {
@@ -473,6 +611,15 @@
                         <label>${_lang['group'] || 'Group'}</label>
                         <select name="group_id">${groupOpts}</select>
                     </div>
+                    <div class="mcfg-field">
+                        <label>${_lang['meter_type'] || 'Meter Type'}</label>
+                        <select name="meter_type_id" id="meter-type-select" onchange="toggleSectionsByType()">${meterTypeOptions(meter.meter_type_id)}</select>
+                    </div>
+                    <div class="mcfg-field">
+                        <label>${_lang['meter_model'] || 'Meter model'}</label>
+                        <select name="model_id" id="meter-model-select">${meterModelOptions(meter.meter_type_id, meter.model_id)}</select>
+                        <a class="mcfg-inline-link" href="meter-models.php">${_lang['manage_models'] || 'Manage models'}</a>
+                    </div>
                     <div class="mcfg-field mcfg-field--check">
                         <input id="meter-active" name="is_active" type="checkbox" ${Number(meter.is_active) === 1 ? 'checked' : ''}>
                         <label for="meter-active">${_lang['active'] || 'Active'}</label>
@@ -480,7 +627,7 @@
                 </div>
             </div>
 
-            <div class="mcfg-section">
+            <div class="mcfg-section" id="position-section">
                 <p class="mcfg-section__title">${_lang['section_position'] || '3D Position'}</p>
                 <div class="mcfg-grid mcfg-grid--3">
                     <div class="mcfg-field"><label>X</label><input name="x" type="number" value="${meter.x ?? ''}"></div>
@@ -514,11 +661,15 @@
                     <div class="mcfg-field"><label>Data Bits</label><input id="data_bits" name="data_bits" type="number" value="${meter.data_bits ?? ''}"></div>
                     <div class="mcfg-field"><label>Parity</label><input id="parity" name="parily" value="${meter.parily ?? ''}"></div>
                     <div class="mcfg-field"><label>Stop Bits</label><input id="stop_bits" name="stop_bits" type="number" value="${meter.stop_bits ?? ''}"></div>
-                    <div class="mcfg-field"><label>Address</label><input id="address" name="address" value="${meter.address ?? ''}"></div>
                 </div>
 
+                <!-- ใช้ร่วมกันทั้งสอง protocol — Address คือ offset ที่บวกเข้ากับทุก
+                     register ใน register_map ปกติเป็น 0 ใส่เมื่อมิเตอร์รุ่นนั้นเลื่อน
+                     ตำแหน่ง register ไปทั้งชุด เดิมช่องนี้อยู่ในกลุ่ม RS485 ทั้งที่
+                     ฝั่ง TCP ก็ต้องใช้เหมือนกัน -->
                 <div class="mcfg-grid" style="margin-top:.85rem">
                     <div class="mcfg-field"><label>${_lang['slave_id'] || 'Slave ID'}</label><input id="slave_id" name="slave_id" type="number" value="${meter.slave_id ?? ''}"></div>
+                    <div class="mcfg-field"><label>${_lang['register_offset'] || 'Register offset'}</label><input id="address" name="address" type="number" value="${meter.address ?? '0'}"></div>
                     <div class="mcfg-field"><label>Quality</label><input id="quality" name="quality" type="number" value="${meter.quality ?? ''}"></div>
                 </div>
             </div>
@@ -542,6 +693,7 @@
             </div>
         `;
                 switchProtocolFields();
+                toggleSectionsByType();
             }
             else if (document.getElementById("menu-config-2").classList.contains("active")) {
                 config.innerHTML = '';
@@ -603,14 +755,150 @@
         }
     }
 
+    /* ── สร้างมิเตอร์ใหม่ ── */
+    function openNewMeterForm() {
+        isCreatingMeter = true;
+        selected_meter = [];
+        document.querySelectorAll('#meter-list .meter-row.is-selected')
+            .forEach(el => el.classList.remove('is-selected'));
+
+        const groupOpts = (groups || []).map(g => `<option value="${g.id}">${g.name}</option>`).join('');
+        const config = document.getElementById('config');
+
+        config.innerHTML = `
+            <div class="mcfg-section">
+                <p class="mcfg-section__title">${_lang['new_meter'] || 'New Meter'}</p>
+                <div class="mcfg-grid">
+                    <div class="mcfg-field">
+                        <label>${_lang['meter_name'] || 'Meter name'}</label>
+                        <input name="name" id="new-meter-name" value="">
+                    </div>
+                    <div class="mcfg-field">
+                        <label>${_lang['group'] || 'Group'}</label>
+                        <select name="group_id">${groupOpts}</select>
+                    </div>
+                    <div class="mcfg-field">
+                        <label>${_lang['meter_type'] || 'Meter Type'}</label>
+                        <select name="meter_type_id" id="meter-type-select" onchange="toggleSectionsByType()">${meterTypeOptions(1)}</select>
+                    </div>
+                    <div class="mcfg-field">
+                        <label>${_lang['meter_model'] || 'Meter model'}</label>
+                        <select name="model_id" id="meter-model-select">${meterModelOptions(1, '')}</select>
+                        <a class="mcfg-inline-link" href="meter-models.php">${_lang['manage_models'] || 'Manage models'}</a>
+                    </div>
+                    <div class="mcfg-field mcfg-field--check">
+                        <input id="meter-active" name="is_active" type="checkbox">
+                        <label for="meter-active">${_lang['active'] || 'Active'}</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mcfg-section">
+                <p class="mcfg-section__title">${_lang['section_connection'] || 'Connection'}</p>
+                <div class="mcfg-grid">
+                    <div class="mcfg-field">
+                        <label>Protocol</label>
+                        <select id="select-protocol" name="select_protocol" onchange="switchProtocolFields()">
+                            <option value="tcp" selected>TCP</option>
+                            <option value="rs485">RS485</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="conn-tcp" class="mcfg-grid" style="margin-top:.85rem">
+                    <div class="mcfg-field"><label>DNS</label><input name="dns" value=""></div>
+                    <div class="mcfg-field"><label>Port</label><input id="port" name="port" type="number" value="502"></div>
+                    <div class="mcfg-field"><label>IP Address</label><input id="ip-meter" name="ip" value=""></div>
+                    <div class="mcfg-field"><label>Submask</label><input name="submask" value="255.255.255.0"></div>
+                </div>
+
+                <div id="conn-rs485" class="mcfg-grid" style="margin-top:.85rem">
+                    <div class="mcfg-field"><label>Serial Port</label><input id="serialport" name="serialport" value=""></div>
+                    <div class="mcfg-field"><label>Baud Rate</label><input id="buad_rate" name="buad_rate" value=""></div>
+                    <div class="mcfg-field"><label>Data Bits</label><input id="data_bits" name="data_bits" type="number" value="8"></div>
+                    <div class="mcfg-field"><label>Parity</label><input id="parity" name="parily" value="none"></div>
+                    <div class="mcfg-field"><label>Stop Bits</label><input id="stop_bits" name="stop_bits" type="number" value="1"></div>
+                </div>
+
+                <!-- ใช้ร่วมกันทั้งสอง protocol (ดูหมายเหตุในฟอร์มแก้ไข) -->
+                <div class="mcfg-grid" style="margin-top:.85rem">
+                    <div class="mcfg-field"><label>${_lang['slave_id'] || 'Slave ID'}</label><input id="slave_id" name="slave_id" type="number" value="1"></div>
+                    <div class="mcfg-field"><label>${_lang['register_offset'] || 'Register offset'}</label><input id="address" name="address" type="number" value="0"></div>
+                    <div class="mcfg-field"><label>Quality</label><input id="quality" name="quality" type="number" value="1"></div>
+                </div>
+            </div>
+
+            <div class="mcfg-section">
+                <p class="mcfg-section__title">${_lang['section_test'] || 'Test connection'}</p>
+                <p class="mcfg-hint">${_lang['test_save_first'] || 'Save the meter first, then test its connection.'}</p>
+            </div>
+
+            <div class="mcfg-footer">
+                <button type="button" onclick="loadDataMeter(selected_meter)" class="mcfg-btn mcfg-btn--cancel">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                    ${_lang['cancel']}
+                </button>
+                <button type="button" id="btn-create-meter" onclick="createMeter()" class="mcfg-btn mcfg-btn--save">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+                    ${_lang['add_meter'] || 'Add Meter'}
+                </button>
+            </div>
+        `;
+        switchProtocolFields();
+    }
+
+    async function createMeter() {
+        const name = document.getElementById('new-meter-name');
+        if (!name || !name.value.trim()) {
+            showEmsModal('error', 'error', _lang['create_meter_failed'] || 'Failed', _lang['name'] || 'Name is required');
+            return;
+        }
+
+        let formMeter = document.getElementById('meter-form');
+        const btn = document.getElementById('btn-create-meter');
+        if (btn) btn.disabled = true;
+
+        showLoading();
+        try {
+            const res = await fetch('../config/create-meter.php', { method: 'POST', body: new FormData(formMeter) });
+            const data = await res.json();
+            if (data.success) {
+                isCreatingMeter = false;
+                showEmsModal('success', 'create',
+                    _lang['create_meter_success']      || 'Meter created',
+                    _lang['create_meter_success_desc'] || 'The new meter has been saved.');
+                setTimeout(() => process(), 1500);
+            } else {
+                showEmsModal('error', 'error',
+                    _lang['create_meter_failed'] || 'Failed to create meter',
+                    data.message || _lang['network_error']);
+            }
+        } catch (e) {
+            showEmsModal('error', 'error', _lang['error'] || 'Error', e.message);
+        } finally {
+            hideLoading();
+            if (btn) btn.disabled = false;
+        }
+    }
+
     function switchProtocolFields() {
         const sel = document.getElementById('select-protocol');
         if (!sel) return;
         const p = sel.value;
         const tcp = document.getElementById('conn-tcp');
         const rs485 = document.getElementById('conn-rs485');
-        if (tcp) tcp.hidden = (p !== 'tcp');
-        if (rs485) rs485.hidden = (p !== 'rs485');
+        if (tcp) setProtocolGroup(tcp, p === 'tcp');
+        if (rs485) setProtocolGroup(rs485, p === 'rs485');
+    }
+
+    /* ซ่อนอย่างเดียวไม่พอ: ฟิลด์ที่ hidden ยังถูกเก็บโดย new FormData(meter-form)
+       แล้วเขียนทับค่าเดิมใน DB เช่น แก้มิเตอร์ TCP แล้วค่า serial_port/baud rate
+       ของมิเตอร์นั้นถูกล้างเป็นค่าว่าง — disabled จึงตัดออกจากการส่งจริง ๆ */
+    function setProtocolGroup(group, active) {
+        group.hidden = !active;
+        group.querySelectorAll('input, select, textarea').forEach(field => {
+            field.disabled = !active;
+        });
     }
 
     function openDetail() {

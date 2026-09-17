@@ -1,4 +1,21 @@
-<?php if (session_status() === PHP_SESSION_NONE) session_start(); ?>
+<?php
+if (session_status() === PHP_SESSION_NONE) session_start();
+
+// ── Theme accent-color preset: อ่านค่าที่เลือกไว้จาก DB แล้ว override ตัวแปรสี CSS ──
+require_once __DIR__ . '/theme-presets.php';
+$hdrPresetKey = 'green';
+try {
+    require_once __DIR__ . '/../config/config.php';
+    $hdrConn = @new mysqli($db_config['host'] ?? '127.0.0.1', $db_config['user'] ?? 'root', $db_config['pass'] ?? '', $db_config['name'] ?? 'ams', $db_config['port'] ?? 3306);
+    if ($hdrConn && !$hdrConn->connect_error) {
+        $hdrPresetKey = emsGetCurrentPreset($hdrConn);
+        $hdrConn->close();
+    }
+} catch (\Throwable $e) {
+    // เชื่อมต่อไม่ได้ -> ใช้ค่าเริ่มต้น 'green'
+}
+emsRenderThemePresetStyle($hdrPresetKey);
+?>
 
 <style>
 .cbi--solar-battery {
@@ -33,6 +50,14 @@ body {
     font-family: 'Noto Sans Thai', 'Sarabun', sans-serif;
 }
 
+.header-avatar {
+    background-color: var(--primary-light, #e8eee0);
+    transition: background-color 0.2s;
+}
+.header-avatar:hover {
+    background-color: var(--primary-border, #d0dcc0);
+}
+
 /* Dark mode styles for header */
 html.dark .navbar {
     background-color: #18181b !important;
@@ -48,7 +73,7 @@ html.dark .navbar-brand div[style*="6c757d"] {
 }
 
 html.dark #theme-toggle-btn {
-    color: #8BAE66 !important;
+    color: var(--primary, #8BAE66) !important;
 }
 
 .username-text {
@@ -65,12 +90,12 @@ html.dark .username-text {
 
         <!-- ซ้าย: hamburger + logo -->
         <div class="d-flex align-items-center gap-2">
-            <button id="sidebar_open" class="btn p-0 border-0" style="color: #8BAE66;">
+            <button id="sidebar_open" class="btn p-0 border-0" style="color: var(--primary, #8BAE66);">
                 <i class="bi bi-list fs-3"></i>
             </button>
             <a class="navbar-brand d-flex align-items-center gap-2 mb-0" href="../pages/dashboard.php">
                 <div class="rounded d-flex align-items-center justify-content-center"
-                    style="width:45px; height:45px; background-color:#8BAE66;">
+                    style="width:45px; height:45px; background-color: var(--primary, #8BAE66);">
                     <span class="cbi--solar-battery" style="color:white; width:1.8em; height:1.8em;"></span>
                 </div>
                 <div class="lh-1">
@@ -85,7 +110,7 @@ html.dark .username-text {
 
             <!-- Dark Mode Toggle -->
             <button id="theme-toggle-btn" class="btn p-0 border-0" title="Toggle dark mode" onclick="toggleDarkMode()"
-                style="color:#8BAE66; line-height:1;">
+                style="color: var(--primary, #8BAE66); line-height:1;">
                 <i class="bi bi-moon-fill fs-5" id="icon-moon"></i>
                 <i class="bi bi-sun-fill fs-5" id="icon-sun" style="display:none;"></i>
             </button>
@@ -93,9 +118,9 @@ html.dark .username-text {
             <?php if (!isset($_SESSION['user_id'])): ?>
             <!-- ยังไม่ได้ Login -->
             <a class="nav-link px-3 py-1 d-flex align-items-center gap-2" href="../pages/login.php"
-                style="border: 1.5px solid #8BAE66; border-radius: 20px; color: #8BAE66; font-weight: 600; transition: all 0.2s;"
-                onmouseover="this.style.backgroundColor='#8BAE66'; this.style.color='white';"
-                onmouseout="this.style.backgroundColor='transparent'; this.style.color='#8BAE66';">
+                style="border: 1.5px solid var(--primary, #8BAE66); border-radius: 20px; color: var(--primary, #8BAE66); font-weight: 600; transition: all 0.2s;"
+                onmouseover="this.style.backgroundColor=getComputedStyle(document.documentElement).getPropertyValue('--primary')||'#8BAE66'; this.style.color='white';"
+                onmouseout="this.style.backgroundColor='transparent'; this.style.color=getComputedStyle(document.documentElement).getPropertyValue('--primary')||'#8BAE66';">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                     <path
                         d="M11 7L9.6 8.4l2.6 2.6H2v2h10.2l-2.6 2.6L11 17l5-5l-5-5zm9 12h-8v2h8c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-8v2h8v14z" />
@@ -105,11 +130,9 @@ html.dark .username-text {
             <?php else: ?>
             <!-- Avatar + ชื่อ (คลิกไปหน้า user.php) -->
             <div class="d-flex align-items-center gap-2 text-decoration-none" title="My Profile">
-                <div class="rounded-circle d-flex align-items-center justify-content-center"
-                    style="width:36px; height:36px; background-color:#e8eee0; cursor:pointer; transition: background-color 0.2s;"
-                    onmouseover="this.style.backgroundColor='#d0dcc0';"
-                    onmouseout="this.style.backgroundColor='#e8eee0';">
-                    <i class="bi bi-person-fill" style="color:#8BAE66; font-size:1.1rem;"></i>
+                <div class="rounded-circle d-flex align-items-center justify-content-center header-avatar"
+                    style="width:36px; height:36px; cursor:pointer;">
+                    <i class="bi bi-person-fill" style="color: var(--primary, #8BAE66); font-size:1.1rem;"></i>
                 </div>
                 <span style="font-weight:600; color:#1a1a1a; line-height:1.1;" class="username-text">
                     <?= htmlspecialchars($_SESSION['username'] ?? $_SESSION['name'] ?? 'Admin') ?>
@@ -117,7 +140,7 @@ html.dark .username-text {
                 </a>
                 <!-- Logout -->
                 <a href="../pages/logout.php" class="btn p-0 border-0" title="Logout">
-                    <i class="bi bi-box-arrow-right fs-4" style="color:#8BAE66;"></i>
+                    <i class="bi bi-box-arrow-right fs-4" style="color: var(--primary, #8BAE66);"></i>
                 </a>
                 <?php endif; ?>
 

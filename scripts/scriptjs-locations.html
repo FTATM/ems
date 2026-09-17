@@ -132,11 +132,11 @@ function renderGroups(locId) {
                     <i class="bi bi-lightning-charge-fill"></i>
                     <span class="btn-icon__label">${LANG.electrical}</span>
                 </button>
-                <button class="btn-icon" title="${LANG.water}" disabled onclick="reDirectTo(2, ${row.id})">
+                <button class="btn-icon" title="${LANG.water}" onclick="reDirectTo(2, ${row.id})">
                     <i class="bi bi-droplet-fill"></i>
                     <span class="btn-icon__label">${LANG.water}</span>
                 </button>
-                <button class="btn-icon" title="${LANG.room}" disabled onclick="reDirectTo(3, ${row.id})">
+                <button class="btn-icon" title="${LANG.room}" onclick="reDirectTo(3, ${row.id})">
                     <i class="bi bi-door-closed-fill"></i>
                     <span class="btn-icon__label">${LANG.room}</span>
                 </button>
@@ -146,11 +146,20 @@ function renderGroups(locId) {
     });
 }
 
-/* ── เลือกกลุ่ม + ชนิดมิเตอร์ → ไป dashboard (ยกมาจาก scriptjs-groups.html) ── */
+/* ── เลือกกลุ่ม + ชนิดมิเตอร์/ห้อง → ไปหน้า overview ที่เกี่ยวข้อง ── */
 async function reDirectTo(tid, gid) {
-    const a = await setSession('tid', tid);
     const b = await setSession('gid', gid);
-    if (a && b) window.location.href = "dashboard.php";
+    if (!b) return;
+
+    if (tid === 3) {
+        // ค่าห้อง — ไม่ใช่ meter type จึงไม่ต้องตั้ง tid
+        window.location.href = "overview-room.php";
+        return;
+    }
+
+    const a = await setSession('tid', tid);
+    if (!a) return;
+    window.location.href = tid === 2 ? "overview-water.php" : "dashboard.php";
 }
 
 /* ── สลับขั้น ── */

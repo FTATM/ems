@@ -11,49 +11,63 @@ if ($data) {
     $datetime = $data['datetime'];
     $data_array = $data['data'];
 
-    $sql = "SELECT * FROM data_type";
+    // Resolve data_type names to ids once, as a lookup rather than a nested
+    // scan per incoming key. Soft-deleted types are excluded, matching every
+    // other endpoint (this query used to select them too).
+    $sql = "SELECT id, name FROM data_type WHERE is_deleted = 0";
     $result = $conn->query($sql);
 
-    $column = [];
-    if ($result->num_rows > 0) {
+    $type_ids = [];
+    if ($result && $result->num_rows > 0) {
         while ($row = $result->fetch_assoc()) {
-            $column[] = $row;
+            $type_ids[$row['name']] = (int) $row['id'];
         }
-        $column[] = [
-            "id" => "0",
-            "name" => "is_active",
-            "maxvaluecolumn" => "2",
-            "create_date" => "2000-01-01",
-            "is_deleted" => "0"
-        ];
     }
 
     $success_count = 0;
     $error_count = 0;
+    $unknown_keys = [];
 
     // เตรียม statement ล่วงหน้า
-    $stmt = $conn->prepare("INSERT INTO meter_data (meter_id, create_date, type_value_id, value) 
+    $stmt = $conn->prepare("INSERT INTO meter_data (meter_id, create_date, type_value_id, value)
                             VALUES (?, ?, ?, ?)");
 
+    // One transaction per meter instead of 18 separate autocommitted inserts.
+    $conn->begin_transaction();
+
     foreach ($data_array as $key => $valueData) {
-        foreach ($column as $row) {
-            if ($key === $row['name']) {
-                $type_value_id = $row['id'];
-                $stmt->bind_param("isid", $meter_id, $datetime, $type_value_id, $valueData);
-                if ($stmt->execute()) {
-                    $success_count++;
-                } else {
-                    $error_count++;
-                }
-            }
+        if (!isset($type_ids[$key])) {
+            $unknown_keys[] = $key;
+            continue;
+        }
+        // The collector omits registers it could not read, so anything arriving
+        // here should be a real number. Refuse non-numerics rather than letting
+        // bind_param cast them to 0.00 — that silently turned dead registers
+        // into genuine-looking zero readings.
+        if (!is_numeric($valueData)) {
+            $error_count++;
+            continue;
+        }
+        $type_value_id = $type_ids[$key];
+        $value = (float) $valueData;
+        $stmt->bind_param("isid", $meter_id, $datetime, $type_value_id, $value);
+        if ($stmt->execute()) {
+            $success_count++;
+        } else {
+            $error_count++;
         }
     }
+
+    $conn->commit();
 
     $response = [
         "success" => true,
         "inserted" => $success_count,
         "errors" => $error_count
     ];
+    if ($unknown_keys) {
+        $response["unknown_keys"] = $unknown_keys;
+    }
 } else {
     $response = [
         "success" => false,

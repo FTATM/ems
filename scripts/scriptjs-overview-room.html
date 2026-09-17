@@ -1,0 +1,193 @@
+<script>
+    let locations = [];
+    let groups = [];
+    let rooms = [];
+    let statusFilter = 'all';
+
+    document.addEventListener("DOMContentLoaded", async () => {
+        showLoading();
+        await fetchAll();
+        setInformation();
+        renderRooms();
+        hideLoading();
+    });
+
+    async function fetchAll() {
+        const [rl, rg] = await Promise.all([
+            fetch("../config/fetch-locations.php"),
+            fetch("../config/fetch-groups.php"),
+        ]);
+        locations = (await rl.json()).data || [];
+        groups = (await rg.json()).data || [];
+
+        const form = new FormData();
+        form.append('gid', GROUP_ID);
+        const rr = await fetch("../config/fetch-rooms.php", { method: 'POST', body: form });
+        const json = await rr.json();
+        rooms = json.data || [];
+    }
+
+    function setInformation() {
+        document.getElementById('location').innerHTML = getNameLocation(GROUP_ID);
+        document.getElementById('group').innerHTML = getNameGroup(GROUP_ID);
+    }
+
+    /* ── สถานะห้อง → badge ── */
+    function statusInfo(status) {
+        const s = (status || '').toLowerCase();
+        if (s === 'empty' || s === 'available') return { cls: 'room-status--empty', label: LANG.room_status_empty };
+        if (s === 'maintenance') return { cls: 'room-status--maintenance', label: LANG.room_status_maintenance };
+        if (s === 'occupied') return { cls: 'room-status--occupied', label: LANG.room_status_occupied };
+        return { cls: 'room-status--occupied', label: status || '—' };
+    }
+
+    function normalizedStatus(status) {
+        const s = (status || '').toLowerCase();
+        if (s === 'empty' || s === 'available') return 'empty';
+        if (s === 'maintenance') return 'maintenance';
+        return 'occupied';
+    }
+
+    function setStatusFilter(filter) {
+        statusFilter = filter;
+        document.querySelectorAll('#room-status-filter .room-status-filter__btn').forEach(btn => {
+            btn.classList.toggle('is-active', btn.dataset.filter === filter);
+        });
+        renderRooms();
+    }
+
+    function renderRooms() {
+        const grid = document.getElementById('room-grid');
+        const empty = document.getElementById('ov-empty');
+        grid.innerHTML = '';
+
+        const filtered = statusFilter === 'all'
+            ? rooms
+            : rooms.filter(r => normalizedStatus(r.status) === statusFilter);
+
+        const filterBar = document.getElementById('room-status-filter');
+        if (!rooms.length) {
+            empty.hidden = false;
+            grid.style.display = 'none';
+            if (filterBar) filterBar.hidden = true;
+            return;
+        }
+        empty.hidden = true;
+        grid.style.display = '';
+        if (filterBar) filterBar.hidden = false;
+
+        if (!filtered.length) {
+            grid.innerHTML = `<p class="ov-nodata">${LANG.no_room_found}</p>`;
+            return;
+        }
+
+        filtered.forEach((room, i) => {
+            const st = statusInfo(room.status);
+            const hasContract = !!room.contract;
+            const card = document.createElement('div');
+            card.className = 'room-card';
+            card.style.animationDelay = `${i * 0.04}s`;
+            card.innerHTML = `
+                <div class="room-card__top">
+                    <span class="room-status-badge ${st.cls}">${st.label}</span>
+                    <div class="room-card__menu">
+                        <button class="btn-icon-sm" title="${LANG.rename_room}" onclick="event.stopPropagation(); openRenameModal(${room.id}, '${(room.name || '').replace(/'/g, "\\'")}')">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn-icon-sm btn-icon-sm--danger" title="${LANG.delete_room}" onclick="event.stopPropagation(); openDeleteModal(${room.id})">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="room-card__body" onclick="window.location.href = 'room-detail.php?id=${room.id}'">
+                    <div class="room-card__icon"><i class="bi bi-door-closed-fill"></i></div>
+                    <div class="room-card__name">${room.name || '—'}</div>
+                    <div class="room-card__meta">
+                        ${room.size_sqm ? `<span><i class="bi bi-aspect-ratio"></i> ${room.size_sqm} m²</span>` : ''}
+                        ${room.price_per_month ? `<span><i class="bi bi-cash"></i> ${Number(room.price_per_month).toLocaleString()} ฿</span>` : ''}
+                    </div>
+                    <div class="room-card__tenant">
+                        <i class="bi bi-person-fill"></i>
+                        ${hasContract ? (room.contract.full_name || LANG.room_tenant) : LANG.room_no_tenant}
+                    </div>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    /* ── Add ── */
+    function openAddModal() {
+        document.getElementById('add-room-name').value = '';
+        new bootstrap.Modal(document.getElementById('addRoomModal')).show();
+    }
+
+    async function submitAddRoom() {
+        const name = document.getElementById('add-room-name').value.trim();
+        if (!name) return;
+        const form = new FormData();
+        form.append('action', 'new');
+        form.append('gid', GROUP_ID);
+        form.append('value', name);
+        const res = await fetch('../config/update-room.php', { method: 'POST', body: form });
+        const data = await res.json();
+        bootstrap.Modal.getInstance(document.getElementById('addRoomModal')).hide();
+        if (data.success) {
+            alertMessages('success', '', data.message, 1500);
+            await fetchAll();
+            renderRooms();
+        } else {
+            alertMessages('error', '', data.message, 3000, true);
+        }
+    }
+
+    /* ── Rename ── */
+    function openRenameModal(id, currentName) {
+        document.getElementById('rename-room-id').value = id;
+        document.getElementById('rename-room-name').value = currentName;
+        new bootstrap.Modal(document.getElementById('renameRoomModal')).show();
+    }
+
+    async function submitRenameRoom() {
+        const id = document.getElementById('rename-room-id').value;
+        const name = document.getElementById('rename-room-name').value.trim();
+        if (!name) return;
+        const form = new FormData();
+        form.append('action', 'rename');
+        form.append('id', id);
+        form.append('value', name);
+        const res = await fetch('../config/update-room.php', { method: 'POST', body: form });
+        const data = await res.json();
+        bootstrap.Modal.getInstance(document.getElementById('renameRoomModal')).hide();
+        if (data.success) {
+            await fetchAll();
+            renderRooms();
+        } else {
+            alertMessages('error', '', data.message, 3000, true);
+        }
+    }
+
+    /* ── Delete ── */
+    function openDeleteModal(id) {
+        document.getElementById('delete-room-id').value = id;
+        new bootstrap.Modal(document.getElementById('deleteRoomModal')).show();
+    }
+
+    async function submitDeleteRoom() {
+        const id = document.getElementById('delete-room-id').value;
+        const form = new FormData();
+        form.append('action', 'delete');
+        form.append('id', id);
+        const res = await fetch('../config/update-room.php', { method: 'POST', body: form });
+        const data = await res.json();
+        bootstrap.Modal.getInstance(document.getElementById('deleteRoomModal')).hide();
+        if (data.success) {
+            await fetchAll();
+            renderRooms();
+        } else {
+            alertMessages('error', '', data.message, 3000, true);
+        }
+    }
+
+    /* ── รายละเอียดห้อง: ย้ายไปหน้าเต็ม room-detail.php แล้ว (ดู scriptjs-room-detail.html) ── */
+</script>
