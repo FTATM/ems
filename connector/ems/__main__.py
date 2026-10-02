@@ -5,6 +5,8 @@
     python -m ems once [--meter-id 7]        one cycle, storing readings
     python -m ems scan --meter-id 3          sweep registers to find addresses
     python -m ems simulate --model-id 2      serve a fake meter for a model, over Modbus TCP
+    python -m ems seed-demo [--purge]        8 demo meters with a month of 1-minute history
+    python -m ems seed-demo --follow         keep the active demo meters current, a reading a minute
 
 `test` prints JSON on stdout and nothing else, because config/test-meter.php
 parses it. Every other command logs to stderr so the two never mix.
@@ -17,7 +19,7 @@ import sys
 from datetime import datetime
 
 from . import db as dbmod
-from . import reader, registers, simulate
+from . import reader, registers, seed_demo, simulate
 from .runner import Collector
 
 
@@ -175,6 +177,29 @@ def cmd_simulate(args):
         db.close()
 
 
+def cmd_seed_demo(args):
+    """Create demo meters (electrical/water x active/inactive) with fake history.
+
+    Only ever touches meters carrying the exact DEMO names in seed_demo.py, so
+    it is safe to re-run, and --purge takes them out again.
+    """
+    _setup_logging(logging.DEBUG if args.verbose else logging.INFO)
+    db = dbmod.Database()
+    try:
+        if args.purge:
+            seed_demo.purge(db)
+        elif args.follow:
+            seed_demo.follow(db)
+        else:
+            seed_demo.seed(db, days=args.days, group_id=args.group_id)
+        return 0
+    except KeyboardInterrupt:
+        print("\nStopped.")
+        return 0
+    finally:
+        db.close()
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(prog="ems", description="EMS meter collector")
     parser.add_argument("-v", "--verbose", action="store_true")
@@ -204,6 +229,13 @@ def main(argv=None):
     sim.add_argument("--interval", type=float, default=2.0,
                       help="seconds between value updates (default: 2)")
 
+    seed = sub.add_parser("seed-demo", help="create demo meters with a month of fake readings")
+    seed.add_argument("--days", type=int, default=30, help="days of history, ending now (default: 30)")
+    seed.add_argument("--group-id", type=int, help="group to put the meters in (default: first active group)")
+    seed.add_argument("--purge", action="store_true", help="remove the demo meters and their readings")
+    seed.add_argument("--follow", action="store_true",
+                      help="backfill to now, then append a reading a minute for the active demo meters")
+
     args = parser.parse_args(argv)
     return {
         "run": cmd_run,
@@ -211,6 +243,7 @@ def main(argv=None):
         "test": cmd_test,
         "scan": cmd_scan,
         "simulate": cmd_simulate,
+        "seed-demo": cmd_seed_demo,
     }[args.command](args)
 
 
