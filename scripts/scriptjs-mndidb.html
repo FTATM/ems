@@ -2,23 +2,86 @@
     let selectedColumns = [];
     let fullData = []; // จะเก็บข้อมูลเต็มจาก fetch-realtime.php
     document.addEventListener("DOMContentLoaded", async () => {
+        await loadThemePresets();
     });
 
-    async function updatedatetime() {
-        let p = document.getElementById('status-update-date');
-        let btn = document.getElementById('btn-update-all');
+    /* ── Theme accent-color preset ── */
+    async function loadThemePresets() {
+        const wrap = document.getElementById('theme-preset-swatches');
+        if (!wrap) return;
+
+        const res = await fetch('../config/fetch-theme-preset.php');
+        const data = await res.json();
+        if (!data.success) return;
+
+        const isTh = (document.documentElement.lang || 'th').startsWith('th');
+
+        wrap.innerHTML = data.presets.map(p => `
+            <button type="button" class="theme-swatch ${p.key === data.current ? 'is-active' : ''}"
+                title="${isTh ? p.label_th : p.label_en}" onclick="selectThemePreset('${p.key}')">
+                <span class="theme-swatch__dot" style="background:${p.accent};"></span>
+                <span class="theme-swatch__label">${isTh ? p.label_th : p.label_en}</span>
+            </button>
+        `).join('');
+    }
+
+    async function selectThemePreset(key) {
+        const p = document.getElementById('status-theme-preset');
+        p.textContent = 'loading...';
+        p.classList.add('blink');
+        p.style.color = '';
+
+        const form = new FormData();
+        form.append('preset', key);
+        const res = await fetch('../config/update-theme-preset.php', { method: 'POST', body: form });
+        const data = await res.json();
+
+        p.classList.remove('blink');
+        if (data.success) {
+            p.style.color = 'green';
+            p.textContent = data.message;
+            setTimeout(() => window.location.reload(), 500);
+        } else {
+            p.style.color = 'red';
+            p.textContent = data.message || 'Error';
+        }
+    }
+
+    async function updatedatetime(scope) {
+        const p = document.getElementById('status-update-date-' + scope);
+        const btn = document.getElementById('btn-update-' + scope);
+        const intervalInput = document.getElementById('interval-' + scope);
+        const interval = parseInt(intervalInput?.value, 10) || 60;
+
         p.textContent = "loading...";
         p.classList.add('blink');
+        p.style.color = '';
         btn.setAttribute('disabled', true);
-        btn.classList.replace('btn-primary', 'btn-secondary');
-        let response = await fetch('../config/update-datedata.php');
-        let json = await response.json();
-        let data = json;
-        p.classList.remove('blink');
-        p.style.color = 'green';
-        p.textContent = data.message + " - " + data.duration + " seconds";
-        btn.removeAttribute('disabled');
-        btn.classList.replace('btn-secondary', 'btn-primary');
+        btn.classList.replace('mndidb-btn--primary', 'mndidb-btn--danger');
+
+        try {
+            const form = new FormData();
+            form.append('scope', scope);
+            form.append('interval', interval);
+            const response = await fetch('../config/update-datedata.php', { method: 'POST', body: form });
+            const data = await response.json();
+
+            p.classList.remove('blink');
+            if (data.success) {
+                p.style.color = 'green';
+                p.textContent = `${data.message} — ${data.moments} รอบ / ${data.updated_rows} แถว (${data.duration}s)`;
+            } else {
+                p.style.color = 'red';
+                p.textContent = data.message || 'Error';
+            }
+        } catch (e) {
+            p.classList.remove('blink');
+            p.style.color = 'red';
+            p.textContent = 'Error: ' + e.message;
+        } finally {
+            btn.removeAttribute('disabled');
+            btn.classList.replace('mndidb-btn--danger', 'mndidb-btn--primary');
+        }
     }
 
     async function excuteStringSQL() {

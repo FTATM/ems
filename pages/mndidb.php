@@ -102,19 +102,57 @@ include '../components/session.php';
 
                         <div class="mndidb-menu-card">
                             <div class="mndidb-menu-card__icon">
+                                <i class="bi bi-palette-fill"></i> <?= $lang['theme_preset'] ?>
+                            </div>
+                            <div class="mndidb-menu-card__body">
+                                <p class="mndidb-menu-card__desc"><?= $lang['theme_preset_desc'] ?></p>
+                                <div id="theme-preset-swatches" class="theme-preset-swatches"></div>
+                                <p id="status-theme-preset" class="mndidb-menu-card__status"></p>
+                            </div>
+                        </div>
+
+                        <div class="mndidb-menu-card">
+                            <div class="mndidb-menu-card__icon">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
                                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                     stroke-linejoin="round">
                                     <circle cx="12" cy="12" r="10" />
                                     <polyline points="12 6 12 12 16 14" />
-                                </svg> <?= $lang['update_datetime'] ?>
+                                </svg> <?= $lang['update_datetime'] ?> — <?= $lang['electrical'] ?>
                             </div>
                             <div class="mndidb-menu-card__body">
-                                <div class="mndidb-menu-card__title"></div>
                                 <p class="mndidb-menu-card__desc"><?= $lang['update_datetime_desc'] ?></p>
-                                <p id="status-update-date" class="mndidb-menu-card__status"></p>
-                                <button id="btn-update-all" class="mndidb-btn mndidb-btn--primary w-100"
-                                    onclick="updatedatetime()">
+                                <div class="mb-2">
+                                    <label class="mndidb-menu-card__desc" for="interval-electrical"><?= $lang['update_datetime_interval'] ?></label>
+                                    <input type="number" min="1" id="interval-electrical" class="form-control form-control-sm" value="60">
+                                </div>
+                                <p id="status-update-date-electrical" class="mndidb-menu-card__status"></p>
+                                <button id="btn-update-electrical" class="mndidb-btn mndidb-btn--primary w-100"
+                                    onclick="updatedatetime('electrical')">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <polyline points="23 4 23 10 17 10" />
+                                        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+                                    </svg>
+                                    <?= $lang['update'] ?>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="mndidb-menu-card">
+                            <div class="mndidb-menu-card__icon">
+                                <i class="bi bi-droplet-fill"></i> <?= $lang['update_datetime'] ?> — <?= $lang['water'] ?>
+                            </div>
+                            <div class="mndidb-menu-card__body">
+                                <p class="mndidb-menu-card__desc"><?= $lang['update_datetime_desc'] ?></p>
+                                <div class="mb-2">
+                                    <label class="mndidb-menu-card__desc" for="interval-water"><?= $lang['update_datetime_interval'] ?></label>
+                                    <input type="number" min="1" id="interval-water" class="form-control form-control-sm" value="60">
+                                </div>
+                                <p id="status-update-date-water" class="mndidb-menu-card__status"></p>
+                                <button id="btn-update-water" class="mndidb-btn mndidb-btn--primary w-100"
+                                    onclick="updatedatetime('water')">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
                                         fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
                                         stroke-linejoin="round">

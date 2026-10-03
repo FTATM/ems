@@ -1,0 +1,61 @@
+/* ============================================
+   Building Overview Page Styles — overview-buildings.css
+   Loaded alongside overview-room.css (shares its tokens)
+   ============================================ */
+
+.rd-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-shrink: 0;
+}
+
+.rd-breadcrumb__current {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.4rem;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    color: var(--text-heading);
+}
+.rd-breadcrumb__current .bi { color: var(--primary); font-size: 1.2rem; }
+
+.ob-occupancy {
+    margin: 0.6rem 0;
+}
+
+.ob-occupancy__bar {
+    height: 6px;
+    border-radius: 4px;
+    background: var(--border-card);
+    overflow: hidden;
+}
+
+.ob-occupancy__fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--busy), var(--warn));
+    border-radius: 4px;
+    transition: width 300ms ease;
+}
+
+.ob-occupancy__label {
+    display: block;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+}
+
+.ob-count {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    margin-right: 0.75rem;
+}
+
+.ob-count--total { color: var(--text-body); }
+.ob-count--ok { color: var(--ok); }
+.ob-count--busy { color: var(--busy); }
+.ob-count--warn { color: var(--warn); }

@@ -1,0 +1,237 @@
+<script>
+    let locations = [];
+    let groups = [];
+    let types = [];
+    let meters = [];
+    let meterWithData = [];
+    let MeterID = 0;
+    const typeMeterID = "2"; // Water
+    const groupID = "<?= $_SESSION['gid']; ?>";
+
+    document.addEventListener("DOMContentLoaded", async () => {
+        setDefaultDates();
+        await fetchAll();
+
+        if (!meters || meters.length === 0) {
+            document.getElementById('ov-empty').hidden = false;
+            document.getElementById('ov-body').style.display = 'none';
+            document.querySelector('.dash-filter-bar').style.display = 'none';
+            setInformation();
+            return;
+        }
+
+        setInformation();
+        await generateOption('select-meters', Object.values(meters), true);
+        if (INITIAL_METER_ID > 0 && meters.some(m => String(m.id) === String(INITIAL_METER_ID))) {
+            document.getElementById('select-meters').value = INITIAL_METER_ID;
+        }
+        setMeterID();
+        await changeSelectMeter();
+    });
+
+    function setDefaultDates() {
+        const end = new Date();
+        const start = new Date();
+        start.setDate(start.getDate() - 7);
+        const fmt = (d) => d.toISOString().slice(0, 10);
+        document.getElementById('date-start').value = fmt(start);
+        document.getElementById('date-end').value = fmt(end);
+    }
+
+    async function fetchAll() {
+        let res_location = await fetch("../config/fetch-locations.php");
+        locations = (await res_location.json()).data;
+
+        let res_group = await fetch("../config/fetch-groups.php");
+        groups = (await res_group.json()).data;
+
+        let res_type = await fetch("../config/fetch-data_type.php");
+        types = (await res_type.json()).data;
+
+        meters = await fetchMeters(typeMeterID, groupID);
+    }
+
+    function setInformation() {
+        document.getElementById('location').innerHTML = getNameLocation(groupID);
+        document.getElementById('group').innerHTML = getNameGroup(groupID);
+    }
+
+    async function changeSelectMeter() {
+        setMeterID();
+
+        const startVal = document.getElementById('date-start').value;
+        const endVal = document.getElementById('date-end').value;
+        const startdate = startVal ? `${startVal} 00:00:00` : null;
+        const lastdate = endVal ? `${endVal} 23:59:59` : null;
+
+        let form = new FormData();
+        form.append('id', MeterID);
+        form.append('tid', typeMeterID);
+        form.append('gid', groupID);
+        form.append('startdate', startdate || '');
+        form.append('lastdate', lastdate || 'NOW()');
+
+        const res = await fetch('../config/fetch-meter-filterById.php', { method: 'POST', body: form });
+        const json = await res.json();
+        meterWithData = json.data || {};
+
+        renderMeterInfo();
+        renderStatCards();
+        renderCharts();
+        renderTable();
+    }
+
+    function findTypeId(pattern) {
+        const found = types.find(t => pattern.test(t.name || ''));
+        return found ? String(found.id) : null;
+    }
+
+    function selectedMeter() {
+        return meterWithData?.[MeterID] || null;
+    }
+
+    function renderMeterInfo() {
+        const m = selectedMeter();
+        const isOn = m ? Number(m.is_active) === 1 : false;
+        document.getElementById('md-meter-info').innerHTML = `
+            <div><span class="ov-label">${LANG.metername}</span><div>${m?.name ?? '—'}</div></div>
+            <div><span class="ov-label">${LANG.status}</span><div>
+                <span class="info-status-badge ${isOn ? 'info-status--on' : 'info-status--off'}">
+                    <span class="info-status-dot"></span>${isOn ? 'Active' : 'Inactive'}
+                </span>
+            </div></div>
+            <div><span class="ov-label">${LANG.ip_address}</span><div>${m?.ip_address ?? '—'}</div></div>
+            <div><span class="ov-label">${LANG.protocol}</span><div>${m?.protocol ?? '—'}</div></div>
+        `;
+    }
+
+    function latestOf(series) {
+        if (!series || !series.length) return null;
+        return series[series.length - 1];
+    }
+
+    function renderStatCards() {
+        const m = selectedMeter();
+        const dataObj = m?.data ?? {};
+        const cards = [
+            { id: 'wd-stat-flow', typeId: findTypeId(/^flow/i) },
+            { id: 'wd-stat-velocity', typeId: findTypeId(/^velocity/i) },
+            { id: 'wd-stat-poscum', typeId: findTypeId(/positive.*cumulative/i) },
+            { id: 'wd-stat-negcum', typeId: findTypeId(/negative.*cumulative/i) },
+        ];
+        cards.forEach(c => {
+            const el = document.querySelector(`#${c.id} .wd-stat__value`);
+            if (!el) return;
+            const latest = c.typeId ? latestOf(dataObj[c.typeId]) : null;
+            el.textContent = latest ? Number(latest.value).toLocaleString(undefined, { maximumFractionDigits: 2 }) : '—';
+        });
+    }
+
+    const _chartInstances = {};
+    function _destroyChart(id) { if (_chartInstances[id]) { _chartInstances[id].destroy(); delete _chartInstances[id]; } }
+    function getCssVar(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+    function getChartTheme() {
+        const isDark = document.documentElement.classList.contains('dark');
+        return {
+            textColor: getCssVar('--text-primary'), mutedColor: getCssVar('--text-muted'), gridColor: getCssVar('--border'),
+            tooltipBg: isDark ? getCssVar('--bg-select') : '#ffffff', tooltipBorder: getCssVar('--green'), legendColor: getCssVar('--text-secondary'),
+        };
+    }
+    function formatDate(d) {
+        const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        const pad = n => String(n).padStart(2, '0');
+        return `${pad(d.getDate())} ${months[d.getMonth()]} ${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
+    function drawLineChart(containerId, label, series, color) {
+        const wrap = document.getElementById(containerId);
+        _destroyChart(containerId);
+        wrap.innerHTML = '';
+
+        if (!series || !series.length) {
+            wrap.innerHTML = `<p class="ov-nodata"><i class="bi bi-slash-circle"></i> ${LANG.no_data_for_meter ?? 'No data yet'}</p>`;
+            return;
+        }
+
+        const canvas = document.createElement('canvas');
+        wrap.appendChild(canvas);
+        const t = getChartTheme();
+
+        _chartInstances[containerId] = new Chart(canvas, {
+            type: 'line',
+            data: {
+                datasets: [{
+                    label,
+                    data: series.map(r => ({ x: new Date(r.create_date.replace(' ', 'T')), y: parseFloat(r.value) || 0 })),
+                    borderColor: color, backgroundColor: color + '22',
+                    borderWidth: 2, pointRadius: 0, pointHoverRadius: 4, tension: 0.3,
+                }],
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false, animation: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: t.tooltipBg, borderColor: t.tooltipBorder, borderWidth: 1,
+                        titleColor: t.textColor, bodyColor: t.mutedColor,
+                        callbacks: {
+                            title: items => formatDate(new Date(items[0].parsed.x)),
+                            label: item => ` ${item.parsed.y.toLocaleString(undefined, { maximumFractionDigits: 2 })}`,
+                        },
+                    },
+                },
+                scales: {
+                    x: { type: 'time', time: { displayFormats: { minute: 'HH:mm', hour: 'HH:mm', day: 'dd MMM' } }, ticks: { color: t.mutedColor, font: { size: 10 }, maxRotation: 0 }, grid: { color: t.gridColor } },
+                    y: { ticks: { color: t.mutedColor, font: { size: 10 } }, grid: { color: t.gridColor } },
+                },
+            },
+        });
+    }
+
+    function renderCharts() {
+        const m = selectedMeter();
+        const dataObj = m?.data ?? {};
+        const flowId = findTypeId(/^flow/i);
+        const velId = findTypeId(/^velocity/i);
+        const posId = findTypeId(/positive.*cumulative/i);
+        const negId = findTypeId(/negative.*cumulative/i);
+
+        drawLineChart('chart-flow', LANG.group_flow, flowId ? dataObj[flowId] : [], '#8BAE66');
+        drawLineChart('chart-velocity', LANG.group_velocity, velId ? dataObj[velId] : [], '#6e9248');
+        drawLineChart('chart-poscum', LANG.positive_cumulative, posId ? dataObj[posId] : [], '#4c9a5b');
+        drawLineChart('chart-negcum', LANG.negative_cumulative, negId ? dataObj[negId] : [], '#a8752e');
+    }
+
+    function renderTable() {
+        const m = selectedMeter();
+        const dataObj = m?.data ?? {};
+        const flowId = findTypeId(/^flow/i);
+        const velId = findTypeId(/^velocity/i);
+        const posId = findTypeId(/positive.*cumulative/i);
+        const negId = findTypeId(/negative.*cumulative/i);
+
+        const byTime = {};
+        [flowId, velId, posId, negId].forEach((tid, idx) => {
+            const key = ['flow', 'velocity', 'poscum', 'negcum'][idx];
+            (tid ? (dataObj[tid] || []) : []).forEach(r => {
+                if (!byTime[r.create_date]) byTime[r.create_date] = {};
+                byTime[r.create_date][key] = r.value;
+            });
+        });
+
+        const timestamps = Object.keys(byTime).sort((a, b) => new Date(b) - new Date(a));
+        const body = document.getElementById('md-table-body');
+
+        if (!timestamps.length) {
+            body.innerHTML = `<tr><td colspan="5" class="ov-nodata-cell">${LANG.no_data_for_meter ?? 'No data yet'}</td></tr>`;
+            return;
+        }
+
+        body.innerHTML = timestamps.slice(0, 200).map(ts => {
+            const row = byTime[ts];
+            const fmt = v => v != null ? Number(v).toLocaleString(undefined, { maximumFractionDigits: 2 }) : '—';
+            return `<tr><td>${ts}</td><td>${fmt(row.flow)}</td><td>${fmt(row.velocity)}</td><td>${fmt(row.poscum)}</td><td>${fmt(row.negcum)}</td></tr>`;
+        }).join('');
+    }
+</script>

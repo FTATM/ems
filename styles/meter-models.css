@@ -1,0 +1,79 @@
+/* หน้าจัดการรุ่นมิเตอร์ — ต่อยอดจาก management-meters.css ที่โหลดไว้ก่อนแล้ว
+   จึงมีเฉพาะส่วนที่เป็นของตาราง register map */
+
+.model-meta {
+  margin-left: auto;
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.regmap {
+  margin-top: 0.6rem;
+  border: 1px solid var(--border, rgba(127, 127, 127, 0.25));
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* คอลัมน์: ค่า | register | FC | words | encoding | scale | ปุ่มลบ
+   ตั้งความกว้างไว้ให้ตัวเลขไม่กระโดดเวลาพิมพ์ */
+.regmap__head,
+.regmap__row {
+  display: grid;
+  grid-template-columns: minmax(130px, 1.4fr) 100px 62px 72px minmax(150px, 1.2fr) 100px 36px;
+  gap: 0.4rem;
+  align-items: center;
+  padding: 0.4rem 0.55rem;
+}
+
+.regmap__head {
+  background: var(--surface-2, rgba(127, 127, 127, 0.08));
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.regmap__row + .regmap__row {
+  border-top: 1px solid var(--border, rgba(127, 127, 127, 0.15));
+}
+
+.regmap__row input,
+.regmap__row select {
+  width: 100%;
+  min-width: 0;
+  padding: 0.28rem 0.4rem;
+  font-size: 0.78rem;
+  border-radius: 5px;
+  border: 1px solid var(--border, rgba(127, 127, 127, 0.3));
+  background: var(--bg-input, transparent);
+  color: inherit;
+}
+
+.regmap__del {
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 1.15rem;
+  line-height: 1;
+  padding: 0 0.2rem;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.regmap__del:hover {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* จอแคบ: ตารางเลื่อนแนวนอนแทนที่จะบีบช่องจนพิมพ์ไม่ได้ */
+@media (max-width: 900px) {
+  .regmap {
+    overflow-x: auto;
+  }
+  .regmap__head,
+  .regmap__row {
+    min-width: 700px;
+  }
+}

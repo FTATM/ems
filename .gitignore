@@ -1,2 +1,9 @@
 downloads/*
+<<<<<<< HEAD
 connector/ems/
+=======
+__pycache__/
+*.pyc
+connector/logs/
+CLAUDE.md
+>>>>>>> master

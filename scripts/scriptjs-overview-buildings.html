@@ -1,0 +1,81 @@
+<script>
+    let buildings = [];
+
+    document.addEventListener("DOMContentLoaded", async () => {
+        showLoading();
+        const res = await fetch("../config/fetch-room-summary.php");
+        const json = await res.json();
+        buildings = json.data || [];
+        renderTotals();
+        renderBuildings();
+        hideLoading();
+    });
+
+    function renderTotals() {
+        const total = buildings.reduce((s, b) => s + b.total, 0);
+        const occupied = buildings.reduce((s, b) => s + b.occupied, 0);
+        const empty = buildings.reduce((s, b) => s + b.empty, 0);
+        const pct = total > 0 ? Math.round((occupied / total) * 100) : 0;
+
+        document.getElementById('ob-totals').innerHTML = `
+            <div class="rd-stat">
+                <span class="rd-stat__label"><?= $lang['room'] ?> (<?= $lang['all'] ?>)</span>
+                <span class="rd-stat__value">${total}</span>
+            </div>
+            <div class="rd-stat rd-stat--warn">
+                <span class="rd-stat__label">${LANG.room_status_occupied}</span>
+                <span class="rd-stat__value">${occupied} <small>(${pct}%)</small></span>
+            </div>
+            <div class="rd-stat rd-stat--ok">
+                <span class="rd-stat__label">${LANG.room_status_empty}</span>
+                <span class="rd-stat__value">${empty}</span>
+            </div>
+        `;
+    }
+
+    function renderBuildings() {
+        const grid = document.getElementById('building-grid');
+        const empty = document.getElementById('ov-empty');
+        grid.innerHTML = '';
+
+        if (!buildings.length) {
+            empty.hidden = false;
+            grid.style.display = 'none';
+            return;
+        }
+        empty.hidden = true;
+        grid.style.display = '';
+
+        buildings.forEach((b, i) => {
+            const pct = b.total > 0 ? Math.round((b.occupied / b.total) * 100) : 0;
+            const card = document.createElement('div');
+            card.className = 'room-card';
+            card.style.animationDelay = `${i * 0.04}s`;
+            card.innerHTML = `
+                <div class="room-card__body" style="cursor:pointer" onclick="openBuilding(${b.building_id})">
+                    <div class="room-card__icon"><i class="bi bi-buildings-fill"></i></div>
+                    <div class="room-card__name">${b.building_name || '—'}</div>
+                    <div class="room-card__meta">
+                        <span><i class="bi bi-geo-alt-fill"></i> ${b.location_name || '—'}</span>
+                    </div>
+                    <div class="ob-occupancy">
+                        <div class="ob-occupancy__bar"><div class="ob-occupancy__fill" style="width:${pct}%"></div></div>
+                        <span class="ob-occupancy__label">${pct}% ${LANG.room_status_occupied.toLowerCase()}</span>
+                    </div>
+                    <div class="room-card__tenant">
+                        <span class="ob-count ob-count--total"><i class="bi bi-door-closed-fill"></i> ${b.total}</span>
+                        <span class="ob-count ob-count--ok"><i class="bi bi-check-circle-fill"></i> ${b.empty}</span>
+                        <span class="ob-count ob-count--busy"><i class="bi bi-person-fill"></i> ${b.occupied}</span>
+                        ${b.maintenance > 0 ? `<span class="ob-count ob-count--warn"><i class="bi bi-tools"></i> ${b.maintenance}</span>` : ''}
+                    </div>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    async function openBuilding(buildingId) {
+        const ok = await setSession('gid', buildingId);
+        if (ok) window.location.href = 'overview-room.php';
+    }
+</script>

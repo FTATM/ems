@@ -1,8 +1,9 @@
 @echo off
-cd /d C:\xampp\htdocs\ems
+REM Run the collector in the foreground, for debugging.
+REM For unattended operation install it as a service: install-service.ps1
+cd /d "%~dp0"
 echo ==============================
-echo          Fetch Meter
+echo       EMS Meter Collector
 echo ==============================
-echo result
-python .\connector\pymodbustcpAllmeters.py
+python -m ems run
 pause
